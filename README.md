@@ -16,5 +16,14 @@ On WSL or Debian based OSes `apt-get install build-essential libnewlib-dev gcc-r
 cd barebones
 make
 ```
-
 Use the WCH-LinkUtility to flash the built hex file.
+
+## For using EVT demos, check out the EVT folder.
+
+## WCH-Link
+
+It enumerates as 2 interfaces.
+0. the programming interface.  I can't get anything except the propreitary interface to work.
+1. the usb serial port built in.
+
+If you want to mess with the programming code in Windows, you will have to install WinUSB to the interface 0.  Then you can uninstall it in Device Manager under USB Devices.
