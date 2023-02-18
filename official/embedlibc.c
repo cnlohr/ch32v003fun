@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <limits.h>
 
 int errno;
 int _write(int fd, const char *buf, int size);
@@ -24,6 +25,7 @@ int printf(const char* format, ...)
 	va_end( args );
 	return ret_status;
 }
+
 
 /* Some stuff from MUSL
 

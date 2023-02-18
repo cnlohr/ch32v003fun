@@ -7,8 +7,9 @@ PREFIX:=riscv64-unknown-elf
 GPIO_Toggle:=EXAM/GPIO/GPIO_Toggle/User
 
 CFLAGS:= \
-	-Os -flto -ffunction-sections \
-	-march=rv32emc \
+	-g -Os -flto -ffunction-sections \
+	-static-libgcc -lgcc \
+	-march=rv32ec \
 	-mabi=ilp32e \
 	-I/usr/include/newlib \
 	-nostdlib \
