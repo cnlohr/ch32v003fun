@@ -19,6 +19,8 @@ void SystemInit(void)
 	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x08);									// Wait till PLL is used as system clock source
 }
 
+static const uint8_t array[384] = { 0xff };
+
 int main()
 {
 	// Enable GPIOD.
@@ -26,6 +28,9 @@ int main()
 
 	// Push-Pull, 50MHz Output
 	GPIOD->CFGLR = (GPIOD->CFGLR & 0xfffffff0) | 3;
+	
+	
+	GPIOD->BSHR = array[GPIOD->BSHR];
 	
 	while(1)
 	{

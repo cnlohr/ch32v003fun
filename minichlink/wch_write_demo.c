@@ -15,10 +15,13 @@ int main()
 	WCHCHECK( libusb_bulk_transfer( devh, 0x01, "\x81\x11\x01\x09", 4, &transferred, WCHTIMEOUT) ); // Checkme with BULK_IN
 	WCHCHECK( libusb_bulk_transfer( devh, 0x01, "\x81\x06\x01\x01", 4, &transferred, WCHTIMEOUT) );
 	WCHCHECK( libusb_bulk_transfer( devh, 0x01, "\x81\x06\x01\x01", 4, &transferred, WCHTIMEOUT) ); // Odd that it did it twice - maybe something took too long on the proc.
+
+	// This contains the write data quantity, in bytes.  (The last 2 octets)
+	// Then it just rollllls on in.
 	WCHCHECK( libusb_bulk_transfer( devh, 0x01, "\x81\x01\x08\x08\x00\x00\x00\x00\x00\x02\x0c", 11, &transferred, WCHTIMEOUT) ); // Still check me.
 	WCHCHECK( libusb_bulk_transfer( devh, 0x01, "\x81\x02\x01\x05", 4, &transferred, WCHTIMEOUT) ); // Last checkme til data.
 	
-	// then just stream this.
+	// then just stream this.  This is some sort of propreitary image.
 	WCHCHECK( libusb_bulk_transfer( devh, 0x01,
 "\x21\x11\x22\xca\x26\xc8\x93\x77\x15\x00\x99\xcf\xb7\x06\x67\x45" \
 "\xb7\x27\x02\x40\x93\x86\x36\x12\x37\x97\xef\xcd\xd4\xc3\x13\x07" \
