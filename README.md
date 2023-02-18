@@ -27,3 +27,11 @@ It enumerates as 2 interfaces.
 1. the usb serial port built in.
 
 If you want to mess with the programming code in Windows, you will have to install WinUSB to the interface 0.  Then you can uninstall it in Device Manager under USB Devices.
+
+## miniwchlink
+
+I wrote some libusb copies of some of the basic functionality from WCH-Link, so you can use the little programmer dongle they give you to program the ch32v003. 
+
+Currently, it ignores all the respone codes, except when querying the chip.  But it's rather surprising how featured I could get in about 5 hours.
+
+Anyone who wants to write a good/nice utility should probably look at the code in this folder.

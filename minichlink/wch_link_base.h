@@ -5,7 +5,7 @@
 
 #include "libusb.h"
 
-#define WCHTIMEOUT 1000
+#define WCHTIMEOUT 5000
 #define WCHCHECK(x) if( status = x ) { fprintf( stderr, "Bad USB Operation on line %d (%d)\n", __LINE__, status ); exit( status ); }
 
 static inline libusb_device_handle * wch_link_base_setup()
