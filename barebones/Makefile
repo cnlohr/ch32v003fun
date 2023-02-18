@@ -6,18 +6,21 @@ PREFIX:=riscv64-unknown-elf
 
 GPIO_Toggle:=EXAM/GPIO/GPIO_Toggle/User
 
+EVT:=../ch32v003evt/
+
 CFLAGS:= \
 	-g -Os -flto -ffunction-sections \
 	-static-libgcc -lgcc \
 	-march=rv32ec \
 	-mabi=ilp32e \
 	-I/usr/include/newlib \
+	-I$(EVT) \
 	-nostdlib \
 	-I.
 
-LDFLAGS:=-T ch32v003.ld
+LDFLAGS:=-T $(EVT)/ch32v003.ld
 
-SYSTEM_C:=startup_ch32v00x.S system_ch32v00x.c
+SYSTEM_C:=$(EVT)/startup_ch32v00x.S
 
 $(TARGET).elf : barebones.c $(SYSTEM_C)
 	$(PREFIX)-gcc -o $@ $^ $(CFLAGS) $(LDFLAGS)

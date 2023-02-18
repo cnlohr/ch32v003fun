@@ -10,16 +10,18 @@ This shows how to build the CH32V003 demo binaries without the horrifying MounRi
 * Software from WCH for WCH-Link: https://www.wch-ic.com/products/WCH-Link.html
 * Get https://www.wch.cn/downloads/WCH-LinkUtility_ZIP.html
 
-Steps:
+## Steps to run an EVT sample
+
 1. Install WCHLinkDrv_WHQL_S.exe from Wch-LinkUtil/Drv_Link
-2. Copy contents of EVT (CH32V003EVT.ZIP) "EXAM" Folder in to this folder.
+2. Copy contents of EVT (CH32V003EVT.ZIP) "EXAM" Folder in to the EVT folder.
 3. On WSL or Debian based OSes `apt-get install build-essential libnewlib-dev gcc-riscv64-unknown-elf`
-4. Type `make`
-5. Open Wch-LinkUtil
-6. Select series "CH32V00X" from pull-down.
-7. Open the produced .hex file.
-8. Target->Program (F10)
-9. Target->Reset (F12)
+4. cd into `EVT` on WSL or Linux
+5. Type `make`
+6. Open Wch-LinkUtil
+7. Select series "CH32V00X" from pull-down.
+8. Open the produced .hex file.
+9. Target->Program (F10)
+10. Target->Reset (F12)
 
 Profit.
 
