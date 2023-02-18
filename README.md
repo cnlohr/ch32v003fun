@@ -1,6 +1,8 @@
 # ch32v003fun
 
-My tests for the CH32V003 with gcc-riscv64
+My tests for the CH32V003 with gcc-riscv64.
+
+Still very much a wip, but pretty close to a sort of dev environment for the ch32v003 in Linux / WSL.
 
 This contains:
 1. EVT Folder for running demos from the ch32v003 EVT.
