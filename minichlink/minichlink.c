@@ -200,7 +200,8 @@ help:
 	fprintf( stderr, " -f Disable 5V\n" );
 	fprintf( stderr, " -r Release from reest\n" );
 	fprintf( stderr, " -R Place into Reset\n" );
-	fprintf( stderr, " -D Configure NRST as GPIO\n" );
+	fprintf( stderr, " -D Configure NRST as GPIO **WARNING** If you do this and you reconfig\n" );
+	fprintf( stderr, "      the SWIO pin (PD1) on boot, your part can never again be programmed!\n" );
 	fprintf( stderr, " -d Configure NRST as NRST\n" );
 //	fprintf( stderr, " -P Enable Read Protection (UNTESTED)\n" );
 //	fprintf( stderr, " -p Disable Read Protection (UNTESTED)\n" );
