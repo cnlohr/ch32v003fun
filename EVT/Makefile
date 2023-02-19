@@ -27,7 +27,7 @@ SYSTEM_C:=EXAM/SRC/Startup/startup_ch32v00x.S \
 	EXAM/SRC/Peripheral/src/ch32v00x_rcc.c \
 	EXAM/SRC/Peripheral/src/ch32v00x_usart.c \
 	EXAM/SRC/Peripheral/src/ch32v00x_misc.c \
-	embedlibc.c
+	../ch32v003evt/embedlibc.c
 
 $(TARGET).elf : $(GPIO_Toggle)/ch32v00x_it.c $(GPIO_Toggle)/main.c $(GPIO_Toggle)/system_ch32v00x.c $(SYSTEM_C)
 	$(PREFIX)-gcc -o $@ $^ $(CFLAGS) $(LDFLAGS)

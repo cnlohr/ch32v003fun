@@ -6,7 +6,37 @@
 #include "libusb.h"
 
 #define WCHTIMEOUT 5000
-#define WCHCHECK(x) if( status = x ) { fprintf( stderr, "Bad USB Operation on line %d (%d)\n", __LINE__, status ); exit( status ); }
+#define WCHCHECK(x) if( status = x ) { fprintf( stderr, "Bad USB Operation on " __FILE__ ":%d (%d)\n", __LINE__, status ); exit( status ); }
+
+void wch_link_command( libusb_device_handle * devh, const uint8_t * command, int commandlen, int * transferred, uint8_t * reply, int replymax )
+{
+	uint8_t buffer[1024];
+	int got_to_recv = 0;
+	int status;
+	int transferred_local;
+	if( !transferred ) transferred = &transferred_local;
+	status = libusb_bulk_transfer( devh, 0x01, (char*)command, commandlen, transferred, WCHTIMEOUT );
+	if( status ) goto sendfail;
+
+	got_to_recv = 1;
+	if( !reply )
+	{
+		reply = buffer; replymax = sizeof( buffer );
+	}
+	
+	status = libusb_bulk_transfer( devh, 0x81, (char*)reply, replymax, transferred, WCHTIMEOUT );
+	if( status ) goto sendfail;
+	return;
+sendfail:
+	fprintf( stderr, "Error sending WCH command (%s): ", got_to_recv?"on recv":"on send" );
+	int i;
+	for( i = 0; i < commandlen; i++ )
+	{
+		printf( "%02x ", command[i] );
+	}
+	printf( "\n" );
+	exit( status );
+}
 
 static inline libusb_device_handle * wch_link_base_setup()
 {
@@ -49,12 +79,23 @@ static inline libusb_device_handle * wch_link_base_setup()
 	}
 		
 	WCHCHECK( libusb_claim_interface(devh, 0) );
-	//uint8_t setup_magic_1[] = { 0xcc, 0x08, 0x38, 0xff, 0x80, 0x00, 0x0a };
-	//status = libusb_control_transfer(devh, 0x21 /*bmRequestType*/, 0x09 /*bmRequest*/, 0x3cc, 0, setup_magic_1, sizeof(setup_magic_1), TIMEOUT);
-	//printf( "Status0: %d\n", status );
-	//uint8_t setup_magic_2[] = { 0xcc, 0x08, 0x0f, 0xff, 0x80, 0x00, 0x0a };
-	//status = libusb_control_transfer(devh, 0x21 /*bmRequestType*/, 0x09 /*bmRequest*/, 0x3cc, 0, setup_magic_1, sizeof(setup_magic_1), TIMEOUT);
-	//printf( "Status1: %d\n", status );
+	
+	uint8_t rbuff[1024];
+	int transferred;
+	libusb_bulk_transfer( devh, 0x81, rbuff, 1024, &transferred, 1 ); // Clear out any pending transfers.  Don't wait though.
+
+	wch_link_command( devh, "\x81\x0d\x01\x01", 4, 0, 0, 0 );	// Reply is: "\x82\x0d\x04\x02\x08\x02\x00"
+	wch_link_command( devh, "\x81\x0c\x02\x09\x01", 5, 0, 0, 0 ); //Reply is: 820c0101
+	wch_link_command( devh, "\x81\x0d\x01\x02", 4, 0, 0, 0 ); // Reply: Ignored, 820d050900300500
+	wch_link_command( devh, "\x81\x11\x01\x09", 4, &transferred, rbuff, 1024 ); // Reply: Chip ID + Other data (see below)
+	if( transferred != 20 )
+	{
+		fprintf( stderr, "Error: could not get part status\n" );
+		exit( -99 );
+	}
+	fprintf( stderr, "Part Type: 0x%02x%02x\n", rbuff[1], rbuff[2] );
+	fprintf( stderr, "Part UUID: %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n", rbuff[3], rbuff[4], rbuff[5], rbuff[6], rbuff[7], rbuff[8], rbuff[9], rbuff[10] );
+
 	return devh;
 }
 

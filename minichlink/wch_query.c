@@ -10,23 +10,6 @@ int main()
 	int transferred;
 	int status;
 	char rbuff[1024];
-	libusb_bulk_transfer( devh, 0x81, rbuff, 1024, &transferred, 1 ); // Clear out any pending transfers.
-
-	WCHCHECK( libusb_bulk_transfer( devh, 0x01, "\x81\x0d\x01\x01", 4, &transferred, WCHTIMEOUT ) ); // Checkme with BULK_IN
-	WCHCHECK( libusb_bulk_transfer( devh, 0x81, rbuff, 1024, &transferred, 500 ) ); // Ignore respone.
-// "\x1b\x00\x20\xda\x62\x67\x86\xe0\xff\xff\x00\x00\x00\x00\x09\x00" \
-"\x01\x02\x00\x2f\x00\x81\x03\x07\x00\x00\x00\x82\x0d\x04\x02\x08" \
-"\x02\x00" << Back in
-
-	WCHCHECK( libusb_bulk_transfer( devh, 0x01, "\x81\x0c\x02\x09\x01", 5, &transferred, WCHTIMEOUT ) ); // Checkme with BULK_IN
-	WCHCHECK( libusb_bulk_transfer( devh, 0x81, rbuff, 1024, &transferred, 500 ) ); // Ignore respone.
-//"\x82\x0c\x01\x01" << Back In
-
-
-	WCHCHECK( libusb_bulk_transfer( devh, 0x01, "\x81\x0d\x01\x02", 4, &transferred, WCHTIMEOUT) ); // Checkme with BULK_IN
-	WCHCHECK( libusb_bulk_transfer( devh, 0x81, rbuff, 1024, &transferred, 500 ) ); // Ignore respone.
-//"\x82\x0d\x05\x09\x00\x30\x05\x00" << back in.
-
 
 	WCHCHECK( libusb_bulk_transfer( devh, 0x01, "\x81\x06\x01\x01", 4, &transferred, WCHTIMEOUT) );
 	WCHCHECK( libusb_bulk_transfer( devh, 0x81, rbuff, 1024, &transferred, 500 ) ); // Ignore respone.

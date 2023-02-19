@@ -6,7 +6,7 @@ PREFIX:=riscv64-unknown-elf
 
 GPIO_Toggle:=EXAM/GPIO/GPIO_Toggle/User
 
-EVT:=../ch32v003evt/
+EVT:=../ch32v003evt
 
 CFLAGS:= \
 	-g -Os -flto -ffunction-sections \
@@ -18,9 +18,9 @@ CFLAGS:= \
 	-nostdlib \
 	-I.
 
-LDFLAGS:=-T $(EVT)/ch32v003.ld
+LDFLAGS:=-T $(EVT)/ch32v003.ld -Wl,--gc-sections
 
-SYSTEM_C:=$(EVT)/startup_ch32v00x.S
+SYSTEM_C:=$(EVT)/startup_ch32v00x.S $(EVT)/embedlibc.c
 
 $(TARGET).elf : barebones.c $(SYSTEM_C)
 	$(PREFIX)-gcc -o $@ $^ $(CFLAGS) $(LDFLAGS)
@@ -31,7 +31,6 @@ $(TARGET).hex : $(TARGET).elf
 	$(PREFIX)-objdump -t $^ > $(TARGET).map
 	$(PREFIX)-objcopy -O binary $< $(TARGET).bin
 	$(PREFIX)-objcopy -O ihex $< $@
-
 
 flash : $(TARGET).hex
 
