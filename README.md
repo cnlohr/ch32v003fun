@@ -1,15 +1,17 @@
 # ch32v003fun
 
-My tests for the [CH32V003](http://www.wch-ic.com/products/CH32V003.html) with gcc-riscv64.  It's 10-cent part with a RV32EC core that runs at 48MHz, has 16kB of flash and 2kB of RAM.  It also comes in SOP-8, QFN-20 and SOIC packages.
+An open source tooling for the [CH32V003](http://www.wch-ic.com/products/CH32V003.html) with gcc-riscv64.  It's 10-cent part with a RV32EC core that runs at 48MHz, has 16kB of flash and 2kB of RAM.  It also comes in SOP-8, QFN-20 and SOIC packages.
 
 ![CH32V003 Architecture](https://img.wch.cn/20220921/5d7592ac-9a13-4662-910c-f9388da9ee6e.jpg)
 
-Still very much a wip, it's a dev environment for the ch32v003 in Linux / WSL that doesn't require any propreitary tooling or [MounRiver Studio(MRS)](http://www.wch-ic.com/products/www.mounriver.com/)
+It's a dev environment for the ch32v003 in Linux / WSL that doesn't require any propreitary tooling or [MounRiver Studio(MRS)](http://www.wch-ic.com/products/www.mounriver.com/)
+
+It works in Windows (WSL) and Linux. 
 
 This contains:
 1. EVT Folder for running demos from the ch32v003 EVT.
 2. Barebones. A project that does not use the HAL or EVT.
-3. A demo "minichlink" which uses the WCH CH-Link with libusb exclusively for cross-platform use. (Only tested in Windows right now)
+3. "minichlink" which uses the WCH CH-Link with libusb, for cross-platform use.
 
 ## System Prep
 
@@ -21,8 +23,10 @@ On WSL or Debian based OSes `apt-get install build-essential libnewlib-dev gcc-r
 cd barebones
 make
 ```
-Use the WCH-LinkUtility to flash the built hex file, or if you don't want to use propreitary tooling you can use miniwchlink.
 
+In Linux this will "just work" using the `miniwchlink`. In Windows, you can use this or you can use the WCH-LinkUtility to flash the built hex file.
+
+If you are in Windows, you will need to use zadig to install the libusb driver to the WCH-Link interface 0.
 
 ## For using EVT demos, check out the EVT folder.
 
