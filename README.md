@@ -4,11 +4,12 @@ My tests for the [CH32V003](http://www.wch-ic.com/products/CH32V003.html) with g
 
 ![CH32V003 Architecture](https://img.wch.cn/20220921/5d7592ac-9a13-4662-910c-f9388da9ee6e.jpg)
 
-Still very much a wip, but pretty close to a sort of dev environment for the ch32v003 in Linux / WSL.
+Still very much a wip, it's a dev environment for the ch32v003 in Linux / WSL that doesn't require any propreitary tooling or [MounRiver Studio(MRS)](http://www.wch-ic.com/products/www.mounriver.com/)
 
 This contains:
 1. EVT Folder for running demos from the ch32v003 EVT.
-2. Barebones. For compiling without the EVT.
+2. Barebones. A project that does not use the HAL or EVT.
+3. A demo "minichlink" which uses the WCH CH-Link with libusb exclusively for cross-platform use. (Only tested in Windows right now)
 
 ## System Prep
 
