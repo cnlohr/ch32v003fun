@@ -1,6 +1,6 @@
 # ch32v003fun
 
-An open source tooling for the [CH32V003](http://www.wch-ic.com/products/CH32V003.html) with gcc-riscv64 that can be used in Windows, Linux and/or WSL.  The CH32V003 is 10-cent part with a RV32EC core that runs at 48MHz, has 16kB of flash and 2kB of RAM.  It also comes in SOP-8, QFN-20 and SOIC packages.
+An open source tooling for the [CH32V003](http://www.wch-ic.com/products/CH32V003.html) with gcc-riscv64 that can be used in Windows, Linux and/or WSL.  The CH32V003 is 10-cent part with a RISC-V EC core that runs at 48MHz, has 16kB of flash and 2kB of RAM and a bunch of peripherals.  It also comes in SOP-8, QFN-20 and SOIC packages.  You can get the datasheet [here](http://www.wch-ic.com/downloads/CH32V003DS0_PDF.html).
 
 With this project, you don't require any propreitary tooling or [MounRiver Studio(MRS)](http://www.wch-ic.com/products/www.mounriver.com/).
 
