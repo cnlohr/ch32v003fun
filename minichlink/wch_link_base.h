@@ -99,8 +99,12 @@ static inline libusb_device_handle * wch_link_base_setup()
 	// Place part into reset.
 	wch_link_command( devh, "\x81\x0d\x01\x01", 4, &transferred, rbuff, 1024 );	// Reply is: "\x82\x0d\x04\x02\x08\x02\x00"
 
+	// TODO: What in the world is this?  It doesn't appear to be needed.
 	wch_link_command( devh, "\x81\x0c\x02\x09\x01", 5, 0, 0, 0 ); //Reply is: 820c0101
+
+	// This puts the processor on hold to allow the debugger to run.
 	wch_link_command( devh, "\x81\x0d\x01\x02", 4, 0, 0, 0 ); // Reply: Ignored, 820d050900300500
+
 	wch_link_command( devh, "\x81\x11\x01\x09", 4, &transferred, rbuff, 1024 ); // Reply: Chip ID + Other data (see below)
 	if( transferred != 20 )
 	{

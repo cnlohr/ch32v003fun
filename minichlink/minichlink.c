@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "wch_link_base.h"
 
 
@@ -35,6 +36,8 @@ const uint8_t * bootloader = (const uint8_t*)
 "\x51\xb7\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" \
 "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" \
 "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff";
+
+static int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber );
 
 int bootloader_len = 512;
 
@@ -107,8 +110,84 @@ keep_going:
 					4, "\x81\x06\x01\x01" );
 				break;
 			*/
-			case 'w':
+			case 'o':
+			{
+				int i;
+				int transferred;
+				if( argchar[2] != 0 ) goto help;
+				iarg++;
+				argchar = 0; // Stop advancing
+				if( iarg + 2 >= argc ) goto help;
+				uint64_t offset = SimpleReadNumberInt( argv[iarg++], -1 );
+				uint64_t amount = SimpleReadNumberInt( argv[iarg++], -1 );
+				if( offset > 0xffffffff || amount > 0xffffffff )
 				{
+					fprintf( stderr, "Error: memory value request out of range.\n" );
+					return -9;
+				}
+
+				// Round up amount.
+				amount = ( amount + 3 ) & 0xfffffffc;
+				FILE * f = fopen( argv[iarg], "wb" );
+				if( !f )
+				{
+					fprintf( stderr, "Error: can't open write file \"%s\"\n", argv[iarg] );
+					return -9;
+				}
+				uint32_t * readbuff = malloc( amount );
+				int readbuffplace = 0;
+				wch_link_command( devh, "\x81\x06\x01\x01", 4, 0, 0, 0 );
+
+				// Flush out any pending data.
+				libusb_bulk_transfer( devh, 0x82, rbuff, 1024, &transferred, 1 );
+
+				// 3/8 = Read Memory
+				// First 4 bytes are big-endian location.
+				// Next 4 bytes are big-endian amount.
+				uint8_t readop[11] = { 0x81, 0x03, 0x08, };
+				
+				readop[3] = (offset>>24)&0xff;
+				readop[4] = (offset>>16)&0xff;
+				readop[5] = (offset>>8)&0xff;
+				readop[6] = (offset>>0)&0xff;
+
+				readop[7] = (amount>>24)&0xff;
+				readop[8] = (amount>>16)&0xff;
+				readop[9] = (amount>>8)&0xff;
+				readop[10] = (amount>>0)&0xff;
+				
+				wch_link_command( devh, readop, 11, 0, 0, 0 );
+
+				// Perform operation
+				wch_link_command( devh, "\x81\x02\x01\x0c", 4, 0, 0, 0 );
+
+				uint32_t remain = amount;
+				while( remain )
+				{
+					transferred = 0;
+					WCHCHECK( libusb_bulk_transfer( devh, 0x82, rbuff, 1024, &transferred, WCHTIMEOUT ) );
+					memcpy( ((uint8_t*)readbuff) + readbuffplace, rbuff, transferred );
+					readbuffplace += transferred;
+					remain -= transferred;
+				}
+
+				// Flip internal endian.  Must be done separately in case something was unaligned when
+				// reading.
+				for( i = 0; i < readbuffplace/4; i++ )
+				{
+					uint32_t r = readbuff[i];
+					readbuff[i] = (r>>24) | ((r & 0xff0000) >> 8) | ((r & 0xff00)<<8) | (( r & 0xff )<<24); 
+				}
+				
+				fwrite( readbuff, readbuffplace, 1, f );
+
+				free( readbuff );
+
+				fclose( f );
+				break;
+			}
+			case 'w':
+			{
 				if( argchar[2] != 0 ) goto help;
 				iarg++;
 				argchar = 0; // Stop advancing
@@ -207,5 +286,36 @@ help:
 //	fprintf( stderr, " -P Enable Read Protection (UNTESTED)\n" );
 //	fprintf( stderr, " -p Disable Read Protection (UNTESTED)\n" );
 	fprintf( stderr, " -w [binary image to write]\n" );
+	fprintf( stderr, " -o [memory address, decimal or 0x, try 0x08000000] [size, decimal or 0x, try 16384] [output binary image]\n" );
 	return -1;	
+}
+
+
+#if defined(WINDOWS) || defined(WIN32) || defined(_WIN32)
+#define strtoll _strtoi64
+#endif
+
+static int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber )
+{
+	if( !number || !number[0] ) return defaultNumber;
+	int radix = 10;
+	if( number[0] == '0' )
+	{
+		char nc = number[1];
+		number+=2;
+		if( nc == 0 ) return 0;
+		else if( nc == 'x' ) radix = 16;
+		else if( nc == 'b' ) radix = 2;
+		else { number--; radix = 8; }
+	}
+	char * endptr;
+	uint64_t ret = strtoll( number, &endptr, radix );
+	if( endptr == number )
+	{
+		return defaultNumber;
+	}
+	else
+	{
+		return ret;
+	}
 }
