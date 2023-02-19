@@ -1,6 +1,8 @@
 # ch32v003fun
 
-My tests for the CH32V003 with gcc-riscv64.
+My tests for the [CH32V003](http://www.wch-ic.com/products/CH32V003.html) with gcc-riscv64.  It's 10-cent part with a RV32EC core that runs at 48MHz, has 16kB of flash and 2kB of RAM.  It also comes in SOP-8, QFN-20 and SOIC packages.
+
+![CH32V003 Architecture](https://img.wch.cn/20220921/5d7592ac-9a13-4662-910c-f9388da9ee6e.jpg)
 
 Still very much a wip, but pretty close to a sort of dev environment for the ch32v003 in Linux / WSL.
 
