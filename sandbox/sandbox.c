@@ -61,6 +61,8 @@ int main()
 		GPIOD->BSHR = 1;
 		GPIOD->BSHR = 1<<16;
 		GPIOD->BSHR = 1;
+		Delay_Ms( 1 );
 		GPIOD->BSHR = (128+64+1)<<16;
+		Delay_Ms( 1 );
 	}
 }

@@ -41,6 +41,7 @@ int bootloader_len = 512;
 int main( int argc, char ** argv )
 {
 	int status;
+	int must_be_end = 0;
 	uint8_t rbuff[1024];
 
 	libusb_device_handle * devh = wch_link_base_setup();
@@ -50,6 +51,12 @@ int main( int argc, char ** argv )
 	{
 		char * argchar = argv[iarg];
 		if( argchar[0] != '-' ) goto help;
+		if( must_be_end )
+		{
+			fprintf( stderr, "Error: the command '%c' cannot be followed by other commands.\n", must_be_end );
+			return -1;
+		}
+		
 keep_going:
 		switch( argchar[1] )
 		{
@@ -65,8 +72,16 @@ keep_going:
 			case 'R':
 				// Part one "immediately" places the part into reset.  Part 2 says when we're done, leave part in reset.
 				wch_link_multicommands( devh, 2, 4, "\x81\x0d\x01\x02", 4, "\x81\x0d\x01\x01" );
+				must_be_end = 'R';
 				break;
 
+			// disable NRST pin (turn it into a GPIO)
+			case 'd': 
+				wch_link_multicommands( devh, 2, 11, "\x81\x06\x08\x02\xf7\xff\xff\xff\xff\xff\xff", 4, "\x81\x0b\x01\x01" );
+				break;
+			case 'D':
+				wch_link_multicommands( devh, 2, 11, "\x81\x06\x08\x02\xff\xff\xff\xff\xff\xff\xff", 4, "\x81\x0b\x01\x01" );
+				break;
 			// PROTECTION UNTESTED!
 			/*
 			case 'p':
@@ -185,6 +200,8 @@ help:
 	fprintf( stderr, " -f Disable 5V\n" );
 	fprintf( stderr, " -r Release from reest\n" );
 	fprintf( stderr, " -R Place into Reset\n" );
+	fprintf( stderr, " -D Configure NRST as GPIO\n" );
+	fprintf( stderr, " -d Configure NRST as NRST\n" );
 //	fprintf( stderr, " -P Enable Read Protection (UNTESTED)\n" );
 //	fprintf( stderr, " -p Disable Read Protection (UNTESTED)\n" );
 	fprintf( stderr, " -w [binary image to write]\n" );
