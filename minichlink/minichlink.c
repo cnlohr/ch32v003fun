@@ -80,10 +80,10 @@ keep_going:
 				break;
 
 			// disable NRST pin (turn it into a GPIO)
-			case 'd': 
+			case 'd':  // see "RSTMODE" in datasheet
 				wch_link_multicommands( devh, 2, 11, "\x81\x06\x08\x02\xf7\xff\xff\xff\xff\xff\xff", 4, "\x81\x0b\x01\x01" );
 				break;
-			case 'D':
+			case 'D': // see "RSTMODE" in datasheet
 				wch_link_multicommands( devh, 2, 11, "\x81\x06\x08\x02\xff\xff\xff\xff\xff\xff\xff", 4, "\x81\x0b\x01\x01" );
 				break;
 			// PROTECTION UNTESTED!
