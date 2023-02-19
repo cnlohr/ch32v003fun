@@ -68,6 +68,7 @@ keep_going:
 			case 'r': 
 				// This is clearly not the "best" method to exit reset.  I don't know why this combination works.
 				wch_link_multicommands( devh, 3, 4, "\x81\x0b\x01\x01", 4, "\x81\x0d\x01\x02", 4, "\x81\x0d\x01\xff" );
+				must_be_end = 'r';
 				break;
 			case 'R':
 				// Part one "immediately" places the part into reset.  Part 2 says when we're done, leave part in reset.
