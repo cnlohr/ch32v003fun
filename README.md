@@ -1,14 +1,12 @@
 # ch32v003fun
 
-An open source tooling for the [CH32V003](http://www.wch-ic.com/products/CH32V003.html) with gcc-riscv64.  It's 10-cent part with a RV32EC core that runs at 48MHz, has 16kB of flash and 2kB of RAM.  It also comes in SOP-8, QFN-20 and SOIC packages.
+An open source tooling for the [CH32V003](http://www.wch-ic.com/products/CH32V003.html) with gcc-riscv64 that can be used in Windows, Linux and/or WSL.  The CH32V003 is 10-cent part with a RV32EC core that runs at 48MHz, has 16kB of flash and 2kB of RAM.  It also comes in SOP-8, QFN-20 and SOIC packages.
 
-![CH32V003 Architecture](https://img.wch.cn/20220921/5d7592ac-9a13-4662-910c-f9388da9ee6e.jpg)
+With this project, you don't require any propreitary tooling or [MounRiver Studio(MRS)](http://www.wch-ic.com/products/www.mounriver.com/).
 
-It's a dev environment for the ch32v003 in Linux / WSL that doesn't require any propreitary tooling or [MounRiver Studio(MRS)](http://www.wch-ic.com/products/www.mounriver.com/)
+As it currently stands it is still designed to use the WCH-Link to do the SDIO programming.
 
-It works in Windows (WSL) and Linux. 
-
-This contains:
+ch32v003fun contains:
 1. EVT Folder for running demos from the ch32v003 EVT.
 2. Barebones. A project that does not use the HAL or EVT.
 3. "minichlink" which uses the WCH CH-Link with libusb, for cross-platform use.
