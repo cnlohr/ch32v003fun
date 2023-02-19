@@ -21,7 +21,8 @@ On WSL or Debian based OSes `apt-get install build-essential libnewlib-dev gcc-r
 cd barebones
 make
 ```
-Use the WCH-LinkUtility to flash the built hex file.
+Use the WCH-LinkUtility to flash the built hex file, or if you don't want to use propreitary tooling you can use miniwchlink.
+
 
 ## For using EVT demos, check out the EVT folder.
 
