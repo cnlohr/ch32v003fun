@@ -1,0 +1,12 @@
+All documents from WCH are under the following license.  This works for any of
+their code.  I've done the best I can to extract only the definitions to put into
+this folder, but depending on jurisdiction, the code in this folder may actually
+taint MIT or BSD licsned code.
+
+/********************************** (C) COPYRIGHT  *******************************
+ * Author             : WCH
+ *********************************************************************************
+ * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
+ * Attention: This software (modified or not) and binary are used for 
+ * microcontroller manufactured by Nanjing Qinheng Microelectronics.
+ *******************************************************************************/
