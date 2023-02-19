@@ -25,14 +25,16 @@ SYSTEM_C:=$(EVT)/startup_ch32v00x.S $(EVT)/embedlibc.c
 $(TARGET).elf : barebones.c $(SYSTEM_C)
 	$(PREFIX)-gcc -o $@ $^ $(CFLAGS) $(LDFLAGS)
 
-$(TARGET).hex : $(TARGET).elf
+$(TARGET).bin : $(TARGET).elf
 	$(PREFIX)-size $^
 	$(PREFIX)-objdump -S $^ > $(TARGET).lst
 	$(PREFIX)-objdump -t $^ > $(TARGET).map
 	$(PREFIX)-objcopy -O binary $< $(TARGET).bin
-	$(PREFIX)-objcopy -O ihex $< $@
+	$(PREFIX)-objcopy -O ihex $< $(TARGET).hex
 
-flash : $(TARGET).hex
+flash : $(TARGET).bin
+	make -C ../minichlink all
+	../minichlink/minichlink -w $< -r
 
 clean :
 	rm -rf $(TARGET).elf $(TARGET).bin $(TARGET).hex $(TARGET).lst $(TARGET).map $(TARGET).hex

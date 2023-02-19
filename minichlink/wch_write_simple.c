@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include "wch_link_base.h"
 
-// UNTESTED
+// tested
 //  Having some difficulty with the base.
 
-const char * bootloader = 
+const uint8_t * bootloader = (const uint8_t*)
 "\x21\x11\x22\xca\x26\xc8\x93\x77\x15\x00\x99\xcf\xb7\x06\x67\x45" \
 "\xb7\x27\x02\x40\x93\x86\x36\x12\x37\x97\xef\xcd\xd4\xc3\x13\x07" \
 "\xb7\x9a\xd8\xc3\xd4\xd3\xd8\xd3\x93\x77\x25\x00\x9d\xc7\xb7\x27" \
@@ -44,6 +44,7 @@ int bootloader_len = 512;
 int main( int argc, char ** argv )
 {
 	int i;
+	int status;
 	uint8_t rbuff[1024];
 
 	if( argc != 2 )
@@ -58,9 +59,14 @@ int main( int argc, char ** argv )
 	int padlen = ((len-1) & (~0x3f)) + 0x40;
 	char * image = malloc( padlen );
 	memset( image, 0xff, padlen );
-	fread( image, len, 1, f );
+	status = fread( image, len, 1, f );
 	fclose( f );
 	
+	if( status != 1 )
+	{
+		fprintf( stderr, "Error: File I/O Fault.\n" );
+		return -10;
+	}
 	if( len > 16384 )
 	{
 		fprintf( stderr, "Error: Image for CH32V003 too large\n" );
@@ -69,7 +75,6 @@ int main( int argc, char ** argv )
 	
 	libusb_device_handle * devh = wch_link_base_setup();
 	int transferred;
-	int status;
 	wch_link_command( devh, "\x81\x06\x01\x01", 4, 0, 0, 0 );
 	wch_link_command( devh, "\x81\x06\x01\x01", 4, 0, 0, 0 ); // Not sure why but it seems to work better when we request twice.
 
@@ -85,7 +90,7 @@ int main( int argc, char ** argv )
 	int pplace = 0;
 	for( pplace = 0; pplace < bootloader_len; pplace += 64 )
 	{
-		WCHCHECK( libusb_bulk_transfer( devh, 0x02, bootloader+pplace, 64, &transferred, WCHTIMEOUT ) );
+		WCHCHECK( libusb_bulk_transfer( devh, 0x02, (uint8_t*)(bootloader+pplace), 64, &transferred, WCHTIMEOUT ) );
 	}
 	
 	for( i = 0; i < 10; i++ )
@@ -102,21 +107,19 @@ int main( int argc, char ** argv )
 		exit( -109 );
 	}
 	
-	WCHCHECK( libusb_bulk_transfer( devh, 0x01, "\x81\x02\x01\x02", 4, &transferred, WCHTIMEOUT) ); // checkme.
-	WCHCHECK( libusb_bulk_transfer( devh, 0x81, rbuff, 1024, &transferred, 2000 ) ); // Ignore respone.
-
+	wch_link_command( devh, "\x81\x02\x01\x02", 4, 0, 0, 0 );
 
 	for( pplace = 0; pplace < padlen; pplace += 64 )
 	{
 		WCHCHECK( libusb_bulk_transfer( devh, 0x02,image+pplace, 64, &transferred, WCHTIMEOUT ) );
 	}
 
-	// Waiting or something on 2.46.2???????
-	WCHCHECK( libusb_bulk_transfer( devh, 0x82, rbuff, 1024, &transferred, 2000 ) ); // Ignore respone.
-	
-	WCHCHECK( libusb_bulk_transfer( devh, 0x01, "\x81\x0d\x01\xff", 4, &transferred, WCHTIMEOUT) ); // checkme.
-	WCHCHECK( libusb_bulk_transfer( devh, 0x81, rbuff, 1024, &transferred, 2000 ) ); // Ignore respone.
-	
-	//211122ca26c89377150099cfb7066745b7270240938636123797efcdd4c31307b79ad8c3d4d3d8d3937725009dc7b7270240984bad66373300401367470098cb984b9386a6aa1367070498cbd847058b63160710984b6d9b98cb93774500a9cb9307f60399832ec02d6381763ec4b7320040b72702401303a3aafd16984bb703
-//	WCHCHECK( libusb_bulk_transfer( devh, 0x01, "\x81\x02\x01\x05", 4, &transferred, WCHTIMEOUT) );
+	// Waiting or something on 2.46.2???????  I don't know why the main system does this.
+//	WCHCHECK( libusb_bulk_transfer( devh, 0x82, rbuff, 1024, &transferred, 2000 ) ); // Ignore respone.
+
+	// Issue reset (this is optional)
+	wch_link_command( devh, "\x81\x0b\x01\x01", 4, 0, 0, 0 );
+
+	// Closeout
+	wch_link_command( devh, "\x81\x0d\x01\xff", 4, 0, 0, 0);
 }

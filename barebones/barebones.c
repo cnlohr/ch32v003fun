@@ -78,8 +78,8 @@ int main()
 	{
 		GPIOD->BSHR = 1;	 // Turn on GPIOD0
 		puts( "Hello" );
-		Delay_Ms( 100 );
+		Delay_Ms( 50 );
 		GPIOD->BSHR = 1<<16; // Turn off GPIOD0
-		Delay_Ms( 100 );
+		Delay_Ms( 50 );
 	}
 }
