@@ -1,4 +1,4 @@
-TARGET:=barebones
+TARGET:=fulldemo
 
 all : flash
 
@@ -22,7 +22,7 @@ LDFLAGS:=-T $(EVT)/ch32v003.ld -Wl,--gc-sections
 
 SYSTEM_C:=$(EVT)/startup_ch32v00x.S $(EVT)/embedlibc.c
 
-$(TARGET).elf : barebones.c $(SYSTEM_C)
+$(TARGET).elf : $(TARGET).c $(SYSTEM_C)
 	$(PREFIX)-gcc -o $@ $^ $(CFLAGS) $(LDFLAGS)
 
 $(TARGET).bin : $(TARGET).elf

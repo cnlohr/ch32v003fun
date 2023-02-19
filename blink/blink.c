@@ -1,7 +1,3 @@
-// Really basic self-contained demo for the ch32v003
-// Doesn't rely on any of the weird HAL stuff from CH
-// Final executable is ~1/4th the size.
-
 // Could be defined here, or in the processor defines.
 #define SYSTEM_CORE_CLOCK 48000000
 
@@ -9,38 +5,6 @@
 #include <stdio.h>
 
 #define APB_CLOCK SYSTEM_CORE_CLOCK
-
-// For debug writing to the UART.
-int _write(int fd, char *buf, int size)
-{
-    for(int i = 0; i < size; i++){
-        while( !(USART1->STATR & USART_FLAG_TC));
-        USART1->DATAR = *buf++;
-    }
-    return size;
-}
-
-static inline void ConfigureDebugUART()
-{
-	// Configure UART for debugging.
-
-	// Push-Pull, 10MHz Output, GPIO D5, with AutoFunction
-	GPIOD->CFGLR &= ~(0xf<<(4*5));
-	GPIOD->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP_AF)<<(4*5);
-	
-	// 115200, 8n1.  Note if you don't specify a mode, UART remains off even when UE_Set.
-	USART1->CTLR1 = USART_WordLength_8b | USART_Parity_No | USART_Mode_Tx;
-	USART1->CTLR2 = USART_StopBits_1;
-	USART1->CTLR3 = USART_HardwareFlowControl_None;
-
-	#define UART_BAUD_RATE 115200
-	#define OVER8DIV 4
-	#define INTEGER_DIVIDER (((25 * (APB_CLOCK)) / (OVER8DIV * (UART_BAUD_RATE))))
-	#define FRACTIONAL_DIVIDER ((INTEGER_DIVIDER)%100)
-	USART1->BRR = ((INTEGER_DIVIDER / 100) << 4) | ((((FRACTIONAL_DIVIDER * (OVER8DIV*2)) + 50)/100)&7);
-	USART1->CTLR1 |= CTLR1_UE_Set;
-
-}
 
 void SystemInit(void)
 {
@@ -65,10 +29,8 @@ void SystemInit(void)
 
 int main()
 {
-	// Enable GPIOD and UART.
-	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD | RCC_APB2Periph_USART1;
-	
-	ConfigureDebugUART();
+	// Enable GPIOD.
+	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD;
 
 	// GPIO D0 Push-Pull, 10MHz Output
 	GPIOD->CFGLR &= ~(0xf<<(4*0));
@@ -77,9 +39,8 @@ int main()
 	while(1)
 	{
 		GPIOD->BSHR = 1;	 // Turn on GPIOD0
-		puts( "Hello" );
-		Delay_Ms( 50 );
+		Delay_Ms( 100 );
 		GPIOD->BSHR = 1<<16; // Turn off GPIOD0
-		Delay_Ms( 50 );
+		Delay_Ms( 100 );
 	}
 }
