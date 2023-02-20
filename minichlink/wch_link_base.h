@@ -111,7 +111,7 @@ static inline libusb_device_handle * wch_link_base_setup()
 		fprintf( stderr, "Error: could not get part status\n" );
 		exit( -99 );
 	}
-	fprintf( stderr, "Part Type (A): 0x%02x%02x\n", rbuff[2], rbuff[3] );  // Is this Flash size?
+	fprintf( stderr, "Part Type (A): 0x%02x%02x (This is the capacity code, in KB)\n", rbuff[2], rbuff[3] );  // Is this Flash size?
 	fprintf( stderr, "Part UUID    : %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n", rbuff[4], rbuff[5], rbuff[6], rbuff[7], rbuff[8], rbuff[9], rbuff[10], rbuff[11] );
 	fprintf( stderr, "PFlags       : %02x-%02x-%02x-%02x\n", rbuff[12], rbuff[13], rbuff[14], rbuff[15] );
 	fprintf( stderr, "Part Type (B): %02x-%02x-%02x-%02x\n", rbuff[16], rbuff[17], rbuff[18], rbuff[19] );
