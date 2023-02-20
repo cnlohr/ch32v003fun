@@ -83,7 +83,8 @@ Then, repeat this 10x
   low for 8us
   high for 1.6us
   low for 6.6us
-  high for 80us
+  high for 80us << Actually this goes "high-z" the last time.  The target chip will drive it high if present until...  <This doesn't seem to be crucial>
+
 
 low for 2us
 high for 5.3us
