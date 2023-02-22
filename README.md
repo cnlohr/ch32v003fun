@@ -13,7 +13,7 @@ ch32v003fun contains:
 
 ## System Prep
 
-On WSL or Debian based OSes `apt-get install build-essential libnewlib-dev gcc-riscv64-unknown-elf`
+On WSL or Debian based OSes `apt-get install build-essential libnewlib-dev gcc-riscv64-unknown-elf libusb-1.0-0-dev`
 
 ## Running
 
