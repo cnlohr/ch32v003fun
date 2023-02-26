@@ -1,7 +1,7 @@
 {
   "board": {
     "active_layer": 0,
-    "active_layer_preset": "All Layers",
+    "active_layer_preset": "",
     "auto_track_width": true,
     "hidden_nets": [],
     "high_contrast_mode": 0,
@@ -66,7 +66,7 @@
     "zone_display_mode": 0
   },
   "meta": {
-    "filename": "ch32v003f4u6_pendant.kicad_prl",
+    "filename": "VCCPSUSIM.kicad_prl",
     "version": 3
   },
   "project": {
