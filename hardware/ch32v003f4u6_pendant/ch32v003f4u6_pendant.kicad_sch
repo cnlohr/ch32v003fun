@@ -1954,10 +1954,6 @@
     (effects (font (size 2.54 2.54) (thickness 0.508) bold) (justify left bottom))
     (uuid 49319733-a849-471d-95f4-9550b568f28a)
   )
-  (text "TODO: Swap Microphone?\nC233789" (at 308.61 90.17 0)
-    (effects (font (size 12.7 12.7)) (justify left bottom))
-    (uuid 49b0d3f8-d785-4d9a-84c9-64741271d270)
-  )
   (text "Debug/Log Header" (at 233.68 99.06 0)
     (effects (font (size 2.54 2.54) (thickness 0.508) bold) (justify left bottom))
     (uuid 57e0864f-c771-4034-9beb-6833f4fa9eba)
@@ -2001,7 +1997,7 @@
     (uuid f141926f-09de-4c97-bc2a-712a57ba9f40)
   )
   (text "WARNING: VBUS Backflow Possible\nWARNING: Significantly out of spec for power dissapation on MD5112\nWARNING: R10/R8 ARE INCORRECT FIX."
-    (at 1.27 124.46 0)
+    (at 2.54 125.73 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid f48210f1-0576-4af5-97d8-3ad476854f74)
   )
@@ -3660,7 +3656,7 @@
     (property "Reference" "L2" (id 0) (at 254 38.1 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Value" "10uH" (id 1) (at 251.46 41.91 0)
+    (property "Value" "4.7uH" (id 1) (at 251.46 41.91 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Footprint" "Inductor_SMD:L_0805_2012Metric" (id 2) (at 257.81 39.37 0)
@@ -3669,7 +3665,7 @@
     (property "Datasheet" "~" (id 3) (at 257.81 39.37 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "LCSC" "C356837" (id 4) (at 257.81 39.37 0)
+    (property "LCSC" "C379996" (id 4) (at 257.81 39.37 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (pin "1" (uuid 1993f1b9-d54f-4e2f-9539-3def6fc9baf7))
@@ -3948,7 +3944,7 @@
   (symbol (lib_id "power:GND") (at 233.68 69.85 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid b9f5119b-f265-4871-ba2a-83a4810575e4)
-    (property "Reference" "#PWR?" (id 0) (at 227.33 69.85 0)
+    (property "Reference" "#PWR0149" (id 0) (at 227.33 69.85 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (id 1) (at 228.6 69.85 90))
@@ -3999,14 +3995,14 @@
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid c50ad1ea-c9dd-49db-93ef-f0a5c2aeda9e)
     (property "Reference" "L1" (id 0) (at 240.03 28.8122 90))
-    (property "Value" "10uH" (id 1) (at 240.03 31.3491 90))
+    (property "Value" "4.7uH" (id 1) (at 240.03 31.3491 90))
     (property "Footprint" "Inductor_SMD:L_0805_2012Metric" (id 2) (at 240.03 33.02 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (id 3) (at 240.03 33.02 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "LCSC" "C356837" (id 4) (at 240.03 33.02 0)
+    (property "LCSC" "C379996" (id 4) (at 240.03 33.02 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (pin "1" (uuid b5d747bb-72cb-4fd7-af18-3f6454a5c2f0))
@@ -4601,6 +4597,9 @@
     (path "/71d0d9be-c4c2-4bdc-8ab0-0a260d2202ec"
       (reference "#PWR0148") (unit 1) (value "VDD") (footprint "")
     )
+    (path "/b9f5119b-f265-4871-ba2a-83a4810575e4"
+      (reference "#PWR0149") (unit 1) (value "GND") (footprint "")
+    )
     (path "/ff7c4d13-8004-4728-90b1-bcab92a74935"
       (reference "#PWR0150") (unit 1) (value "VD") (footprint "")
     )
@@ -4639,9 +4638,6 @@
     )
     (path "/d171949d-fdbb-405b-97e5-255ae86ce8dc"
       (reference "#PWR0162") (unit 1) (value "GND") (footprint "")
-    )
-    (path "/b9f5119b-f265-4871-ba2a-83a4810575e4"
-      (reference "#PWR?") (unit 1) (value "GND") (footprint "")
     )
     (path "/e2bd1966-aea5-4f9e-a70f-51c5a9f554dd"
       (reference "C1") (unit 1) (value "10u") (footprint "Capacitor_SMD:C_0402_1005Metric")
@@ -4713,10 +4709,10 @@
       (reference "J7") (unit 1) (value "BATT") (footprint "Connector_Hirose:Hirose_DF13-02P-1.25DS_1x02_P1.25mm_Horizontal")
     )
     (path "/c50ad1ea-c9dd-49db-93ef-f0a5c2aeda9e"
-      (reference "L1") (unit 1) (value "10uH") (footprint "Inductor_SMD:L_0805_2012Metric")
+      (reference "L1") (unit 1) (value "4.7uH") (footprint "Inductor_SMD:L_0805_2012Metric")
     )
     (path "/97803ad7-352c-4085-8487-f7735182611c"
-      (reference "L2") (unit 1) (value "10uH") (footprint "Inductor_SMD:L_0805_2012Metric")
+      (reference "L2") (unit 1) (value "4.7uH") (footprint "Inductor_SMD:L_0805_2012Metric")
     )
     (path "/13634884-96de-41e3-a90d-86653744f7db"
       (reference "O1") (unit 1) (value "RB0091E1401A-OLED-128x32") (footprint "RB0091E1401A-OLED-128x32:RB0091E1401A-OLED-128x32_FLIP")
