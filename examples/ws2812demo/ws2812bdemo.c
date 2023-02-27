@@ -65,22 +65,22 @@ void SystemInit(void)
 	USART1->CTLR1 |= CTLR1_UE_Set;
 }
 
-#define NR_LEDS 197
+#define NR_LEDS 191
 
 uint16_t phases[NR_LEDS];
 int frameno;
-int tween = 0;
-int tweendir = 0;
+volatile int tween = 0;
 
 // Callbacks that you must implement.
 uint32_t WS2812BLEDCallback( int ledno )
 {
 	uint8_t index = (phases[ledno])>>8;
 	uint8_t rs = sintable[index]>>3;
-//	uint32_t fire = huetable[(rs+190&0xff)] | (huetable[(rs+30&0xff)]<<8) | (huetable[(rs+0)]<<16);
+	uint32_t fire = huetable[(rs+190&0xff)] | (huetable[(rs+30&0xff)]<<8) | (huetable[(rs+0)]<<16);
 	uint32_t ice  = 0xff | ((rs)<<8) | (rs<<16);
-	return ice;
-	//return TweenHexColors( fire, ice, tween ); // Where "tween" is a value from 0 ... 255
+
+	// Because this chip doesn't natively support multiplies, this can be very slow.
+	return TweenHexColors( fire, ice, tween ); // Where "tween" is a value from 0 ... 255
 }
 
 int main()
@@ -101,37 +101,41 @@ int main()
 	for( k = 0; k < NR_LEDS; k++ ) phases[k] = k<<8;
 
 
+	int tweendir = 0;
+
 	while(1)
 	{
 		// Wait for LEDs to totally finish.
-		if( WS2812BLEDDone )
+		Delay_Ms( 12 );
+
+		while( WS2812BLEDInUse );
+
+		frameno++;
+
+		if( frameno == 1024 )
 		{
-			frameno++;
-
-			if( frameno == 1024 )
-			{
-				tweendir = 4;
-			}
-			if( frameno == 2048 )
-			{
-				tweendir = -4;
-				frameno = 0;
-			}
-
-			if( tweendir )
-			{
-				tween += tweendir;
-				if( tween > 255 ) tween = 255;
-				if( tween < 0 ) tween = 0;
-			}
-
-			for( k = 0; k < NR_LEDS; k++ )
-			{
-				phases[k] += ((((rands[k&0xff])+0xf)<<2) + (((rands[k&0xff])+0xf)<<1))>>1;
-			}
-
-			WS2812BDMAStart( NR_LEDS );
+			tweendir = 4;
 		}
+		if( frameno == 2048 )
+		{
+			tweendir = -4;
+			frameno = 0;
+		}
+
+		if( tweendir )
+		{
+			int t = tween + tweendir;
+			if( t > 255 ) t = 255;
+			if( t < 0 ) t = 0;
+			tween = t;
+		}
+
+		for( k = 0; k < NR_LEDS; k++ )
+		{
+			phases[k] += ((((rands[k&0xff])+0xf)<<2) + (((rands[k&0xff])+0xf)<<1))>>1;
+		}
+
+		WS2812BDMAStart( NR_LEDS );
 	}
 }
 

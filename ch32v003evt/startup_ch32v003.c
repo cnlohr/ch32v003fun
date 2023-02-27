@@ -9,7 +9,7 @@
 int main() __attribute__((used));
 void SystemInit( void ) __attribute__((used));
 
-void _start() __attribute__((naked)) __attribute((section(".init"))) __attribute__((used));
+void InterruptVector() __attribute__((naked)) __attribute((section(".init"))) __attribute__((used));
 void handle_reset() __attribute__((naked)) __attribute((section(".text.handle_reset"))) __attribute__((used));
 void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) __attribute__((naked)) __attribute__((used));
 
@@ -55,7 +55,7 @@ void TIM1_TRG_COM_IRQHandler( void )     __attribute__((section(".text.vector_ha
 void TIM1_CC_IRQHandler( void )          __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void TIM2_IRQHandler( void )             __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 
-void _start()
+void InterruptVector()
 {
 	asm volatile( "\n\
 	.align  2\n\
@@ -111,7 +111,28 @@ void handle_reset()
 .option norelax\n\
 	la gp, __global_pointer$\n\
 .option pop\n\
-	la sp, _eusrstack\n" );
+	la sp, _eusrstack\n"
+
+	// Setup the interrupt vector.
+
+"	li t0, 0x80\n\
+	csrw mstatus, t0\n\
+	li t0, 0x3\n\
+	csrw 0x804, t0\n\
+	la t0, InterruptVector\n\
+	ori t0, t0, 3\n\
+	csrw mtvec, t0\n"
+
+	// Clear BSS
+	// Has to be in assembly otherwise it will overwrite the stack.
+    "la t0, _sbss\n\
+    la t1, _ebss\n\
+    bgeu t0, t1, 2f\n\
+1:\n\
+    sw zero, (t0)\n\
+    addi t0, t0, 4\n\
+    bltu t0, t1, 1b\n\
+2:" );
 
 	// Load data section from flash to RAM 
 	uint32_t * tempin = _data_lma;
@@ -119,21 +140,9 @@ void handle_reset()
 	while( tempout != _edata )
 		*(tempout++) = *(tempin++); 
 
-	tempout = _sbss;
-	while( tempout < _ebss )
-		*(tempout++) = 0; 
-
-asm volatile( "\n\
-	li t0, 0x80\n\
-	csrw mstatus, t0\n\
-	li t0, 0x3\n\
-	csrw 0x804, t0\n\
-	la t0, _start\n\
-	ori t0, t0, 3\n\
-	csrw mtvec, t0" );
-
 	SystemInit();
 
+	// set mepc to be main as the root interrupt.
 asm volatile( "\n\
 	la t0, main\n\
 	csrw mepc, t0\n\

@@ -29,9 +29,6 @@ void WS2812BDMAStart( int leds );
 // Callbacks that you must implement.
 uint32_t WS2812BLEDCallback( int ledno );
 
-extern volatile int WS2812BLEDDone;
-
-
 #ifdef WS2812DMA_IMPLEMENTATION
 
 // Note first 2 LEDs of DMA Buffer are 0's as a "break"
@@ -40,17 +37,16 @@ extern volatile int WS2812BLEDDone;
 //  1: Divisble by 2.
 //  2: 
 #define DMALEDS 16
-#define WS2812B_RESET_PERIOD 6
+#define WS2812B_RESET_PERIOD 2
 #define DMA_BUFFER_LEN (((DMALEDS+1)/2)*6)
 
 static uint16_t WS2812dmabuff[DMA_BUFFER_LEN];
-static int WS2812LEDs;
-static int WS2812LEDPlace;
-volatile int WS2812BLEDDone;
-
+static volatile int WS2812LEDs;
+static volatile int WS2812LEDPlace;
+static volatile int WS2812BLEDInUse;
 // This is the code that updates a portion of the WS2812dmabuff with new data.
 // This effectively creates the bitstream that outputs to the LEDs.
-static void WS2812FillBuffSec( uint16_t * ptr, int numhalfwords, int ending )
+static void WS2812FillBuffSec( uint16_t * ptr, int numhalfwords, int tce )
 {
 	const static uint16_t bitquartets[16] = {
 		0b1000100010001000, 0b1000100010001110, 0b1000100011101000, 0b1000100011101110,
@@ -67,6 +63,10 @@ static void WS2812FillBuffSec( uint16_t * ptr, int numhalfwords, int ending )
 	{
 		(*ptr++) = 0;
 		(*ptr++) = 0;
+		(*ptr++) = 0;
+		(*ptr++) = 0;
+		(*ptr++) = 0;
+		(*ptr++) = 0;
 		place++;
 	}
 
@@ -78,21 +78,17 @@ static void WS2812FillBuffSec( uint16_t * ptr, int numhalfwords, int ending )
 			while( ptr != end )
 				(*ptr++) = 0;//0xffff;
 
-			// If we're "totally finished" we can set the flag.
-			if( place == ledcount+1 ) 
-				WS2812BLEDDone = 1;
-
 			// Only safe to do this when we're on the second leg.
-			if( ending )
+			if( tce )
 			{
 				if( place == ledcount )
 				{
 					// Take the DMA out of circular mode and let it expire.
 					DMA1_Channel3->CFGR &= ~DMA_Mode_Circular;
+					WS2812BLEDInUse = 0;
 				}
 				place++;
 			}
-
 
 			break;
 		}
@@ -113,42 +109,48 @@ static void WS2812FillBuffSec( uint16_t * ptr, int numhalfwords, int ending )
 void DMA1_Channel3_IRQHandler( void ) __attribute__((interrupt));
 void DMA1_Channel3_IRQHandler( void ) 
 {
-	//GPIOD->BSHR = 1;	 // Turn on GPIOD0
+	//GPIOD->BSHR = 1;	 // Turn on GPIOD0 for profiling
 
 	// Backup flags.
-	int intfr = DMA1->INTFR;
-
-	// Clear all possible flags.
-	DMA1->INTFCR = DMA1_IT_GL3;
-
-	if( intfr & DMA1_IT_HT3 )
+	volatile int intfr = DMA1->INTFR;
+	do
 	{
-		// Complete (Fill in second part)
-		WS2812FillBuffSec( WS2812dmabuff + DMA_BUFFER_LEN / 2, DMA_BUFFER_LEN / 2, 1 );
-	}
-	if( intfr & DMA1_IT_TC3 )
-	{
-		// Halfwaay (Fill in first part)
-		WS2812FillBuffSec( WS2812dmabuff, DMA_BUFFER_LEN / 2, 0 );
-	}
+		// Clear all possible flags.
+		DMA1->INTFCR = DMA1_IT_GL3;
 
-	//GPIOD->BSHR = 1<<16; // Turn off GPIOD0
+		if( intfr & DMA1_IT_HT3 )
+		{
+			// Halfwaay (Fill in first part)
+			WS2812FillBuffSec( WS2812dmabuff, DMA_BUFFER_LEN / 2, 1 );
+		}
+		if( intfr & DMA1_IT_TC3 )
+		{
+			// Complete (Fill in second part)
+			WS2812FillBuffSec( WS2812dmabuff + DMA_BUFFER_LEN / 2, DMA_BUFFER_LEN / 2, 0 );
+		}
+		intfr = DMA1->INTFR;
+	} while( intfr );
+
+	//GPIOD->BSHR = 1<<16; // Turn off GPIOD0 for profiling
 }
 
 void WS2812BDMAStart( int leds )
 {
-	WS2812BLEDDone = 0;
+	__disable_irq();
+	WS2812BLEDInUse = 1;
+	DMA1_Channel3->CFGR &= ~DMA_Mode_Circular;
+	DMA1_Channel3->CNTR  = 0;
+	DMA1_Channel3->MADDR = (uint32_t)WS2812dmabuff;
 	WS2812LEDs = leds;
 	WS2812LEDPlace = -WS2812B_RESET_PERIOD;
 	WS2812FillBuffSec( WS2812dmabuff, DMA_BUFFER_LEN, 0 );
-	DMA1_Channel3->CFGR |= DMA_Mode_Circular;
 	DMA1_Channel3->CNTR = DMA_BUFFER_LEN; // Number of unique uint16_t entries.
+	DMA1_Channel3->CFGR |= DMA_Mode_Circular;
+	__enable_irq();
 }
 
 void WS2812BDMAInit( )
 {
-	WS2812BLEDDone = 1;
-
 	// Enable DMA + Peripherals
 	RCC->AHBPCENR |= RCC_AHBPeriph_DMA1;
 	RCC->APB2PCENR |= RCC_APB2Periph_GPIOC | RCC_APB2Periph_SPI1;
