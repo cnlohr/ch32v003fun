@@ -113,7 +113,7 @@ static void WS2812FillBuffSec( uint16_t * ptr, int numhalfwords, int ending )
 void DMA1_Channel3_IRQHandler( void ) __attribute__((interrupt));
 void DMA1_Channel3_IRQHandler( void ) 
 {
-	GPIOD->BSHR = 1;	 // Turn on GPIOD0
+	//GPIOD->BSHR = 1;	 // Turn on GPIOD0
 
 	// Backup flags.
 	int intfr = DMA1->INTFR;
@@ -132,7 +132,7 @@ void DMA1_Channel3_IRQHandler( void )
 		WS2812FillBuffSec( WS2812dmabuff, DMA_BUFFER_LEN / 2, 0 );
 	}
 
-	GPIOD->BSHR = 1<<16; // Turn off GPIOD0
+	//GPIOD->BSHR = 1<<16; // Turn off GPIOD0
 }
 
 void WS2812BDMAStart( int leds )
