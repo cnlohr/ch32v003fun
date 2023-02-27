@@ -75,9 +75,10 @@ volatile int tween = 0;
 uint32_t WS2812BLEDCallback( int ledno )
 {
 	uint8_t index = (phases[ledno])>>8;
-	uint8_t rs = sintable[index]>>3;
+	uint8_t rsbase = sintable[index];
+	uint8_t rs = rsbase>>3;
 	uint32_t fire = huetable[(rs+190&0xff)] | (huetable[(rs+30&0xff)]<<8) | (huetable[(rs+0)]<<16);
-	uint32_t ice  = 0xff | ((rs)<<8) | (rs<<16);
+	uint32_t ice  = 0xff | ((rsbase)<<8) | ((rsbase)<<16);
 
 	// Because this chip doesn't natively support multiplies, this can be very slow.
 	return TweenHexColors( fire, ice, tween ); // Where "tween" is a value from 0 ... 255
