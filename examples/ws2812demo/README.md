@@ -27,12 +27,12 @@ You will need to implement the following two functions, as callbacks from the IS
 uint32_t CallbackWS2812BLED( int ledno );
 ```
 
-You willalso need to call
+You will also need to call
 ```c
 InitWS2812DMA();
 ```
 
-Then, whenyou want to update the LEDs, call:
+Then, when you want to update the LEDs, call:
 ```c
 WS2812BStart( int num_leds );
 ```
