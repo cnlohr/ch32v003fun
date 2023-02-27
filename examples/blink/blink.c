@@ -32,7 +32,7 @@ int main()
 	// Enable GPIOD.
 	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD;
 
-	// GPIO D0 Push-Pull, 10MHz Output
+	// GPIO D0 Push-Pull, 10MHz Slew Rate Setting
 	GPIOD->CFGLR &= ~(0xf<<(4*0));
 	GPIOD->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*0);
 

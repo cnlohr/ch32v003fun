@@ -1,4 +1,4 @@
-# General Tooling Notes
+# General Tooling Notes For Using Official EVT With GCC but without Moun River
 
 This shows how to build the CH32V003 demo binaries without the horrifying MounRiver Studio.
 

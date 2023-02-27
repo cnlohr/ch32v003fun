@@ -1,4 +1,4 @@
-TARGET:=blink
+TARGET:=sandbox
 
 all : flash
 
@@ -6,7 +6,8 @@ PREFIX:=riscv64-unknown-elf
 
 GPIO_Toggle:=EXAM/GPIO/GPIO_Toggle/User
 
-EVT:=../ch32v003evt
+EVT:=../../ch32v003evt
+MINICHLINK:=../../minichlink
 
 CFLAGS:= \
 	-g -Os -flto -ffunction-sections \
@@ -20,9 +21,9 @@ CFLAGS:= \
 
 LDFLAGS:=-T $(EVT)/ch32v003.ld -Wl,--gc-sections
 
-SYSTEM_C:=$(EVT)/startup_ch32v00x.S $(EVT)/embedlibc.c
+SYSTEM_C:=$(EVT)/startup_ch32v003.c $(EVT)/embedlibc.c
 
-$(TARGET).elf : $(TARGET).c $(SYSTEM_C)
+$(TARGET).elf : $(SYSTEM_C) $(TARGET).c
 	$(PREFIX)-gcc -o $@ $^ $(CFLAGS) $(LDFLAGS)
 
 $(TARGET).bin : $(TARGET).elf
@@ -33,8 +34,8 @@ $(TARGET).bin : $(TARGET).elf
 	$(PREFIX)-objcopy -O ihex $< $(TARGET).hex
 
 flash : $(TARGET).bin
-	make -C ../minichlink all
-	../minichlink/minichlink -w $< -r
+	make -C $(MINICHLINK) all
+	$(MINICHLINK)/minichlink -w $< -r
 
 clean :
 	rm -rf $(TARGET).elf $(TARGET).bin $(TARGET).hex $(TARGET).lst $(TARGET).map $(TARGET).hex

@@ -25,6 +25,12 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+// Tricky: We need to make sure main and SystemInit() are preserved.
+int main() __attribute__((used));
+void SystemInit(void) __attribute__((used));
+
 	
 /* ch32v00x_gpio.c -----------------------------------------------------------*/
 /* MASK */
