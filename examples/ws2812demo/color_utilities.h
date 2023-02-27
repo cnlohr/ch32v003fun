@@ -1,71 +1,15 @@
-// Could be defined here, or in the processor defines.
-#define SYSTEM_CORE_CLOCK 48000000
+/*
+	Color utility functions for embedded systems
 
-#include "ch32v00x.h"
-#include <stdio.h>
-#include <string.h>
+	Copyright 2023 <>< Charles Lohr, under the MIT-x11 or NewBSD License, you choose!
+*/
 
-#define WS2812DMA_IMPLEMENTATION
-
-#include "ws2812b_dma_spi_led_driver.h"
-
-#define APB_CLOCK SYSTEM_CORE_CLOCK
-
-// Working on WS2812 driving.
-
-// For debug writing to the UART.
-int _write(int fd, char *buf, int size)
-{
-    for(int i = 0; i < size; i++){
-        while( !(USART1->STATR & USART_FLAG_TC));
-        USART1->DATAR = *buf++;
-    }
-    return size;
-}
+#ifndef _COLOR_UTILITIES_H
+#define _COLOR_UTILITIES_H
 
 
-void SystemInit(void)
-{
-	// Values lifted from the EVT.  There is little to no documentation on what this does.
-	RCC->CTLR |= (uint32_t)0x00000001;
-	RCC->CFGR0 &= (uint32_t)0xFCFF0000;
-	RCC->CTLR &= (uint32_t)0xFEF6FFFF;
-	RCC->CTLR &= (uint32_t)0xFFFBFFFF;
-	RCC->CFGR0 &= (uint32_t)0xFFFEFFFF;
-	RCC->INTR = 0x009F0000;
 
-	// From SetSysClockTo_48MHZ_HSI
-	// This is some dark stuff.  But, I copy-pasted it and it seems towork.
-	FLASH->ACTLR = (FLASH->ACTLR & ((uint32_t)~FLASH_ACTLR_LATENCY)) | FLASH_ACTLR_LATENCY_1; 	// Flash 0 wait state
-	RCC->CFGR0 = ( RCC->CFGR0 & ((uint32_t)~(RCC_PLLSRC)) ) | (uint32_t)(RCC_PLLSRC_HSI_Mul2); 	// PLL configuration: PLLCLK = HSI * 2 = 48 MHz
-	RCC->CTLR |= RCC_PLLON; 																	// Enable PLL
-	while((RCC->CTLR & RCC_PLLRDY) == 0);														// Wait till PLL is ready
-	RCC->CFGR0 = ( RCC->CFGR0 & ((uint32_t)~(RCC_SW))) | (uint32_t)RCC_SW_PLL;					// Select PLL as system clock source
-	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x08);									// Wait till PLL is used as system clock source
-
-	// Once clock is up and running, we can enable the UART for other debugging.
-
-	// Enable GPIOD and UART.
-	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD | RCC_APB2Periph_USART1;
-
-	// Push-Pull, 10MHz Output, GPIO D5, with AutoFunction
-	GPIOD->CFGLR &= ~(0xf<<(4*5));
-	GPIOD->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP_AF)<<(4*5);
-	
-	// 115200, 8n1.  Note if you don't specify a mode, UART remains off even when UE_Set.
-	USART1->CTLR1 = USART_WordLength_8b | USART_Parity_No | USART_Mode_Tx;
-	USART1->CTLR2 = USART_StopBits_1;
-	USART1->CTLR3 = USART_HardwareFlowControl_None;
-
-	#define UART_BAUD_RATE 115200
-	#define OVER8DIV 4
-	#define INTEGER_DIVIDER (((25 * (APB_CLOCK)) / (OVER8DIV * (UART_BAUD_RATE))))
-	#define FRACTIONAL_DIVIDER ((INTEGER_DIVIDER)%100)
-	USART1->BRR = ((INTEGER_DIVIDER / 100) << 4) | ((((FRACTIONAL_DIVIDER * (OVER8DIV*2)) + 50)/100)&7);
-	USART1->CTLR1 |= CTLR1_UE_Set;
-}
-
-uint32_t EHSVtoHEX( uint8_t hue, uint8_t sat, uint8_t val )
+static uint32_t EHSVtoHEX( uint8_t hue, uint8_t sat, uint8_t val )
 {
 	#define SIXTH1 43
 	#define SIXTH2 85
@@ -136,8 +80,7 @@ uint32_t EHSVtoHEX( uint8_t hue, uint8_t sat, uint8_t val )
 	return or | (og<<8) | ((uint32_t)ob<<16);
 }
 
-
-const unsigned char huetable[] = {
+static const unsigned char huetable[] = {
 	0x00, 0x06, 0x0c, 0x12, 0x18, 0x1e, 0x24, 0x2a, 0x30, 0x36, 0x3c, 0x42, 0x48, 0x4e, 0x54, 0x5a, 
 	0x60, 0x66, 0x6c, 0x72, 0x78, 0x7e, 0x84, 0x8a, 0x90, 0x96, 0x9c, 0xa2, 0xa8, 0xae, 0xb4, 0xba, 
 	0xc0, 0xc6, 0xcc, 0xd2, 0xd8, 0xde, 0xe4, 0xea, 0xf0, 0xf6, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 
@@ -155,7 +98,7 @@ const unsigned char huetable[] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, };
 
-const unsigned char rands[] = {
+static const unsigned char rands[] = {
 	0x67, 0xc6, 0x69, 0x73, 0x51, 0xff, 0x4a, 0xec, 0x29, 0xcd, 0xba, 0xab, 0xf2, 0xfb, 0xe3, 0x46, 
 	0x7c, 0xc2, 0x54, 0xf8, 0x1b, 0xe8, 0xe7, 0x8d, 0x76, 0x5a, 0x2e, 0x63, 0x33, 0x9f, 0xc9, 0x9a, 
 	0x66, 0x32, 0x0d, 0xb7, 0x31, 0x58, 0xa3, 0x5a, 0x25, 0x5d, 0x05, 0x17, 0x58, 0xe9, 0x5e, 0xd4, 
@@ -173,7 +116,7 @@ const unsigned char rands[] = {
 	0xac, 0x86, 0x21, 0x2b, 0xaa, 0x1a, 0x55, 0xa2, 0xbe, 0x70, 0xb5, 0x73, 0x3b, 0x04, 0x5c, 0xd3, 
 	0x36, 0x94, 0xb3, 0xaf, 0xe2, 0xf0, 0xe4, 0x9e, 0x4f, 0x32, 0x15, 0x49, 0xfd, 0x82, 0x4e, 0xa9, };
 
-const unsigned char sintable[] = {
+static const unsigned char sintable[] = {
 	0x80, 0x83, 0x86, 0x89, 0x8c, 0x8f, 0x92, 0x95, 0x99, 0x9c, 0x9f, 0xa2, 0xa5, 0xa8, 0xab, 0xad, 
 	0xb0, 0xb3, 0xb6, 0xb9, 0xbc, 0xbe, 0xc1, 0xc4, 0xc6, 0xc9, 0xcb, 0xce, 0xd0, 0xd3, 0xd5, 0xd7, 
 	0xda, 0xdc, 0xde, 0xe0, 0xe2, 0xe4, 0xe6, 0xe8, 0xe9, 0xeb, 0xed, 0xee, 0xf0, 0xf1, 0xf3, 0xf4, 
@@ -191,13 +134,7 @@ const unsigned char sintable[] = {
 	0x26, 0x28, 0x2a, 0x2d, 0x2f, 0x31, 0x34, 0x36, 0x39, 0x3c, 0x3e, 0x41, 0x44, 0x47, 0x49, 0x4c, 
 	0x4f, 0x52, 0x55, 0x58, 0x5b, 0x5e, 0x61, 0x64, 0x67, 0x6a, 0x6d, 0x70, 0x73, 0x76, 0x79, 0x7d, };
 
-#define NR_LEDS 197
-
-uint16_t phases[NR_LEDS];
-int frameno;
-int tween = 0;
-
-uint32_t TweenHexColors( uint32_t hexa, uint32_t hexb, int tween )
+static uint32_t TweenHexColors( uint32_t hexa, uint32_t hexb, int tween )
 {
 	int32_t aamt = 255-tween;
 	int32_t bamt = tween;
@@ -213,51 +150,5 @@ uint32_t TweenHexColors( uint32_t hexa, uint32_t hexb, int tween )
 	return b | (r<<8) | (g<<16);
 }
 
-
-// Callbacks that you must implement.
-uint32_t WS2812BLEDCallback( int ledno )
-{
-	uint8_t index = (phases[ledno])>>8;
-	uint8_t rs = sintable[index]>>3;
-	uint32_t fire = huetable[(rs+190&0xff)] | (huetable[(rs+30&0xff)]<<8) | (huetable[(rs+0)]<<16);
-	uint32_t ice  = 0xff | ((rs)<<8) | (rs<<16);
-	return TweenHexColors( fire, ice, tween ); // Where "tween" is a value from 0 ... 255
-}
-
-int main()
-{
-	int k;
-
-	// Enable GPIOD (for debugging)
-	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD;
-	GPIOD->CFGLR &= ~(0xf<<(4*0));
-	GPIOD->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*0);
-
-	WS2812BDMAInit( );
-
-	printf( "CFG: %08x\n", SPI1->CTLR1 );
-
-	frameno = 0;
-
-	for( k = 0; k < NR_LEDS; k++ ) phases[k] = k<<8;
-
-
-	while(1)
-	{
-		while( !WS2812BLEDDone );
-		frameno++;
-		if( frameno < 1024 ) tween = 0;
-		else if( frameno < (1024+256) ) tween = frameno - 1024;
-		else if( frameno < 2048 ) tween = 255;
-		else if( frameno < 2048+256 ) tween = 255-(frameno - 2048);
-		else frameno = 0;
-
-		for( k = 0; k < NR_LEDS; k++ )
-		{
-			phases[k] += ((((rands[k&0xff])+0xf)<<2) + (((rands[k&0xff])+0xf)<<1))>>1;
-		}
-
-		WS2812BDMAStart( NR_LEDS );
-	}
-}
+#endif
 
