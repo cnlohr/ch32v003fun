@@ -1,6 +1,7 @@
 /* Single-File-Header for using asynchronous LEDs with the CH32V003 using DMA to the SPI port.
    I may write another version of this to use DMA to timer ports, but, the SPI port can be used
-   to generate outputs very efficiently. So, for now, SPI Port.
+   to generate outputs very efficiently. So, for now, SPI Port.  Additionally, it uses FAR less
+   internal bus resources than to do the same thing with timers.
 
    Copyright 2023 <>< Charles Lohr, under the MIT-x11 or NewBSD License, you choose!
 
@@ -93,6 +94,7 @@ static void WS2812FillBuffSec( uint16_t * ptr, int numhalfwords, int tce )
 			break;
 		}
 
+		// Use a LUT to figure out how we should set the SPI line.
 		uint32_t ledval24bit = WS2812BLEDCallback( place++ );
 		ptr[0] = bitquartets[(ledval24bit>>20)&0xf];
 		ptr[1] = bitquartets[(ledval24bit>>16)&0xf];
@@ -136,6 +138,7 @@ void DMA1_Channel3_IRQHandler( void )
 
 void WS2812BDMAStart( int leds )
 {
+	// Enter critical section.
 	__disable_irq();
 	WS2812BLEDInUse = 1;
 	DMA1_Channel3->CFGR &= ~DMA_Mode_Circular;
@@ -143,10 +146,12 @@ void WS2812BDMAStart( int leds )
 	DMA1_Channel3->MADDR = (uint32_t)WS2812dmabuff;
 	WS2812LEDs = leds;
 	WS2812LEDPlace = -WS2812B_RESET_PERIOD;
+	__enable_irq();
+
 	WS2812FillBuffSec( WS2812dmabuff, DMA_BUFFER_LEN, 0 );
+
 	DMA1_Channel3->CNTR = DMA_BUFFER_LEN; // Number of unique uint16_t entries.
 	DMA1_Channel3->CFGR |= DMA_Mode_Circular;
-	__enable_irq();
 }
 
 void WS2812BDMAInit( )
@@ -163,16 +168,14 @@ void WS2812BDMAInit( )
 	SPI1->CTLR1 = 
 		SPI_NSS_Soft | SPI_CPHA_1Edge | SPI_CPOL_Low | SPI_DataSize_16b |
 		SPI_Mode_Master | SPI_Direction_1Line_Tx |
-		3<<3; // Dvisior
+		3<<3; // Divisior = 16 (48/16 = 3MHz)
 
 	SPI1->CTLR2 = SPI_CTLR2_TXDMAEN;
 	SPI1->HSCR = 1;
 
 	SPI1->CTLR1 |= CTLR1_SPE_Set;
 
-	SPI1->DATAR = 0; // Set LEDs Low.
-
-	//memset( bufferset, 0xaa, sizeof( bufferset ) );
+	SPI1->DATAR = 0; // Set SPI line Low.
 
 	//DMA1_Channel3 is for SPI1TX
 	DMA1_Channel3->PADDR = (uint32_t)&SPI1->DATAR;
@@ -188,7 +191,7 @@ void WS2812BDMAInit( )
 		DMA_DIR_PeripheralDST |
 		DMA_IT_TC | DMA_IT_HT; // Transmission Complete + Half Empty Interrupts. 
 
-//	NVIC_SetPriority( DMA1_Channel3_IRQn, 0<<4 ); // Regular priority.
+//	NVIC_SetPriority( DMA1_Channel3_IRQn, 0<<4 ); //We don't need to tweak priority.
 	NVIC_EnableIRQ( DMA1_Channel3_IRQn );
 	DMA1_Channel3->CFGR |= DMA_CFGR1_EN;
 }

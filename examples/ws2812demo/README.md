@@ -8,10 +8,10 @@ Additionally, this demo only uses 6% CPU while it's outputting LEDs and free whi
 
 The timing on the SPI bus is not terribly variable, the best I was able to find was:
 
-* Ton0 = 324ns
-* Ton1 = 990ns
-* Toff0 = 990ns
-* Toff1 = 324ns
+* Ton0 = 333ns
+* Ton1 = 1us
+* Toff0 = 1us
+* Toff1 = 333ns
 * Treset = 68us
 
 ## Usage
