@@ -1,4 +1,4 @@
-ENTRY( _start )
+ENTRY( InterruptVector )
 
 __stack_size = 256;
 

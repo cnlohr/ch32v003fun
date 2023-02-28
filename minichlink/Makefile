@@ -16,6 +16,7 @@ minichlink : minichlink.c
 
 install_udev_rules :
 	echo "SUBSYSTEMS==\"usb\", ATTRS{idVendor}==\"1a86\", ATTRS{idProduct}==\"8010\", GROUP=\"plugdev\", MODE=\"0666\"" > /etc/udev/rules.d/99-qch-LinkE.rules
+	service udev restart
 
 clean :
 	rm -rf $(TOOLS)

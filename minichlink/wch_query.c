@@ -6,7 +6,7 @@
 int main()
 {
 	
-	libusb_device_handle * devh = wch_link_base_setup();
+	libusb_device_handle * devh = wch_link_base_setup(0);
 	int transferred;
 	int status;
 	char rbuff[1024];

@@ -47,7 +47,7 @@ int main( int argc, char ** argv )
 	int must_be_end = 0;
 	uint8_t rbuff[1024];
 
-	libusb_device_handle * devh = wch_link_base_setup();
+	libusb_device_handle * devh = wch_link_base_setup(0);
 
 	int iarg;
 	for( iarg = 1; iarg < argc; iarg++ )
