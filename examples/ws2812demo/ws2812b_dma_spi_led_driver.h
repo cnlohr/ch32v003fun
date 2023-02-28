@@ -2,6 +2,8 @@
    I may write another version of this to use DMA to timer ports, but, the SPI port can be used
    to generate outputs very efficiently. So, for now, SPI Port.  Additionally, it uses FAR less
    internal bus resources than to do the same thing with timers.
+   
+   For the CH32V003 this means output will be on PORTC Pin 6
 
    Copyright 2023 <>< Charles Lohr, under the MIT-x11 or NewBSD License, you choose!
 

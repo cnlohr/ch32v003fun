@@ -43,3 +43,12 @@ I wrote some libusb copies of some of the basic functionality from WCH-Link, so 
 Currently, it ignores all the respone codes, except when querying the chip.  But it's rather surprising how featured I could get in about 5 hours.
 
 Anyone who wants to write a good/nice utility should probably look at the code in this folder.
+
+###
+ Footnots/links
+
+ * https://raw.githubusercontent.com/openwch/ch32v003/main/RISC-V%20QingKeV2%20Microprocessor%20Debug%20Manual.pdf Debugging Manual
+ * http://www.wch-ic.com/downloads/QingKeV2_Processor_Manual_PDF.html Processor Manual
+ * http://www.wch-ic.com/downloads/CH32V003RM_PDF.html Technical Reference Manual
+ * http://www.wch-ic.com/downloads/CH32V003DS0_PDF.html Datasheet
+

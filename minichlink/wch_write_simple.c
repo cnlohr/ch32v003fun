@@ -73,7 +73,7 @@ int main( int argc, char ** argv )
 		return -9;
 	}
 	
-	libusb_device_handle * devh = wch_link_base_setup();
+	libusb_device_handle * devh = wch_link_base_setup(0);
 	int transferred;
 	wch_link_command( devh, "\x81\x06\x01\x01", 4, 0, 0, 0 );
 	wch_link_command( devh, "\x81\x06\x01\x01", 4, 0, 0, 0 ); // Not sure why but it seems to work better when we request twice.

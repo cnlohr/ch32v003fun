@@ -54,7 +54,7 @@ static void wch_link_multicommands( libusb_device_handle * devh, int nrcommands,
 	va_end( argp );
 }
 
-static inline libusb_device_handle * wch_link_base_setup()
+static inline libusb_device_handle * wch_link_base_setup( int inhibit_startup )
 {
 	libusb_context * ctx = 0;
 	int status;
@@ -96,26 +96,29 @@ static inline libusb_device_handle * wch_link_base_setup()
 	int transferred;
 	libusb_bulk_transfer( devh, 0x81, rbuff, 1024, &transferred, 1 ); // Clear out any pending transfers.  Don't wait though.
 
-	// Place part into reset.
-	wch_link_command( devh, "\x81\x0d\x01\x01", 4, &transferred, rbuff, 1024 );	// Reply is: "\x82\x0d\x04\x02\x08\x02\x00"
 
-	// TODO: What in the world is this?  It doesn't appear to be needed.
-	wch_link_command( devh, "\x81\x0c\x02\x09\x01", 5, 0, 0, 0 ); //Reply is: 820c0101
-
-	// This puts the processor on hold to allow the debugger to run.
-	wch_link_command( devh, "\x81\x0d\x01\x02", 4, 0, 0, 0 ); // Reply: Ignored, 820d050900300500
-
-	wch_link_command( devh, "\x81\x11\x01\x09", 4, &transferred, rbuff, 1024 ); // Reply: Chip ID + Other data (see below)
-	if( transferred != 20 )
+	if( !inhibit_startup )
 	{
-		fprintf( stderr, "Error: could not get part status\n" );
-		exit( -99 );
-	}
-	fprintf( stderr, "Part Type (A): 0x%02x%02x (This is the capacity code, in KB)\n", rbuff[2], rbuff[3] );  // Is this Flash size?
-	fprintf( stderr, "Part UUID    : %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n", rbuff[4], rbuff[5], rbuff[6], rbuff[7], rbuff[8], rbuff[9], rbuff[10], rbuff[11] );
-	fprintf( stderr, "PFlags       : %02x-%02x-%02x-%02x\n", rbuff[12], rbuff[13], rbuff[14], rbuff[15] );
-	fprintf( stderr, "Part Type (B): %02x-%02x-%02x-%02x\n", rbuff[16], rbuff[17], rbuff[18], rbuff[19] );
+		// Place part into reset.
+		wch_link_command( devh, "\x81\x0d\x01\x01", 4, &transferred, rbuff, 1024 );	// Reply is: "\x82\x0d\x04\x02\x08\x02\x00"
 
+		// TODO: What in the world is this?  It doesn't appear to be needed.
+		wch_link_command( devh, "\x81\x0c\x02\x09\x01", 5, 0, 0, 0 ); //Reply is: 820c0101
+
+		// This puts the processor on hold to allow the debugger to run.
+		wch_link_command( devh, "\x81\x0d\x01\x02", 4, 0, 0, 0 ); // Reply: Ignored, 820d050900300500
+
+		wch_link_command( devh, "\x81\x11\x01\x09", 4, &transferred, rbuff, 1024 ); // Reply: Chip ID + Other data (see below)
+		if( transferred != 20 )
+		{
+			fprintf( stderr, "Error: could not get part status\n" );
+			exit( -99 );
+		}
+		fprintf( stderr, "Part Type (A): 0x%02x%02x (This is the capacity code, in KB)\n", rbuff[2], rbuff[3] );  // Is this Flash size?
+		fprintf( stderr, "Part UUID    : %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n", rbuff[4], rbuff[5], rbuff[6], rbuff[7], rbuff[8], rbuff[9], rbuff[10], rbuff[11] );
+		fprintf( stderr, "PFlags       : %02x-%02x-%02x-%02x\n", rbuff[12], rbuff[13], rbuff[14], rbuff[15] );
+		fprintf( stderr, "Part Type (B): %02x-%02x-%02x-%02x\n", rbuff[16], rbuff[17], rbuff[18], rbuff[19] );
+	}
 	//for( i = 0; i < transferred; i++ )
 	//	printf( "%02x ", rbuff[i] );
 	//printf( "\n" );

@@ -9,7 +9,7 @@ int main()
 	int transferred;
 	int status;
 	char rbuff[1024];
-	libusb_device_handle * devh = wch_link_base_setup();
+	libusb_device_handle * devh = wch_link_base_setup(0);
 
 	wch_link_command( devh, "\x81\x06\x01\x01", 4, 0, 0, 0 );
 
