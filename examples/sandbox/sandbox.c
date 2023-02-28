@@ -8,15 +8,6 @@
 
 // Working on WS2812 driving.
 
-
-static inline uint32_t __get_dscratch0(void)
-{
-    uint32_t result;
-
-    __ASM volatile("csrr %0," "0x7b2": "=r"(result));
-    return (result);
-}
-
 int main()
 {
 	SystemInit48HSI();
