@@ -1,3 +1,8 @@
+// The "bootloader" blob is (C) WCH.
+// The rest of the code, Copyright 2023 Charles Lohr
+// Freely licensable under the MIT/x11, NewBSD Licenses, or
+// public domain where applicable. 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "wch_link_base.h"
