@@ -511,7 +511,7 @@ static inline uint32_t __get_MEPC(void)
  *
  * @return  mepc value
  */
-void __set_MEPC(uint32_t value)
+static inline void __set_MEPC(uint32_t value)
 {
     __ASM volatile("csrw mepc, %0" : : "r"(value));
 }
@@ -532,7 +532,7 @@ static inline uint32_t __get_MCAUSE(void)
 }
 
 /*********************************************************************
- * @fn      __set_MEPC
+ * @fn      __set_MCAUSE
  *
  * @brief   Set the Machine Cause Register
  *

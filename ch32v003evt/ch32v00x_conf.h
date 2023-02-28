@@ -31,7 +31,20 @@ extern "C" {
 int main() __attribute__((used));
 void SystemInit(void) __attribute__((used));
 
-	
+// Useful functions
+void SystemInit48HSI( void );
+
+#define UART_BAUD_RATE 115200
+#define OVER8DIV 4
+#define INTEGER_DIVIDER (((25 * (APB_CLOCK)) / ((OVER8DIV) * (UART_BAUD_RATE))))
+#define FRACTIONAL_DIVIDER ((INTEGER_DIVIDER)%100)
+#define UART_BRR ((((INTEGER_DIVIDER) / 100) << 4) | (((((FRACTIONAL_DIVIDER) * ((OVER8DIV)*2)) + 50)/100)&7))
+// Put an output debug UART on Pin D5.
+// You can write to this with printf(...) or puts(...)
+// Call with SetupUART( UART_BRR )
+void SetupUART( int uartBRR );
+
+
 /* ch32v00x_gpio.c -----------------------------------------------------------*/
 /* MASK */
 #define LSB_MASK                  ((uint16_t)0xFFFF)
