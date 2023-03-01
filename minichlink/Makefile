@@ -1,18 +1,10 @@
-TOOLS:=wch_erase wch_reset wch_write_simple wch_printf minichlink
+TOOLS:=minichlink
 
 all : $(TOOLS)
 
 CFLAGS:=-O1 -g
 LDFLAGS:=-lpthread -lusb-1.0
 
-wch_erase : wch_erase.c
-	gcc -o $@ $^ $(LDFLAGS) $(CFLAGS)
-wch_reset : wch_reset.c
-	gcc -o $@ $^ $(LDFLAGS) $(CFLAGS)
-wch_printf : wch_printf.c
-	gcc -o $@ $^ $(LDFLAGS) $(CFLAGS)
-wch_write_simple : wch_write_simple.c
-	gcc -o $@ $^ $(LDFLAGS) $(CFLAGS)
 minichlink : minichlink.c
 	gcc -o $@ $^ $(LDFLAGS) $(CFLAGS)
 
