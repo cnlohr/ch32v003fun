@@ -9,7 +9,7 @@ minichlink : minichlink.c
 	gcc -o $@ $^ $(LDFLAGS) $(CFLAGS)
 
 install_udev_rules :
-	echo "SUBSYSTEMS==\"usb\", ATTRS{idVendor}==\"1a86\", ATTRS{idProduct}==\"8010\", GROUP=\"plugdev\", MODE=\"0666\"" > /etc/udev/rules.d/99-qch-LinkE.rules
+	cp 99-WCH-LinkE.rules /etc/udev/rules.d/
 	service udev restart
 
 clean :
