@@ -46,6 +46,11 @@ Currently, it ignores all the respone codes, except when querying the chip.  But
 
 Anyone who wants to write a good/nice utility should probably look at the code in this folder.
 
+## Quick Reference
+ * Needed for programming/debugging: `SWIO` is on `PD1`
+ * Optional (not needed, can be configured as output if fuse set): `NRST` is on `PD7`
+ * UART TX (optional) is on: `PD5`
+
 ###
  Footnots/links
 
