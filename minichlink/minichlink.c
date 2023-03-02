@@ -73,6 +73,7 @@ keep_going:
 			case '5': wch_link_command( devh, "\x81\x0d\x01\x0b", 4, 0, 0, 0 ); break;
 			case 't': wch_link_command( devh, "\x81\x0d\x01\x0a", 4, 0, 0, 0 ); break;
 			case 'f': wch_link_command( devh, "\x81\x0d\x01\x0c", 4, 0, 0, 0 ); break;
+			case 'u': wch_link_command( devh, "\x81\x0d\x01\x0f\x09", 5, 0, 0, 0 ); break;
 			case 'r': 
 				// This is clearly not the "best" method to exit reset.  I don't know why this combination works.
 				wch_link_multicommands( devh, 3, 4, "\x81\x0b\x01\x01", 4, "\x81\x0d\x01\x02", 4, "\x81\x0d\x01\xff" );
@@ -283,7 +284,8 @@ help:
 	fprintf( stderr, " -5 Enable 5V\n" );
 	fprintf( stderr, " -t Disable 3.3V\n" );
 	fprintf( stderr, " -f Disable 5V\n" );
-	fprintf( stderr, " -r Release from reest\n" );
+	fprintf( stderr, " -u Clear all code flash - by power off\n" );
+	fprintf( stderr, " -r Release from Reset\n" );
 	fprintf( stderr, " -R Place into Reset\n" );
 	fprintf( stderr, " -D Configure NRST as GPIO **WARNING** If you do this and you reconfig\n" );
 	fprintf( stderr, "      the SWIO pin (PD1) on boot, your part can never again be programmed!\n" );
