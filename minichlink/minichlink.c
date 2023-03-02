@@ -285,7 +285,7 @@ help:
 	fprintf( stderr, " -t Disable 3.3V\n" );
 	fprintf( stderr, " -f Disable 5V\n" );
 	fprintf( stderr, " -u Clear all code flash - by power off\n" );
-	fprintf( stderr, " -r Release from reest\n" );
+	fprintf( stderr, " -r Release from Reset\n" );
 	fprintf( stderr, " -R Place into Reset\n" );
 	fprintf( stderr, " -D Configure NRST as GPIO **WARNING** If you do this and you reconfig\n" );
 	fprintf( stderr, "      the SWIO pin (PD1) on boot, your part can never again be programmed!\n" );
