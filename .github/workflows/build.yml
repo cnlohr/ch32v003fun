@@ -10,11 +10,13 @@ jobs:
     - name: Install Dependencies
       run: sudo apt-get update && sudo apt-get install -y build-essential make libnewlib-dev gcc-riscv64-unknown-elf libusb-1.0-0-dev
     - name: Build Blink Example
-      run: cd examples/blink && make V=1 -j3 blink.elf && cd ../..
+      run: cd examples/blink && make V=1 -j3 blink.elf && riscv64-unknown-elf-size blink.elf && cd ../..
+    - name: Build sandbox Example
+      run: cd examples/sandbox && make V=1 -j3 sandbox.elf && riscv64-unknown-elf-size sandbox.elf && cd ../..
     - name: Build fulldemo Example
-      run: cd examples/fulldemo && make V=1 -j3 fulldemo.elf && cd ../..
+      run: cd examples/fulldemo && make V=1 -j3 fulldemo.elf && riscv64-unknown-elf-size fulldemo.elf && cd ../..
     - name: Build ws2812 Example
-      run: cd examples/ws2812demo && make V=1 -j3 ws2812bdemo.elf && cd ../..
+      run: cd examples/ws2812demo && make V=1 -j3 ws2812bdemo.elf && riscv64-unknown-elf-size ws2812bdemo.elf && cd ../..
   pio-build:
     strategy:
       fail-fast: false
