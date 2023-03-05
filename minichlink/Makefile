@@ -5,7 +5,7 @@ all : $(TOOLS)
 CFLAGS:=-O1 -g
 LDFLAGS:=-lpthread -lusb-1.0
 
-minichlink : minichlink.c
+minichlink : minichlink.c wch-linke.c
 	gcc -o $@ $^ $(LDFLAGS) $(CFLAGS)
 
 install_udev_rules :
