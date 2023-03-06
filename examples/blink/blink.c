@@ -1,7 +1,7 @@
 // Could be defined here, or in the processor defines.
 #define SYSTEM_CORE_CLOCK 48000000
 
-#include "ch32v00x.h"
+#include "ch32v003fun.h"
 #include <stdio.h>
 
 #define APB_CLOCK SYSTEM_CORE_CLOCK

@@ -7,21 +7,31 @@ PREFIX:=riscv64-unknown-elf
 GPIO_Toggle:=EXAM/GPIO/GPIO_Toggle/User
 
 EVT:=../../ch32v003evt
+
 MINICHLINK:=../../minichlink
+
+ifeq ($(OS),Windows_NT)
+# On Windows, all the major GCC installs are missing the eg
+LIB_GCC=../../misc/libgcc.a
+else
+LIB_GCC=-lgcc
+endif
+
+CH32V003FUN:=../../ch32v003fun
 
 CFLAGS:= \
 	-g -Os -flto -ffunction-sections \
-	-static-libgcc -lgcc \
+	-static-libgcc $(LIB_GCC) \
 	-march=rv32ec \
 	-mabi=ilp32e \
 	-I/usr/include/newlib \
-	-I$(EVT) \
+	-I$(CH32V003FUN) \
 	-nostdlib \
 	-I.
 
 LDFLAGS:=-T $(EVT)/ch32v003.ld -Wl,--gc-sections
 
-SYSTEM_C:=$(EVT)/startup_ch32v003.c $(EVT)/embedlibc.c
+SYSTEM_C:=$(CH32V003FUN)/ch32v003fun.c
 
 $(TARGET).elf : $(SYSTEM_C) $(TARGET).c
 	$(PREFIX)-gcc -o $@ $^ $(CFLAGS) $(LDFLAGS)
@@ -34,7 +44,6 @@ $(TARGET).bin : $(TARGET).elf
 	$(PREFIX)-objcopy -O ihex $< $(TARGET).hex
 
 flash : $(TARGET).bin
-	make -C $(MINICHLINK) all
 	$(MINICHLINK)/minichlink -w $< -r
 
 clean :
