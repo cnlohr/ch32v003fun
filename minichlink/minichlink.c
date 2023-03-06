@@ -4,18 +4,19 @@
 // public domain where applicable. 
 
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include "minichlink.h"
 
 static int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber );
 
-extern struct MiniChlinkFunctions MCF;
+struct MiniChlinkFunctions MCF;
 
 int main( int argc, char ** argv )
 {
 	void * dev = 0;
-	if( !(dev = TryInit_WCHLinkE() ) )
-	else if( !(dev = TryInit_ESP32S2CHFUN() ) )
+	if( (dev = TryInit_WCHLinkE() ) );
+	else if( (dev = TryInit_ESP32S2CHFUN() ) );
 	else
 	{
 		fprintf( stderr, "Error: Could not initialize any supported programmers\n" );
@@ -28,7 +29,7 @@ int main( int argc, char ** argv )
 
 	if( MCF.SetupInterface )
 	{
-		if( MCF.SetupInterface() < 0 )
+		if( MCF.SetupInterface( dev ) < 0 )
 		{
 			fprintf( stderr, "Could not setup interface.\n" );
 			return -33;
@@ -52,44 +53,44 @@ keep_going:
 			default: goto help;
 			case '3':
 				if( MCF.Control3v3 )
-					MCF.Control3v3( 1 );
+					MCF.Control3v3( dev, 1 );
 				else
 					goto unimplemented;
 				break;
 			case '5':
-				if( MCF.Control5 )
-					MCF.Control5( 1 );
+				if( MCF.Control5v )
+					MCF.Control5v( dev, 1 );
 				else
 					goto unimplemented;
 				break;
 			case 't':
 				if( MCF.Control3v3 )
-					MCF.Control3v3( 0 );
+					MCF.Control3v3( dev, 0 );
 				else
 					goto unimplemented;
 				break;
 			case 'f':
-				if( MCF.Control5 )
-					MCF.Control5( 0 );
+				if( MCF.Control5v )
+					MCF.Control5v( dev, 0 );
 				else
 					goto unimplemented;
 				break;
 			case 'u':
 				if( MCF.Unbrick )
-					MCF.Unbrick();
+					MCF.Unbrick( dev );
 				else
 					goto unimplemented;
 				break;
 			case 'r': 
 				if( MCF.HaltMode )
-					MCF.HaltMode( 0 );
+					MCF.HaltMode( dev, 0 );
 				else
 					goto unimplemented;
 				must_be_end = 'r';
 				break;
 			case 'R':
 				if( MCF.HaltMode )
-					MCF.HaltMode( 1 );
+					MCF.HaltMode( dev, 1 );
 				else
 					goto unimplemented;
 				must_be_end = 'R';
@@ -98,13 +99,13 @@ keep_going:
 			// disable NRST pin (turn it into a GPIO)
 			case 'd':  // see "RSTMODE" in datasheet
 				if( MCF.ConfigureNRSTAsGPIO )
-					MCF.ConfigureNRSTAsGPIO( 0 );
+					MCF.ConfigureNRSTAsGPIO( dev, 0 );
 				else
 					goto unimplemented;
 				break;
 			case 'D': // see "RSTMODE" in datasheet
 				if( MCF.ConfigureNRSTAsGPIO )
-					MCF.ConfigureNRSTAsGPIO( 1 );
+					MCF.ConfigureNRSTAsGPIO( dev, 1 );
 				else
 					goto unimplemented;
 				break;
@@ -156,12 +157,12 @@ keep_going:
 					fprintf( stderr, "Error: can't open write file \"%s\"\n", argv[iarg] );
 					return -9;
 				}
-				uint32_t * readbuff = malloc( amount );
+				uint8_t * readbuff = malloc( amount );
 				int readbuffplace = 0;
 
 				if( MCF.ReadBinaryBlob )
 				{
-					if( MCF.ReadBinaryBlob( offset, amount, readbuff ) < 0 )
+					if( MCF.ReadBinaryBlob( dev, offset, amount, readbuff ) < 0 )
 					{
 						fprintf( stderr, "Fault reading device\n" );
 						return -12;
@@ -192,9 +193,7 @@ keep_going:
 				fseek( f, 0, SEEK_END );
 				int len = ftell( f );
 				fseek( f, 0, SEEK_SET );
-				int padlen = ((len-1) & (~0x3f)) + 0x40;
-				char * image = malloc( padlen );
-				memset( image, 0xff, padlen );
+				char * image = malloc( len );
 				status = fread( image, len, 1, f );
 				fclose( f );
 	
@@ -211,7 +210,7 @@ keep_going:
 
 				if( MCF.WriteBinaryBlob )
 				{
-					if( MCF.WriteBinaryBlob( 0x08000000, len, image ) )
+					if( MCF.WriteBinaryBlob( dev, 0x08000000, len, image ) )
 					{
 						fprintf( stderr, "Error: Fault writing image.\n" );
 						return -13;
@@ -232,8 +231,8 @@ keep_going:
 		if( argchar && argchar[2] != 0 ) { argchar++; goto keep_going; }
 	}
 
-	if( MCF.ExitMode )
-		MCF.ExitMode( dev );
+	if( MCF.Exit )
+		MCF.Exit( dev );
 
 	return 0;
 
@@ -291,6 +290,40 @@ static int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber )
 		return ret;
 	}
 }
+
+
+int ESPSetupInterface( void * dev )
+{
+	struct ESP32ProgrammerStruct * eps = (struct ESP32ProgrammerStruct *)dev;
+
+	if( MCF.Control3v3 ) MCF.Control3v3( dev, 1 );
+	if( MCF.DelayUS ) MCF.DelayUS( dev, 16000 );
+	MCF.WriteReg32( dev, 0x7e, 0x5aa50000 | (1<<10) ); // Shadow Config Reg
+	MCF.WriteReg32( dev, 0x7d, 0x5aa50000 | (1<<10) ); // CFGR (1<<10 == Allow output from slave)
+	MCF.WriteReg32( dev, 0x7d, 0x5aa50000 | (1<<10) ); // Bug in silicon?  If coming out of cold boot, and we don't do our little "song and dance" this has to be called.
+	MCF.WriteReg32( dev, 0x10, 0x80000001 ); // Make the debug module work properly.
+	MCF.WriteReg32( dev, 0x10, 0x80000001 ); // Initiate a halt request.
+
+	// Read back chip ID.
+	uint32_t reg;
+	int r = MCF.ReadReg32( dev, 0x11, &reg );
+	if( r >= 0 )
+	{
+		// Valid R.
+		if( reg == 0x00000000 || reg == 0xffffffff )
+		{
+			fprintf( stderr, "Error: Setup chip failed. Got code %08x\n", reg );
+			return -9;
+		}
+		return 0;
+	}
+	else
+	{
+		fprintf( stderr, "Error: Could not read chip code.\n" );
+		return r;
+	}
+}
+
 
 int SetupAutomaticHighLevelFunctions()
 {

@@ -341,7 +341,6 @@ void * TryInit_WCHLinkE()
 
 	MCF.WriteReg32 = 0;
 	MCF.ReadReg32 = 0;
-	MCF.FlushLLCommands = 0;
 
 	MCF.SetupInterface = LESetupInterface;
 	MCF.Control3v3 = LEControl3v3;

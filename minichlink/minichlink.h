@@ -10,6 +10,8 @@ struct MiniChlinkFunctions
 	// Low-level functions, if they exist.
 	int (*WriteReg32)( void * dev, uint8_t reg_7_bit, uint32_t command );
 	int (*ReadReg32)( void * dev, uint8_t reg_7_bit, uint32_t * commandresp );
+	int (*FlushLLCommands)( void * dev );
+	int (*DelayUS)( void * dev, int microseconds );
 
 	// Higher-level functions can be generated automatically.
 	int (*SetupInterface)( void * dev );
@@ -17,10 +19,15 @@ struct MiniChlinkFunctions
 	int (*Control5v)( void * dev, int bOn );
 	int (*Unbrick)( void * dev ); // Turns on chip, erases everything, powers off.
 
+	int (*Exit)( void * dev );
+
 	int (*HaltMode)( void * dev, int one_if_halt_zero_if_resume );
 	int (*ConfigureNRSTAsGPIO)( void * dev, int one_if_yes_gpio );
-	int (*WriteBinaryBlob)( void * dev, uint32_t address_to_write, uint32_t blob_size, void * blob );
-	int (*ReadBinaryBlob)( void * dev, uint32_t address_to_read_from, uint32_t read_size, void * blob );
+
+	// WARNING: Reading/writing must be at 32-bit boundaries for 32-bit sizes.
+	// WARNING: Writing binary blobs may write groups of 64-bytes.
+	int (*WriteBinaryBlob)( void * dev, uint32_t address_to_write, uint32_t blob_size, uint8_t * blob );
+	int (*ReadBinaryBlob)( void * dev, uint32_t address_to_read_from, uint32_t read_size, uint8_t * blob );
 };
 
 extern struct MiniChlinkFunctions MCF;
