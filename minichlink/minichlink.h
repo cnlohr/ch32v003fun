@@ -30,6 +30,28 @@ struct MiniChlinkFunctions
 	int (*ReadBinaryBlob)( void * dev, uint32_t address_to_read_from, uint32_t read_size, uint8_t * blob );
 };
 
+
+#define DMDATA0        0x04
+#define DMDATA1        0x05
+#define DMCONTROL      0x10
+#define DMSTATUS       0x11
+#define DMHARTINFO     0x12
+#define DMABSTRACTCS   0x16
+#define DMCOMMAND      0x17
+#define DMABSTRACTAUTO 0x18
+#define DMPROGBUF0     0x20
+#define DMPROGBUF1     0x21
+#define DMPROGBUF2     0x22
+#define DMPROGBUF3     0x23
+#define DMPROGBUF4     0x24
+#define DMPROGBUF5     0x25
+#define DMPROGBUF6     0x26
+#define DMPROGBUF7     0x27
+
+#define CPBR       0x7C
+#define CFGR       0x7D
+#define SHDWCFGR   0x7E
+
 extern struct MiniChlinkFunctions MCF;
 
 // Returns 'dev' on success, else 0.

@@ -9,7 +9,7 @@
 #include "minichlink.h"
 
 static int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber );
-
+void TestFunction(void * v );
 struct MiniChlinkFunctions MCF;
 
 int main( int argc, char ** argv )
@@ -28,6 +28,8 @@ int main( int argc, char ** argv )
 		fprintf( stderr, "Error: Could not initialize any supported programmers\n" );
 		return -32;
 	}
+	
+	SetupAutomaticHighLevelFunctions();
 
 	int status;
 	int must_be_end = 0;
@@ -41,6 +43,8 @@ int main( int argc, char ** argv )
 			return -33;
 		}
 	}
+
+	//TestFunction( dev );
 
 	int iarg = 1;
 	const char * lastcommand = 0;
@@ -314,21 +318,21 @@ static int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber )
 }
 
 
-int ESPSetupInterface( void * dev )
+int DefaultSetupInterface( void * dev )
 {
 	struct ESP32ProgrammerStruct * eps = (struct ESP32ProgrammerStruct *)dev;
 
 	if( MCF.Control3v3 ) MCF.Control3v3( dev, 1 );
 	if( MCF.DelayUS ) MCF.DelayUS( dev, 16000 );
-	MCF.WriteReg32( dev, 0x7e, 0x5aa50000 | (1<<10) ); // Shadow Config Reg
-	MCF.WriteReg32( dev, 0x7d, 0x5aa50000 | (1<<10) ); // CFGR (1<<10 == Allow output from slave)
-	MCF.WriteReg32( dev, 0x7d, 0x5aa50000 | (1<<10) ); // Bug in silicon?  If coming out of cold boot, and we don't do our little "song and dance" this has to be called.
-	MCF.WriteReg32( dev, 0x10, 0x80000001 ); // Make the debug module work properly.
-	MCF.WriteReg32( dev, 0x10, 0x80000001 ); // Initiate a halt request.
+	MCF.WriteReg32( dev, SHDWCFGR, 0x5aa50000 | (1<<10) ); // Shadow Config Reg
+	MCF.WriteReg32( dev, CFGR, 0x5aa50000 | (1<<10) ); // CFGR (1<<10 == Allow output from slave)
+	MCF.WriteReg32( dev, CFGR, 0x5aa50000 | (1<<10) ); // Bug in silicon?  If coming out of cold boot, and we don't do our little "song and dance" this has to be called.
+	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
+	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
 
 	// Read back chip ID.
 	uint32_t reg;
-	int r = MCF.ReadReg32( dev, 0x11, &reg );
+	int r = MCF.ReadReg32( dev, DMSTATUS, &reg );
 	if( r >= 0 )
 	{
 		// Valid R.
@@ -346,6 +350,97 @@ int ESPSetupInterface( void * dev )
 	}
 }
 
+static int WriteWord( void * dev, uint32_t address_to_write, uint32_t data )
+{
+	int r;
+	MCF.WriteReg32( dev, DMPROGBUF0, 0x0072a023 ); // sw x7,0(x5)
+	MCF.WriteReg32( dev, DMPROGBUF0, 0x00100073 ); // ebreak
+	MCF.WriteReg32( dev, DMDATA0, address_to_write );
+	MCF.WriteReg32( dev, DMCOMMAND, 0x00231005 ); // Copy data to x5
+	uint32_t rrv;
+	do
+	{
+		r = MCF.ReadReg32( dev, DMABSTRACTCS, &rrv );
+		if( r ) return r;
+	}
+	while( rrv & (1<<12) );
+	
+	MCF.WriteReg32( dev, DMDATA0, data );
+	MCF.WriteReg32( dev, DMCOMMAND, 0x00271007 ); // Copy data to x7, and execute program.
+	do
+	{
+		r = MCF.ReadReg32( dev, DMABSTRACTCS, &rrv );
+		if( r ) return r;
+	}
+	while( rrv & (1<<12) );
+	if( (rrv >> 8 ) & 7 )
+	{
+		fprintf( stderr, "Fault writing memory (DMABSTRACTS = %08x)\n", rrv );
+	}
+	return 0;
+}
+
+int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob_size, uint8_t * blob )
+{
+	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
+	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
+	MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
+}
+
+static int ReadWord( void * dev, uint32_t address_to_read, uint32_t * data )
+{
+	int r;
+	MCF.WriteReg32( dev, DMPROGBUF0, 0x0002a303 ); // lw x6,0(x5)
+	MCF.WriteReg32( dev, DMPROGBUF0, 0x00100073 ); // ebreak
+	MCF.WriteReg32( dev, DMDATA0, address_to_read );
+	MCF.WriteReg32( dev, DMCOMMAND, 0x00271005 ); // Copy data to x5
+	uint32_t rrv;
+	do
+	{
+		r = MCF.ReadReg32( dev, DMABSTRACTCS, &rrv );
+		if( r ) return r;
+	}
+	while( rrv & (1<<12) );
+	printf( "RRV: %08x\n", rrv );
+	MCF.WriteReg32( dev, DMCOMMAND, 0x00221006 ); // Copy x7 to data0
+	do
+	{
+		r = MCF.ReadReg32( dev, DMABSTRACTCS, &rrv );
+		if( r ) return r;
+	}
+	while( rrv & (1<<12) );
+	printf( "RRV: %08x\n", rrv );
+	if( (rrv >> 8 ) & 7 )
+	{
+		fprintf( stderr, "Fault writing memory (DMABSTRACTS = %08x)\n", rrv );
+	}
+	
+	return MCF.ReadReg32( dev, DMDATA0, data );
+}
+
+int DefaultReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t read_size, uint8_t * blob )
+{
+	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
+	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
+	MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
+	
+	
+}
+
+void TestFunction(void * dev )
+{
+	uint32_t rv;
+	int r;
+	
+	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
+	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
+	MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
+
+	r = ReadWord( dev, 0x08000004, &rv );
+	printf( "%d %08x\n", r, rv );
+}
+
+
 
 int SetupAutomaticHighLevelFunctions()
 {
@@ -354,5 +449,13 @@ int SetupAutomaticHighLevelFunctions()
 
 	// Else, TODO: Build the high level functions from low level functions.
 	// If a high-level function alrady exists, don't override.
+	
+	if( !MCF.SetupInterface )
+		MCF.SetupInterface = DefaultSetupInterface;
+	if( !MCF.WriteBinaryBlob )
+		MCF.WriteBinaryBlob = DefaultWriteBinaryBlob;
+	if( !MCF.ReadBinaryBlob )
+		MCF.ReadBinaryBlob = DefaultReadBinaryBlob;
+
 }
 

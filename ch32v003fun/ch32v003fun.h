@@ -4819,20 +4819,10 @@ extern "C" {
 #define DELAY_US_TIME (SYSTEM_CORE_CLOCK / 8000000)
 #define DELAY_MS_TIME (SYSTEM_CORE_CLOCK / 8000)
 
-static void DelaySysTick( uint32_t n )
-{
-    SysTick->SR &= ~(1 << 0);
-    SysTick->CMP = n;
-    SysTick->CNT = 0; 
-    SysTick->CTLR |=(1 << 0);
-    while(!(SysTick->SR & (1 << 0)));
-    SysTick->CTLR &= ~(1 << 0);
-}
+void DelaySysTick( uint32_t n );
 
 #define Delay_Us(n) DelaySysTick( n * DELAY_US_TIME )
 #define Delay_Ms(n) DelaySysTick( n * DELAY_MS_TIME )
-
-
 
 // Tricky: We need to make sure main and SystemInit() are preserved.
 int main() __attribute__((used));

@@ -6,6 +6,8 @@
 
 #define APB_CLOCK SYSTEM_CORE_CLOCK
 
+uint32_t count;
+
 int main()
 {
 	SystemInit48HSI();
@@ -26,5 +28,6 @@ int main()
 		Delay_Ms( 100 );
 		GPIOD->BSHR = (1<<(16+0)) | (1<<(16+4)); // Turn off GPIOD0
 		Delay_Ms( 100 );
+		count++;
 	}
 }

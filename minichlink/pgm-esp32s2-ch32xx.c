@@ -64,6 +64,7 @@ int ESPReadReg32( void * dev, uint8_t reg_7_bit, uint32_t * commandresp )
 	Write1( eps, (reg_7_bit<<1) | 0 );
 
 	int len = ESPFlushLLCommands( eps );
+
 	if( eps->replylen < 5 )
 	{
 		return -9;
@@ -86,7 +87,7 @@ int ESPFlushLLCommands( void * dev )
 	}
 	eps->commandbuffer[0] = 0xad; // Key report ID
 	eps->commandbuffer[eps->commandplace] = 0xff;
-	int r = hid_send_feature_report( eps->hd, eps->commandbuffer, eps->commandplace );
+	int r = hid_send_feature_report( eps->hd, eps->commandbuffer, 255 );
 	eps->commandplace = 1;
 	if( r < 0 )
 	{
@@ -96,6 +97,7 @@ int ESPFlushLLCommands( void * dev )
 
 	eps->reply[0] = 0xad; // Key report ID
 	r = hid_get_feature_report( eps->hd, eps->reply, sizeof( eps->reply ) );
+printf( "RRLEN: %d\n", r );
 	if( r < 0 )
 	{
 		fprintf( stderr, "Error: Got error %d when sending hid feature report.\n", r );

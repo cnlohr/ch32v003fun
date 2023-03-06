@@ -11,7 +11,7 @@ EVT:=../../ch32v003evt
 MINICHLINK:=../../minichlink
 
 ifeq ($(OS),Windows_NT)
-# On Windows, all the major GCC installs are missing the eg
+# On Windows, all the major RISC-V GCC installs are missing the -ec libgcc.
 LIB_GCC=../../misc/libgcc.a
 else
 LIB_GCC=-lgcc
@@ -29,7 +29,7 @@ CFLAGS:= \
 	-nostdlib \
 	-I.
 
-LDFLAGS:=-T $(EVT)/ch32v003.ld -Wl,--gc-sections
+LDFLAGS:=-T $(CH32V003FUN)/ch32v003fun.ld -Wl,--gc-sections
 
 SYSTEM_C:=$(CH32V003FUN)/ch32v003fun.c
 

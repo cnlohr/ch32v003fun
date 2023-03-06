@@ -795,7 +795,7 @@ void handle_reset()
 	while( tempout != tempend )
 		*(tempout++) = *(tempin++); 
 
-	__set_MEPC( (uint32_t)main );
+	asm volatile("csrw mepc, %0" : : "r"(main));
 
 	// set mepc to be main as the root app.
 	asm volatile( "mret\n" );
@@ -844,4 +844,12 @@ int _write(int fd, const char *buf, int size)
 	return size;
 }
 
-
+void DelaySysTick( uint32_t n )
+{
+    SysTick->SR &= ~(1 << 0);
+    SysTick->CMP = n;
+    SysTick->CNT = 0; 
+    SysTick->CTLR |=(1 << 0);
+    while(!(SysTick->SR & (1 << 0)));
+    SysTick->CTLR &= ~(1 << 0);
+}
