@@ -1,10 +1,1 @@
-
-
-rem tcc wch_erase.c libusb-1.0.dll
-rem tcc wch_reset.c libusb-1.0.dll
-rem tcc wch_write_simple.c libusb-1.0.dll
-tcc minichlink.c libusb-1.0.dll
-rem tcc wch_dump_flash.c libusb-1.0.dll
-rem wch_erase.exe
-rem wch_write_simple.exe ..\barebones\barebones.bin
-rem wch_reset.exe
+tcc -lsetupapi minichlink.c libusb-1.0.dll pgm-esp32s2-ch32xx.c  pgm-wch-linke.c
