@@ -15,8 +15,14 @@ struct MiniChlinkFunctions MCF;
 int main( int argc, char ** argv )
 {
 	void * dev = 0;
-	if( (dev = TryInit_WCHLinkE() ) );
-	else if( (dev = TryInit_ESP32S2CHFUN() ) );
+	if( (dev = TryInit_WCHLinkE()) )
+	{
+		fprintf( stderr, "Found WCH LinkE\n" );
+	}
+	else if( (dev = TryInit_ESP32S2CHFUN()) )
+	{
+		fprintf( stderr, "Found ESP32S2 Programmer\n" );
+	}
 	else
 	{
 		fprintf( stderr, "Error: Could not initialize any supported programmers\n" );
@@ -36,11 +42,18 @@ int main( int argc, char ** argv )
 		}
 	}
 
-	int iarg;
-	char * argchar = argv[iarg];
-	for( iarg = 1; iarg < argc; iarg++ )
+	int iarg = 1;
+	const char * lastcommand = 0;
+	for( ; iarg < argc; iarg++ )
 	{
-		if( argchar[0] != '-' ) goto help;
+		char * argchar = argv[iarg];
+
+		lastcommand = argchar;
+		if( argchar[0] != '-' )
+		{
+			fprintf( stderr, "Error: Need prefixing - before commands\n" );
+			goto help;
+		}
 		if( must_be_end )
 		{
 			fprintf( stderr, "Error: the command '%c' cannot be followed by other commands.\n", must_be_end );
@@ -50,7 +63,9 @@ int main( int argc, char ** argv )
 keep_going:
 		switch( argchar[1] )
 		{
-			default: goto help;
+			default:
+				fprintf( stderr, "Error: Unknown command %c\n", argchar[1] );
+				goto help;
 			case '3':
 				if( MCF.Control3v3 )
 					MCF.Control3v3( dev, 1 );
@@ -137,10 +152,18 @@ keep_going:
 			{
 				int i;
 				int transferred;
-				if( argchar[2] != 0 ) goto help;
+				if( argchar[2] != 0 )
+				{
+					fprintf( stderr, "Error: can't have char after paramter field\n" ); 
+					goto help;
+				}
 				iarg++;
 				argchar = 0; // Stop advancing
-				if( iarg + 2 >= argc ) goto help;
+				if( iarg + 2 >= argc )
+				{
+					fprintf( stderr, "Error: missing file for -o.\n" ); 
+					goto help;
+				}
 				uint64_t offset = SimpleReadNumberInt( argv[iarg++], -1 );
 				uint64_t amount = SimpleReadNumberInt( argv[iarg++], -1 );
 				if( offset > 0xffffffff || amount > 0xffffffff )
@@ -186,7 +209,6 @@ keep_going:
 				iarg++;
 				argchar = 0; // Stop advancing
 				if( iarg >= argc ) goto help;
-
 				// Write binary.
 				int i;
 				FILE * f = fopen( argv[iarg], "rb" );
@@ -257,7 +279,7 @@ help:
 	return -1;	
 
 unimplemented:
-	fprintf( stderr, "Error: Command '%c' unimplemented on this programmer.\n", argchar[1] );
+	fprintf( stderr, "Error: Command '%s' unimplemented on this programmer.\n", lastcommand );
 	return -1;
 }
 

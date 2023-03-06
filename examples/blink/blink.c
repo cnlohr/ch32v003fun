@@ -17,11 +17,14 @@ int main()
 	GPIOD->CFGLR &= ~(0xf<<(4*0));
 	GPIOD->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*0);
 
+	GPIOD->CFGLR &= ~(0xf<<(4*4));
+	GPIOD->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*4);
+
 	while(1)
 	{
-		GPIOD->BSHR = 1;	 // Turn on GPIOD0
+		GPIOD->BSHR = (1<<0) | (1<<4);	 // Turn on GPIOD0
 		Delay_Ms( 100 );
-		GPIOD->BSHR = 1<<16; // Turn off GPIOD0
+		GPIOD->BSHR = (1<<(16+0)) | (1<<(16+4)); // Turn off GPIOD0
 		Delay_Ms( 100 );
 	}
 }

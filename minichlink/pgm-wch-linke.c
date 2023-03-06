@@ -115,7 +115,6 @@ static inline libusb_device_handle * wch_link_base_setup( int inhibit_startup )
 
 	if( !found )
 	{
-		fprintf( stderr, "Error: couldn't find wch link device\n" );
 		return 0;
 	}
 
