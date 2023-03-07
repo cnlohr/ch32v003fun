@@ -12,21 +12,29 @@ ch32v003fun contains:
 1. EVT Folder for running demos from the ch32v003 EVT.
 2. Barebones. A project that does not use the HAL or EVT.
 3. "minichlink" which uses the WCH CH-Link with libusb, for cross-platform use.
+4. An extra copy of libgcc so you can use unusual risc-v build chains, located in the `misc/libgcc.a`.
+
+IN PROGRESS:
+1. A folder named "ch32v003fun" containing a single self-contained source file and header file for compling apps for the ch32v003.
 
 ## System Prep
 
-On WSL or Debian based OSes `apt-get install build-essential libnewlib-dev gcc-riscv64-unknown-elf libusb-1.0-0-dev`
+On WSL or Debian based OSes `apt-get install build-essential libnewlib-dev gcc-riscv64-unknown-elf libusb-1.0-0-dev libudev-dev`
+
+On Windows, download and install (to system) this copy of GCC10. https://gnutoolchains.com/risc-v/
+
+You can use the pre-compiled minichlink or 
 
 ## Running
 
 ```
-cd barebones
+cd examples/blink
 make
 ```
 
-In Linux this will "just work" using the `miniwchlink`. In Windows, you can use this or you can use the WCH-LinkUtility to flash the built hex file.
+In Linux this will "just work" using the `minichlink`.   In Windows if you want to use minichlink, you will need to use Zadig to install WinUSB to the WCH-Link interface 0.
 
-If you are in Windows, you will need to use zadig to install the libusb driver to the WCH-Link interface 0.
+In Windows, you can use this or you can use the WCH-LinkUtility to flash the built hex file.
 
 ## For using EVT demos, check out the EVT folder.
 
@@ -38,7 +46,7 @@ It enumerates as 2 interfaces.
 
 If you want to mess with the programming code in Windows, you will have to install WinUSB to the interface 0.  Then you can uninstall it in Device Manager under USB Devices.
 
-## miniwchlink
+## minichlink
 
 I wrote some libusb copies of some of the basic functionality from WCH-Link, so you can use the little programmer dongle they give you to program the ch32v003. 
 
