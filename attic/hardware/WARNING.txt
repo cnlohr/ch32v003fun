@@ -1,3 +1,0 @@
-This hardware design is incomplete. NOT READY FOR TESTING.
-PLEASE DO NOT USE ANYTHING HERE.
-
