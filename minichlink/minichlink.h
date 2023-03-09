@@ -28,6 +28,25 @@ struct MiniChlinkFunctions
 	// WARNING: Writing binary blobs may write groups of 64-bytes.
 	int (*WriteBinaryBlob)( void * dev, uint32_t address_to_write, uint32_t blob_size, uint8_t * blob );
 	int (*ReadBinaryBlob)( void * dev, uint32_t address_to_read_from, uint32_t read_size, uint8_t * blob );
+
+	// MUST be 4-byte-aligned.
+	int (*WriteWord)( void * dev, uint32_t address_to_write, uint32_t data );
+	int (*ReadWord)( void * dev, uint32_t address_to_read, uint32_t * data );
+};
+
+// Convert a 4-character string to an int.
+#define STTAG( x ) (*((uint32_t*)(x)))
+
+struct ProgrammerStructBase
+{
+	void * internal;
+	// You can put other things here.
+};
+
+struct InternalState
+{
+	uint32_t statetag;
+	uint32_t currentstateval;
 };
 
 
@@ -59,7 +78,7 @@ void * TryInit_WCHLinkE();
 void * TryInit_ESP32S2CHFUN();
 
 // Returns 0 if ok, populated, 1 if not populated.
-int SetupAutomaticHighLevelFunctions();
+int SetupAutomaticHighLevelFunctions( void * dev );
 
 #endif
 

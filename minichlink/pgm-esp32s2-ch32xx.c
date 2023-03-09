@@ -4,7 +4,10 @@
 
 struct ESP32ProgrammerStruct
 {
+	void * internal;
+
 	hid_device * hd;
+	uint32_t state;
 	uint8_t commandbuffer[256];
 	int commandplace;
 	uint8_t reply[256];
@@ -125,7 +128,7 @@ int ESPControl3v3( void * dev, int bOn )
 		Write2LE( eps, 0x02fe );
 }
 
-int ESPDelayUS( void * dev, int microseconds )
+static int ESPDelayUS( void * dev, int microseconds )
 {
 	struct ESP32ProgrammerStruct * eps = (struct ESP32ProgrammerStruct *)dev;
 	if( SRemain( eps ) < 6 )

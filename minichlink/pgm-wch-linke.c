@@ -9,6 +9,12 @@
 #include "libusb.h"
 #include "minichlink.h"
 
+struct LinkEProgrammerStruct
+{
+	void * internal;
+	libusb_device_handle * devh;
+};
+
 #define WCHTIMEOUT 5000
 #define WCHCHECK(x) if( status = x ) { fprintf( stderr, "Bad USB Operation on " __FILE__ ":%d (%d)\n", __LINE__, status ); exit( status ); }
 
@@ -135,21 +141,22 @@ static inline libusb_device_handle * wch_link_base_setup( int inhibit_startup )
 	return devh;
 }
 
-static int LESetupInterface( void * dev )
+static int LESetupInterface( void * d )
 {
+	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
 	uint8_t rbuff[1024];
 	uint32_t transferred = 0;
 
 	// Place part into reset.
-	wch_link_command( (libusb_device_handle *)dev, "\x81\x0d\x01\x01", 4, &transferred, rbuff, 1024 );	// Reply is: "\x82\x0d\x04\x02\x08\x02\x00"
+	wch_link_command( dev, "\x81\x0d\x01\x01", 4, &transferred, rbuff, 1024 );	// Reply is: "\x82\x0d\x04\x02\x08\x02\x00"
 
 	// TODO: What in the world is this?  It doesn't appear to be needed.
-	wch_link_command( (libusb_device_handle *)dev, "\x81\x0c\x02\x09\x01", 5, 0, 0, 0 ); //Reply is: 820c0101
+	wch_link_command( dev, "\x81\x0c\x02\x09\x01", 5, 0, 0, 0 ); //Reply is: 820c0101
 
 	// This puts the processor on hold to allow the debugger to run.
-	wch_link_command( (libusb_device_handle *)dev, "\x81\x0d\x01\x02", 4, 0, 0, 0 ); // Reply: Ignored, 820d050900300500
+	wch_link_command( dev, "\x81\x0d\x01\x02", 4, 0, 0, 0 ); // Reply: Ignored, 820d050900300500
 
-	wch_link_command( (libusb_device_handle *)dev, "\x81\x11\x01\x09", 4, &transferred, rbuff, 1024 ); // Reply: Chip ID + Other data (see below)
+	wch_link_command( dev, "\x81\x11\x01\x09", 4, &transferred, rbuff, 1024 ); // Reply: Chip ID + Other data (see below)
 	if( transferred != 20 )
 	{
 		fprintf( stderr, "Error: could not get part status\n" );
@@ -162,8 +169,10 @@ static int LESetupInterface( void * dev )
 	return 0;
 }
 
-static int LEControl3v3( void * dev, int bOn )
+static int LEControl3v3( void * d, int bOn )
 {
+	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
+
 	if( bOn )
 		wch_link_command( (libusb_device_handle *)dev, "\x81\x0d\x01\x09", 4, 0, 0, 0 );
 	else
@@ -171,8 +180,10 @@ static int LEControl3v3( void * dev, int bOn )
 	return 0;
 }
 
-static int LEControl5v( void * dev, int bOn )
+static int LEControl5v( void * d, int bOn )
 {
+	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
+
 	if( bOn )
 		wch_link_command( (libusb_device_handle *)dev, "\x81\x0d\x01\x0b", 4, 0, 0, 0 );
 	else
@@ -185,8 +196,10 @@ static int LEUnbrick( void * dev )
 	 wch_link_command( (libusb_device_handle *)dev, "\x81\x0d\x01\x0f\x09", 5, 0, 0, 0 );
 }
 
-static int LEHaltMode( void * dev, int one_if_halt_zero_if_resume )
+static int LEHaltMode( void * d, int one_if_halt_zero_if_resume )
 {
+	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
+
 	if( one_if_halt_zero_if_resume )
 	{
 		// Part one "immediately" places the part into reset.  Part 2 says when we're done, leave part in reset.
@@ -199,8 +212,10 @@ static int LEHaltMode( void * dev, int one_if_halt_zero_if_resume )
 	}
 }
 
-static int LEConfigureNRSTAsGPIO( void * dev, int one_if_yes_gpio )
+static int LEConfigureNRSTAsGPIO( void * d, int one_if_yes_gpio )
 {
+	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
+
 	if( one_if_yes_gpio )
 	{
 		wch_link_multicommands( (libusb_device_handle *)dev, 2, 11, "\x81\x06\x08\x02\xff\xff\xff\xff\xff\xff\xff", 4, "\x81\x0b\x01\x01" );
@@ -211,8 +226,10 @@ static int LEConfigureNRSTAsGPIO( void * dev, int one_if_yes_gpio )
 	}
 }
 
-static int LEReadBinaryBlob( void * dev, uint32_t offset, uint32_t amount, uint8_t * readbuff )
+static int LEReadBinaryBlob( void * d, uint32_t offset, uint32_t amount, uint8_t * readbuff )
 {
+	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
+
 	int i;
 	int status;
 	uint8_t rbuff[1024];
@@ -265,8 +282,10 @@ static int LEReadBinaryBlob( void * dev, uint32_t offset, uint32_t amount, uint8
 	return 0;
 }
 
-static int LEWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t len, uint8_t * blob )
+static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len, uint8_t * blob )
 {
+	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
+
 	int i;
 	int status;
 	uint8_t rbuff[1024];
@@ -327,8 +346,10 @@ static int LEWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t le
 	return 0;
 }
 
-int LEExit( void * dev )
+int LEExit( void * d )
 {
+	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
+
 	wch_link_command( (libusb_device_handle *)dev, "\x81\x0d\x01\xff", 4, 0, 0, 0);
 }
 
@@ -337,6 +358,11 @@ void * TryInit_WCHLinkE()
 	libusb_device_handle * wch_linke_devh;
 	wch_linke_devh = wch_link_base_setup(0);
 	if( !wch_linke_devh ) return 0;
+
+
+	struct LinkEProgrammerStruct * ret = malloc( sizeof( struct LinkEProgrammerStruct ) );
+	memset( ret, 0, sizeof( *ret ) );
+	ret->devh = wch_linke_devh;
 
 	MCF.WriteReg32 = 0;
 	MCF.ReadReg32 = 0;
@@ -350,7 +376,7 @@ void * TryInit_WCHLinkE()
 	MCF.WriteBinaryBlob = LEWriteBinaryBlob;
 	MCF.ReadBinaryBlob = LEReadBinaryBlob;
 	MCF.Exit = LEExit;
-	return wch_linke_devh;
+	return ret;
 };
 
 

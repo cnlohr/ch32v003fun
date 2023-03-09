@@ -29,7 +29,7 @@ int main( int argc, char ** argv )
 		return -32;
 	}
 	
-	SetupAutomaticHighLevelFunctions();
+	SetupAutomaticHighLevelFunctions( dev );
 
 	int status;
 	int must_be_end = 0;
@@ -44,7 +44,7 @@ int main( int argc, char ** argv )
 		}
 	}
 
-//	TestFunction( dev );
+	TestFunction( dev );
 
 	int iarg = 1;
 	const char * lastcommand = 0;
@@ -320,7 +320,7 @@ static int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber )
 
 int DefaultSetupInterface( void * dev )
 {
-	struct ESP32ProgrammerStruct * eps = (struct ESP32ProgrammerStruct *)dev;
+	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
 
 	if( MCF.Control3v3 ) MCF.Control3v3( dev, 1 );
 	if( MCF.DelayUS ) MCF.DelayUS( dev, 16000 );
@@ -348,77 +348,171 @@ int DefaultSetupInterface( void * dev )
 		fprintf( stderr, "Error: Could not read chip code.\n" );
 		return r;
 	}
+
+	iss->statetag = STTAG( "HALT" );
 }
 
-static int WriteWord( void * dev, uint32_t address_to_write, uint32_t data )
+static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t data )
 {
-	int r;
-	MCF.WriteReg32( dev, DMPROGBUF0, 0x0072a023 ); // sw x7,0(x5)
-	MCF.WriteReg32( dev, DMPROGBUF1, 0x00100073 ); // ebreak
-	MCF.WriteReg32( dev, DMDATA0, address_to_write );
-	MCF.WriteReg32( dev, DMCOMMAND, 0x00231005 ); // Copy data to x5
+	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
 	uint32_t rrv;
-	do
+	int r;
+	int first = 0;
+
+	if( iss->statetag != STTAG( "WRSQ" ) || address_to_write != iss->currentstateval )
 	{
-		r = MCF.ReadReg32( dev, DMABSTRACTCS, &rrv );
-		if( r ) return r;
+		MCF.WriteReg32( dev, DMABSTRACTAUTO, 0x00000000 ); // Disable Autoexec.
+		if(  iss->statetag != STTAG( "WRSQ" ) )
+		{
+			// Different address, so we don't need to re-write all the program regs.
+			MCF.WriteReg32( dev, DMPROGBUF0, 0x0072a023 ); // sw x7,0(x5)
+			MCF.WriteReg32( dev, DMPROGBUF1, 0x00428293 ); // addi x5, x5, 4
+			MCF.WriteReg32( dev, DMPROGBUF2, 0x00100073 ); // ebreak
+
+			// TODO: This code could also read from DATA1, and then that would go MUCH faster for random writes.
+		}
+
+		MCF.WriteReg32( dev, DMDATA0, address_to_write );
+		MCF.WriteReg32( dev, DMCOMMAND, 0x00231005 ); // Copy data to x5
+
+		iss->statetag = STTAG( "WRSQ" );
+		iss->currentstateval = address_to_write;
+
+		MCF.WriteReg32( dev, DMDATA0, data );
+		MCF.WriteReg32( dev, DMCOMMAND, 0x00271007 ); // Copy data to x7, and execute program.
+		MCF.WriteReg32( dev, DMABSTRACTAUTO, 1 ); // Disable Autoexec.
+
+		do
+		{
+			r = MCF.ReadReg32( dev, DMABSTRACTCS, &rrv );
+			if( r ) return r;
+		}
+		while( rrv & (1<<12) );
+		if( (rrv >> 8 ) & 7 )
+		{
+			fprintf( stderr, "Fault writing memory (DMABSTRACTS = %08x)\n", rrv );
+		}
 	}
-	while( rrv & (1<<12) );
-	
-	MCF.WriteReg32( dev, DMDATA0, data );
-	MCF.WriteReg32( dev, DMCOMMAND, 0x00271007 ); // Copy data to x7, and execute program.
-	do
+	else
 	{
-		r = MCF.ReadReg32( dev, DMABSTRACTCS, &rrv );
-		if( r ) return r;
+		MCF.WriteReg32( dev, DMDATA0, data );
 	}
-	while( rrv & (1<<12) );
-	if( (rrv >> 8 ) & 7 )
-	{
-		fprintf( stderr, "Fault writing memory (DMABSTRACTS = %08x)\n", rrv );
-	}
+
+
+	iss->currentstateval += 4;
+
 	return 0;
 }
 
 int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob_size, uint8_t * blob )
 {
+	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
+	int is_flash = 0;
+	uint32_t lastgroup = -1;
+
+	if( (address_to_write & 0xff000000) == 0x08000000 ) 
+	{
+		// Need to unlock flash.
+		// Flash reg base = 0x40022000,
+		// FLASH_MODEKEYR => Offset 0x24
+		MCF.WriteWord( dev, 0x20000024, 0x45670123 );
+		MCF.WriteWord( dev, 0x40022024, 0xCDEF89AB );
+		uint32_t rv = 0xffffffff;
+
+		// Debug.
+		MCF.ReadWord( dev, 0x20000024, &rv );
+		printf( "FLASH CTR: %08x\n", rv );
+
+		MCF.ReadWord( dev, 0x40022010, &rv );
+		printf( "FLASH CTR: %08x\n", rv );
+		is_flash = 1;
+	}
+
+	uint32_t wp = address_to_write;
+	uint32_t ew = wp + blob_size;
+	int group = -1;
+	lastgroup = -1;
+
+	while( wp <= ew )
+	{
+		if( is_flash )
+		{
+			group = (wp & 0xffffffc0);
+			if( group != lastgroup )
+			{
+				// FLASH_CTLR offset is 0x10, FLASH_ADDR = 0x14
+				MCF.WriteWord( dev, 0x40022014, group ); //Address for page erase.
+				MCF.WriteWord( dev, 0x40022010, (1<<16)|(1<<17) ); //Perform quick page erase.
+				MCF.WriteWord( dev, 0x40022010, (1<<16)|(1<<19) ); //Reset BUFRST.
+				lastgroup = group;
+			}
+		}
+		MCF.WriteWord( dev, wp, *(((uint32_t*)blob)+4) ); //Write data.
+		MCF.WriteWord( dev, 0x40022010, (1<<16)|(1<<18) ); //Enable BUFLOAD.
+		wp+=4;
+	}
+	
 //	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
 //	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
 //	MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
 	
 }
 
-static int ReadWord( void * dev, uint32_t address_to_read, uint32_t * data )
+static int DefaultReadWord( void * dev, uint32_t address_to_read, uint32_t * data )
 {
-	int r;
-	MCF.WriteReg32( dev, DMPROGBUF0, 0x0002a303 ); // lw x6,0(x5)
-	MCF.WriteReg32( dev, DMPROGBUF1, 0x00100073 ); // ebreak
-	MCF.WriteReg32( dev, DMDATA0, address_to_read );
-	MCF.WriteReg32( dev, DMCOMMAND, 0x00271005 ); // Copy data to x5
+	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
 	uint32_t rrv;
-	do
+	int r;
+	int first = 0;
+
+	if( iss->statetag != STTAG( "RDSQ" ) || address_to_read != iss->currentstateval )
 	{
-		r = MCF.ReadReg32( dev, DMABSTRACTCS, &rrv );
-		if( r ) return r;
-	}
-	while( rrv & (1<<12) );
-	MCF.WriteReg32( dev, DMCOMMAND, 0x00221006 ); // Copy x7 to data0
-	do
-	{
-		r = MCF.ReadReg32( dev, DMABSTRACTCS, &rrv );
-		if( r ) return r;
-	}
-	while( rrv & (1<<12) );
-	if( (rrv >> 8 ) & 7 )
-	{
-		fprintf( stderr, "Fault writing memory (DMABSTRACTS = %08x)\n", rrv );
+		MCF.WriteReg32( dev, DMABSTRACTAUTO, 0 ); // Disable Autoexec.
+		MCF.WriteReg32( dev, DMPROGBUF0, 0x0002a303 ); // lw x6,0(x5)
+		MCF.WriteReg32( dev, DMPROGBUF1, 0x00428293 ); // addi x5, x5, 4
+		MCF.WriteReg32( dev, DMPROGBUF2, 0x0065a023 ); // sw x6,0(x11) // Write
+		MCF.WriteReg32( dev, DMPROGBUF3, 0x00100073 ); // ebreak
+
+		MCF.WriteReg32( dev, DMDATA0, address_to_read );
+		MCF.WriteReg32( dev, DMCOMMAND, 0x00231005 ); // Copy data to x5
+
+		MCF.WriteReg32( dev, DMDATA0, 0xe00000f4 );   // DATA0's location in memory.
+		MCF.WriteReg32( dev, DMCOMMAND, 0x0023100b ); // Copy data to x11
+
+		MCF.WriteReg32( dev, DMCOMMAND, 0x00241006 ); // Copy x6 to data0 Then execute.  This will be what is repeated.
+
+		MCF.WriteReg32( dev, DMABSTRACTAUTO, 1 ); // Disable Autoexec.
+		do
+		{
+			r = MCF.ReadReg32( dev, DMABSTRACTCS, &rrv );
+			if( r ) return r;
+		}
+		while( rrv & (1<<12) );
+		first = 1;
+		iss->statetag = STTAG( "RDSQ" );
+		iss->currentstateval = address_to_read;
+
+		do
+		{
+			r = MCF.ReadReg32( dev, DMABSTRACTCS, &rrv );
+			if( r ) return r;
+		}
+		while( rrv & (1<<12) );
 	}
 
+	iss->currentstateval += 4;
+
+	if( (rrv >> 8 ) & 7 )
+	{
+		fprintf( stderr, "Fault reading memory (DMABSTRACTS = %08x)\n", rrv );
+	}
 	return MCF.ReadReg32( dev, DMDATA0, data );
 }
 
 int DefaultReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t read_size, uint8_t * blob )
 {
+	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
+
 	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
 	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
 	MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
@@ -428,29 +522,41 @@ int DefaultReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t r
 
 void TestFunction(void * dev )
 {
+	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
+
 	uint32_t rv;
 	int r;
-	
 	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
 	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
-//	MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
+	MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
+#if 0	
 
-	rv = 0xaaaabbbb;
-	r = WriteWord( dev, 0x20000100, rv );
+	r = MCF.WriteWord( dev, 0x20000100, 0xdeadbeef );
 	printf( "%d\n", r );
-	r = ReadWord( dev, 0x20000100, &rv );
+	r = MCF.WriteWord( dev, 0x20000104, 0xcafed0de );
+	printf( "%d\n", r );
+	r = MCF.ReadWord( dev, 0x20000100, &rv );
+	printf( "%d %08x\n", r, rv );
+	r = MCF.ReadWord( dev, 0x20000104, &rv );
+	printf( "%d %08x\n", r, rv );
+	r = MCF.ReadWord( dev, 0x20000108, &rv );
+	printf( "%d %08x\n", r, rv );
+#endif
+
+	
+	MCF.WriteBinaryBlob( dev, 0x08000000, 16, "hello, world!!\n" );
+	r = MCF.ReadWord( dev, 0x08000000, &rv );
+	printf( "%d %08x\n", r, rv );
+	r = MCF.ReadWord( dev, 0x08000004, &rv );
+	printf( "%d %08x\n", r, rv );
+	r = MCF.ReadWord( dev, 0x08000008, &rv );
 	printf( "%d %08x\n", r, rv );
 
-	rv = 0x11117777;
-	r = WriteWord( dev, 0x20000100, rv );
-	printf( "%d\n", r );
-	r = ReadWord( dev, 0x20000100, &rv );
-	printf( "%d %08x\n", r, rv );
 }
 
 
 
-int SetupAutomaticHighLevelFunctions()
+int SetupAutomaticHighLevelFunctions( void * dev )
 {
 	// Will populate high-level functions from low-level functions.
 	if( MCF.WriteReg32 == 0 || MCF.ReadReg32 == 0 ) return -5;
@@ -464,6 +570,15 @@ int SetupAutomaticHighLevelFunctions()
 		MCF.WriteBinaryBlob = DefaultWriteBinaryBlob;
 	if( !MCF.ReadBinaryBlob )
 		MCF.ReadBinaryBlob = DefaultReadBinaryBlob;
+	if( !MCF.WriteWord )
+		MCF.WriteWord = DefaultWriteWord;
+	if( !MCF.ReadWord )
+		MCF.ReadWord = DefaultReadWord;
 
+	struct InternalState * iss = malloc( sizeof( struct InternalState ) );
+	iss->statetag = 0;
+	iss->currentstateval = 0;
+
+	((struct ProgrammerStructBase*)dev)->internal = iss;
 }
 
