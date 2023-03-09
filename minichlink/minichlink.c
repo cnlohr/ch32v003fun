@@ -44,7 +44,7 @@ int main( int argc, char ** argv )
 		}
 	}
 
-	//TestFunction( dev );
+//	TestFunction( dev );
 
 	int iarg = 1;
 	const char * lastcommand = 0;
@@ -354,7 +354,7 @@ static int WriteWord( void * dev, uint32_t address_to_write, uint32_t data )
 {
 	int r;
 	MCF.WriteReg32( dev, DMPROGBUF0, 0x0072a023 ); // sw x7,0(x5)
-	MCF.WriteReg32( dev, DMPROGBUF0, 0x00100073 ); // ebreak
+	MCF.WriteReg32( dev, DMPROGBUF1, 0x00100073 ); // ebreak
 	MCF.WriteReg32( dev, DMDATA0, address_to_write );
 	MCF.WriteReg32( dev, DMCOMMAND, 0x00231005 ); // Copy data to x5
 	uint32_t rrv;
@@ -382,16 +382,17 @@ static int WriteWord( void * dev, uint32_t address_to_write, uint32_t data )
 
 int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob_size, uint8_t * blob )
 {
-	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
-	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
-	MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
+//	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
+//	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
+//	MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
+	
 }
 
 static int ReadWord( void * dev, uint32_t address_to_read, uint32_t * data )
 {
 	int r;
 	MCF.WriteReg32( dev, DMPROGBUF0, 0x0002a303 ); // lw x6,0(x5)
-	MCF.WriteReg32( dev, DMPROGBUF0, 0x00100073 ); // ebreak
+	MCF.WriteReg32( dev, DMPROGBUF1, 0x00100073 ); // ebreak
 	MCF.WriteReg32( dev, DMDATA0, address_to_read );
 	MCF.WriteReg32( dev, DMCOMMAND, 0x00271005 ); // Copy data to x5
 	uint32_t rrv;
@@ -401,7 +402,6 @@ static int ReadWord( void * dev, uint32_t address_to_read, uint32_t * data )
 		if( r ) return r;
 	}
 	while( rrv & (1<<12) );
-	printf( "RRV: %08x\n", rrv );
 	MCF.WriteReg32( dev, DMCOMMAND, 0x00221006 ); // Copy x7 to data0
 	do
 	{
@@ -409,12 +409,11 @@ static int ReadWord( void * dev, uint32_t address_to_read, uint32_t * data )
 		if( r ) return r;
 	}
 	while( rrv & (1<<12) );
-	printf( "RRV: %08x\n", rrv );
 	if( (rrv >> 8 ) & 7 )
 	{
 		fprintf( stderr, "Fault writing memory (DMABSTRACTS = %08x)\n", rrv );
 	}
-	
+
 	return MCF.ReadReg32( dev, DMDATA0, data );
 }
 
@@ -434,9 +433,18 @@ void TestFunction(void * dev )
 	
 	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
 	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
-	MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
+//	MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
 
-	r = ReadWord( dev, 0x08000004, &rv );
+	rv = 0xaaaabbbb;
+	r = WriteWord( dev, 0x20000100, rv );
+	printf( "%d\n", r );
+	r = ReadWord( dev, 0x20000100, &rv );
+	printf( "%d %08x\n", r, rv );
+
+	rv = 0x11117777;
+	r = WriteWord( dev, 0x20000100, rv );
+	printf( "%d\n", r );
+	r = ReadWord( dev, 0x20000100, &rv );
 	printf( "%d %08x\n", r, rv );
 }
 
