@@ -67,9 +67,9 @@ struct InternalState
 #define DMPROGBUF6     0x26
 #define DMPROGBUF7     0x27
 
-#define CPBR       0x7C
-#define CFGR       0x7D
-#define SHDWCFGR   0x7E
+#define DMCPBR       0x7C
+#define DMCFGR       0x7D
+#define DMSHDWCFGR   0x7E
 
 extern struct MiniChlinkFunctions MCF;
 

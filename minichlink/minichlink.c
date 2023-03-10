@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "minichlink.h"
+#include "../ch32v003fun/ch32v003fun.h"
 
 static int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber );
 void TestFunction(void * v );
@@ -44,7 +45,7 @@ int main( int argc, char ** argv )
 		}
 	}
 
-//	TestFunction( dev );
+	TestFunction( dev );
 
 	int iarg = 1;
 	const char * lastcommand = 0;
@@ -324,9 +325,9 @@ int DefaultSetupInterface( void * dev )
 
 	if( MCF.Control3v3 ) MCF.Control3v3( dev, 1 );
 	if( MCF.DelayUS ) MCF.DelayUS( dev, 16000 );
-	MCF.WriteReg32( dev, SHDWCFGR, 0x5aa50000 | (1<<10) ); // Shadow Config Reg
-	MCF.WriteReg32( dev, CFGR, 0x5aa50000 | (1<<10) ); // CFGR (1<<10 == Allow output from slave)
-	MCF.WriteReg32( dev, CFGR, 0x5aa50000 | (1<<10) ); // Bug in silicon?  If coming out of cold boot, and we don't do our little "song and dance" this has to be called.
+	MCF.WriteReg32( dev, DMSHDWCFGR, 0x5aa50000 | (1<<10) ); // Shadow Config Reg
+	MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // CFGR (1<<10 == Allow output from slave)
+	MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // Bug in silicon?  If coming out of cold boot, and we don't do our little "song and dance" this has to be called.
 	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
 	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
 
@@ -354,6 +355,7 @@ int DefaultSetupInterface( void * dev )
 
 static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t data )
 {
+	printf( "Write Word %08x => %08x\n", data, address_to_write );
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
 	uint32_t rrv;
 	int r;
@@ -380,7 +382,7 @@ static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t dat
 
 		MCF.WriteReg32( dev, DMDATA0, data );
 		MCF.WriteReg32( dev, DMCOMMAND, 0x00271007 ); // Copy data to x7, and execute program.
-		MCF.WriteReg32( dev, DMABSTRACTAUTO, 1 ); // Disable Autoexec.
+		MCF.WriteReg32( dev, DMABSTRACTAUTO, 1 ); // Enable Autoexec.
 
 		do
 		{
@@ -406,28 +408,53 @@ static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t dat
 
 int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob_size, uint8_t * blob )
 {
+	int timeout = 0;
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
 	int is_flash = 0;
 	uint32_t lastgroup = -1;
 
-	if( (address_to_write & 0xff000000) == 0x08000000 ) 
+	if( (address_to_write & 0xff000000) == 0x08000000 || (address_to_write & 0xff000000) == 0x00000000 ) 
 	{
 		// Need to unlock flash.
 		// Flash reg base = 0x40022000,
-		// FLASH_MODEKEYR => Offset 0x24
-		MCF.WriteWord( dev, 0x20000024, 0x45670123 );
+		// FLASH_MODEKEYR => 0x40022024
+		// FLASH_KEYR => 0x40022004
+		printf( "UNLOCKING\n" );
+		MCF.WriteWord( dev, 0x40022004, 0x45670123 );
+		MCF.WriteWord( dev, 0x40022004, 0xCDEF89AB );
+		MCF.WriteWord( dev, 0x40022024, 0x45670123 );
 		MCF.WriteWord( dev, 0x40022024, 0xCDEF89AB );
 		uint32_t rv = 0xffffffff;
-
-		// Debug.
-		MCF.ReadWord( dev, 0x20000024, &rv );
-		printf( "FLASH CTR: %08x\n", rv );
 
 		MCF.ReadWord( dev, 0x40022010, &rv );
 		printf( "FLASH CTR: %08x\n", rv );
 		is_flash = 1;
 	}
+/*
+	MCF.WriteReg32( dev, DMDATA0, address_to_write );
+	MCF.WriteReg32( dev, DMCOMMAND, 0x00231003 ); // Copy data to x3 (DATAADDRESS)
+	MCF.WriteReg32( dev, DMDATA0, FLASH_R_BASE + 0x10 );
+	MCF.WriteReg32( dev, DMCOMMAND, 0x00231004 ); // Copy data to x4 (CTLR)
+	MCF.WriteReg32( dev, DMDATA0, FLASH_R_BASE + 0x14 );
+	MCF.WriteReg32( dev, DMCOMMAND, 0x00231005 ); // Copy data to x5 (ADDR)
 
+	MCF.WriteReg32( dev, DMDATA0, CR_PAGE_ER );
+	MCF.WriteReg32( dev, DMCOMMAND, 0x00231006 ); // Copy flag 1 to x6 (CR_PAGE_ER)
+	MCF.WriteReg32( dev, DMDATA0, CR_STRT_Set | CR_PAGE_ER );
+	MCF.WriteReg32( dev, DMCOMMAND, 0x00231007 ); // Copy flag 2 to x7 (CR_STRT_Set)
+
+	MCF.WriteReg32( dev, DMPROGBUF0, 0x00022403 ); // lw x8,0(x4)
+	MCF.WriteReg32( dev, DMPROGBUF1, 0x00646433 ); // or x8, x8, x6
+	MCF.WriteReg32( dev, DMPROGBUF2, 0x00822023 ); // sw x8,0(x4)
+	MCF.WriteReg32( dev, DMPROGBUF3, 0x0032a023 ); // sw x3,0(x5)
+//	MCF.WriteReg32( dev, DMPROGBUF4, 0x00022023 ); // sw x0,0(x4)
+	MCF.WriteReg32( dev, DMPROGBUF4, 0x00100073 ); // ebreak
+	MCF.WriteReg32( dev, DMCOMMAND, 0x00250000 ); // Copy data to x7, and execute program.
+	MCF.WriteReg32( dev, DMABSTRACTAUTO, 1 ); // Enable Autoexec.
+	return 0;
+
+
+*/
 	uint32_t wp = address_to_write;
 	uint32_t ew = wp + blob_size;
 	int group = -1;
@@ -440,22 +467,111 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 			group = (wp & 0xffffffc0);
 			if( group != lastgroup )
 			{
-				// FLASH_CTLR offset is 0x10, FLASH_ADDR = 0x14
-				MCF.WriteWord( dev, 0x40022014, group ); //Address for page erase.
-				MCF.WriteWord( dev, 0x40022010, (1<<16)|(1<<17) ); //Perform quick page erase.
-				MCF.WriteWord( dev, 0x40022010, (1<<16)|(1<<19) ); //Reset BUFRST.
+				uint32_t rw = 0xffffffff;
+				// 16.4.7, Steps 1+2  (Make sure flash isn't locked)
+				MCF.ReadWord( dev, 0x40022010, &rw ); 
+				if( rw & 0x8080 ) 
+				{
+					fprintf( stderr, "Error: Flash is not unlocked\n" );
+					return -9;
+				}
+
+				// 16.4.7, Step 3: Check the BSY bit of the FLASH_STATR register to confirm that there are no other programming operations in progress.
+				// skip (we make sure at the end)
+
+				// Step 4:  set PAGE_ER of FLASH_CTLR(0x40022010)
+				MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_PAGE_ER ); // Actually FTER
+
+				// Step 5: Write the first address of the fast erase page to the FLASH_ADDR register.
+				MCF.WriteWord( dev, (intptr_t)&FLASH->ADDR, group );
+
+				// Step 6: Set the STAT bit of FLASH_CTLR register to '1' to initiate a fast page erase (64 bytes) action.
+				printf( "FLASH_CTLR = %08x\n", rw );
+				MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_STRT_Set );
+				do
+				{
+					rw = 0;
+					MCF.ReadWord( dev, (intptr_t)&FLASH->STATR, &rw ); // FLASH_STATR => 0x4002200C
+					printf( "FLASH_STATR %08x %d\n", rw,__LINE__ );
+					if( timeout++ > 100 ) goto timedout;
+				} while(rw & 1);  // BSY flag.
+				MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, 0 );
+
+				// Step 7: Wait for the BSY bit to become '0' or the EOP bit of FLASH_STATR register to be '1' to indicate the endof erase, and clear the EOP bit to 0.
+				do
+				{
+					rw = 0;
+					MCF.ReadWord( dev, (intptr_t)&FLASH->STATR, &rw ); // FLASH_STATR => 0x4002200C
+					printf( "FLASH_STATR %08x\n", rw );
+					if( timeout++ > 100 ) goto timedout;
+				} while(rw & 1);  // BSY flag.
+				if( rw & FLASH_STATR_WRPRTERR )
+				{
+					fprintf( stderr, "Memory Protection Error\n" );
+					return -44;
+				}
+
+				MCF.ReadWord( dev, (intptr_t)&FLASH->CTLR, &rw );
+				printf( "FLASH_CTLR = %08x\n", rw );
+
+
+				MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_BUF_RST | CR_PAGE_PG );
+				do
+				{
+					rw = 0;
+					MCF.ReadWord( dev, (intptr_t)&FLASH->STATR, &rw ); // FLASH_STATR => 0x4002200C
+					printf( "FLASH_STATR %08x\n", rw );
+					if( timeout++ > 100 ) goto timedout;
+				} while(rw & 1);  // BSY flag.
+
+				int j;
+				for( j = 0; j < 16; j++ )
+				{
+					MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_PAGE_PG );
+					MCF.WriteWord( dev, wp, 0xaaaaaaaa );
+					wp += 4; 
+
+					MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_BUF_LOAD );
+					do
+					{
+						rw = 0;
+						MCF.ReadWord( dev, (intptr_t)&FLASH->STATR, &rw ); // FLASH_STATR => 0x4002200C
+						printf( "FLASH_STATR %08x\n", rw );
+						if( timeout++ > 100 ) goto timedout;
+					} while(rw & 1);  // BSY flag.
+				}
+				printf( "Group written.\n" );
+
+				MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_PAGE_PG );
+				MCF.WriteWord( dev, (intptr_t)&FLASH->ADDR, group );
+				MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_PAGE_PG|CR_STRT_Set );
+				do
+				{
+					rw = 0;
+					MCF.ReadWord( dev, (intptr_t)&FLASH->STATR, &rw ); // FLASH_STATR => 0x4002200C
+					printf( "FLASH_STATR %08x\n", rw );
+					if( timeout++ > 100 ) goto timedout;
+				} while(rw & 1);  // BSY flag.
+				MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_LOCK_Set );
+
 				lastgroup = group;
+
+				// Step 4:  set PAGE_ER of FLASH_CTLR(0x40022010)
+//				MCF.WriteWord( dev, FLASH_R_BASE + 0x10, 0 );
 			}
 		}
-		MCF.WriteWord( dev, wp, *(((uint32_t*)blob)+4) ); //Write data.
-		MCF.WriteWord( dev, 0x40022010, (1<<16)|(1<<18) ); //Enable BUFLOAD.
+		//MCF.WriteWord( dev, wp, *(((uint32_t*)blob)+4) ); //Write data.
+		//MCF.WriteWord( dev, 0x40022010, (1<<16)|(1<<18) ); //Enable BUFLOAD.
 		wp+=4;
 	}
 	
 //	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
 //	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
 //	MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
-	
+	return 0;
+timedout:
+	fprintf( stderr, "Timed out\n" );
+	return -5;
 }
 
 static int DefaultReadWord( void * dev, uint32_t address_to_read, uint32_t * data )
@@ -529,27 +645,33 @@ void TestFunction(void * dev )
 	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
 	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
 	MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
-#if 0	
+
 
 	r = MCF.WriteWord( dev, 0x20000100, 0xdeadbeef );
 	printf( "%d\n", r );
 	r = MCF.WriteWord( dev, 0x20000104, 0xcafed0de );
 	printf( "%d\n", r );
+	r = MCF.WriteWord( dev, 0x20000108, 0x12345678 );
+	printf( "%d\n", r );
+	r = MCF.WriteWord( dev, 0x20000108, 0x00b00d00 );
+	printf( "%d\n", r );
+	r = MCF.WriteWord( dev, 0x20000104, 0x33334444 );
+	printf( "%d\n", r );
+
 	r = MCF.ReadWord( dev, 0x20000100, &rv );
 	printf( "%d %08x\n", r, rv );
 	r = MCF.ReadWord( dev, 0x20000104, &rv );
 	printf( "%d %08x\n", r, rv );
 	r = MCF.ReadWord( dev, 0x20000108, &rv );
 	printf( "%d %08x\n", r, rv );
-#endif
 
 	
-	MCF.WriteBinaryBlob( dev, 0x08000000, 16, "hello, world!!\n" );
-	r = MCF.ReadWord( dev, 0x08000000, &rv );
+	MCF.WriteBinaryBlob( dev, 0x08000300, 16, "hello, world!!\n" );
+	r = MCF.ReadWord( dev, 0x00000300, &rv );
 	printf( "%d %08x\n", r, rv );
-	r = MCF.ReadWord( dev, 0x08000004, &rv );
+	r = MCF.ReadWord( dev, 0x00000304, &rv );
 	printf( "%d %08x\n", r, rv );
-	r = MCF.ReadWord( dev, 0x08000008, &rv );
+	r = MCF.ReadWord( dev, 0x00000308, &rv );
 	printf( "%d %08x\n", r, rv );
 
 }
