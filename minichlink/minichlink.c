@@ -44,7 +44,7 @@ int main( int argc, char ** argv )
 		}
 	}
 
-	TestFunction( dev );
+//	TestFunction( dev );
 
 	int iarg = 1;
 	const char * lastcommand = 0;
