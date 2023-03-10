@@ -496,6 +496,7 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 					printf( "FLASH_STATR %08x %d\n", rw,__LINE__ );
 					if( timeout++ > 100 ) goto timedout;
 				} while(rw & 1);  // BSY flag.
+
 				MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, 0 );
 
 				// Step 7: Wait for the BSY bit to become '0' or the EOP bit of FLASH_STATR register to be '1' to indicate the endof erase, and clear the EOP bit to 0.
@@ -546,6 +547,7 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 				MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_PAGE_PG );
 				MCF.WriteWord( dev, (intptr_t)&FLASH->ADDR, group );
 				MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_PAGE_PG|CR_STRT_Set );
+
 				do
 				{
 					rw = 0;
@@ -554,6 +556,13 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 					if( timeout++ > 100 ) goto timedout;
 				} while(rw & 1);  // BSY flag.
 				MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, 0 );
+				do
+				{
+					rw = 0;
+					MCF.ReadWord( dev, (intptr_t)&FLASH->STATR, &rw ); // FLASH_STATR => 0x4002200C
+					printf( "FLASH_STATR %08x\n", rw );
+					if( timeout++ > 100 ) goto timedout;
+				} while(rw & 1);  // BSY flag.
 
 				lastgroup = group;
 
