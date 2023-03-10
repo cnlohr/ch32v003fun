@@ -486,8 +486,9 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 				MCF.WriteWord( dev, (intptr_t)&FLASH->ADDR, group );
 
 				// Step 6: Set the STAT bit of FLASH_CTLR register to '1' to initiate a fast page erase (64 bytes) action.
+				MCF.ReadWord( dev, (intptr_t)&FLASH->CTLR, &rw ); 
 				printf( "FLASH_CTLR = %08x\n", rw );
-				MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_STRT_Set );
+				MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_STRT_Set|CR_PAGE_ER );
 				do
 				{
 					rw = 0;
@@ -528,7 +529,7 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 				for( j = 0; j < 16; j++ )
 				{
 					MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_PAGE_PG );
-					MCF.WriteWord( dev, wp, 0xaaaaaaaa );
+					MCF.WriteWord( dev, wp, 0x0000ffff );
 					wp += 4; 
 
 					MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_BUF_LOAD );
@@ -552,7 +553,7 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 					printf( "FLASH_STATR %08x\n", rw );
 					if( timeout++ > 100 ) goto timedout;
 				} while(rw & 1);  // BSY flag.
-				MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_LOCK_Set );
+				MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, 0 );
 
 				lastgroup = group;
 
