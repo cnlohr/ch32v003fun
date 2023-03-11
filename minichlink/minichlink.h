@@ -28,9 +28,10 @@ struct MiniChlinkFunctions
 	// WARNING: Writing binary blobs may write groups of 64-bytes.
 	int (*WriteBinaryBlob)( void * dev, uint32_t address_to_write, uint32_t blob_size, uint8_t * blob );
 	int (*ReadBinaryBlob)( void * dev, uint32_t address_to_read_from, uint32_t read_size, uint8_t * blob );
+	int (*Erase)( void * dev, uint32_t address, int type ); //type = 0 for fast, 1 for whole-chip
 
 	// MUST be 4-byte-aligned.
-	int (*WriteWord)( void * dev, uint32_t address_to_write, uint32_t data );
+	int (*WriteWord)( void * dev, uint32_t address_to_write, uint32_t data ); // Flags = 1 for "doing a fast FLASH write."
 	int (*ReadWord)( void * dev, uint32_t address_to_read, uint32_t * data );
 };
 
@@ -47,6 +48,8 @@ struct InternalState
 {
 	uint32_t statetag;
 	uint32_t currentstateval;
+	uint32_t flash_unlocked;
+	int lastwriteflags;
 };
 
 

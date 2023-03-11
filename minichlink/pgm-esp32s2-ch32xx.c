@@ -18,7 +18,7 @@ int ESPFlushLLCommands( void * dev );
 
 static inline int SRemain( struct ESP32ProgrammerStruct * e )
 {
-	return sizeof( e->commandbuffer ) - e->commandplace - 1; //Need room for EOF.
+	return sizeof( e->commandbuffer ) - e->commandplace - 2; //Need room for EOF.
 }
 
 static inline void Write4LE( struct ESP32ProgrammerStruct * e, uint32_t val )
@@ -90,6 +90,7 @@ int ESPFlushLLCommands( void * dev )
 	}
 	int r;
 
+	printf( "FLUSH: %d\n", eps->commandplace );
 	eps->commandbuffer[0] = 0xad; // Key report ID
 	eps->commandbuffer[eps->commandplace] = 0xff;
 	r = hid_send_feature_report( eps->hd, eps->commandbuffer, 255 );
