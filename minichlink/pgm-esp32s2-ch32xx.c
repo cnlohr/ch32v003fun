@@ -88,9 +88,11 @@ int ESPFlushLLCommands( void * dev )
 		fprintf( stderr, "Error: Command buffer overflow\n" );
 		return -5; 
 	}
+
+	if( eps->commandplace == 1 ) return 0;
+
 	int r;
 
-	printf( "FLUSH: %d\n", eps->commandplace );
 	eps->commandbuffer[0] = 0xad; // Key report ID
 	eps->commandbuffer[eps->commandplace] = 0xff;
 	r = hid_send_feature_report( eps->hd, eps->commandbuffer, 255 );
