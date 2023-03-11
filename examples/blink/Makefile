@@ -44,7 +44,7 @@ $(TARGET).bin : $(TARGET).elf
 	$(PREFIX)-objcopy -O ihex $< $(TARGET).hex
 
 flash : $(TARGET).bin
-	$(MINICHLINK)/minichlink -w $< -r
+	$(MINICHLINK)/minichlink -w $< flash -b
 
 clean :
 	rm -rf $(TARGET).elf $(TARGET).bin $(TARGET).hex $(TARGET).lst $(TARGET).map $(TARGET).hex
