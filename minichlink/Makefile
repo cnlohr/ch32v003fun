@@ -12,6 +12,10 @@ install_udev_rules :
 	cp 99-WCH-LinkE.rules /etc/udev/rules.d/
 	service udev restart
 
+inspect_bootloader : minichlink
+	./minichlink -r test.bin launcher 0x780
+	riscv64-unknown-elf-objdump -S -D test.bin -b binary -m riscv:rv32 | less
+
 clean :
 	rm -rf $(TOOLS)
 	

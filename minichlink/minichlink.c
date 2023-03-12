@@ -10,6 +10,8 @@
 #include "../ch32v003fun/ch32v003fun.h"
 
 static int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber );
+static int64_t StringToMemoryAddress( const char * number );
+
 void TestFunction(void * v );
 struct MiniChlinkFunctions MCF;
 
@@ -175,23 +177,25 @@ keep_going:
 					goto help;
 				}
 				const char * fname = argv[iarg++];
-				const char * offsstr = argv[iarg++];
-				uint64_t offset = 0;
-				if( strcasecmp( offsstr, "flash" ) == 0 )
-					offset = 0x08000000;
-				else
-					offset = SimpleReadNumberInt( offsstr, -1 );
+				uint64_t offset = StringToMemoryAddress( argv[iarg++] );
 
 				uint64_t amount = SimpleReadNumberInt( argv[iarg], -1 );
 				if( offset > 0xffffffff || amount > 0xffffffff )
 				{
-					fprintf( stderr, "Error: memory value request out of range.\n" );
+					fprintf( stderr, "Error: memory value request out of range\n" );
 					return -9;
 				}
 
 				// Round up amount.
 				amount = ( amount + 3 ) & 0xfffffffc;
-				FILE * f = fopen( fname, "wb" );
+				FILE * f = 0;
+				int hex = 0;
+				if( strcmp( fname, "-" ) == 0 )
+					f = stdout;
+				else if( strcmp( fname, "+" ) == 0 )
+					f = stdout, hex = 1;
+				else
+					fopen( fname, "wb" );
 				if( !f )
 				{
 					fprintf( stderr, "Error: can't open write file \"%s\"\n", argv[iarg] );
@@ -213,11 +217,26 @@ keep_going:
 					goto unimplemented;
 				}
 
-				fwrite( readbuff, amount, 1, f );
+				if( hex )
+				{
+					int i;
+					for( i = 0; i < amount; i++ )
+					{
+						if( ( i & 0xf ) == 0 )
+						{
+							if( i != 0 ) printf( "\n" );
+							printf( "%08x: ", (uint32_t)(offset + i) );
+						}
+						printf( "%02x ", readbuff[i] );
+					}
+					printf( "\n" );
+				}
+				else
+					fwrite( readbuff, amount, 1, f );
 
 				free( readbuff );
 
-				fclose( f );
+				if( f != stdout ) fclose( f );
 				break;
 			}
 			case 'w':
@@ -228,21 +247,71 @@ keep_going:
 				if( iarg + 1 >= argc ) goto help;
 				// Write binary.
 				int i;
-				FILE * f = fopen( argv[iarg++], "rb" );
-				fseek( f, 0, SEEK_END );
-				int len = ftell( f );
-				fseek( f, 0, SEEK_SET );
-				char * image = malloc( len );
-				status = fread( image, len, 1, f );
-				fclose( f );
+				int len = 0;
+				char * image = 0;
+				const char * fname = argv[iarg++];
 
-				const char * nextargv =  argv[iarg];
-				uint64_t offset = 0;
-				if( strcasecmp( nextargv, "flash" ) == 0 )
-					offset = 0x08000000;
+				if( fname[0] == '-' )
+				{
+					len = strlen( fname + 1 );
+					image = strdup( fname + 1 );
+					status = 1;
+				}
+				else if( fname[0] == '+' )
+				{
+					int hl = strlen( fname+1 );
+					if( hl & 1 )
+					{
+						fprintf( stderr, "Error: hex input doesn't align to chars correctly.\n" );
+						return -32;
+					}
+					len = hl/2;
+					image = malloc( len );
+					int i;
+					for( i = 0; i < len; i ++ )
+					{
+						char c1 = fname[i*2+1];
+						char c2 = fname[i*2+2];
+						int v1, v2;
+						if( c1 >= '0' && c1 <= '9' ) v1 = c1 - '0';
+						else if( c1 >= 'a' && c1 <= 'f' ) v1 = c1 - 'a' + 10;
+						else if( c1 >= 'A' && c1 <= 'F' ) v1 = c1 - 'A' + 10;
+						else
+						{
+							fprintf( stderr, "Error: Bad hex\n" );
+							return -32;
+						}
+
+						if( c2 >= '0' && c2 <= '9' ) v2 = c2 - '0';
+						else if( c2 >= 'a' && c2 <= 'f' ) v2 = c2 - 'a' + 10;
+						else if( c2 >= 'A' && c2 <= 'F' ) v2 = c2 - 'A' + 10;
+						else
+						{
+							fprintf( stderr, "Error: Bad hex\n" );
+							return -32;
+						}
+						image[i] = (v1<<4) | v2;
+					}
+					status = 1;
+				}
 				else
-					offset = SimpleReadNumberInt( argv[iarg], -1 );
+				{
+					FILE * f = fopen( fname, "rb" );
+					fseek( f, 0, SEEK_END );
+					len = ftell( f );
+					fseek( f, 0, SEEK_SET );
+					image = malloc( len );
+					status = fread( image, len, 1, f );
+					fclose( f );
+				}
 
+
+				uint64_t offset = StringToMemoryAddress( argv[iarg] );
+				if( offset > 0xffffffff )
+				{
+					fprintf( stderr, "Error: Invalid offset\n" );
+					exit( -44 );
+				}
 				if( status != 1 )
 				{
 					fprintf( stderr, "Error: File I/O Fault.\n" );
@@ -253,6 +322,8 @@ keep_going:
 					fprintf( stderr, "Error: Image for CH32V003 too large (%d)\n", len );
 					exit( -9 );
 				}
+
+				printf( "%08x %08x\n", offset, len );
 
 				if( MCF.WriteBinaryBlob )
 				{
@@ -299,6 +370,9 @@ help:
 //	fprintf( stderr, " -p Disable Read Protection (UNTESTED)\n" );
 	fprintf( stderr, " -w [binary image to write] [address, decimal or 0x, try0x08000000]\n" );
 	fprintf( stderr, " -r [memory address, decimal or 0x, try 0x08000000] [size, decimal or 0x, try 16384] [output binary image]\n" );
+	fprintf( stderr, "   Note: for memory addresses, you can use 'flash' 'launcher' 'bootloader' 'option' 'ram' and say \"ram+0x10\" for instance\n" );
+	fprintf( stderr, "   For filename, you can use - for raw or + for hex.\n" );
+
 	return -1;	
 
 unimplemented:
@@ -338,6 +412,25 @@ static int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber )
 	{
 		return ret;
 	}
+}
+
+static int64_t StringToMemoryAddress( const char * number )
+{
+	uint32_t base = 0;
+	if( strncmp( number, "flash", 5 ) == 0 )       base = 0x08000000, number += 5;
+	if( strncmp( number, "launcher", 8 ) == 0 )    base = 0x1FFFF000, number += 8;
+	if( strncmp( number, "bootloader", 10 ) == 0 ) base = 0x1FFFF000, number += 10;
+	if( strncmp( number, "option", 6 ) == 0 )      base = 0x1FFFF800, number += 6;
+	if( strncmp( number, "ram", 3 ) == 0 )         base = 0x20000000, number += 3;
+
+	if( base )
+	{
+		if( *number != '+' )
+			return base;
+		number++;
+		return base + SimpleReadNumberInt( number, 0 );
+	}
+	return SimpleReadNumberInt( number, -1 );
 }
 
 static int StaticWaitForFlash( void * dev )
@@ -393,7 +486,7 @@ int DefaultSetupInterface( void * dev )
 	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
 	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
 
-	// Read back chip ID.
+	// Read back chip status.  This is really baskc.
 	uint32_t reg;
 	int r = MCF.ReadReg32( dev, DMSTATUS, &reg );
 	if( r >= 0 )
@@ -404,7 +497,6 @@ int DefaultSetupInterface( void * dev )
 			fprintf( stderr, "Error: Setup chip failed. Got code %08x\n", reg );
 			return -9;
 		}
-		return 0;
 	}
 	else
 	{
@@ -412,7 +504,28 @@ int DefaultSetupInterface( void * dev )
 		return r;
 	}
 
+	if( MCF.ReadWord( dev, 0x1FFFF800, &reg ) ) goto fail;	
+	printf( "USER/RDPR: %08x\n", reg );
+/*	if( MCF.ReadWord( dev, 0x1FFFF804, &reg ) ) goto fail;	
+	printf( "NDATA: %08x\n", reg );
+	if( MCF.ReadWord( dev, 0x1FFFF808, &reg ) ) goto fail;	
+	printf( "WRPR01: %08x\n", reg );
+	if( MCF.ReadWord( dev, 0x1FFFF80c, &reg ) ) goto fail;	
+	printf( "WRPR23: %08x\n", reg );*/
+	if( MCF.ReadWord( dev, 0x1FFFF7E0, &reg ) ) goto fail;
+	printf( "Flash Size: %d kB\n", (reg&0xffff) );
+	if( MCF.ReadWord( dev, 0x1FFFF7E8, &reg ) ) goto fail;	
+	printf( "R32_ESIG_UNIID1: %08x\n", reg );
+	if( MCF.ReadWord( dev, 0x1FFFF7EC, &reg ) ) goto fail;	
+	printf( "R32_ESIG_UNIID2: %08x\n", reg );
+	if( MCF.ReadWord( dev, 0x1FFFF7F0, &reg ) ) goto fail;	
+	printf( "R32_ESIG_UNIID3: %08x\n", reg );
+
 	iss->statetag = STTAG( "HALT" );
+	return 0;
+fail:
+	fprintf( stderr, "Error: Failed to get chip details\n" );
+	return -11;
 }
 
 static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t data )
@@ -427,46 +540,43 @@ static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t dat
 		StaticEnterResetMode( dev, iss, 0 );
 	}
 
-	int flags = 0;
+	int is_flash = 0;
 	if( ( address_to_write & 0xff000000 ) == 0x08000000 )
 	{
 		// Is flash.
-		flags = 1;
+		is_flash = 1;
 	}
 
-	if( iss->statetag != STTAG( "WRSQ" ) || flags != iss->lastwriteflags )
+	if( iss->statetag != STTAG( "WRSQ" ) || is_flash != iss->lastwriteflags )
 	{
 		MCF.WriteReg32( dev, DMABSTRACTAUTO, 0x00000000 ); // Disable Autoexec.
-		if( iss->statetag != STTAG( "WRSQ" ) || flags != iss->lastwriteflags )
+
+		// Different address, so we don't need to re-write all the program regs.
+		MCF.WriteReg32( dev, DMPROGBUF0, 0x00032283 ); // lw x5,0(x6)
+		MCF.WriteReg32( dev, DMPROGBUF1, 0x0072a023 ); // sw x7,0(x5)
+		MCF.WriteReg32( dev, DMPROGBUF2, 0x00428293 ); // addi x5, x5, 4
+		MCF.WriteReg32( dev, DMPROGBUF3, 0x00532023 ); // sw x5,0(x6)
+		if( is_flash )
 		{
-			// Different address, so we don't need to re-write all the program regs.
-			MCF.WriteReg32( dev, DMPROGBUF0, 0x00032283 ); // lw x5,0(x6)
-			MCF.WriteReg32( dev, DMPROGBUF1, 0x0072a023 ); // sw x7,0(x5)
-			MCF.WriteReg32( dev, DMPROGBUF2, 0x00428293 ); // addi x5, x5, 4
-			MCF.WriteReg32( dev, DMPROGBUF3, 0x00532023 ); // sw x5,0(x6)
-			if( flags & 1 )
-			{
-				// After writing to memory, also hit up page load flag.
-				MCF.WriteReg32( dev, DMPROGBUF4, 0x00942023 ); // sw x9,0(x8)
-				MCF.WriteReg32( dev, DMPROGBUF5, 0x00100073 ); // ebreak
+			// After writing to memory, also hit up page load flag.
+			MCF.WriteReg32( dev, DMPROGBUF4, 0x00942023 ); // sw x9,0(x8)
+			MCF.WriteReg32( dev, DMPROGBUF5, 0x00100073 ); // ebreak
 
-				MCF.WriteReg32( dev, DMDATA0, (intptr_t)&FLASH->CTLR );
-				MCF.WriteReg32( dev, DMCOMMAND, 0x00231008 ); // Copy data to x8
-				MCF.WriteReg32( dev, DMDATA0, CR_PAGE_PG|CR_BUF_LOAD);
-				MCF.WriteReg32( dev, DMCOMMAND, 0x00231009 ); // Copy data to x9
-			}
-			else
-			{
-				MCF.WriteReg32( dev, DMPROGBUF4, 0x00100073 ); // ebreak
-			}
-
-
-			MCF.WriteReg32( dev, DMDATA0, 0xe00000f8); // Address of DATA1.
-			MCF.WriteReg32( dev, DMCOMMAND, 0x00231006 ); // Location of DATA1 to x6
-
-			// TODO: This code could also read from DATA1, and then that would go MUCH faster for random writes.
+			MCF.WriteReg32( dev, DMDATA0, (intptr_t)&FLASH->CTLR );
+			MCF.WriteReg32( dev, DMCOMMAND, 0x00231008 ); // Copy data to x8
+			MCF.WriteReg32( dev, DMDATA0, CR_PAGE_PG|CR_BUF_LOAD);
+			MCF.WriteReg32( dev, DMCOMMAND, 0x00231009 ); // Copy data to x9
 		}
-		iss->lastwriteflags = flags;
+		else
+		{
+			MCF.WriteReg32( dev, DMPROGBUF4, 0x00100073 ); // ebreak
+		}
+
+
+		MCF.WriteReg32( dev, DMDATA0, 0xe00000f8); // Address of DATA1.
+		MCF.WriteReg32( dev, DMCOMMAND, 0x00231006 ); // Location of DATA1 to x6
+
+		iss->lastwriteflags = is_flash;
 
 		MCF.WriteReg32( dev, DMDATA1, address_to_write );
 
@@ -486,6 +596,8 @@ static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t dat
 		if( (rrv >> 8 ) & 7 )
 		{
 			fprintf( stderr, "Fault writing memory (DMABSTRACTS = %08x)\n", rrv );
+			rrv &= 0xfffff8ff;
+			MCF.WriteReg32( dev, DMABSTRACTCS, rrv );
 		}
 	}
 	else
@@ -497,6 +609,25 @@ static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t dat
 			MCF.WriteReg32( dev, DMABSTRACTAUTO, 1 ); // Enable Autoexec.
 		}
 		MCF.WriteReg32( dev, DMDATA0, data );
+		if( is_flash )
+		{
+			MCF.DelayUS( dev, 100 );
+		}
+		else
+		{
+			do
+			{
+				r = MCF.ReadReg32( dev, DMABSTRACTCS, &rrv );
+				if( r ) return r;
+			}
+			while( rrv & (1<<12) );
+			if( (rrv >> 8 ) & 7 )
+			{
+				fprintf( stderr, "Fault writing memory (DMABSTRACTS = %08x)\n", rrv );
+				rrv &= 0xfffff8ff;
+				MCF.WriteReg32( dev, DMABSTRACTCS, rrv );
+			}
+		}
 	}
 
 
@@ -513,11 +644,11 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 	int is_flash = 0;
 	uint32_t lastgroup = -1;
 
+	if( blob_size == 0 ) return 0;
+
 	if( iss->processor_is_in_halt )
 	{
-		printf( "Halting\n" );
 		StaticEnterResetMode( dev, iss, 0 );
-		printf( "Halted\n" );
 	}
 
 
@@ -548,7 +679,7 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 	int group = -1;
 	lastgroup = -1;
 
-	while( wp <= ew )
+	while( wp < ew )
 	{
 		if( is_flash )
 		{
@@ -563,6 +694,11 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 				uint32_t data = 0xffffffff;
 				if( index + 3 < blob_size )
 					data = ((uint32_t*)blob)[index/4];
+				else if( (int32_t)(blob_size - index) > 0 )
+				{
+					printf( "%d %d\n", blob_size, index );
+					memcpy( &data, &blob[index], blob_size - index );
+				}
 				MCF.WriteWord( dev, wp, data );
 				wp += 4;
 			}
@@ -571,6 +707,18 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 			StaticWaitForFlash( dev );
 
 			lastgroup = group;
+		}
+		else
+		{
+			int index = (wp-address_to_write);
+			uint32_t data = 0xffffffff;
+			if( index + 3 < blob_size )
+				data = ((uint32_t*)blob)[index/4];
+			else if( (int32_t)(blob_size - index) > 0 )
+				memcpy( &data, &blob[index], blob_size - index );
+			printf( "WRITING %08x => %08x\n", data, wp );
+			MCF.WriteWord( dev, wp, data );
+			wp += 4;
 		}
 	}
 
@@ -644,19 +792,21 @@ static int DefaultReadWord( void * dev, uint32_t address_to_read, uint32_t * dat
 static int StaticUnlockFlash( void * dev, struct InternalState * iss )
 {
 	uint32_t rw;
-	MCF.ReadWord( dev, 0x40022010, &rw ); 
+	MCF.ReadWord( dev, (intptr_t)&FLASH->CTLR, &rw ); 
 	if( rw & 0x8080 ) 
 	{
+
+		MCF.WriteWord( dev, (intptr_t)&FLASH->KEYR, 0x45670123 );
+		MCF.WriteWord( dev, (intptr_t)&FLASH->KEYR, 0xCDEF89AB );
 		MCF.WriteWord( dev, (intptr_t)&FLASH->OBKEYR, 0x45670123 );
 		MCF.WriteWord( dev, (intptr_t)&FLASH->OBKEYR, 0xCDEF89AB );
 		MCF.WriteWord( dev, (intptr_t)&FLASH->MODEKEYR, 0x45670123 );
 		MCF.WriteWord( dev, (intptr_t)&FLASH->MODEKEYR, 0xCDEF89AB );
-		MCF.WriteWord( dev, (intptr_t)&FLASH->BOOT_MODEKEYR, 0x45670123 );
-		MCF.WriteWord( dev, (intptr_t)&FLASH->BOOT_MODEKEYR, 0xCDEF89AB );
+
 		MCF.ReadWord( dev, (intptr_t)&FLASH->CTLR, &rw );
 		if( rw & 0x8080 ) 
 		{
-			fprintf( stderr, "Error: Flash is not unlocked\n" );
+			fprintf( stderr, "Error: Flash is not unlocked (CTLR = %08x)\n", rw );
 			return -9;
 		}
 	}
@@ -685,6 +835,7 @@ int DefaultErase( void * dev, uint32_t address, uint32_t length, int type )
 	{
 		// Whole-chip flash
 		iss->statetag = STTAG( "XXXX" );
+		printf( "Whole-chip erase\n" );
 		MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, 0 );
 		MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, FLASH_CTLR_MER  );
 		MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_STRT_Set|FLASH_CTLR_MER );
