@@ -21,13 +21,63 @@ struct MiniChlinkFunctions
 
 	int (*Exit)( void * dev );
 
-	int (*HaltMode)( void * dev, int one_if_halt_zero_if_resume );
+	int (*HaltMode)( void * dev, int mode ); //0 for halt, 1 for reset, 2 for resume
 	int (*ConfigureNRSTAsGPIO)( void * dev, int one_if_yes_gpio );
 
 	// WARNING: Reading/writing must be at 32-bit boundaries for 32-bit sizes.
 	// WARNING: Writing binary blobs may write groups of 64-bytes.
 	int (*WriteBinaryBlob)( void * dev, uint32_t address_to_write, uint32_t blob_size, uint8_t * blob );
 	int (*ReadBinaryBlob)( void * dev, uint32_t address_to_read_from, uint32_t read_size, uint8_t * blob );
+	int (*Erase)( void * dev, uint32_t address, uint32_t length, int type ); //type = 0 for fast, 1 for whole-chip
+
+	// MUST be 4-byte-aligned.
+	int (*WriteWord)( void * dev, uint32_t address_to_write, uint32_t data ); // Flags = 1 for "doing a fast FLASH write."
+	int (*ReadWord)( void * dev, uint32_t address_to_read, uint32_t * data );
+
+	int (*WaitForFlash)( void * dev );
+	int (*WaitForDoneOp)( void * dev );
+
+	int (*PrintChipInfo)( void * dev );
+
+	// Geared for flash, but could be anything.
+	int (*BlockWrite64)( void * dev, uint32_t address_to_write, uint8_t * data );
+
+	// TODO: What about 64-byte block-reads?
+	// TODO: What about byte read/write?
+	// TODO: What about half read/write?
+
+	// Returns positive if received text.
+	// Returns negative if error.
+	// Returns 0 if no text waiting.
+	int (*PollTerminal)( void * dev, uint8_t * buffer, int maxlen );
+
+	int (*PerformSongAndDance)( void * dev );
+};
+
+/** If you are writing a driver, the minimal number of functions you can implement are:
+	WriteReg32
+	ReadReg32
+	FlushLLCommands
+*/
+
+// Convert a 4-character string to an int.
+#define STTAG( x ) (*((uint32_t*)(x)))
+
+struct InternalState;
+
+struct ProgrammerStructBase
+{
+	struct InternalState * internal;
+	// You can put other things here.
+};
+
+struct InternalState
+{
+	uint32_t statetag;
+	uint32_t currentstateval;
+	uint32_t flash_unlocked;
+	int lastwriteflags;
+	int processor_in_mode;
 };
 
 
@@ -48,9 +98,9 @@ struct MiniChlinkFunctions
 #define DMPROGBUF6     0x26
 #define DMPROGBUF7     0x27
 
-#define CPBR       0x7C
-#define CFGR       0x7D
-#define SHDWCFGR   0x7E
+#define DMCPBR       0x7C
+#define DMCFGR       0x7D
+#define DMSHDWCFGR   0x7E
 
 extern struct MiniChlinkFunctions MCF;
 
@@ -59,7 +109,7 @@ void * TryInit_WCHLinkE();
 void * TryInit_ESP32S2CHFUN();
 
 // Returns 0 if ok, populated, 1 if not populated.
-int SetupAutomaticHighLevelFunctions();
+int SetupAutomaticHighLevelFunctions( void * dev );
 
 #endif
 

@@ -6,8 +6,10 @@
 #define SYSTEM_CORE_CLOCK 48000000
 #define APB_CLOCK SYSTEM_CORE_CLOCK
 
-#include "ch32v00x.h"
+#include "ch32v003fun.h"
 #include <stdio.h>
+
+uint32_t count;
 
 int main()
 {
@@ -24,9 +26,9 @@ int main()
 	while(1)
 	{
 		GPIOD->BSHR = 1;	 // Turn on GPIOD0
-		puts( "Hello" );
 		Delay_Ms( 50 );
 		GPIOD->BSHR = 1<<16; // Turn off GPIOD0
 		Delay_Ms( 50 );
+		printf( "Count: %d\n", count++ );
 	}
 }

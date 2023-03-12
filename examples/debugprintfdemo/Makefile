@@ -1,4 +1,4 @@
-TARGET:=fulldemo
+TARGET:=debugprintfdemo
 
 all : flash
 
@@ -6,7 +6,7 @@ PREFIX:=riscv64-unknown-elf
 
 GPIO_Toggle:=EXAM/GPIO/GPIO_Toggle/User
 
-EVT:=../../ch32v003evt
+CH32V003FUN:=../../ch32v003fun
 MINICHLINK:=../../minichlink
 
 CFLAGS:= \
@@ -15,13 +15,13 @@ CFLAGS:= \
 	-march=rv32ec \
 	-mabi=ilp32e \
 	-I/usr/include/newlib \
-	-I$(EVT) \
+	-I$(CH32V003FUN) \
 	-nostdlib \
 	-I.
 
-LDFLAGS:=-T $(EVT)/ch32v003.ld -Wl,--gc-sections
+LDFLAGS:=-T $(CH32V003FUN)/ch32v003fun.ld -Wl,--gc-sections
 
-SYSTEM_C:=$(EVT)/startup_ch32v003.c $(EVT)/embedlibc.c
+SYSTEM_C:=$(CH32V003FUN)/ch32v003fun.c
 
 $(TARGET).elf : $(SYSTEM_C) $(TARGET).c
 	$(PREFIX)-gcc -o $@ $^ $(CFLAGS) $(LDFLAGS)
@@ -35,7 +35,11 @@ $(TARGET).bin : $(TARGET).elf
 
 flash : $(TARGET).bin
 	make -C $(MINICHLINK) all
-	$(MINICHLINK)/minichlink -w $< -r
+	$(MINICHLINK)/minichlink -w $< flash -b
+
+monitor : flash
+	$(MINICHLINK)/minichlink -T
+	
 
 clean :
 	rm -rf $(TARGET).elf $(TARGET).bin $(TARGET).hex $(TARGET).lst $(TARGET).map $(TARGET).hex

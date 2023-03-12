@@ -1,9 +1,5 @@
 ENTRY( InterruptVector )
 
-__stack_size = 256;
-
-PROVIDE( _stack_size = __stack_size );
-
 MEMORY
 {
 	FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 16K
@@ -144,15 +140,7 @@ SECTIONS
     PROVIDE( _end = _ebss);
 	PROVIDE( end = . );
 
-	.stack ORIGIN(RAM) + LENGTH(RAM) - __stack_size :
-	{
-	    PROVIDE( _heap_end = . );
-	    . = ALIGN(4);
-	    PROVIDE(_susrstack = . );
-	    . = . + __stack_size;
-	    PROVIDE( _eusrstack = .);
-	} >RAM 
-	
+	PROVIDE( _eusrstack = ORIGIN(RAM) + LENGTH(RAM));	
 }
 
 
