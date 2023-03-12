@@ -2473,7 +2473,7 @@ extern "C" {
 
 
 /* ch32v00x_adc.c ------------------------------------------------------------*/
-/*
+
 /* ADC DISCNUM mask */
 #define CTLR1_DISCNUM_Reset              ((uint32_t)0xFFFF1FFF)
 
@@ -4840,6 +4840,8 @@ void SystemInit48HSI( void );
 // You can write to this with printf(...) or puts(...)
 // Call with SetupUART( UART_BRR )
 void SetupUART( int uartBRR );
+
+void SetupDebugPrintf();
 
 #ifdef __cplusplus
 };
