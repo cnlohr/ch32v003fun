@@ -20,9 +20,10 @@ ch32v003fun contains:
 In Progress:
 1. Other programmer support (ESP32-S2 works, currently)
 2. OpenOCD-compatible build for `minichlink`.
-3. Improved performance of ESP32-S2 programmer.
+3. Full-chip-write for faster flash.
 4. Support for `NHC-Link042`
 5. Write more demos.
+6. Bootloader support.
 
 ## System Prep
 
