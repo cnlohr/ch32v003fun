@@ -6,16 +6,23 @@ The goal of this project is to develop the tooling and environment for efficient
 
 The existing EVT is massive.  Just to boot the chip at all, it requires ~2kB of support functions and has to do things like software-divides and use a ton of space at startup to use their HAL.  This project specifically avoids the HAL and makes it so you can just use the [TRM](http://www.wch-ic.com/downloads/CH32V003RM_PDF.html).
 
+In contrast, blinky is only 500 bytes with ch32v003fun, boots faster, and significantly simpler overall.
+
 As it currently stands it is still designed to use the WCH-Link to do the SDIO programming.  Though I would like to ALSO support an open source programmer.
 
 ch32v003fun contains:
-1. EVT Folder for running demos from the ch32v003 EVT.
-2. Barebones. A project that does not use the HAL or EVT.
+2. Examples using ch32v003fun, but not as many as using the HAL.
 3. "minichlink" which uses the WCH CH-Link with libusb, for cross-platform use.
 4. An extra copy of libgcc so you can use unusual risc-v build chains, located in the `misc/libgcc.a`.
+5. A folder named "ch32v003fun" containing a single self-contained source file and header file for compling apps for the ch32v003.
+6. On some systems ability to "printf" back through
 
-IN PROGRESS:
-1. A folder named "ch32v003fun" containing a single self-contained source file and header file for compling apps for the ch32v003.
+In Progress:
+1. Other programmer support (ESP32-S2 works, currently)
+2. OpenOCD-compatible build for `minichlink`.
+3. Improved performance of ESP32-S2 programmer.
+4. Support for `NHC-Link042`
+5. Write more demos.
 
 ## System Prep
 
