@@ -530,19 +530,19 @@ static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t dat
 			MCF.WriteReg32( dev, DMABSTRACTAUTO, 0x00000000 ); // Disable Autoexec.
 			did_disable_req = 1;
 			// Different address, so we don't need to re-write all the program regs.
-			// c.lw x9,0(x10) // Get the address to write to. 
+			// c.lw x9,0(x11) // Get the address to write to. 
 			// c.sw x8,0(x9)  // Write to the address.
-			MCF.WriteReg32( dev, DMPROGBUF0, 0xc0804104 );
+			MCF.WriteReg32( dev, DMPROGBUF0, 0xc0804184 );
 			// c.addi x9, 4
-			// c.sw x9,0(x10)
-			MCF.WriteReg32( dev, DMPROGBUF1, 0xc1040491 );
+			// c.sw x9,0(x11)
+			MCF.WriteReg32( dev, DMPROGBUF1, 0xc1840491 );
 
 			if( iss->statetag != STTAG( "RDSQ" ) )
 			{
 				MCF.WriteReg32( dev, DMDATA0, 0xe00000f4 );   // DATA0's location in memory.
-				MCF.WriteReg32( dev, DMCOMMAND, 0x0023100b ); // Copy data to x11
-				MCF.WriteReg32( dev, DMDATA0, 0xe00000f8 );   // DATA1's location in memory.
 				MCF.WriteReg32( dev, DMCOMMAND, 0x0023100a ); // Copy data to x10
+				MCF.WriteReg32( dev, DMDATA0, 0xe00000f8 );   // DATA1's location in memory.
+				MCF.WriteReg32( dev, DMCOMMAND, 0x0023100b ); // Copy data to x11
 				MCF.WriteReg32( dev, DMDATA0, 0x40022010 ); //FLASH->CTLR
 				MCF.WriteReg32( dev, DMCOMMAND, 0x0023100c ); // Copy data to x12
 				MCF.WriteReg32( dev, DMDATA0, CR_PAGE_PG|CR_BUF_LOAD);
@@ -707,22 +707,22 @@ static int DefaultReadWord( void * dev, uint32_t address_to_read, uint32_t * dat
 		{
 			MCF.WriteReg32( dev, DMABSTRACTAUTO, 0 ); // Disable Autoexec.
 
-			// c.lw x8,0(x10) // Pull the address from DATA1
+			// c.lw x8,0(x11) // Pull the address from DATA1
 			// c.lw x9,0(x8)  // Read the data at that location.
-			MCF.WriteReg32( dev, DMPROGBUF0, 0x40044100 );
+			MCF.WriteReg32( dev, DMPROGBUF0, 0x40044180 );
 			// c.addi x8, 4
-			// c.sw x9, 0(x11) // Write back to DATA0
-			MCF.WriteReg32( dev, DMPROGBUF1, 0xc1840411 );
-			// c.sw x8, 0(x10) // Write addy to DATA1
+			// c.sw x9, 0(x10) // Write back to DATA0
+			MCF.WriteReg32( dev, DMPROGBUF1, 0xc1040411 );
+			// c.sw x8, 0(x11) // Write addy to DATA1
 			// c.ebreak
-			MCF.WriteReg32( dev, DMPROGBUF2, 0x9002c100 );
+			MCF.WriteReg32( dev, DMPROGBUF2, 0x9002c180 );
 
 			if( iss->statetag != STTAG( "WRSQ" ) )
 			{
 				MCF.WriteReg32( dev, DMDATA0, 0xe00000f4 );   // DATA0's location in memory.
-				MCF.WriteReg32( dev, DMCOMMAND, 0x0023100b ); // Copy data to x11
-				MCF.WriteReg32( dev, DMDATA0, 0xe00000f8 );   // DATA1's location in memory.
 				MCF.WriteReg32( dev, DMCOMMAND, 0x0023100a ); // Copy data to x10
+				MCF.WriteReg32( dev, DMDATA0, 0xe00000f8 );   // DATA1's location in memory.
+				MCF.WriteReg32( dev, DMCOMMAND, 0x0023100b ); // Copy data to x11
 				MCF.WriteReg32( dev, DMDATA0, 0x40022010 ); //FLASH->CTLR
 				MCF.WriteReg32( dev, DMCOMMAND, 0x0023100c ); // Copy data to x12
 				MCF.WriteReg32( dev, DMDATA0, CR_PAGE_PG|CR_BUF_LOAD);

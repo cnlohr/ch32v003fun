@@ -205,7 +205,7 @@ static int LEHaltMode( void * d, int mode )
 {
 	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
 	if( mode == ((struct LinkEProgrammerStruct*)d)->lasthaltmode )
-		return;
+		return 0;
 	((struct LinkEProgrammerStruct*)d)->lasthaltmode = mode;
 	
 	if( mode == 0 )
