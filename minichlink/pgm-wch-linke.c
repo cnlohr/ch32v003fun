@@ -195,7 +195,7 @@ printf( "  5: %d\n", bOn );
 static int LEUnbrick( void * dev )
 {
 	printf( "Sending unbrick\n" );
-	 wch_link_command( (libusb_device_handle *)dev, "\x81\x0d\x01\x0f\x09", 5, 0, 0, 0 );
+	wch_link_command( (libusb_device_handle *)dev, "\x81\x0d\x01\x0f\x09", 5, 0, 0, 0 );
 	printf( "Done unbrick\n" );
 	return 0;
 }
@@ -206,6 +206,7 @@ static int LEHaltMode( void * d, int mode )
 
 	if( mode == 0 )
 	{
+		printf( "Holding in reset\n" );
 		// Part one "immediately" places the part into reset.  Part 2 says when we're done, leave part in reset.
 		wch_link_multicommands( (libusb_device_handle *)dev, 2, 4, "\x81\x0d\x01\x02", 4, "\x81\x0d\x01\x01" );
 	}
@@ -236,9 +237,12 @@ static int LEConfigureNRSTAsGPIO( void * d, int one_if_yes_gpio )
 	return 0;
 }
 
+
 static int LEReadBinaryBlob( void * d, uint32_t offset, uint32_t amount, uint8_t * readbuff )
 {
 	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
+
+	LEHaltMode( d, 0 );
 
 	int i;
 	int status;
@@ -295,6 +299,8 @@ static int LEReadBinaryBlob( void * d, uint32_t offset, uint32_t amount, uint8_t
 static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len, uint8_t * blob )
 {
 	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
+
+	LEHaltMode( d, 0 );
 
 	int i;
 	int status;

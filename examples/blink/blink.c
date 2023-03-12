@@ -22,9 +22,9 @@ int main()
 	while(1)
 	{
 		GPIOD->BSHR = 1;	 // Turn on GPIOD0
-		Delay_Ms( 50 );
+		Delay_Ms( 200 );
 		GPIOD->BSHR = 1<<16; // Turn off GPIOD0
-		Delay_Ms( 50 );
+		Delay_Ms( 200 );
 		count++;
 	}
 }

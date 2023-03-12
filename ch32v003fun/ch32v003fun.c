@@ -875,7 +875,7 @@ int _write(int fd, const char *buf, int size)
 		remain =- tosend;
 	}
 }
-#endif
+
 
 void SetupDebugPrintf()
 {
@@ -883,6 +883,8 @@ void SetupDebugPrintf()
 	*DMDATA1 = 0x0;
 }
 
+
+#endif
 
 void DelaySysTick( uint32_t n )
 {
