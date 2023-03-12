@@ -771,10 +771,10 @@ void handle_reset()
 	// Setup the interrupt vector, processor status and INTSYSCR.
 "	li a0, 0x80\n\
 	csrw mstatus, a0\n\
-	c.li a3, 0x3\n\
+	li a3, 0x3\n\
 	csrw 0x804, a3\n\
 	la a0, InterruptVector\n\
-	c.or a0, a3\n\
+	or a0, a0, a3\n\
 	csrw mtvec, a0\n" );
 
 	// Careful: Use registers to prevent overwriting of self-data.
@@ -782,10 +782,10 @@ void handle_reset()
 asm volatile(
 "	la a0, _sbss\n\
 	la a1, _ebss\n\
-	c.li a2, 0\n\
+	li a2, 0\n\
 	bge a0, a1, 2f\n\
-1:	c.sw a2, 0(a0)\n\
-	c.addi a0, 4\n\
+1:	sw a2, 0(a0)\n\
+	addi a0, a0, 4\n\
 	blt a0, a1, 1b\n\
 2:"
 	// This loads DATA from FLASH to RAM.
@@ -793,10 +793,10 @@ asm volatile(
 	la a1, _data_vma\n\
 	la a2, _edata\n\
 1:	beq a1, a2, 2f\n\
-	c.lw a3, 0(a0)\n\
-	c.sw a3, 0(a1)\n\
-	c.addi a0, 4\n\
-	c.addi a1, 4\n\
+	lw a3, 0(a0)\n\
+	sw a3, 0(a1)\n\
+	addi a0, a0, 4\n\
+	addi a1, a1, 4\n\
 	bne a1, a2, 1b\n\
 2:\n" );
 
@@ -875,7 +875,7 @@ int _write(int fd, const char *buf, int size)
 		remain =- tosend;
 	}
 }
-
+#endif
 
 void SetupDebugPrintf()
 {
@@ -883,8 +883,6 @@ void SetupDebugPrintf()
 	*DMDATA1 = 0x0;
 }
 
-
-#endif
 
 void DelaySysTick( uint32_t n )
 {

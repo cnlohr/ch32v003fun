@@ -13,6 +13,7 @@ struct LinkEProgrammerStruct
 {
 	void * internal;
 	libusb_device_handle * devh;
+	int lasthaltmode;
 };
 
 #define WCHTIMEOUT 5000
@@ -203,7 +204,10 @@ static int LEUnbrick( void * dev )
 static int LEHaltMode( void * d, int mode )
 {
 	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
-
+	if( mode == ((struct LinkEProgrammerStruct*)d)->lasthaltmode )
+		return;
+	((struct LinkEProgrammerStruct*)d)->lasthaltmode = mode;
+	
 	if( mode == 0 )
 	{
 		printf( "Holding in reset\n" );
@@ -380,6 +384,7 @@ void * TryInit_WCHLinkE()
 	struct LinkEProgrammerStruct * ret = malloc( sizeof( struct LinkEProgrammerStruct ) );
 	memset( ret, 0, sizeof( *ret ) );
 	ret->devh = wch_linke_devh;
+	ret->lasthaltmode = 0;
 
 	MCF.WriteReg32 = 0;
 	MCF.ReadReg32 = 0;
