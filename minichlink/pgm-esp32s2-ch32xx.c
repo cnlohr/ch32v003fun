@@ -192,7 +192,7 @@ static int ESPDelayUS( void * dev, int microseconds )
 		ESPFlushLLCommands( eps );
 
 	Write2LE( eps, 0x04fe );
-	Write4LE( eps, microseconds );
+	Write2LE( eps, microseconds );
 	return 0;
 }
 

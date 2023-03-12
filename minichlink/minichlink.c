@@ -943,9 +943,9 @@ int DefaultUnbrick( void * dev )
 
 	printf( "Entering Unbrick Mode\n" );
 	MCF.Control3v3( dev, 0 );
-	MCF.DelayUS( dev, 65535 );
-	MCF.FlushLLCommands( dev );
+	MCF.DelayUS( dev, 60000 );
 	MCF.Control3v3( dev, 1 );
+	MCF.DelayUS( dev, 100 );
 	MCF.FlushLLCommands( dev );
 	printf( "Connection starting\n" );
 	int timeout = 0;
@@ -954,21 +954,27 @@ int DefaultUnbrick( void * dev )
 	for( timeout = 0; timeout < max_timeout; timeout++ )
 	{
 		MCF.DelayUS( dev, 10 );
-		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
-		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
-		MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
+		MCF.WriteReg32( dev, DMSHDWCFGR, 0x5aa50000 | (1<<10) ); // Shadow Config Reg
+		MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // CFGR (1<<10 == Allow output from slave)
+		MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // Bug in silicon?  If coming out of cold boot, and we don't do our little "song and dance" this has to be called.
 		MCF.FlushLLCommands( dev );
 		int r = MCF.ReadReg32( dev, DMSTATUS, &ds );
 		printf( "/%d/%08x\n", r, ds );
 		MCF.FlushLLCommands( dev );
 		if( ds != 0xffffffff && ds != 0x00000000 ) break;
 	}
+
+	// Make sure we are in halt.
+	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
+	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
+	MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
+	MCF.FlushLLCommands( dev );
+
 	if( timeout == max_timeout ) 
 	{
 		printf( "Timed out trying to unbrick\n" );
 		return -5;
 	}
-	printf( "Timeout: %d DMSTATUS: %08x\n", timeout, ds );
 	MCF.Erase( dev, 0, 0, 1);
 	MCF.FlushLLCommands( dev );
 	return -5;
