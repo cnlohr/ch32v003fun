@@ -57,6 +57,7 @@ static int ESPWriteReg32( void * dev, uint8_t reg_7_bit, uint32_t value )
 
 	Write1( eps, (reg_7_bit<<1) | 1 );
 	Write4LE( eps, value );
+	return 0;
 }
 
 int ESPReadReg32( void * dev, uint8_t reg_7_bit, uint32_t * commandresp )
@@ -66,7 +67,7 @@ int ESPReadReg32( void * dev, uint8_t reg_7_bit, uint32_t * commandresp )
 
 	Write1( eps, (reg_7_bit<<1) | 0 );
 
-	int len = ESPFlushLLCommands( eps );
+	ESPFlushLLCommands( eps );
 
 	if( eps->replylen < 6 )
 	{
@@ -129,6 +130,7 @@ int ESPControl3v3( void * dev, int bOn )
 		Write2LE( eps, 0x03fe );
 	else
 		Write2LE( eps, 0x02fe );
+	return 0;
 }
 
 static int ESPDelayUS( void * dev, int microseconds )
@@ -139,6 +141,7 @@ static int ESPDelayUS( void * dev, int microseconds )
 
 	Write2LE( eps, 0x04fe );
 	Write4LE( eps, microseconds );
+	return 0;
 }
 
 
@@ -147,6 +150,7 @@ int ESPExit( void * dev )
 	struct ESP32ProgrammerStruct * eps = (struct ESP32ProgrammerStruct *)dev;
 	hid_close( eps->hd );
 	free( eps );
+	return 0;
 }
 
 void * TryInit_ESP32S2CHFUN()

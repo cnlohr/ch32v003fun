@@ -2,7 +2,7 @@ TOOLS:=minichlink
 
 all : $(TOOLS)
 
-CFLAGS:=-O0 -g3
+CFLAGS:=-O0 -g3 -Wall
 LDFLAGS:=-lpthread -lusb-1.0 -ludev
 
 minichlink : minichlink.c pgm-wch-linke.c pgm-esp32s2-ch32xx.c

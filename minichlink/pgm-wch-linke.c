@@ -16,7 +16,7 @@ struct LinkEProgrammerStruct
 };
 
 #define WCHTIMEOUT 5000
-#define WCHCHECK(x) if( status = x ) { fprintf( stderr, "Bad USB Operation on " __FILE__ ":%d (%d)\n", __LINE__, status ); exit( status ); }
+#define WCHCHECK(x) if( (status = x) ) { fprintf( stderr, "Bad USB Operation on " __FILE__ ":%d (%d)\n", __LINE__, status ); exit( status ); }
 
 const uint8_t * bootloader = (const uint8_t*)
 "\x21\x11\x22\xca\x26\xc8\x93\x77\x15\x00\x99\xcf\xb7\x06\x67\x45" \
@@ -54,14 +54,15 @@ const uint8_t * bootloader = (const uint8_t*)
 
 int bootloader_len = 512;
 
-void wch_link_command( libusb_device_handle * devh, const uint8_t * command, int commandlen, int * transferred, uint8_t * reply, int replymax )
+void wch_link_command( libusb_device_handle * devh, const void * command_v, int commandlen, int * transferred, uint8_t * reply, int replymax )
 {
+	uint8_t * command = (uint8_t*)command_v;
 	uint8_t buffer[1024];
 	int got_to_recv = 0;
 	int status;
 	int transferred_local;
 	if( !transferred ) transferred = &transferred_local;
-	status = libusb_bulk_transfer( devh, 0x01, (char*)command, commandlen, transferred, WCHTIMEOUT );
+	status = libusb_bulk_transfer( devh, 0x01, command, commandlen, transferred, WCHTIMEOUT );
 	if( status ) goto sendfail;
 
 	got_to_recv = 1;
@@ -70,7 +71,7 @@ void wch_link_command( libusb_device_handle * devh, const uint8_t * command, int
 		reply = buffer; replymax = sizeof( buffer );
 	}
 	
-	status = libusb_bulk_transfer( devh, 0x81, (char*)reply, replymax, transferred, WCHTIMEOUT );
+	status = libusb_bulk_transfer( devh, 0x81, reply, replymax, transferred, WCHTIMEOUT );
 	if( status ) goto sendfail;
 	return;
 sendfail:
@@ -111,7 +112,6 @@ static inline libusb_device_handle * wch_link_base_setup( int inhibit_startup )
 	libusb_device *found = NULL;
 	ssize_t cnt = libusb_get_device_list(ctx, &list);
 	ssize_t i = 0;
-	int err = 0;
 	for (i = 0; i < cnt; i++) {
 		libusb_device *device = list[i];
 		struct libusb_device_descriptor desc;
@@ -148,7 +148,7 @@ static int LESetupInterface( void * d )
 	uint32_t transferred = 0;
 
 	// Place part into reset.
-	wch_link_command( dev, "\x81\x0d\x01\x01", 4, &transferred, rbuff, 1024 );	// Reply is: "\x82\x0d\x04\x02\x08\x02\x00"
+	wch_link_command( dev, "\x81\x0d\x01\x01", 4, (int*)&transferred, rbuff, 1024 );	// Reply is: "\x82\x0d\x04\x02\x08\x02\x00"
 
 	// TODO: What in the world is this?  It doesn't appear to be needed.
 	wch_link_command( dev, "\x81\x0c\x02\x09\x01", 5, 0, 0, 0 ); //Reply is: 820c0101
@@ -156,7 +156,7 @@ static int LESetupInterface( void * d )
 	// This puts the processor on hold to allow the debugger to run.
 	wch_link_command( dev, "\x81\x0d\x01\x02", 4, 0, 0, 0 ); // Reply: Ignored, 820d050900300500
 
-	wch_link_command( dev, "\x81\x11\x01\x09", 4, &transferred, rbuff, 1024 ); // Reply: Chip ID + Other data (see below)
+	wch_link_command( dev, "\x81\x11\x01\x09", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Chip ID + Other data (see below)
 	if( transferred != 20 )
 	{
 		fprintf( stderr, "Error: could not get part status\n" );
@@ -197,6 +197,7 @@ static int LEUnbrick( void * dev )
 	printf( "Sending unbrick\n" );
 	 wch_link_command( (libusb_device_handle *)dev, "\x81\x0d\x01\x0f\x09", 5, 0, 0, 0 );
 	printf( "Done unbrick\n" );
+	return 0;
 }
 
 static int LEHaltMode( void * d, int mode )
@@ -232,6 +233,7 @@ static int LEConfigureNRSTAsGPIO( void * d, int one_if_yes_gpio )
 	{
 		wch_link_multicommands( (libusb_device_handle *)dev, 2, 11, "\x81\x06\x08\x02\xf7\xff\xff\xff\xff\xff\xff", 4, "\x81\x0b\x01\x01" );
 	}
+	return 0;
 }
 
 static int LEReadBinaryBlob( void * d, uint32_t offset, uint32_t amount, uint8_t * readbuff )
@@ -359,6 +361,7 @@ int LEExit( void * d )
 	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
 
 	wch_link_command( (libusb_device_handle *)dev, "\x81\x0d\x01\xff", 4, 0, 0, 0);
+	return 0;
 }
 
 void * TryInit_WCHLinkE()

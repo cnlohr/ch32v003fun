@@ -2473,7 +2473,7 @@ extern "C" {
 
 
 /* ch32v00x_adc.c ------------------------------------------------------------*/
-/*
+
 /* ADC DISCNUM mask */
 #define CTLR1_DISCNUM_Reset              ((uint32_t)0xFFFF1FFF)
 

@@ -34,6 +34,11 @@ struct MiniChlinkFunctions
 	int (*WriteWord)( void * dev, uint32_t address_to_write, uint32_t data ); // Flags = 1 for "doing a fast FLASH write."
 	int (*ReadWord)( void * dev, uint32_t address_to_read, uint32_t * data );
 
+	int (*WaitForFlash)( void * dev );
+	int (*WaitForDoneOp)( void * dev );
+
+	int (*PrintChipInfo)( void * dev );
+
 	// TODO: What about 64-byte block-writes?
 	// TODO: What about 64-byte block-reads?
 	// TODO: What about byte read/write?
@@ -54,9 +59,11 @@ struct MiniChlinkFunctions
 // Convert a 4-character string to an int.
 #define STTAG( x ) (*((uint32_t*)(x)))
 
+struct InternalState;
+
 struct ProgrammerStructBase
 {
-	void * internal;
+	struct InternalState * internal;
 	// You can put other things here.
 };
 
