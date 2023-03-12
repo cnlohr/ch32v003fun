@@ -345,6 +345,8 @@ keep_going:
 					goto unimplemented;
 				}
 
+				printf( "Image written successfully\n" );
+
 				free( image );
 				break;
 			}
@@ -937,6 +939,8 @@ int DefaultPollTerminal( void * dev, uint8_t * buffer, int maxlen )
 
 int DefaultUnbrick( void * dev )
 {
+	// TODO: Why doesn't this work on the ESP32S2?
+
 	printf( "Entering Unbrick Mode\n" );
 	MCF.Control3v3( dev, 0 );
 	MCF.DelayUS( dev, 65535 );
@@ -949,15 +953,13 @@ int DefaultUnbrick( void * dev )
 	uint32_t ds = 0;
 	for( timeout = 0; timeout < max_timeout; timeout++ )
 	{
-		if( MCF.PerformSongAndDance )
-		{
-			MCF.PerformSongAndDance( dev );
-		}
 		MCF.DelayUS( dev, 10 );
 		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
 		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
 		MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
-		MCF.ReadReg32( dev, DMSTATUS, &ds );
+		MCF.FlushLLCommands( dev );
+		int r = MCF.ReadReg32( dev, DMSTATUS, &ds );
+		printf( "/%d/%08x\n", r, ds );
 		MCF.FlushLLCommands( dev );
 		if( ds != 0xffffffff && ds != 0x00000000 ) break;
 	}
