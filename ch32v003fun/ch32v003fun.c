@@ -664,7 +664,7 @@ mini_pprintf(int (*puts)(char*s, int len, void* buf), void* buf, const char *fmt
 int main() __attribute__((used));
 void SystemInit( void ) __attribute__((used));
 
-void InterruptVector()         __attribute__((naked)) __attribute((section(".init"))) __attribute__((used));
+void InterruptVector()         __attribute__((naked)) __attribute((section(".init"))) __attribute__((used)) __attribute((weak));
 void handle_reset()            __attribute__((naked)) __attribute((section(".text.handle_reset"))) __attribute__((used));
 void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) __attribute__((naked)) __attribute__((used));
 
@@ -760,7 +760,6 @@ void InterruptVector()
 }
 
 
-
 void handle_reset()
 {
 	asm volatile( "\n\
@@ -770,49 +769,55 @@ void handle_reset()
 .option pop\n\
 	la sp, _eusrstack\n"
 	// Setup the interrupt vector, processor status and INTSYSCR.
-"	li t0, 0x80\n\
-	csrw mstatus, t0\n\
-	li t0, 0x3\n\
-	csrw 0x804, t0\n\
-	la t0, InterruptVector\n\
-	ori t0, t0, 3\n\
-	csrw mtvec, t0\n"
- );
+"	li a0, 0x80\n\
+	csrw mstatus, a0\n\
+	c.li a3, 0x3\n\
+	csrw 0x804, a3\n\
+	la a0, InterruptVector\n\
+	c.or a0, a3\n\
+	csrw mtvec, a0\n" );
 
 	// Careful: Use registers to prevent overwriting of self-data.
 	// This clears out BSS.
-	register uint32_t * tempout = _sbss;
-	register uint32_t * tempend = _ebss;
-	while( tempout < tempend )
-		*(tempout++) = 0;
-
-	// Once we get here, it should be safe to execute regular C code.
-
-	// Load data section from flash to RAM 
-	register uint32_t * tempin = _data_lma;
-	tempout = _data_vma;
-	tempend = _edata;
-	while( tempout != tempend )
-		*(tempout++) = *(tempin++); 
-
-	asm volatile("csrw mepc, %0" : : "r"(main));
+asm volatile(
+"	la a0, _sbss\n\
+	la a1, _ebss\n\
+	c.li a2, 0\n\
+	bge a0, a1, 2f\n\
+1:	c.sw a2, 0(a0)\n\
+	c.addi a0, 4\n\
+	blt a0, a1, 1b\n\
+2:"
+	// This loads DATA from FLASH to RAM.
+"	la a0, _data_lma\n\
+	la a1, _data_vma\n\
+	la a2, _edata\n\
+1:	beq a1, a2, 2f\n\
+	c.lw a3, 0(a0)\n\
+	c.sw a3, 0(a1)\n\
+	c.addi a0, 4\n\
+	c.addi a1, 4\n\
+	bne a1, a2, 1b\n\
+2:\n" );
 
 	// set mepc to be main as the root app.
-	asm volatile( "mret\n" );
+asm volatile(
+"	csrw mepc, %[main]\n"
+"	mret\n" : : [main]"r"(main) );
 }
 
 void SystemInit48HSI( void )
 {
 	// Values lifted from the EVT.  There is little to no documentation on what this does.
-	RCC->CTLR  = RCC_HSION | RCC_PLLON; 				// Use HSI, but enable PLL.
-	RCC->CFGR0 = RCC_HPRE_DIV1 | RCC_PLLSRC_HSI_Mul2;	// PLLCLK = HSI * 2 = 48 MHz; HCLK = SYSCLK = APB1
-	FLASH->ACTLR = FLASH_ACTLR_LATENCY_1;				// 1 Cycle Latency
-	RCC->INTR  = 0x009F0000;                            // Clear PLL, CSSC, HSE, HSI and LSI ready flags.
+	RCC->CTLR  = RCC_HSION | RCC_PLLON;               // Use HSI, but enable PLL.
+	RCC->CFGR0 = RCC_HPRE_DIV1 | RCC_PLLSRC_HSI_Mul2; // PLLCLK = HSI * 2 = 48 MHz; HCLK = SYSCLK = APB1
+	FLASH->ACTLR = FLASH_ACTLR_LATENCY_1;             // 1 Cycle Latency
+	RCC->INTR  = 0x009F0000;                          // Clear PLL, CSSC, HSE, HSI and LSI ready flags.
 
 	// From SetSysClockTo_48MHZ_HSI
-	while((RCC->CTLR & RCC_PLLRDY) == 0);														// Wait till PLL is ready
-	RCC->CFGR0 = ( RCC->CFGR0 & ((uint32_t)~(RCC_SW))) | (uint32_t)RCC_SW_PLL;					// Select PLL as system clock source
-	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x08);									// Wait till PLL is used as system clock source
+	while((RCC->CTLR & RCC_PLLRDY) == 0);                                      // Wait till PLL is ready
+	RCC->CFGR0 = ( RCC->CFGR0 & ((uint32_t)~(RCC_SW))) | (uint32_t)RCC_SW_PLL; // Select PLL as system clock source
+	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x08);                // Wait till PLL is used as system clock source
 }
 
 void SetupUART( int uartBRR )
@@ -833,7 +838,7 @@ void SetupUART( int uartBRR )
 	USART1->CTLR1 |= CTLR1_UE_Set;
 }
 
-
+#ifdef STDOUT_UART
 // For debug writing to the UART.
 int _write(int fd, const char *buf, int size)
 {
@@ -843,6 +848,41 @@ int _write(int fd, const char *buf, int size)
 	}
 	return size;
 }
+#else
+// For debug writing to the debug interface.
+int _write(int fd, const char *buf, int size)
+{
+	#define DMDATA0 ((volatile uint32_t*)0xe00000f4)
+	#define DMDATA1 ((volatile uint32_t*)0xe00000f8)
+
+	while( ((*DMDATA0) & 0x80) );
+
+	int remain = size;
+	while( remain > 0 )
+	{
+		int tosend = remain;
+		if( tosend > 7 ) tosend = 7;
+
+		uint32_t dmd1 = 0;
+		if( tosend > 3 ) memcpy( &dmd1, buf + 3, tosend - 3 );
+		uint32_t d1 = (tosend + 4) | 0x80;
+
+		int subsend = tosend;
+		if( subsend > 3 ) subsend = 3;
+		memcpy( ((uint8_t*)(&d1))+1, buf, subsend );
+		*DMDATA1 = dmd1;
+		*DMDATA0 = d1;
+		remain =- tosend;
+	}
+}
+#endif
+
+void SetupDebugPrintf()
+{
+	// Clear out the sending flag.
+	*DMDATA1 = 0x0;
+}
+
 
 void DelaySysTick( uint32_t n )
 {
@@ -853,3 +893,4 @@ void DelaySysTick( uint32_t n )
     while(!(SysTick->SR & (1 << 0)));
     SysTick->CTLR &= ~(1 << 0);
 }
+

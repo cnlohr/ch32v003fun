@@ -4841,6 +4841,8 @@ void SystemInit48HSI( void );
 // Call with SetupUART( UART_BRR )
 void SetupUART( int uartBRR );
 
+void SetupDebugPrintf();
+
 #ifdef __cplusplus
 };
 #endif

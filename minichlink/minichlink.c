@@ -107,12 +107,10 @@ keep_going:
 			case 'b': 
 				if( !MCF.HaltMode || MCF.HaltMode( dev, 1 ) )
 					goto unimplemented;
-				must_be_end = 'b';
 				break;
 			case 'e':  //rEsume
 				if( !MCF.HaltMode || MCF.HaltMode( dev, 2 ) )
 					goto unimplemented;
-				must_be_end = 'e';
 				break;
 			case 'E':  //Erase whole chip.
 				if( !MCF.Erase || MCF.Erase( dev, 0, 0, 1 ) )
@@ -120,7 +118,6 @@ keep_going:
 				break;
 			case 'h':
 				if( !MCF.HaltMode || MCF.HaltMode( dev, 0 ) )
-				must_be_end = 'h';
 				break;
 
 			// disable NRST pin (turn it into a GPIO)
@@ -136,6 +133,25 @@ keep_going:
 				else
 					goto unimplemented;
 				break;
+			case 'T':
+			{
+				if( !MCF.PollTerminal )
+					goto unimplemented;
+				do
+				{
+					uint8_t buffer[128];
+					int r = MCF.PollTerminal( dev, buffer, sizeof( buffer ) );
+					if( r < 0 )
+					{
+						fprintf( stderr, "Terminal dead.  code %d\n", r );
+						return -32;
+					}
+					if( r > 0 )
+					{
+						fwrite( buffer, r, 1, stdout ); 
+					}
+				} while( 1 );
+			}
 			// PROTECTION UNTESTED!
 			/*
 			case 'p':
@@ -195,10 +211,10 @@ keep_going:
 				else if( strcmp( fname, "+" ) == 0 )
 					f = stdout, hex = 1;
 				else
-					fopen( fname, "wb" );
+					f = fopen( fname, "wb" );
 				if( !f )
 				{
-					fprintf( stderr, "Error: can't open write file \"%s\"\n", argv[iarg] );
+					fprintf( stderr, "Error: can't open write file \"%s\"\n", fname );
 					return -9;
 				}
 				uint8_t * readbuff = malloc( amount );
@@ -309,7 +325,7 @@ keep_going:
 				uint64_t offset = StringToMemoryAddress( argv[iarg] );
 				if( offset > 0xffffffff )
 				{
-					fprintf( stderr, "Error: Invalid offset\n" );
+					fprintf( stderr, "Error: Invalid offset (%s)\n", argv[iarg] );
 					exit( -44 );
 				}
 				if( status != 1 )
@@ -322,8 +338,6 @@ keep_going:
 					fprintf( stderr, "Error: Image for CH32V003 too large (%d)\n", len );
 					exit( -9 );
 				}
-
-				printf( "%08x %08x\n", offset, len );
 
 				if( MCF.WriteBinaryBlob )
 				{
@@ -345,6 +359,9 @@ keep_going:
 		}
 		if( argchar && argchar[2] != 0 ) { argchar++; goto keep_going; }
 	}
+
+	if( MCF.FlushLLCommands )
+		MCF.FlushLLCommands( dev );
 
 	if( MCF.Exit )
 		MCF.Exit( dev );
@@ -372,6 +389,7 @@ help:
 	fprintf( stderr, " -r [memory address, decimal or 0x, try 0x08000000] [size, decimal or 0x, try 16384] [output binary image]\n" );
 	fprintf( stderr, "   Note: for memory addresses, you can use 'flash' 'launcher' 'bootloader' 'option' 'ram' and say \"ram+0x10\" for instance\n" );
 	fprintf( stderr, "   For filename, you can use - for raw or + for hex.\n" );
+	fprintf( stderr, " -T is a terminal. This MUST be the last argument.  You MUST have resumed or \n" );
 
 	return -1;	
 
@@ -417,10 +435,12 @@ static int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber )
 static int64_t StringToMemoryAddress( const char * number )
 {
 	uint32_t base = 0;
+
 	if( strncmp( number, "flash", 5 ) == 0 )       base = 0x08000000, number += 5;
 	if( strncmp( number, "launcher", 8 ) == 0 )    base = 0x1FFFF000, number += 8;
 	if( strncmp( number, "bootloader", 10 ) == 0 ) base = 0x1FFFF000, number += 10;
 	if( strncmp( number, "option", 6 ) == 0 )      base = 0x1FFFF800, number += 6;
+	if( strncmp( number, "user", 4 ) == 0 )        base = 0x1FFFF800, number += 4;
 	if( strncmp( number, "ram", 3 ) == 0 )         base = 0x20000000, number += 3;
 
 	if( base )
@@ -460,18 +480,22 @@ static int StaticEnterResetMode( void * dev, struct InternalState * iss, int mod
 		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
 		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
 		MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
+		MCF.FlushLLCommands( dev );
 		break;
 	case 1:
 		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
 		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
-		MCF.WriteReg32( dev, DMCONTROL, 0x00000003 ); // Reboot.
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000003 ); // Reboot.
 		MCF.WriteReg32( dev, DMCONTROL, 0x40000001 ); // resumereq
+		MCF.FlushLLCommands( dev );
+		printf( "Reboot\n" );
 		break;
 	case 2:
 		MCF.WriteReg32( dev, DMCONTROL, 0x40000001 ); // resumereq
+		MCF.FlushLLCommands( dev );
 		break;
 	}
-	iss->processor_is_in_halt = mode;
+	iss->processor_in_mode = mode;
 }
 
 int DefaultSetupInterface( void * dev )
@@ -483,8 +507,6 @@ int DefaultSetupInterface( void * dev )
 	MCF.WriteReg32( dev, DMSHDWCFGR, 0x5aa50000 | (1<<10) ); // Shadow Config Reg
 	MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // CFGR (1<<10 == Allow output from slave)
 	MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // Bug in silicon?  If coming out of cold boot, and we don't do our little "song and dance" this has to be called.
-	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
-	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
 
 	// Read back chip status.  This is really baskc.
 	uint32_t reg;
@@ -535,13 +557,13 @@ static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t dat
 	int r;
 	int first = 0;
 
-	if( iss->processor_is_in_halt )
+	if( iss->processor_in_mode )
 	{
 		StaticEnterResetMode( dev, iss, 0 );
 	}
 
 	int is_flash = 0;
-	if( ( address_to_write & 0xff000000 ) == 0x08000000 )
+	if( ( address_to_write & 0xff000000 ) == 0x08000000 || ( address_to_write & 0x1FFFF800 ) == 0x1FFFF000 )
 	{
 		// Is flash.
 		is_flash = 1;
@@ -596,8 +618,7 @@ static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t dat
 		if( (rrv >> 8 ) & 7 )
 		{
 			fprintf( stderr, "Fault writing memory (DMABSTRACTS = %08x)\n", rrv );
-			rrv &= 0xfffff8ff;
-			MCF.WriteReg32( dev, DMABSTRACTCS, rrv );
+			MCF.WriteReg32( dev, DMABSTRACTCS, 0x00000700 );
 		}
 	}
 	else
@@ -646,7 +667,7 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 
 	if( blob_size == 0 ) return 0;
 
-	if( iss->processor_is_in_halt )
+	if( iss->processor_in_mode )
 	{
 		StaticEnterResetMode( dev, iss, 0 );
 	}
@@ -739,7 +760,7 @@ static int DefaultReadWord( void * dev, uint32_t address_to_read, uint32_t * dat
 	int r;
 	int first = 0;
 
-	if( iss->processor_is_in_halt )
+	if( iss->processor_in_mode )
 	{
 		StaticEnterResetMode( dev, iss, 0 );
 	}
@@ -820,7 +841,7 @@ int DefaultErase( void * dev, uint32_t address, uint32_t length, int type )
 	uint32_t rw;
 	uint32_t timeout = 0;
 
-	if( iss->processor_is_in_halt )
+	if( iss->processor_in_mode )
 	{
 		StaticEnterResetMode( dev, iss, 0 );
 	}
@@ -872,7 +893,7 @@ int DefaultReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t r
 {
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
 
-	if( iss->processor_is_in_halt )
+	if( iss->processor_in_mode )
 	{
 		StaticEnterResetMode( dev, iss, 0 );
 	}
@@ -900,6 +921,50 @@ static int DefaultHaltMode( void * dev, int mode )
 	return 0;
 }
 
+// Returns positive if received text.
+// Returns negative if error.
+// Returns 0 if no text waiting.
+// maxlen MUST be at least 8 characters.  We null terminate.
+int DefaultPollTerminal( void * dev, uint8_t * buffer, int maxlen )
+{
+	int r;
+	uint32_t rr;
+	r = MCF.ReadReg32( dev, DMDATA0, &rr );
+	if( r < 0 ) return r;
+
+	if( maxlen < 8 ) return -9;
+
+	// DMDATA1:
+	//  bits 0..5 = # printf chars.
+	//  bit  6 = host-wants-to-say-something.
+	//  bit  7 = host-acknowledge.
+	if( rr & 0x80 )
+	{
+		int ret = 0;
+		int num_printf_chars = (rr & 0x3f)-4;  // Actaully can't be more than 32.
+		if( num_printf_chars > 0 && num_printf_chars <= 7)
+		{
+			if( num_printf_chars > 3 )
+			{
+				uint32_t r2;
+				r = MCF.ReadReg32( dev, DMDATA1, &r2 );
+				memcpy( buffer+4, &r2, num_printf_chars - 3 );
+			}
+			int firstrem = num_printf_chars;
+			if( firstrem > 3 ) firstrem = 3;
+			memcpy( buffer, ((uint8_t*)&rr)+1, firstrem );
+			buffer[num_printf_chars] = 0;
+			ret = num_printf_chars;
+		}
+		MCF.WriteReg32( dev, DMDATA0, 0x00 ); // Write that we acknowledge the data.
+		return ret;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 int SetupAutomaticHighLevelFunctions( void * dev )
 {
 	// Will populate high-level functions from low-level functions.
@@ -922,6 +987,9 @@ int SetupAutomaticHighLevelFunctions( void * dev )
 		MCF.Erase = DefaultErase;
 	if( !MCF.HaltMode )
 		MCF.HaltMode = DefaultHaltMode;
+	if( !MCF.PollTerminal )
+		MCF.PollTerminal = DefaultPollTerminal;
+
 
 	struct InternalState * iss = malloc( sizeof( struct InternalState ) );
 	iss->statetag = 0;

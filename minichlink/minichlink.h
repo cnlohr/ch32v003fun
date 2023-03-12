@@ -38,6 +38,11 @@ struct MiniChlinkFunctions
 	// TODO: What about 64-byte block-reads?
 	// TODO: What about byte read/write?
 	// TODO: What about half read/write?
+
+	// Returns positive if received text.
+	// Returns negative if error.
+	// Returns 0 if no text waiting.
+	int (*PollTerminal)( void * dev, uint8_t * buffer, int maxlen );
 };
 
 /** If you are writing a driver, the minimal number of functions you can implement are:
@@ -61,7 +66,7 @@ struct InternalState
 	uint32_t currentstateval;
 	uint32_t flash_unlocked;
 	int lastwriteflags;
-	int processor_is_in_halt;
+	int processor_in_mode;
 };
 
 

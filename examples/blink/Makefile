@@ -27,7 +27,7 @@ CFLAGS:= \
 	-I/usr/include/newlib \
 	-I$(CH32V003FUN) \
 	-nostdlib \
-	-I.
+	-I. -DTINYVECTOR
 
 LDFLAGS:=-T $(CH32V003FUN)/ch32v003fun.ld -Wl,--gc-sections
 
