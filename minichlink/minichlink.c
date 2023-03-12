@@ -43,9 +43,10 @@ int main( int argc, char ** argv )
 			fprintf( stderr, "Could not setup interface.\n" );
 			return -33;
 		}
+		printf( "Interface Setup\n" );
 	}
 
-	TestFunction( dev );
+//	TestFunction( dev );
 
 	int iarg = 1;
 	const char * lastcommand = 0;
@@ -101,19 +102,23 @@ keep_going:
 				else
 					goto unimplemented;
 				break;
-			case 'r': 
-				if( MCF.HaltMode )
-					MCF.HaltMode( dev, 0 );
-				else
+			case 'b': 
+				if( !MCF.HaltMode || MCF.HaltMode( dev, 1 ) )
 					goto unimplemented;
-				must_be_end = 'r';
+				must_be_end = 'b';
 				break;
-			case 'R':
-				if( MCF.HaltMode )
-					MCF.HaltMode( dev, 1 );
-				else
+			case 'e':  //rEsume
+				if( !MCF.HaltMode || MCF.HaltMode( dev, 2 ) )
 					goto unimplemented;
-				must_be_end = 'R';
+				must_be_end = 'e';
+				break;
+			case 'E':  //Erase whole chip.
+				if( !MCF.Erase || MCF.Erase( dev, 0, 0, 1 ) )
+					goto unimplemented;
+				break;
+			case 'h':
+				if( !MCF.HaltMode || MCF.HaltMode( dev, 0 ) )
+				must_be_end = 'h';
 				break;
 
 			// disable NRST pin (turn it into a GPIO)
@@ -153,7 +158,7 @@ keep_going:
 					4, "\x81\x06\x01\x01" );
 				break;
 			*/
-			case 'o':
+			case 'r':
 			{
 				int i;
 				int transferred;
@@ -169,8 +174,15 @@ keep_going:
 					fprintf( stderr, "Error: missing file for -o.\n" ); 
 					goto help;
 				}
-				uint64_t offset = SimpleReadNumberInt( argv[iarg++], -1 );
-				uint64_t amount = SimpleReadNumberInt( argv[iarg++], -1 );
+				const char * fname = argv[iarg++];
+				const char * offsstr = argv[iarg++];
+				uint64_t offset = 0;
+				if( strcasecmp( offsstr, "flash" ) == 0 )
+					offset = 0x08000000;
+				else
+					offset = SimpleReadNumberInt( offsstr, -1 );
+
+				uint64_t amount = SimpleReadNumberInt( argv[iarg], -1 );
 				if( offset > 0xffffffff || amount > 0xffffffff )
 				{
 					fprintf( stderr, "Error: memory value request out of range.\n" );
@@ -179,7 +191,7 @@ keep_going:
 
 				// Round up amount.
 				amount = ( amount + 3 ) & 0xfffffffc;
-				FILE * f = fopen( argv[iarg], "wb" );
+				FILE * f = fopen( fname, "wb" );
 				if( !f )
 				{
 					fprintf( stderr, "Error: can't open write file \"%s\"\n", argv[iarg] );
@@ -213,17 +225,24 @@ keep_going:
 				if( argchar[2] != 0 ) goto help;
 				iarg++;
 				argchar = 0; // Stop advancing
-				if( iarg >= argc ) goto help;
+				if( iarg + 1 >= argc ) goto help;
 				// Write binary.
 				int i;
-				FILE * f = fopen( argv[iarg], "rb" );
+				FILE * f = fopen( argv[iarg++], "rb" );
 				fseek( f, 0, SEEK_END );
 				int len = ftell( f );
 				fseek( f, 0, SEEK_SET );
 				char * image = malloc( len );
 				status = fread( image, len, 1, f );
 				fclose( f );
-	
+
+				const char * nextargv =  argv[iarg];
+				uint64_t offset = 0;
+				if( strcasecmp( nextargv, "flash" ) == 0 )
+					offset = 0x08000000;
+				else
+					offset = SimpleReadNumberInt( argv[iarg], -1 );
+
 				if( status != 1 )
 				{
 					fprintf( stderr, "Error: File I/O Fault.\n" );
@@ -237,7 +256,7 @@ keep_going:
 
 				if( MCF.WriteBinaryBlob )
 				{
-					if( MCF.WriteBinaryBlob( dev, 0x08000000, len, image ) )
+					if( MCF.WriteBinaryBlob( dev, offset, len, image ) )
 					{
 						fprintf( stderr, "Error: Fault writing image.\n" );
 						return -13;
@@ -248,8 +267,6 @@ keep_going:
 					goto unimplemented;
 				}
 
-				// Waiting or something on 2.46.2???????  I don't know why the main system does this.
-				//	WCHCHECK( libusb_bulk_transfer( devh, 0x82, rbuff, 1024, &transferred, 2000 ) ); // Ignore respone.
 				free( image );
 				break;
 			}
@@ -272,15 +289,16 @@ help:
 	fprintf( stderr, " -t Disable 3.3V\n" );
 	fprintf( stderr, " -f Disable 5V\n" );
 	fprintf( stderr, " -u Clear all code flash - by power off (also can unbrick)\n" );
-	fprintf( stderr, " -r Release from Reset\n" );
-	fprintf( stderr, " -R Place into Reset\n" );
+	fprintf( stderr, " -b Reboot out of Halt\n" );
+	fprintf( stderr, " -e Resume from halt\n" );
+	fprintf( stderr, " -h Place into Halt\n" );
 	fprintf( stderr, " -D Configure NRST as GPIO **WARNING** If you do this and you reconfig\n" );
 	fprintf( stderr, "      the SWIO pin (PD1) on boot, your part can never again be programmed!\n" );
 	fprintf( stderr, " -d Configure NRST as NRST\n" );
 //	fprintf( stderr, " -P Enable Read Protection (UNTESTED)\n" );
 //	fprintf( stderr, " -p Disable Read Protection (UNTESTED)\n" );
-	fprintf( stderr, " -w [binary image to write]\n" );
-	fprintf( stderr, " -o [memory address, decimal or 0x, try 0x08000000] [size, decimal or 0x, try 16384] [output binary image]\n" );
+	fprintf( stderr, " -w [binary image to write] [address, decimal or 0x, try0x08000000]\n" );
+	fprintf( stderr, " -r [memory address, decimal or 0x, try 0x08000000] [size, decimal or 0x, try 16384] [output binary image]\n" );
 	return -1;	
 
 unimplemented:
@@ -295,7 +313,7 @@ unimplemented:
 
 static int StaticUnlockFlash( void * dev, struct InternalState * iss );
 static int StaticWaitForFlash( void * dev );
-static int StaticEnterResetMode( void * dev, struct InternalState * iss );
+static int StaticEnterResetMode( void * dev, struct InternalState * iss, int halt );
 
 static int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber )
 {
@@ -341,11 +359,26 @@ static int StaticWaitForFlash( void * dev )
 	return 0;
 }
 
-static int StaticEnterResetMode( void * dev, struct InternalState * iss )
+static int StaticEnterResetMode( void * dev, struct InternalState * iss, int mode )
 {
-	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
-	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
-	MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
+	switch ( mode )
+	{
+	case 0:
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
+		MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
+		break;
+	case 1:
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
+		MCF.WriteReg32( dev, DMCONTROL, 0x00000003 ); // Reboot.
+		MCF.WriteReg32( dev, DMCONTROL, 0x40000001 ); // resumereq
+		break;
+	case 2:
+		MCF.WriteReg32( dev, DMCONTROL, 0x40000001 ); // resumereq
+		break;
+	}
+	iss->processor_is_in_halt = mode;
 }
 
 int DefaultSetupInterface( void * dev )
@@ -391,7 +424,7 @@ static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t dat
 
 	if( iss->processor_is_in_halt )
 	{
-		StaticEnterResetMode( dev, iss );
+		StaticEnterResetMode( dev, iss, 0 );
 	}
 
 	int flags = 0;
@@ -482,7 +515,9 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 
 	if( iss->processor_is_in_halt )
 	{
-		StaticEnterResetMode( dev, iss );
+		printf( "Halting\n" );
+		StaticEnterResetMode( dev, iss, 0 );
+		printf( "Halted\n" );
 	}
 
 
@@ -537,13 +572,7 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 
 			lastgroup = group;
 		}
-		//MCF.WriteWord( dev, wp, *(((uint32_t*)blob)+4) ); //Write data.
-		//MCF.WriteWord( dev, 0x40022010, (1<<16)|(1<<18) ); //Enable BUFLOAD.
 	}
-
-//	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
-//	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
-//	MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
 
 	if( is_flash )
 	{
@@ -564,7 +593,7 @@ static int DefaultReadWord( void * dev, uint32_t address_to_read, uint32_t * dat
 
 	if( iss->processor_is_in_halt )
 	{
-		StaticEnterResetMode( dev, iss );
+		StaticEnterResetMode( dev, iss, 0 );
 	}
 
 	if( iss->statetag != STTAG( "RDSQ" ) || address_to_read != iss->currentstateval )
@@ -618,11 +647,13 @@ static int StaticUnlockFlash( void * dev, struct InternalState * iss )
 	MCF.ReadWord( dev, 0x40022010, &rw ); 
 	if( rw & 0x8080 ) 
 	{
-		MCF.WriteWord( dev, 0x40022004, 0x45670123 );
-		MCF.WriteWord( dev, 0x40022004, 0xCDEF89AB );
-		MCF.WriteWord( dev, 0x40022024, 0x45670123 );
-		MCF.WriteWord( dev, 0x40022024, 0xCDEF89AB );
-		MCF.ReadWord( dev, 0x40022010, &rw );
+		MCF.WriteWord( dev, (intptr_t)&FLASH->OBKEYR, 0x45670123 );
+		MCF.WriteWord( dev, (intptr_t)&FLASH->OBKEYR, 0xCDEF89AB );
+		MCF.WriteWord( dev, (intptr_t)&FLASH->MODEKEYR, 0x45670123 );
+		MCF.WriteWord( dev, (intptr_t)&FLASH->MODEKEYR, 0xCDEF89AB );
+		MCF.WriteWord( dev, (intptr_t)&FLASH->BOOT_MODEKEYR, 0x45670123 );
+		MCF.WriteWord( dev, (intptr_t)&FLASH->BOOT_MODEKEYR, 0xCDEF89AB );
+		MCF.ReadWord( dev, (intptr_t)&FLASH->CTLR, &rw );
 		if( rw & 0x8080 ) 
 		{
 			fprintf( stderr, "Error: Flash is not unlocked\n" );
@@ -641,7 +672,7 @@ int DefaultErase( void * dev, uint32_t address, uint32_t length, int type )
 
 	if( iss->processor_is_in_halt )
 	{
-		StaticEnterResetMode( dev, iss );
+		StaticEnterResetMode( dev, iss, 0 );
 	}
 
 	if( !iss->flash_unlocked )
@@ -692,7 +723,7 @@ int DefaultReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t r
 
 	if( iss->processor_is_in_halt )
 	{
-		StaticEnterResetMode( dev, iss );
+		StaticEnterResetMode( dev, iss, 0 );
 	}
 
 	uint32_t rpos = address_to_read_from;
@@ -710,6 +741,49 @@ int DefaultReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t r
 	}
 }
 
+
+static int DefaultHaltMode( void * dev, int mode )
+{
+	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
+	StaticEnterResetMode( dev, iss, mode );
+	return 0;
+}
+
+int SetupAutomaticHighLevelFunctions( void * dev )
+{
+	// Will populate high-level functions from low-level functions.
+	if( MCF.WriteReg32 == 0 || MCF.ReadReg32 == 0 ) return -5;
+
+	// Else, TODO: Build the high level functions from low level functions.
+	// If a high-level function alrady exists, don't override.
+	
+	if( !MCF.SetupInterface )
+		MCF.SetupInterface = DefaultSetupInterface;
+	if( !MCF.WriteBinaryBlob )
+		MCF.WriteBinaryBlob = DefaultWriteBinaryBlob;
+	if( !MCF.ReadBinaryBlob )
+		MCF.ReadBinaryBlob = DefaultReadBinaryBlob;
+	if( !MCF.WriteWord )
+		MCF.WriteWord = DefaultWriteWord;
+	if( !MCF.ReadWord )
+		MCF.ReadWord = DefaultReadWord;
+	if( !MCF.Erase )
+		MCF.Erase = DefaultErase;
+	if( !MCF.HaltMode )
+		MCF.HaltMode = DefaultHaltMode;
+
+	struct InternalState * iss = malloc( sizeof( struct InternalState ) );
+	iss->statetag = 0;
+	iss->currentstateval = 0;
+
+	((struct ProgrammerStructBase*)dev)->internal = iss;
+}
+
+
+
+
+
+
 void TestFunction(void * dev )
 {
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
@@ -719,8 +793,6 @@ void TestFunction(void * dev )
 	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
 	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
 	MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
-
-//	MCF.Erase( dev, 0, 0, 1 );
 
 	r = MCF.WriteWord( dev, 0x20000100, 0xdeadbeef );
 	r = MCF.WriteWord( dev, 0x20000104, 0xcafed0de );
@@ -762,36 +834,5 @@ void TestFunction(void * dev )
 		printf( "%02x ", buffer[i] );
 		if( (i & 0xf) == 0xf ) printf( "\n" );
 	}
-
-}
-
-
-
-int SetupAutomaticHighLevelFunctions( void * dev )
-{
-	// Will populate high-level functions from low-level functions.
-	if( MCF.WriteReg32 == 0 || MCF.ReadReg32 == 0 ) return -5;
-
-	// Else, TODO: Build the high level functions from low level functions.
-	// If a high-level function alrady exists, don't override.
-	
-	if( !MCF.SetupInterface )
-		MCF.SetupInterface = DefaultSetupInterface;
-	if( !MCF.WriteBinaryBlob )
-		MCF.WriteBinaryBlob = DefaultWriteBinaryBlob;
-	if( !MCF.ReadBinaryBlob )
-		MCF.ReadBinaryBlob = DefaultReadBinaryBlob;
-	if( !MCF.WriteWord )
-		MCF.WriteWord = DefaultWriteWord;
-	if( !MCF.ReadWord )
-		MCF.ReadWord = DefaultReadWord;
-	if( !MCF.Erase )
-		MCF.Erase = DefaultErase;
-
-	struct InternalState * iss = malloc( sizeof( struct InternalState ) );
-	iss->statetag = 0;
-	iss->currentstateval = 0;
-
-	((struct ProgrammerStructBase*)dev)->internal = iss;
 }
 

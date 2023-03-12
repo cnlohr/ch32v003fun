@@ -172,7 +172,7 @@ static int LESetupInterface( void * d )
 static int LEControl3v3( void * d, int bOn )
 {
 	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
-
+printf( "3v3: %d\n", bOn );
 	if( bOn )
 		wch_link_command( (libusb_device_handle *)dev, "\x81\x0d\x01\x09", 4, 0, 0, 0 );
 	else
@@ -183,6 +183,7 @@ static int LEControl3v3( void * d, int bOn )
 static int LEControl5v( void * d, int bOn )
 {
 	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
+printf( "  5: %d\n", bOn );
 
 	if( bOn )
 		wch_link_command( (libusb_device_handle *)dev, "\x81\x0d\x01\x0b", 4, 0, 0, 0 );
@@ -193,23 +194,30 @@ static int LEControl5v( void * d, int bOn )
 
 static int LEUnbrick( void * dev )
 {
+	printf( "Sending unbrick\n" );
 	 wch_link_command( (libusb_device_handle *)dev, "\x81\x0d\x01\x0f\x09", 5, 0, 0, 0 );
+	printf( "Done unbrick\n" );
 }
 
-static int LEHaltMode( void * d, int one_if_halt_zero_if_resume )
+static int LEHaltMode( void * d, int mode )
 {
 	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
 
-	if( one_if_halt_zero_if_resume )
+	if( mode == 0 )
 	{
 		// Part one "immediately" places the part into reset.  Part 2 says when we're done, leave part in reset.
 		wch_link_multicommands( (libusb_device_handle *)dev, 2, 4, "\x81\x0d\x01\x02", 4, "\x81\x0d\x01\x01" );
 	}
-	else
+	else if( mode == 1 )
 	{
 		// This is clearly not the "best" method to exit reset.  I don't know why this combination works.
 		wch_link_multicommands( (libusb_device_handle *)dev, 3, 4, "\x81\x0b\x01\x01", 4, "\x81\x0d\x01\x02", 4, "\x81\x0d\x01\xff" );
 	}
+	else
+	{
+		return -93;
+	}
+	return 0;
 }
 
 static int LEConfigureNRSTAsGPIO( void * d, int one_if_yes_gpio )

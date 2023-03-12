@@ -21,7 +21,7 @@ struct MiniChlinkFunctions
 
 	int (*Exit)( void * dev );
 
-	int (*HaltMode)( void * dev, int one_if_halt_zero_if_resume );
+	int (*HaltMode)( void * dev, int mode ); //0 for halt, 1 for reset, 2 for resume
 	int (*ConfigureNRSTAsGPIO)( void * dev, int one_if_yes_gpio );
 
 	// WARNING: Reading/writing must be at 32-bit boundaries for 32-bit sizes.
@@ -33,7 +33,18 @@ struct MiniChlinkFunctions
 	// MUST be 4-byte-aligned.
 	int (*WriteWord)( void * dev, uint32_t address_to_write, uint32_t data ); // Flags = 1 for "doing a fast FLASH write."
 	int (*ReadWord)( void * dev, uint32_t address_to_read, uint32_t * data );
+
+	// TODO: What about 64-byte block-writes?
+	// TODO: What about 64-byte block-reads?
+	// TODO: What about byte read/write?
+	// TODO: What about half read/write?
 };
+
+/** If you are writing a driver, the minimal number of functions you can implement are:
+	WriteReg32
+	ReadReg32
+	FlushLLCommands
+*/
 
 // Convert a 4-character string to an int.
 #define STTAG( x ) (*((uint32_t*)(x)))
