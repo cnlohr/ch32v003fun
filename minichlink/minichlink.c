@@ -13,6 +13,8 @@
 
 static int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber );
 static int64_t StringToMemoryAddress( const char * number );
+static void StaticUpdatePROGBUFRegs( void * dev );
+
 void TestFunction(void * v );
 struct MiniChlinkFunctions MCF;
 
@@ -38,7 +40,9 @@ int main( int argc, char ** argv )
 	int status;
 	int must_be_end = 0;
 
-	if( MCF.SetupInterface )
+	int doing_unblock = (argc > 1 && argv[1][0] == '-' && argv[1][1] == 'u' );
+
+	if( !doing_unblock && MCF.SetupInterface )
 	{
 		if( MCF.SetupInterface( dev ) < 0 )
 		{
@@ -488,7 +492,7 @@ int DefaultSetupInterface( void * dev )
 	MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // CFGR (1<<10 == Allow output from slave)
 	MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // Bug in silicon?  If coming out of cold boot, and we don't do our little "song and dance" this has to be called.
 
-	// Read back chip status.  This is really baskc.
+	// Read back chip status.  This is really basic.
 	uint32_t reg = 0;
 	int r = MCF.ReadReg32( dev, DMSTATUS, &reg );
 	if( r >= 0 )
@@ -508,6 +512,18 @@ int DefaultSetupInterface( void * dev )
 
 	iss->statetag = STTAG( "STRT" );
 	return 0;
+}
+
+static void StaticUpdatePROGBUFRegs( void * dev )
+{
+	MCF.WriteReg32( dev, DMDATA0, 0xe00000f4 );   // DATA0's location in memory.
+	MCF.WriteReg32( dev, DMCOMMAND, 0x0023100a ); // Copy data to x10
+	MCF.WriteReg32( dev, DMDATA0, 0xe00000f8 );   // DATA1's location in memory.
+	MCF.WriteReg32( dev, DMCOMMAND, 0x0023100b ); // Copy data to x11
+	MCF.WriteReg32( dev, DMDATA0, 0x40022010 ); //FLASH->CTLR
+	MCF.WriteReg32( dev, DMCOMMAND, 0x0023100c ); // Copy data to x12
+	MCF.WriteReg32( dev, DMDATA0, CR_PAGE_PG|CR_BUF_LOAD);
+	MCF.WriteReg32( dev, DMCOMMAND, 0x0023100d ); // Copy data to x13
 }
 
 static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t data )
@@ -539,14 +555,7 @@ static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t dat
 
 			if( iss->statetag != STTAG( "RDSQ" ) )
 			{
-				MCF.WriteReg32( dev, DMDATA0, 0xe00000f4 );   // DATA0's location in memory.
-				MCF.WriteReg32( dev, DMCOMMAND, 0x0023100a ); // Copy data to x10
-				MCF.WriteReg32( dev, DMDATA0, 0xe00000f8 );   // DATA1's location in memory.
-				MCF.WriteReg32( dev, DMCOMMAND, 0x0023100b ); // Copy data to x11
-				MCF.WriteReg32( dev, DMDATA0, 0x40022010 ); //FLASH->CTLR
-				MCF.WriteReg32( dev, DMCOMMAND, 0x0023100c ); // Copy data to x12
-				MCF.WriteReg32( dev, DMDATA0, CR_PAGE_PG|CR_BUF_LOAD);
-				MCF.WriteReg32( dev, DMCOMMAND, 0x0023100d ); // Copy data to x13
+				StaticUpdatePROGBUFRegs( dev );
 			}
 		}
 
@@ -594,7 +603,9 @@ static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t dat
 		MCF.WriteReg32( dev, DMDATA0, data );
 		if( is_flash )
 		{
-			MCF.DelayUS( dev, 100 );
+			// XXX TODO: This likely can be a very short delay.
+			// XXX POSSIBLE OPTIMIZATION REINVESTIGATE.
+			ret |= MCF.WaitForDoneOp( dev );
 		}
 		else
 		{
@@ -621,6 +632,24 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 	if( blob_size == 0 ) return 0;
 
 	if( (address_to_write & 0xff000000) == 0x08000000 || (address_to_write & 0xff000000) == 0x00000000 ) 
+		is_flash = 1;
+
+	if( is_flash && MCF.BlockWrite64 && ( address_to_write & 0x3f ) == 0 )
+	{
+		int i;
+		for( i = 0; i < blob_size; i+= 64 )
+		{
+			int r = MCF.BlockWrite64( dev, address_to_write + i, blob + i );
+			if( r )
+			{
+				fprintf( stderr, "Error writing block at memory %08x\n", address_to_write );
+				return r;
+			}
+		}
+		return 0;
+	}
+
+	if( is_flash ) 
 	{
 		// Need to unlock flash.
 		// Flash reg base = 0x40022000,
@@ -638,7 +667,7 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 		printf( "Erasing TO %08x %08x\n", address_to_write, blob_size );
 		MCF.Erase( dev, address_to_write, blob_size, 0 );
 	}
-
+	printf( "Done\n" );
 	MCF.FlushLLCommands( dev );
 	MCF.DelayUS( dev, 100 ); // Why do we need this?
 
@@ -651,8 +680,8 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 		if( is_flash )
 		{
 			group = (wp & 0xffffffc0);
-			MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_PAGE_PG ); // THIS IS REQUIRED.
-			MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_BUF_RST | CR_PAGE_PG );
+			MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG ); // THIS IS REQUIRED, (intptr_t)&FLASH->CTLR = 0x40022010
+			MCF.WriteWord( dev, 0x40022010, CR_BUF_RST | CR_PAGE_PG );  // (intptr_t)&FLASH->CTLR = 0x40022010
 
 			int j;
 			for( j = 0; j < 16; j++ )
@@ -669,8 +698,8 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 				MCF.WriteWord( dev, wp, data );
 				wp += 4;
 			}
-			MCF.WriteWord( dev, (intptr_t)&FLASH->ADDR, group );
-			MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_PAGE_PG|CR_STRT_Set );
+			MCF.WriteWord( dev, 0x40022014, group );  //0x40022014 -> FLASH->ADDR
+			MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG|CR_STRT_Set ); // 0x40022010 -> FLASH->CTLR
 			if( MCF.WaitForFlash ) MCF.WaitForFlash( dev );
 		}
 		else
@@ -681,7 +710,6 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 				data = ((uint32_t*)blob)[index/4];
 			else if( (int32_t)(blob_size - index) > 0 )
 				memcpy( &data, &blob[index], blob_size - index );
-			printf( "WRITING %08x => %08x\n", data, wp );
 			MCF.WriteWord( dev, wp, data );
 			wp += 4;
 		}
@@ -719,15 +747,7 @@ static int DefaultReadWord( void * dev, uint32_t address_to_read, uint32_t * dat
 
 			if( iss->statetag != STTAG( "WRSQ" ) )
 			{
-				MCF.WriteReg32( dev, DMDATA0, 0xe00000f4 );   // DATA0's location in memory.
-				MCF.WriteReg32( dev, DMCOMMAND, 0x0023100a ); // Copy data to x10
-				MCF.WriteReg32( dev, DMDATA0, 0xe00000f8 );   // DATA1's location in memory.
-				MCF.WriteReg32( dev, DMCOMMAND, 0x0023100b ); // Copy data to x11
-				MCF.WriteReg32( dev, DMDATA0, 0x40022010 ); //FLASH->CTLR
-				MCF.WriteReg32( dev, DMCOMMAND, 0x0023100c ); // Copy data to x12
-				MCF.WriteReg32( dev, DMDATA0, CR_PAGE_PG|CR_BUF_LOAD);
-				MCF.WriteReg32( dev, DMCOMMAND, 0x0023100d ); // Copy data to x13
-				printf( "REGS CONNED B\n" );
+				StaticUpdatePROGBUFRegs( dev );
 			}
 			MCF.WriteReg32( dev, DMABSTRACTAUTO, 1 ); // Enable Autoexec.
 		}
@@ -749,18 +769,18 @@ static int DefaultReadWord( void * dev, uint32_t address_to_read, uint32_t * dat
 static int StaticUnlockFlash( void * dev, struct InternalState * iss )
 {
 	uint32_t rw;
-	MCF.ReadWord( dev, (intptr_t)&FLASH->CTLR, &rw ); 
+	MCF.ReadWord( dev, 0x40022010, &rw );  // FLASH->CTLR = 0x40022010
 	if( rw & 0x8080 ) 
 	{
 
-		MCF.WriteWord( dev, (intptr_t)&FLASH->KEYR, 0x45670123 );
-		MCF.WriteWord( dev, (intptr_t)&FLASH->KEYR, 0xCDEF89AB );
-		MCF.WriteWord( dev, (intptr_t)&FLASH->OBKEYR, 0x45670123 );
-		MCF.WriteWord( dev, (intptr_t)&FLASH->OBKEYR, 0xCDEF89AB );
-		MCF.WriteWord( dev, (intptr_t)&FLASH->MODEKEYR, 0x45670123 );
-		MCF.WriteWord( dev, (intptr_t)&FLASH->MODEKEYR, 0xCDEF89AB );
+		MCF.WriteWord( dev, 0x40022004, 0x45670123 ); // FLASH->KEYR = 0x40022004
+		MCF.WriteWord( dev, 0x40022004, 0xCDEF89AB );
+		MCF.WriteWord( dev, 0x40022008, 0x45670123 ); // OBKEYR = 0x40022008
+		MCF.WriteWord( dev, 0x40022008, 0xCDEF89AB );
+		MCF.WriteWord( dev, 0x40022024, 0x45670123 ); // MODEKEYR = 0x40022024
+		MCF.WriteWord( dev, 0x40022024, 0xCDEF89AB );
 
-		MCF.ReadWord( dev, (intptr_t)&FLASH->CTLR, &rw );
+		MCF.ReadWord( dev, 0x40022010, &rw ); // FLASH->CTLR = 0x40022010
 		if( rw & 0x8080 ) 
 		{
 			fprintf( stderr, "Error: Flash is not unlocked (CTLR = %08x)\n", rw );
@@ -914,6 +934,44 @@ int DefaultPollTerminal( void * dev, uint8_t * buffer, int maxlen )
 		return 0;
 	}
 }
+
+int DefaultUnbrick( void * dev )
+{
+	printf( "Entering Unbrick Mode\n" );
+	MCF.Control3v3( dev, 0 );
+	MCF.DelayUS( dev, 65535 );
+	MCF.FlushLLCommands( dev );
+	MCF.Control3v3( dev, 1 );
+	MCF.FlushLLCommands( dev );
+	printf( "Connection starting\n" );
+	int timeout = 0;
+	int max_timeout = 500;
+	uint32_t ds = 0;
+	for( timeout = 0; timeout < max_timeout; timeout++ )
+	{
+		if( MCF.PerformSongAndDance )
+		{
+			MCF.PerformSongAndDance( dev );
+		}
+		MCF.DelayUS( dev, 10 );
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
+		MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
+		MCF.ReadReg32( dev, DMSTATUS, &ds );
+		MCF.FlushLLCommands( dev );
+		if( ds != 0xffffffff && ds != 0x00000000 ) break;
+	}
+	if( timeout == max_timeout ) 
+	{
+		printf( "Timed out trying to unbrick\n" );
+		return -5;
+	}
+	printf( "Timeout: %d DMSTATUS: %08x\n", timeout, ds );
+	MCF.Erase( dev, 0, 0, 1);
+	MCF.FlushLLCommands( dev );
+	return -5;
+}
+
 int DefaultPrintChipInfo( void * dev )
 {
 	uint32_t reg;
@@ -971,6 +1029,8 @@ int SetupAutomaticHighLevelFunctions( void * dev )
 		MCF.WaitForDoneOp = DefaultWaitForDoneOp;
 	if( !MCF.PrintChipInfo )
 		MCF.PrintChipInfo = DefaultPrintChipInfo;
+	if( !MCF.Unbrick )
+		MCF.Unbrick = DefaultUnbrick;
 
 	struct InternalState * iss = malloc( sizeof( struct InternalState ) );
 	iss->statetag = 0;

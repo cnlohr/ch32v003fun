@@ -31,6 +31,6 @@ int main()
 		//Delay_Ms( 50 );
 		GPIOD->BSHR = (1<<16) | ( 1<<(4+16) ); // Turn off GPIOD0
 		//Delay_Ms( 50 );
-		printf( "%d\n", count++ );
+		printf( "+%d\n", count++ );
 	}
 }

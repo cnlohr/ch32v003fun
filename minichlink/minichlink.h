@@ -39,7 +39,9 @@ struct MiniChlinkFunctions
 
 	int (*PrintChipInfo)( void * dev );
 
-	// TODO: What about 64-byte block-writes?
+	// Geared for flash, but could be anything.
+	int (*BlockWrite64)( void * dev, uint32_t address_to_write, uint8_t * data );
+
 	// TODO: What about 64-byte block-reads?
 	// TODO: What about byte read/write?
 	// TODO: What about half read/write?
@@ -48,6 +50,8 @@ struct MiniChlinkFunctions
 	// Returns negative if error.
 	// Returns 0 if no text waiting.
 	int (*PollTerminal)( void * dev, uint8_t * buffer, int maxlen );
+
+	int (*PerformSongAndDance)( void * dev );
 };
 
 /** If you are writing a driver, the minimal number of functions you can implement are:
