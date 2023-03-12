@@ -1,0 +1,54 @@
+name: PlatformIO CI
+
+on: [push, pull_request]
+
+jobs:
+  # Build using native Makefile buildsystem
+  makefile-build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install Dependencies
+      run: sudo apt-get update && sudo apt-get install -y build-essential make libnewlib-dev gcc-riscv64-unknown-elf libusb-1.0-0-dev
+    - name: Build Blink Example
+      run: cd examples/blink && make V=1 -j3 blink.elf && riscv64-unknown-elf-size blink.elf && cd ../..
+    - name: Build debugprintfdemo Example
+      run: cd examples/debugprintfdemo && make V=1 -j3 debugprintfdemo.elf && riscv64-unknown-elf-size debugprintfdemo.elf && cd ../..
+    # currently not compiling: __get_dscratch0() not defined.
+    #- name: Build sandbox Example
+    #  run: cd examples/sandbox && make V=1 -j3 sandbox.elf && riscv64-unknown-elf-size sandbox.elf && cd ../..
+    - name: Build uartdemo Example
+      run: cd examples/uartdemo && make V=1 -j3 uartdemo.elf && riscv64-unknown-elf-size uartdemo.elf && cd ../..
+    - name: Build ws2812 Example
+      run: cd examples/ws2812demo && make V=1 -j3 ws2812bdemo.elf && riscv64-unknown-elf-size ws2812bdemo.elf && cd ../..
+  # Build using PlatformIO
+  pio-build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Cache pip
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    - name: Cache PlatformIO
+      uses: actions/cache@v3
+      with:
+        path: ~/.platformio
+        key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.9"
+    - name: Install PlatformIO
+      run: |
+        python -m pip install --upgrade pip
+        pip install --upgrade platformio
+    - name: Run PlatformIO
+      run: pio run
