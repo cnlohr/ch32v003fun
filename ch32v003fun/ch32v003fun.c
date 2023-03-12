@@ -855,25 +855,37 @@ int _write(int fd, const char *buf, int size)
 	#define DMDATA0 ((volatile uint32_t*)0xe00000f4)
 	#define DMDATA1 ((volatile uint32_t*)0xe00000f8)
 
-	while( ((*DMDATA0) & 0x80) );
 
-	int remain = size;
-	while( remain > 0 )
+	char buffer[4] = { 0 };
+	int place = 0;
+	while( place < size )
 	{
-		int tosend = remain;
+		int tosend = size - place;
 		if( tosend > 7 ) tosend = 7;
 
-		uint32_t dmd1 = 0;
-		if( tosend > 3 ) memcpy( &dmd1, buf + 3, tosend - 3 );
-		uint32_t d1 = (tosend + 4) | 0x80;
+		while( ((*DMDATA0) & 0x80) );
 
-		int subsend = tosend;
-		if( subsend > 3 ) subsend = 3;
-		memcpy( ((uint8_t*)(&d1))+1, buf, subsend );
-		*DMDATA1 = dmd1;
-		*DMDATA0 = d1;
-		remain =- tosend;
+		uint32_t d;
+		int t = 3;
+		while( t < tosend )
+		{
+			buffer[t-3] = buf[t+place];
+			t++;
+		}
+		*DMDATA1 = *(uint32_t*)&(buffer[0]);
+		t = 0;
+		while( t < tosend && t < 3 )
+		{
+			buffer[t+1] = buf[t+place];
+			t++;
+		}
+		buffer[0] = 0x80 | (tosend + 4);
+		*DMDATA0 = *(uint32_t*)&(buffer[0]);
+
+		//buf += tosend;
+		place += tosend;
 	}
+	return size;
 }
 #endif
 

@@ -869,8 +869,15 @@ static int DefaultHaltMode( void * dev, int mode )
 // maxlen MUST be at least 8 characters.  We null terminate.
 int DefaultPollTerminal( void * dev, uint8_t * buffer, int maxlen )
 {
+	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
+
 	int r;
 	uint32_t rr;
+	if( iss->statetag != STTAG( "TERM" ) )
+	{
+		MCF.WriteReg32( dev, DMABSTRACTAUTO, 0x00000000 ); // Disable Autoexec.
+		iss->statetag = STTAG( "TERM" );
+	}
 	r = MCF.ReadReg32( dev, DMDATA0, &rr );
 	if( r < 0 ) return r;
 
