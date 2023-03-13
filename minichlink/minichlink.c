@@ -14,6 +14,7 @@
 static int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber );
 static int64_t StringToMemoryAddress( const char * number );
 static void StaticUpdatePROGBUFRegs( void * dev );
+static int InternalUnlockBootloader( void * dev );
 
 void TestFunction(void * v );
 struct MiniChlinkFunctions MCF;
@@ -108,8 +109,17 @@ keep_going:
 				else
 					goto unimplemented;
 				break;
+			case 'U':
+				// Unlock Bootloader
+				if( InternalUnlockBootloader( dev ) )
+					goto unimplemented;
+				break;
 			case 'b':  //reBoot
 				if( !MCF.HaltMode || MCF.HaltMode( dev, 1 ) )
+					goto unimplemented;
+				break;
+			case 'B':  //reBoot into Bootloader
+				if( !MCF.HaltMode || MCF.HaltMode( dev, 3 ) )
 					goto unimplemented;
 				break;
 			case 'e':  //rEsume
@@ -345,7 +355,7 @@ keep_going:
 					goto unimplemented;
 				}
 
-				printf( "Image written successfully\n" );
+				printf( "Image written.\n" );
 
 				free( image );
 				break;
@@ -528,6 +538,30 @@ static void StaticUpdatePROGBUFRegs( void * dev )
 	MCF.WriteReg32( dev, DMCOMMAND, 0x0023100d ); // Copy data to x13
 }
 
+static int InternalUnlockBootloader( void * dev )
+{
+	if( !MCF.WriteWord ) return -99;
+	int ret = 0;
+	uint32_t OBTKEYR;
+	ret |= MCF.WriteWord( dev, 0x40022028, 0x45670123 ); //(FLASH_BOOT_MODEKEYP)
+	ret |= MCF.WriteWord( dev, 0x40022028, 0xCDEF89AB ); //(FLASH_BOOT_MODEKEYP)
+	ret |= MCF.ReadWord( dev, 0x40022008, &OBTKEYR ); //(FLASH_OBTKEYR)
+	if( ret )
+	{
+		fprintf( stderr, "Error operating with OBTKEYR\n" );
+		return -1;
+	}
+	if( OBTKEYR & (1<<15) )
+	{
+		fprintf( stderr, "Error: Could not unlock boot section (%08x)\n", OBTKEYR );
+	}
+	OBTKEYR |= (1<<14); // Configure for boot-to-bootload.
+	ret |= MCF.WriteWord( dev, 0x40022008, OBTKEYR );
+	ret |= MCF.ReadWord( dev, 0x40022008, &OBTKEYR ); //(FLASH_OBTKEYR)
+	printf( "FLASH_OBTKEYR = %08x (%d)\n", OBTKEYR, ret );
+	return ret;
+}
+
 static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t data )
 {
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
@@ -633,7 +667,7 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 
 	if( blob_size == 0 ) return 0;
 
-	if( (address_to_write & 0xff000000) == 0x08000000 || (address_to_write & 0xff000000) == 0x00000000 ) 
+	if( (address_to_write & 0xff000000) == 0x08000000 || (address_to_write & 0xff000000) == 0x00000000 || (address_to_write & 0x1FFFF800) == 0x1FFFF000 ) 
 		is_flash = 1;
 
 	if( is_flash && MCF.BlockWrite64 && ( address_to_write & 0x3f ) == 0 )
@@ -877,6 +911,21 @@ static int DefaultHaltMode( void * dev, int mode )
 		MCF.FlushLLCommands( dev );
 		break;
 	case 2:
+		MCF.WriteReg32( dev, DMCONTROL, 0x40000001 ); // resumereq
+		MCF.FlushLLCommands( dev );
+		break;
+	case 3:
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
+
+		MCF.WriteWord( dev, (intptr_t)&FLASH->KEYR, FLASH_KEY1 );
+		MCF.WriteWord( dev, (intptr_t)&FLASH->KEYR, FLASH_KEY2 );
+		MCF.WriteWord( dev, (intptr_t)&FLASH->BOOT_MODEKEYR, FLASH_KEY1 );
+		MCF.WriteWord( dev, (intptr_t)&FLASH->BOOT_MODEKEYR, FLASH_KEY2 );
+		MCF.WriteWord( dev, (intptr_t)&FLASH->STATR, 1<<14 );
+		MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_LOCK_Set );
+
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000003 ); // Reboot.
 		MCF.WriteReg32( dev, DMCONTROL, 0x40000001 ); // resumereq
 		MCF.FlushLLCommands( dev );
 		break;

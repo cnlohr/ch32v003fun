@@ -4819,6 +4819,9 @@ extern "C" {
 #define DELAY_US_TIME (SYSTEM_CORE_CLOCK / 8000000)
 #define DELAY_MS_TIME (SYSTEM_CORE_CLOCK / 8000)
 
+void handle_reset()            __attribute__((naked)) __attribute((section(".text.handle_reset"))) __attribute__((used));
+void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) __attribute__((naked)) __attribute__((used));
+
 void DelaySysTick( uint32_t n );
 
 #define Delay_Us(n) DelaySysTick( n * DELAY_US_TIME )

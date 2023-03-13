@@ -664,10 +664,6 @@ mini_pprintf(int (*puts)(char*s, int len, void* buf), void* buf, const char *fmt
 int main() __attribute__((used));
 void SystemInit( void ) __attribute__((used));
 
-void InterruptVector()         __attribute__((naked)) __attribute((section(".init"))) __attribute__((used)) __attribute((weak));
-void handle_reset()            __attribute__((naked)) __attribute((section(".text.handle_reset"))) __attribute__((used));
-void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) __attribute__((naked)) __attribute__((used));
-
 extern uint32_t * _sbss;
 extern uint32_t * _ebss;
 extern uint32_t * _data_lma;
@@ -712,7 +708,11 @@ void TIM1_TRG_COM_IRQHandler( void )     __attribute__((section(".text.vector_ha
 void TIM1_CC_IRQHandler( void )          __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void TIM2_IRQHandler( void )             __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 
-void InterruptVector()
+void InterruptVector()         __attribute__((naked)) __attribute((section(".init"))) __attribute((weak,alias("InterruptVectorDefault")));
+void InterruptVectorDefault()  __attribute__((naked)) __attribute((section(".init")));
+
+
+void InterruptVectorDefault()
 {
 	asm volatile( "\n\
 	.align  2\n\
@@ -758,7 +758,6 @@ void InterruptVector()
 	.word   TIM1_CC_IRQHandler        /* TIM1 Capture Compare */           \n\
 	.word   TIM2_IRQHandler           /* TIM2 */                           \n");
 }
-
 
 void handle_reset()
 {
