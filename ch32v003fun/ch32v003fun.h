@@ -4833,6 +4833,11 @@ void SystemInit(void) __attribute__((used));
 
 // Useful functions
 void SystemInit48HSI( void );
+// NOTE: HSEBYP is ORed with RCC_CTLR.  Set it to RCC_HSEBYP or 0.
+// If you are using an external oscillator, set it to RCC_HSEBYP.  Otherwise, if you are using a crystal, it must be 0.
+void SystemInitHSE( int HSEBYP );
+void SystemInitHSEPLL( int HSEBYP );
+
 
 #define UART_BAUD_RATE 115200
 #define OVER8DIV 4

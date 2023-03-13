@@ -819,6 +819,37 @@ void SystemInit48HSI( void )
 	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x08);                // Wait till PLL is used as system clock source
 }
 
+
+void SystemInitHSE( int HSEBYP )
+{
+	// Values lifted from the EVT.  There is little to no documentation on what this does.
+	RCC->CTLR  = RCC_HSION | RCC_HSEON | RCC_PLLON | HSEBYP;      // Enable HSE and keep HSI+PLL on.
+	while(!(RCC->CTLR&RCC_HSERDY));
+	// Not using PLL.
+	FLASH->ACTLR = FLASH_ACTLR_LATENCY_0;                         // 1 Cycle Latency
+	RCC->INTR  = 0x009F0000;                                      // Clear PLL, CSSC, HSE, HSI and LSI ready flags.
+	RCC->CFGR0 = RCC_HPRE_DIV1 | RCC_SW_HSE;                      // HCLK = SYSCLK = APB1 and use HSE for System Clock.
+	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x04);   // Wait till HSE is used as system clock source
+	RCC->CTLR = RCC_HSEON | HSEBYP; // Turn off HSI + PLL.
+}
+
+
+void SystemInitHSEPLL( int HSEBYP )
+{
+	// Values lifted from the EVT.  There is little to no documentation on what this does.
+	RCC->CTLR  = RCC_HSION | RCC_HSEON | RCC_PLLON | HSEBYP;       // Enable HSE and keep HSI+PLL on.
+	while(!(RCC->CTLR&RCC_HSERDY));
+	RCC->CFGR0 = RCC_SW_HSE | RCC_HPRE_DIV1;                       // HCLK = SYSCLK = APB1 and use HSE for System Clock.
+	RCC->CTLR  = RCC_HSEON | HSEBYP;                               // Turn off PLL and HSI.
+	RCC->CFGR0 = RCC_SW_HSE | RCC_HPRE_DIV1 | RCC_PLLSRC_HSE_Mul2; // Use PLL with HSE.
+	RCC->CTLR  = RCC_HSEON | RCC_PLLON | HSEBYP;                   // Turn PLL Back on..
+	while((RCC->CTLR & RCC_PLLRDY) == 0);                          // Wait till PLL is ready
+	RCC->CFGR0 = RCC_SW_PLL | RCC_HPRE_DIV1 | RCC_PLLSRC_HSE_Mul2; // Select PLL as system clock source
+	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x08);    // Wait till PLL is used as system clock source
+}
+
+
+
 void SetupUART( int uartBRR )
 {
 	// Enable GPIOD and UART.
