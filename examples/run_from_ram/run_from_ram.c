@@ -36,6 +36,24 @@ void RamFunction()
 		GPIOC->BSHR = (1<<16);
 		Delay_Ms( 250 );
 		count++;
+
+		// But we turbo through twiddling a pin.
+		
+		asm volatile("\n\
+			li a0, 1 | (1<<4)\n\
+			li a1, (1<<16) | (1<<(16+4))\n\
+			la a2, 0x40011410 /* GPIO D*/ \n\
+			c.nop\n\
+			c.sw a0, 0(a2)\n\
+			c.sw a1, 0(a2)\n\
+			c.sw a0, 0(a2) /* Writing out takes 2 cycles from what I can tell*/ \n\
+			c.addi a3, 1   /* Insert this for comparative timing,  it's 1 cycle */ \n\
+			c.sw a1, 0(a2)\n\
+			c.sw a0, 0(a2)\n\
+			c.sw a1, 0(a2)\n\
+			c.sw a0, 0(a2)\n\
+			c.sw a1, 0(a2)\n\
+			" : : : "a0", "a1", "a2", "a3" );
 	}
 }
 
