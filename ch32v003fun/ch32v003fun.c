@@ -856,7 +856,7 @@ int _write(int fd, const char *buf, int size)
 
 	char buffer[4] = { 0 };
 	int place = 0;
-	uint32_t timeout = 80000; // Give up after ~20ms
+	uint32_t timeout = 160000; // Give up after ~40ms
 	while( place < size )
 	{
 		int tosend = size - place;
