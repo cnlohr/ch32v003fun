@@ -54,6 +54,8 @@ struct MiniChlinkFunctions
 
 	int (*PerformSongAndDance)( void * dev );
 
+	int (*VendorCommand)( void * dev, const char * command );
+
 	// Do Not override these.  they are cursed.
 	int (*WriteHalfWord)( void * dev, uint32_t address_to_write, uint32_t data );
 	int (*ReadHalfWord)( void * dev, uint32_t address_to_read, uint32_t * data );
@@ -115,6 +117,9 @@ void * TryInit_ESP32S2CHFUN();
 
 // Returns 0 if ok, populated, 1 if not populated.
 int SetupAutomaticHighLevelFunctions( void * dev );
+
+// Useful for converting numbers like 0x, etc.
+int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber );
 
 #endif
 

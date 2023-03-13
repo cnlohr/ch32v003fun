@@ -1,5 +1,5 @@
 // Could be defined here, or in the processor defines.
-#define SYSTEM_CORE_CLOCK 48000000
+#define SYSTEM_CORE_CLOCK 24000000
 
 #include "ch32v003fun.h"
 #include <stdio.h>
@@ -8,9 +8,32 @@
 
 uint32_t count;
 
+void RamFunction() __attribute__((naked));
+void RamFunction()
+{
+	asm volatile("\n\
+		li a0, 1 | (1<<4)\n\
+		li a1, (1<<16) | (1<<(16+4))\n\
+		la a2, 0x40011410\n\
+1:\n\
+		c.sw a0, 0(a2)\n\
+		c.sw a1, 0(a2)\n\
+		c.sw a0, 0(a2)\n\
+		c.sw a1, 0(a2)\n\
+		c.sw a0, 0(a2)\n\
+		c.sw a1, 0(a2)\n\
+		c.sw a0, 0(a2)\n\
+		c.sw a1, 0(a2)\n\
+		j 1b" );
+}
+
+uint8_t rambuffer[128];
+
 int main()
 {
-	SystemInit48HSI();
+	EXTEN->EXTEN_CTR = EXTEN_LDO_TRIM; // Boost LDO.
+	SystemInitHSEPLL( RCC_HSEBYP );
+	// When running from RAM appears to go up to about 96MHz.
 
 	// Enable GPIOD.
 	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOC;
@@ -27,14 +50,7 @@ int main()
 	GPIOC->CFGLR &= ~(0xf<<(4*4));
 	GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*4);
 
-	while(1)
-	{
-		GPIOD->BSHR = 1 | (1<<4);	 // Turn on GPIOD0&D4
-		GPIOC->BSHR = 1;	         // Turn on GPIOC0
-		Delay_Ms( 250 );
-		GPIOD->BSHR = (1<<16) | (1<<(16+4)); // Turn off GPIOD0
-		GPIOC->BSHR = (1<<16);       // Turn off GPIOC0
-		Delay_Ms( 250 );
-		count++;
-	}
+memcpy( rambuffer, RamFunction, 128 );
+	void (*fn)() = (void*) rambuffer;
+	fn();
 }

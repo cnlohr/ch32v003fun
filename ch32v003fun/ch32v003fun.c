@@ -840,6 +840,7 @@ void SystemInitHSEPLL( int HSEBYP )
 	RCC->CTLR  = RCC_HSION | RCC_HSEON | RCC_PLLON | HSEBYP;       // Enable HSE and keep HSI+PLL on.
 	while(!(RCC->CTLR&RCC_HSERDY));
 	RCC->CFGR0 = RCC_SW_HSE | RCC_HPRE_DIV1;                       // HCLK = SYSCLK = APB1 and use HSE for System Clock.
+	FLASH->ACTLR = FLASH_ACTLR_LATENCY_1;                          // 1 Cycle Latency
 	RCC->CTLR  = RCC_HSEON | HSEBYP;                               // Turn off PLL and HSI.
 	RCC->CFGR0 = RCC_SW_HSE | RCC_HPRE_DIV1 | RCC_PLLSRC_HSE_Mul2; // Use PLL with HSE.
 	RCC->CTLR  = RCC_HSEON | RCC_PLLON | HSEBYP;                   // Turn PLL Back on..

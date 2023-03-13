@@ -11,7 +11,6 @@
 #include "minichlink.h"
 #include "../ch32v003fun/ch32v003fun.h"
 
-static int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber );
 static int64_t StringToMemoryAddress( const char * number );
 static void StaticUpdatePROGBUFRegs( void * dev );
 static int InternalUnlockBootloader( void * dev );
@@ -41,9 +40,11 @@ int main( int argc, char ** argv )
 	int status;
 	int must_be_end = 0;
 
-	int doing_unblock = (argc > 1 && argv[1][0] == '-' && argv[1][1] == 'u' );
+	int skip_startup = 
+		(argc > 1 && argv[1][0] == '-' && argv[1][1] == 'u' ) |
+		(argc > 1 && argv[1][0] == '-' && argv[1][1] == 'X' );
 
-	if( !doing_unblock && MCF.SetupInterface )
+	if( !skip_startup && MCF.SetupInterface )
 	{
 		if( MCF.SetupInterface( dev ) < 0 )
 		{
@@ -176,6 +177,19 @@ keep_going:
 					MCF.PrintChipInfo( dev ); 
 				else
 					goto unimplemented;
+				break;
+			}
+			case 'X':
+			{
+				iarg++;
+				if( iarg >= argc )
+				{
+					fprintf( stderr, "Vendor command requires an actual command\n" );
+					goto unimplemented;
+				}
+				if( MCF.VendorCommand )
+					if( MCF.VendorCommand( dev, argv[iarg++] ) )
+						goto unimplemented;
 				break;
 			}
 			case 'r':
@@ -409,7 +423,7 @@ unimplemented:
 
 static int StaticUnlockFlash( void * dev, struct InternalState * iss );
 
-static int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber )
+int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber )
 {
 	if( !number || !number[0] ) return defaultNumber;
 	int radix = 10;

@@ -255,6 +255,73 @@ int ESPVoidHighLevelState( void * dev )
 	return 0;
 }
 
+int ESPVendorCommand( void * dev, const char * cmd )
+{
+	char command[10] = { 0 };
+	char tbuf[10] = { 0 };
+	int fields[10];
+	char c;
+	int i = 0;
+	int f = 0;
+	while( (c = *cmd++) )
+	{
+		if( c == ':' ) break;
+		if( c == '\0' ) break;
+		if( i + 1 >= sizeof( command )) break;
+		command[i++] = c;
+		command[i] = 0;
+	}
+	i = 0;
+	f = 0;
+	while( 1 )
+	{
+		c = *cmd++;
+		if( c == ':' || c == '\0' )
+		{
+			fields[f++] = SimpleReadNumberInt( tbuf,  0 );
+			puts( tbuf );
+			if( f == 10 ) break; 
+			tbuf[0] = 0;
+			i = 0;
+			if( c == '\0' ) break;
+			continue;
+		}
+		if( i + 1 >= sizeof( tbuf )) break;
+		tbuf[i++] = c;
+		tbuf[i] = 0;
+	}
+	printf( "Got Vendor Command \"%s\"\n", command );
+	ESPFlushLLCommands( dev );
+	if( strcasecmp( command, "ECLK" ) == 0 )
+	{
+		printf( "Setting up external clock on pin.\n" );
+		if( f < 5 )
+		{
+			fprintf( stderr, "Error: Need fields :use_apll:sdm0:sdm1:sdm2:odiv try 1:0:0:8:3 for 24MHz\n" );
+			fprintf( stderr, "Definition:\n\
+	use_apll = Configures APLL = 480 / 4 = 120\n\
+	40 * (SDM2 + SDM1/(2^8) + SDM0/(2^16) + 4) / ( 2 * (ODIV+2) );\n\
+	Datasheet recommends that numerator is between 300 and 500MHz.\n ");
+			return -9;
+		}
+		Write2LE( dev, 0x0cfe );
+		Write1( dev, fields[0] ); 
+		Write1( dev, fields[1] ); 
+		Write1( dev, fields[2] ); 
+		Write1( dev, fields[3] ); 
+		Write1( dev, fields[4] ); 
+		Write1( dev, 0 ); 
+		Write1( dev, 0 ); 
+		Write1( dev, 0 ); 
+	ESPFlushLLCommands( dev );
+	}
+	else
+	{
+		fprintf( stderr, "Error: Unknown vendor command %s\n", command );
+	}
+	return 0;
+}
+
 void * TryInit_ESP32S2CHFUN()
 {
 	#define VID 0x303a
@@ -287,7 +354,7 @@ void * TryInit_ESP32S2CHFUN()
 	MCF.PerformSongAndDance = ESPPerformSongAndDance;
 
 	MCF.BlockWrite64 = ESPBlockWrite64;
-
+	MCF.VendorCommand = ESPVendorCommand;
 	// Reset internal programmer state.
 	Write2LE( eps, 0x0afe );
 
