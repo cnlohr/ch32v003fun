@@ -854,7 +854,6 @@ int _write(int fd, const char *buf, int size)
 	#define DMDATA0 ((volatile uint32_t*)0xe00000f4)
 	#define DMDATA1 ((volatile uint32_t*)0xe00000f8)
 
-
 	char buffer[4] = { 0 };
 	int place = 0;
 	while( place < size )

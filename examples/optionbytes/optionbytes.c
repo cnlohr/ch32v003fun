@@ -1,6 +1,17 @@
-// Really basic self-contained demo for the ch32v003
-// Doesn't rely on any of the weird HAL stuff from CH
-// Final executable is ~1/4th the size.
+/* This shows how to use the option bytes.  I.e. how do you disable NRST?
+   WARNING Portions of this code are under the following copyright.
+*/
+/********************************** (C) COPYRIGHT  *******************************
+ * File Name          : ch32v00x_flash.c
+ * Author             : WCH
+ * Version            : V1.0.0
+ * Date               : 2022/08/08
+ * Description        : This file provides all the FLASH firmware functions.
+ *********************************************************************************
+ * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
+ * Attention: This software (modified or not) and binary are used for 
+ * microcontroller manufactured by Nanjing Qinheng Microelectronics.
+ *******************************************************************************/
 
 // Could be defined here, or in the processor defines.
 #define SYSTEM_CORE_CLOCK 48000000

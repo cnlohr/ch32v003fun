@@ -1,9 +1,5 @@
-// Really basic self-contained demo for the ch32v003
-// Doesn't rely on any of the weird HAL stuff from CH
-// Final executable is ~1/4th the size.
-
-// Could be defined here, or in the processor defines.
-#define SYSTEM_CORE_CLOCK 48000000
+/* Small example showing how to use the SWIO programming pin to 
+   do printf through the debug interface */
 
 #include "ch32v003fun.h"
 #include <stdio.h>

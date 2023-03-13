@@ -46,13 +46,23 @@ int main()
 	count = marker[0];
 
 	int i;
+
+	// Make a clear signature.
+	for( i = 0; i < 10; i++ )
+	{
+		GPIOD->BSHR = 1 | (1<<4);                // Turn on GPIOD0 + D4
+		GPIOC->BSHR = 1;                         // Turn on GPIOC0
+		GPIOD->BSHR = (1<<16) | (1<<(16+4));     // Turn off GPIOD0 + D4
+		GPIOC->BSHR = 1<<16;                     // Turn off GPIOC0
+	}
+
 	for( i = 0; i < 5; i++ )
 	{
-		GPIOD->BSHR = 1 | (1<<4);            // Turn on GPIOD0 + D4
-		GPIOC->BSHR = 1;                     // Turn on GPIOC0
+		GPIOD->BSHR = 1 | (1<<4);
+		GPIOC->BSHR = 1;
 		Delay_Ms( 250 );
 		GPIOD->BSHR = (1<<16) | (1<<(16+4)); // Turn off GPIOD0 + D4
-		GPIOC->BSHR = 1;                     // Turn off GPIOC0
+		GPIOC->BSHR = 1<<16;                     // Turn off GPIOC0
 		Delay_Ms( 20 );
 		count++;
 	}

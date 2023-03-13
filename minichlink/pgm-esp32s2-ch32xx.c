@@ -105,7 +105,7 @@ int ESPFlushLLCommands( void * dev )
 	if( r < 0 )
 	{
 		fprintf( stderr, "Error: Got error %d when sending hid feature report.\n", r );
-		return r;
+		exit( -9 );
 	}
 retry:
 	eps->reply[0] = 0xad; // Key report ID
@@ -247,6 +247,13 @@ int ESPPerformSongAndDance( void * dev )
 	return 0;
 }
 
+int ESPVoidHighLevelState( void * dev )
+{
+	struct ESP32ProgrammerStruct * eps = (struct ESP32ProgrammerStruct *)dev;
+	Write2LE( eps, 0x05fe );
+	ESPFlushLLCommands( dev );	
+	return 0;
+}
 
 void * TryInit_ESP32S2CHFUN()
 {
@@ -268,6 +275,7 @@ void * TryInit_ESP32S2CHFUN()
 	MCF.DelayUS = ESPDelayUS;
 	MCF.Control3v3 = ESPControl3v3;
 	MCF.Exit = ESPExit;
+	MCF.VoidHighLevelState = ESPVoidHighLevelState;
 
 	// These are optional. Disabling these is a good mechanismto make sure the core functions still work.
 	MCF.WriteWord = ESPWriteWord;
