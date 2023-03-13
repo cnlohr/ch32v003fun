@@ -35,7 +35,6 @@ void RamFunction()
 		GPIOD->BSHR = (1<<16) | (1<<(16+4)); // Turn off GPIODs
 		GPIOC->BSHR = (1<<16);
 		Delay_Ms( 250 );
-		count++;
 
 		// But we turbo through twiddling a pin.
 		
@@ -46,14 +45,14 @@ void RamFunction()
 			c.nop\n\
 			c.sw a0, 0(a2)\n\
 			c.sw a1, 0(a2)\n\
-			c.sw a0, 0(a2) /* Writing out takes 2 cycles from what I can tell*/ \n\
-			c.addi a3, 1   /* Insert this for comparative timing,  it's 1 cycle */ \n\
+			c.sw a0, 0(a2)       /* Writing out takes 2 cycles from what I can tell*/ \n\
+			c.addi %[count], 1   /* Insert this for comparative timing,  it's 1 cycle */ \n\
 			c.sw a1, 0(a2)\n\
 			c.sw a0, 0(a2)\n\
 			c.sw a1, 0(a2)\n\
 			c.sw a0, 0(a2)\n\
 			c.sw a1, 0(a2)\n\
-			" : : : "a0", "a1", "a2", "a3" );
+			" : [count]"+r"(count) : : "a0", "a1", "a2" );
 	}
 }
 
