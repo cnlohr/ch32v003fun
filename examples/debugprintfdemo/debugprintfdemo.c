@@ -24,9 +24,8 @@ int main()
 	while(1)
 	{
 		GPIOD->BSHR = 1 | (1<<4);	 // Turn on GPIOD0
-		//Delay_Ms( 50 );
-		GPIOD->BSHR = (1<<16) | ( 1<<(4+16) ); // Turn off GPIOD0
-		//Delay_Ms( 50 );
 		printf( "+%d\n", count++ );
+		GPIOD->BSHR = (1<<16) | ( 1<<(4+16) ); // Turn off GPIOD0
+		printf( "-%d\n", count++ );
 	}
 }

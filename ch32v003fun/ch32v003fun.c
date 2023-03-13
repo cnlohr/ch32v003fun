@@ -856,12 +856,14 @@ int _write(int fd, const char *buf, int size)
 
 	char buffer[4] = { 0 };
 	int place = 0;
+	uint32_t timeout = 80000; // Give up after ~20ms
 	while( place < size )
 	{
 		int tosend = size - place;
 		if( tosend > 7 ) tosend = 7;
 
-		while( ((*DMDATA0) & 0x80) );
+		while( ((*DMDATA0) & 0x80) )
+			if( timeout-- == 0 ) return place;
 
 		uint32_t d;
 		int t = 3;
