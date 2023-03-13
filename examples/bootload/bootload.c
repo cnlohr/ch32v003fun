@@ -27,18 +27,18 @@ int main()
 	// From here, you can do whatever you'd like!
 	// This code will live up at 0x1ffff000.
 
-	// Enable GPIOD.
+	// Enable GPIOD + C
 	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOC;
 
 	// GPIO D0 Push-Pull, 10MHz Output
 	GPIOD->CFGLR &= ~(0xf<<(4*0));
 	GPIOD->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*0);
 
-	// GPIO D0 Push-Pull, 10MHz Output
+	// GPIO D4 Push-Pull, 10MHz Output
 	GPIOD->CFGLR &= ~(0xf<<(4*4));
 	GPIOD->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*4);
 
-	// GPIO D0 Push-Pull, 10MHz Output
+	// GPIO C0 Push-Pull, 10MHz Output
 	GPIOC->CFGLR &= ~(0xf<<(4*0));
 	GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*4);
 

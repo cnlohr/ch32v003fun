@@ -1,20 +1,20 @@
 // Could be defined here, or in the processor defines.
-#define SYSTEM_CORE_CLOCK 24000000
+#define SYSTEM_CORE_CLOCK 48000000
 
 #include "ch32v003fun.h"
 #include <stdio.h>
 
-#define APB_CLOCK SYSTEM_CORE_CLOCK
-
 uint32_t count;
 
-int main()
+// There's a few reasons you might want to run from RAM, for instance
+// it's faster than running from flash, especially if you're running 
+// on PLL.  Or maybe you want to power down the flash for some reaso.
+//
+// Well, no worries!  You can just stick it in the .data segment!
+
+void RamFunction() __attribute__((section(".data"))) __attribute__((used));
+void RamFunction()
 {
-	SystemInitHSE( 0 );
-
-	// Enable GPIOs
-	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOC;
-
 	// GPIO D0 Push-Pull
 	GPIOD->CFGLR &= ~(0xf<<(4*0));
 	GPIOD->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*0);
@@ -38,3 +38,14 @@ int main()
 		count++;
 	}
 }
+
+int main()
+{
+	SystemInit48HSI();
+
+	// Enable GPIOs
+	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOC;
+
+	RamFunction();
+}
+
