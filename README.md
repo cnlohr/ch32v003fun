@@ -73,6 +73,10 @@ See [here](https://github.com/Community-PIO-CH32V/platform-ch32v) for further de
  * Optional (not needed, can be configured as output if fuse set): `NRST` is on `PD7`
  * UART TX (optional) is on: `PD5`
 
+## Support
+
+You can open a github ticket or join my Discord in the #ch32v003fun channel. https://discord.gg/CCeyWyZ
+
 ###
  Footnots/links
 
