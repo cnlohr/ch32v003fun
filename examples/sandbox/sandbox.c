@@ -1,50 +1,51 @@
-// Could be defined here, or in the processor defines.
-#define SYSTEM_CORE_CLOCK 48000000
-#define APB_CLOCK SYSTEM_CORE_CLOCK
+/* Small example showing how to use the SWIO programming pin to 
+   do printf through the debug interface */
 
-#include "ch32v00x.h"
+#include "ch32v003fun.h"
 #include <stdio.h>
-#include <string.h>
 
-// Working on WS2812 driving.
+uint32_t count;
+
+
+
+// Tell the compiler to put this code in the .data section.  That
+// will cause the startup code to copy it from flash into RAM where
+// it can be easily modified at runtime.
+void SRAMCode( ) __attribute__(( section(".data"))) __attribute__((noinline)) __attribute__((noreturn));
+void SRAMCode( )
+{
+	asm volatile( 
+"li a0, 0x40011410\n"
+"li a1, (1 | (1<<4))\n"
+"li a2, (1 | (1<<4))<<16\n"
+"1: c.sw a1, 0(a0)\n"
+"   c.sw a2, 0(a0)\n"
+"   j 1b\n" );
+}
 
 int main()
 {
 	SystemInit48HSI();
-	SetupUART( UART_BRR );
+	SetupDebugPrintf();
 
-	int k;
+	// Boost CPU supply.
+	EXTEN->EXTEN_CTR = EXTEN_LDO_TRIM;
 
-	// Enable GPIOD (for debugging)
-	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD;
+	// Enable GPIOs
+	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOC;
+
+	// GPIO D0 Push-Pull
 	GPIOD->CFGLR &= ~(0xf<<(4*0));
 	GPIOD->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*0);
-	GPIOD->BSHR = 1; // Turn on GPIOD0
-	GPIOD->BSHR = 1<<16; // Turn off GPIOD0
 
+	// GPIO D4 Push-Pull
+	GPIOD->CFGLR &= ~(0xf<<(4*4));
+	GPIOD->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*4);
 
-		//DCSR
-		asm volatile("\n\
-			li t0, 0x4\n\
-			csrw 0x7B0, t0\n\
-		");
+	// GPIO C0 Push-Pull
+	GPIOC->CFGLR &= ~(0xf<<(4*0));
+	GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*0);
 
-	while(1)
-	{
-		Delay_Ms( 2 );
-	    *(uint32_t*)(0xe0000100) = 2;  //Hopefully enable debug (dmcontrol .0) --> Doesn't work.
-
-		uint32_t val = *(uint32_t*)0xe00000f4;
-		*(uint32_t*)0xe00000f4 = 0xaabbccdd;
-
-		printf( "0xe00000f4: %08x %08x\n", val, __get_dscratch0() );
-
-		// Write to dscratch0
-		asm volatile("\n\
-			li t0, 0xa8b8c8d8\n\
-			csrw 0x7B2, t0\n\
-			csrw 0x7B3, t0\n\
-		");
-	}
+	SRAMCode();
 }
 

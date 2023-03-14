@@ -8,7 +8,9 @@
 uint32_t count;
 
 
-
+// Tell the compiler to put this code in the .data section.  That
+// will cause the startup code to copy it from flash into RAM where
+// it can be easily modified at runtime.
 uint32_t ReadCSRSelfModify( uint16_t whichcsr ) __attribute__(( section(".data"))) __attribute__((noinline));
 uint32_t ReadCSRSelfModify( uint16_t whichcsr )
 {
@@ -20,7 +22,7 @@ uint32_t ReadCSRSelfModify( uint16_t whichcsr )
 
 	// We have to put this here to "force" the compiler to order the
 	// instructions in this way.  Otherwise, the compiler will try
-	// to optimize the code and inline the assembly int something where
+	// to optimize the code and inline the assembly into something where
 	// our global handle into assembly code becomes meaningless.
 	// Annoyingly, it has to contain at least one instruction :(
 	asm volatile( "nop" );
