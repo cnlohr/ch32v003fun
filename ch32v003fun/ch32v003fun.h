@@ -4851,6 +4851,9 @@ void SetupUART( int uartBRR );
 
 void SetupDebugPrintf();
 
+void WaitForDebuggerToAttach();
+
+
 #ifdef __cplusplus
 };
 #endif

@@ -896,6 +896,7 @@ int _write(int fd, const char *buf, int size)
 
 		while( ((*DMDATA0) & 0x80) )
 			if( timeout-- == 0 ) return place;
+		timeout = 160000;
 
 		uint32_t d;
 		int t = 3;
@@ -925,8 +926,13 @@ void SetupDebugPrintf()
 {
 	// Clear out the sending flag.
 	*DMDATA1 = 0x0;
+	*DMDATA0 = 0x80;
 }
 
+void WaitForDebuggerToAttach()
+{
+	while( ((*DMDATA0) & 0x80) );
+}
 
 void DelaySysTick( uint32_t n )
 {
