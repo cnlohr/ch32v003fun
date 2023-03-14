@@ -39,6 +39,7 @@ void RamFunction()
 		// But we turbo through twiddling a pin.
 		
 		asm volatile("\n\
+			.option rvc\n\
 			li a0, 1 | (1<<4)\n\
 			li a1, (1<<16) | (1<<(16+4))\n\
 			la a2, 0x40011410 /* GPIO D*/ \n\
