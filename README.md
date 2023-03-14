@@ -62,6 +62,12 @@ Currently, it ignores all the respone codes, except when querying the chip.  But
 
 Anyone who wants to write a good/nice utility should probably look at the code in this folder.
 
+## VSCode + PlatformIO
+
+This project can also be built, uploaded and debugged with VSCode and the PlatformIO extension. Simply clone and open this project in VSCode and have the PlatformIO extension installed.
+
+See [here](https://github.com/Community-PIO-CH32V/platform-ch32v) for further details.
+
 ## Quick Reference
  * Needed for programming/debugging: `SWIO` is on `PD1`
  * Optional (not needed, can be configured as output if fuse set): `NRST` is on `PD7`
