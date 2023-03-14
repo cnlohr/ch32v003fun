@@ -1,26 +1,31 @@
-name: PlatformIO CI
+name: Build CI
 
 on: [push, pull_request]
 
 jobs:
+  find-examples: # Job that list subdirectories
+    runs-on: ubuntu-latest
+    outputs:
+      dir: ${{ steps.set-dirs.outputs.dir }} # generate output name dir by using inner step output
+    steps:
+      - uses: actions/checkout@v3
+      - id: set-dirs # Give it an id to handle to get step outputs in the outputs key above
+        run: echo "::set-output name=dir::$(find examples -name Makefile -print0 |xargs -0 -n 1 dirname | jq -R -s -c 'split("\n")[:-1]')"
+        # Define step output named dir base on ls command transformed to JSON thanks to jq
   # Build using native Makefile buildsystem
   makefile-build:
+    needs: [find-examples] # Depends on previous job
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        example: ${{fromJson(needs.find-examples.outputs.dir)}}
     steps:
     - uses: actions/checkout@v3
     - name: Install Dependencies
       run: sudo apt-get update && sudo apt-get install -y build-essential make libnewlib-dev gcc-riscv64-unknown-elf libusb-1.0-0-dev
-    - name: Build Blink Example
-      run: cd examples/blink && make V=1 -j3 blink.elf && riscv64-unknown-elf-size blink.elf && cd ../..
-    - name: Build debugprintfdemo Example
-      run: cd examples/debugprintfdemo && make V=1 -j3 debugprintfdemo.elf && riscv64-unknown-elf-size debugprintfdemo.elf && cd ../..
-    # currently not compiling: __get_dscratch0() not defined.
-    #- name: Build sandbox Example
-    #  run: cd examples/sandbox && make V=1 -j3 sandbox.elf && riscv64-unknown-elf-size sandbox.elf && cd ../..
-    - name: Build uartdemo Example
-      run: cd examples/uartdemo && make V=1 -j3 uartdemo.elf && riscv64-unknown-elf-size uartdemo.elf && cd ../..
-    - name: Build ws2812 Example
-      run: cd examples/ws2812demo && make V=1 -j3 ws2812bdemo.elf && riscv64-unknown-elf-size ws2812bdemo.elf && cd ../..
+    - name: Build ${{ matrix.example }}
+      run: cd ${{ matrix.example }} && make V=1 -j3 $(basename ${{ matrix.example }}.elf) && riscv64-unknown-elf-size $(basename ${{ matrix.example }}.elf)
   # Build using PlatformIO
   pio-build:
     strategy:
