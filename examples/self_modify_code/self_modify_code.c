@@ -22,6 +22,7 @@ uint32_t ReadCSRSelfModify( uint16_t whichcsr )
 	// instructions in this way.  Otherwise, the compiler will try
 	// to optimize the code and inline the assembly int something where
 	// our global handle into assembly code becomes meaningless.
+	// Annoyingly, it has to contain at least one instruction :(
 	asm volatile( "nop" );
 
 	// 000026f3 is csrrs a3, 0x000, x0; So, we modify it, placing the
