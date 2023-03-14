@@ -1,4 +1,4 @@
-TARGET:=sandbox
+TARGET:=self_modify_code
 
 all : flash
 
@@ -43,3 +43,4 @@ monitor : flash
 
 clean :
 	rm -rf $(TARGET).elf $(TARGET).bin $(TARGET).hex $(TARGET).lst $(TARGET).map $(TARGET).hex
+

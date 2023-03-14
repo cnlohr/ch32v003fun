@@ -11,9 +11,9 @@
 #include "minichlink.h"
 #include "../ch32v003fun/ch32v003fun.h"
 
-static int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber );
 static int64_t StringToMemoryAddress( const char * number );
 static void StaticUpdatePROGBUFRegs( void * dev );
+static int InternalUnlockBootloader( void * dev );
 
 void TestFunction(void * v );
 struct MiniChlinkFunctions MCF;
@@ -40,9 +40,11 @@ int main( int argc, char ** argv )
 	int status;
 	int must_be_end = 0;
 
-	int doing_unblock = (argc > 1 && argv[1][0] == '-' && argv[1][1] == 'u' );
+	int skip_startup = 
+		(argc > 1 && argv[1][0] == '-' && argv[1][1] == 'u' ) |
+		(argc > 1 && argv[1][0] == '-' && argv[1][1] == 'X' );
 
-	if( !doing_unblock && MCF.SetupInterface )
+	if( !skip_startup && MCF.SetupInterface )
 	{
 		if( MCF.SetupInterface( dev ) < 0 )
 		{
@@ -108,8 +110,17 @@ keep_going:
 				else
 					goto unimplemented;
 				break;
+			case 'U':
+				// Unlock Bootloader
+				if( InternalUnlockBootloader( dev ) )
+					goto unimplemented;
+				break;
 			case 'b':  //reBoot
 				if( !MCF.HaltMode || MCF.HaltMode( dev, 1 ) )
+					goto unimplemented;
+				break;
+			case 'B':  //reBoot into Bootloader
+				if( !MCF.HaltMode || MCF.HaltMode( dev, 3 ) )
 					goto unimplemented;
 				break;
 			case 'e':  //rEsume
@@ -166,6 +177,19 @@ keep_going:
 					MCF.PrintChipInfo( dev ); 
 				else
 					goto unimplemented;
+				break;
+			}
+			case 'X':
+			{
+				iarg++;
+				if( iarg >= argc )
+				{
+					fprintf( stderr, "Vendor command requires an actual command\n" );
+					goto unimplemented;
+				}
+				if( MCF.VendorCommand )
+					if( MCF.VendorCommand( dev, argv[iarg++] ) )
+						goto unimplemented;
 				break;
 			}
 			case 'r':
@@ -345,7 +369,7 @@ keep_going:
 					goto unimplemented;
 				}
 
-				printf( "Image written successfully\n" );
+				printf( "Image written.\n" );
 
 				free( image );
 				break;
@@ -375,8 +399,7 @@ help:
 	fprintf( stderr, " -b Reboot out of Halt\n" );
 	fprintf( stderr, " -e Resume from halt\n" );
 	fprintf( stderr, " -h Place into Halt\n" );
-	fprintf( stderr, " -D Configure NRST as GPIO **WARNING** If you do this and you reconfig\n" );
-	fprintf( stderr, "      the SWIO pin (PD1) on boot, your part can never again be programmed!\n" );
+	fprintf( stderr, " -D Configure NRST as GPIO\n" );
 	fprintf( stderr, " -d Configure NRST as NRST\n" );
 //	fprintf( stderr, " -P Enable Read Protection (UNTESTED)\n" );
 //	fprintf( stderr, " -p Disable Read Protection (UNTESTED)\n" );
@@ -400,7 +423,7 @@ unimplemented:
 
 static int StaticUnlockFlash( void * dev, struct InternalState * iss );
 
-static int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber )
+int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber )
 {
 	if( !number || !number[0] ) return defaultNumber;
 	int radix = 10;
@@ -528,6 +551,85 @@ static void StaticUpdatePROGBUFRegs( void * dev )
 	MCF.WriteReg32( dev, DMCOMMAND, 0x0023100d ); // Copy data to x13
 }
 
+static int InternalUnlockBootloader( void * dev )
+{
+	if( !MCF.WriteWord ) return -99;
+	int ret = 0;
+	uint32_t OBTKEYR;
+	ret |= MCF.WriteWord( dev, 0x40022028, 0x45670123 ); //(FLASH_BOOT_MODEKEYP)
+	ret |= MCF.WriteWord( dev, 0x40022028, 0xCDEF89AB ); //(FLASH_BOOT_MODEKEYP)
+	ret |= MCF.ReadWord( dev, 0x40022008, &OBTKEYR ); //(FLASH_OBTKEYR)
+	if( ret )
+	{
+		fprintf( stderr, "Error operating with OBTKEYR\n" );
+		return -1;
+	}
+	if( OBTKEYR & (1<<15) )
+	{
+		fprintf( stderr, "Error: Could not unlock boot section (%08x)\n", OBTKEYR );
+	}
+	OBTKEYR |= (1<<14); // Configure for boot-to-bootload.
+	ret |= MCF.WriteWord( dev, 0x40022008, OBTKEYR );
+	ret |= MCF.ReadWord( dev, 0x40022008, &OBTKEYR ); //(FLASH_OBTKEYR)
+	printf( "FLASH_OBTKEYR = %08x (%d)\n", OBTKEYR, ret );
+	return ret;
+}
+
+
+
+static int DefaultWriteHalfWord( void * dev, uint32_t address_to_write, uint32_t data )
+{
+	int ret = 0;
+	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
+	if( MCF.VoidHighLevelState ) MCF.VoidHighLevelState( dev );
+	iss->statetag = STTAG( "XXXX" );
+
+	MCF.WriteReg32( dev, DMABSTRACTAUTO, 0x00000000 ); // Disable Autoexec.
+
+	// Different address, so we don't need to re-write all the program regs.
+	// sh x8,0(x9)  // Write to the address.
+	MCF.WriteReg32( dev, DMPROGBUF0, 0x00849023 );
+	MCF.WriteReg32( dev, DMPROGBUF1, 0x00100073 ); // c.ebreak
+
+	MCF.WriteReg32( dev, DMDATA0, address_to_write );
+	MCF.WriteReg32( dev, DMCOMMAND, 0x00231009 ); // Copy data to x9
+	MCF.WriteReg32( dev, DMDATA0, data );
+	MCF.WriteReg32( dev, DMCOMMAND, 0x00271008 ); // Copy data to x8, and execute program.
+
+	ret |= MCF.WaitForDoneOp( dev );
+	iss->currentstateval = -1;
+
+
+	return ret;
+}
+
+static int DefaultReadHalfWord( void * dev, uint32_t address_to_write, uint32_t * data )
+{
+	int ret = 0;
+	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
+	if( MCF.VoidHighLevelState ) MCF.VoidHighLevelState( dev );
+	iss->statetag = STTAG( "XXXX" );
+
+	MCF.WriteReg32( dev, DMABSTRACTAUTO, 0x00000000 ); // Disable Autoexec.
+
+	// Different address, so we don't need to re-write all the program regs.
+	// lh x8,0(x9)  // Write to the address.
+	MCF.WriteReg32( dev, DMPROGBUF0, 0x00049403 );
+	MCF.WriteReg32( dev, DMPROGBUF1, 0x00100073 ); // c.ebreak
+
+	MCF.WriteReg32( dev, DMDATA0, address_to_write );
+	MCF.WriteReg32( dev, DMCOMMAND, 0x00231009 ); // Copy data to x9
+	MCF.WriteReg32( dev, DMCOMMAND, 0x00241000 ); // Only execute.
+	MCF.WriteReg32( dev, DMCOMMAND, 0x00221008 ); // Read x8 into DATA0.
+
+	ret |= MCF.WaitForDoneOp( dev );
+	iss->currentstateval = -1;
+
+
+	return ret | MCF.ReadReg32( dev, DMDATA0, data );
+}
+
+
 static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t data )
 {
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
@@ -633,7 +735,7 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 
 	if( blob_size == 0 ) return 0;
 
-	if( (address_to_write & 0xff000000) == 0x08000000 || (address_to_write & 0xff000000) == 0x00000000 ) 
+	if( (address_to_write & 0xff000000) == 0x08000000 || (address_to_write & 0xff000000) == 0x00000000 || (address_to_write & 0x1FFFF800) == 0x1FFFF000 ) 
 		is_flash = 1;
 
 	if( is_flash && MCF.BlockWrite64 && ( address_to_write & 0x3f ) == 0 )
@@ -730,13 +832,11 @@ timedout:
 static int DefaultReadWord( void * dev, uint32_t address_to_read, uint32_t * data )
 {
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
-
 	if( iss->statetag != STTAG( "RDSQ" ) || address_to_read != iss->currentstateval )
 	{
 		if( iss->statetag != STTAG( "RDSQ" ) )
 		{
 			MCF.WriteReg32( dev, DMABSTRACTAUTO, 0 ); // Disable Autoexec.
-
 			// c.lw x8,0(x11) // Pull the address from DATA1
 			// c.lw x9,0(x8)  // Read the data at that location.
 			MCF.WriteReg32( dev, DMPROGBUF0, 0x40044180 );
@@ -880,6 +980,21 @@ static int DefaultHaltMode( void * dev, int mode )
 		MCF.WriteReg32( dev, DMCONTROL, 0x40000001 ); // resumereq
 		MCF.FlushLLCommands( dev );
 		break;
+	case 3:
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
+
+		MCF.WriteWord( dev, (intptr_t)&FLASH->KEYR, FLASH_KEY1 );
+		MCF.WriteWord( dev, (intptr_t)&FLASH->KEYR, FLASH_KEY2 );
+		MCF.WriteWord( dev, (intptr_t)&FLASH->BOOT_MODEKEYR, FLASH_KEY1 );
+		MCF.WriteWord( dev, (intptr_t)&FLASH->BOOT_MODEKEYR, FLASH_KEY2 );
+		MCF.WriteWord( dev, (intptr_t)&FLASH->STATR, 1<<14 );
+		MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_LOCK_Set );
+
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000003 ); // Reboot.
+		MCF.WriteReg32( dev, DMCONTROL, 0x40000001 ); // resumereq
+		MCF.FlushLLCommands( dev );
+		break;
 	}
 	iss->processor_in_mode = mode;
 	return 0;
@@ -972,12 +1087,150 @@ int DefaultUnbrick( void * dev )
 
 	if( timeout == max_timeout ) 
 	{
-		printf( "Timed out trying to unbrick\n" );
+		fprintf( stderr, "Timed out trying to unbrick\n" );
 		return -5;
 	}
 	MCF.Erase( dev, 0, 0, 1);
 	MCF.FlushLLCommands( dev );
 	return -5;
+}
+
+int DefaultConfigureNRSTAsGPIO( void * dev, int one_if_yes_gpio  )
+{
+	fprintf( stderr, "Error: DefaultConfigureNRSTAsGPIO does not work via the programmer here.  Please see the demo \"optionbytes\"\n" );
+	return -5;
+#if 0
+	int ret = 0;
+	uint32_t csw;
+
+
+	if( MCF.ReadWord( dev, 0x1FFFF800, &csw ) )
+	{
+		fprintf( stderr, "Error: failed to get user word\n" );
+		return -5;
+	}
+
+	printf( "CSW WAS : %08x\n", csw );
+
+	MCF.WriteWord( dev, 0x40022008, 0x45670123 ); // OBKEYR = 0x40022008
+	MCF.WriteWord( dev, 0x40022008, 0xCDEF89AB );
+	MCF.WriteWord( dev, 0x40022004, 0x45670123 ); // FLASH->KEYR = 0x40022004
+	MCF.WriteWord( dev, 0x40022004, 0xCDEF89AB );
+	MCF.WriteWord( dev, 0x40022024, 0x45670123 ); // MODEKEYR = 0x40022024
+	MCF.WriteWord( dev, 0x40022024, 0xCDEF89AB );
+
+//XXXX THIS DOES NOT WORK IT CANNOT ERASE.
+	uint32_t ctlr;
+	if( MCF.ReadWord( dev, 0x40022010, &ctlr ) ) // FLASH->CTLR = 0x40022010
+	{
+		return -9;
+	}
+	ctlr |= CR_OPTER_Set | CR_STRT_Set; // OBER
+	MCF.WriteWord( dev, 0x40022010, ctlr ); // FLASH->CTLR = 0x40022010
+	ret |= MCF.WaitForDoneOp( dev );
+	ret |= MCF.WaitForFlash( dev );
+
+	MCF.WriteHalfWord( dev, (intptr_t)&OB->RDPR, RDP_Key );
+
+    ctlr &=~CR_OPTER_Reset;
+	MCF.WriteWord( dev, 0x40022010, ctlr ); // FLASH->CTLR = 0x40022010
+	ret |= MCF.WaitForDoneOp( dev );
+	ret |= MCF.WaitForFlash( dev );
+    ctlr |= CR_OPTPG_Set;
+	MCF.WriteWord( dev, 0x40022010, ctlr ); // FLASH->CTLR = 0x40022010
+	ret |= MCF.WaitForDoneOp( dev );
+	ret |= MCF.WaitForFlash( dev );
+    ctlr &=~CR_OPTPG_Reset;
+	MCF.WriteWord( dev, 0x40022010, ctlr ); // FLASH->CTLR = 0x40022010
+	ret |= MCF.WaitForDoneOp( dev );
+	ret |= MCF.WaitForFlash( dev );
+
+
+// This does work to write the option bytes, but does NOT work to erase.
+
+	if( MCF.ReadWord( dev, 0x40022010, &ctlr ) ) // FLASH->CTLR = 0x40022010
+	{
+		return -9;
+	}
+	ctlr |= CR_OPTPG_Set; //OBPG
+	MCF.WriteWord( dev, 0x40022010, ctlr ); // FLASH->CTLR = 0x40022010
+	ret |= MCF.WaitForDoneOp( dev );
+	ret |= MCF.WaitForFlash( dev );
+
+	uint32_t config = OB_IWDG_HW | OB_STOP_NoRST | OB_STDBY_NoRST | (one_if_yes_gpio?OB_RST_NoEN:OB_RST_EN_DT1ms) | (uint16_t)0xE0;
+	printf( "Config (%08x): %08x\n", (intptr_t)&OB->USER, config );
+	MCF.WriteHalfWord( dev,  (intptr_t)&OB->USER, config );
+
+	ret |= MCF.WaitForDoneOp( dev );
+	ret |= MCF.WaitForFlash( dev );
+
+	ctlr &= CR_OPTPG_Reset;
+	MCF.WriteWord( dev, 0x40022010, ctlr ); // FLASH->CTLR = 0x40022010
+
+
+	if( MCF.ReadWord( dev, 0x1FFFF800, &csw ) )
+	{
+		fprintf( stderr, "Error: failed to get user word\n" );
+		return -5;
+	}
+
+	//csw >>= 16; // Only want bottom part of word.
+	printf( "CSW: %08x\n", csw );
+
+#if 0
+	uint32_t prevuser;
+	if( MCF.ReadWord( dev, 0x1FFFF800, &prevuser ) )
+	{
+		fprintf( stderr, "Error: failed to get user word\n" );
+		return -5;
+	}
+
+	ret |= MCF.WaitForFlash( dev );
+
+	// Erase.
+	MCF.ReadWord( dev, 0x40022010, &csw ); // FLASH->CTLR = 0x40022010
+	csw |= 1<<5;//OBER;
+	MCF.WriteWord( dev, 0x40022010, csw ); // FLASH->CTLR = 0x40022010
+	MCF.WriteHalfWord( dev, 0x1FFFF802, 0xffff );
+	ret |= MCF.WaitForDoneOp( dev );
+	ret |= MCF.WaitForFlash( dev );
+
+	MCF.ReadWord( dev, 0x40022010, &csw ); // FLASH->CTLR = 0x40022010
+	printf( "CTLR: %08x\n", csw );
+	csw |= 1<<9;//OBPG, OBWRE
+	MCF.WriteWord( dev, 0x40022010, csw );
+
+	int j;
+	for( j = 0; j < 5; j++ )
+	{
+		if( MCF.ReadWord( dev, 0x1FFFF800, &prevuser ) )
+		{
+			fprintf( stderr, "Error: failed to get user word\n" );
+			return -5;
+		}
+
+		//csw >>= 16; // Only want bottom part of word.
+		printf( "CSW was: %08x\n", prevuser );
+		csw = prevuser >> 16;
+		csw = csw & 0xe7e7;
+		csw |= (one_if_yes_gpio?0b11:0b00)<<(3+0);
+		csw |= (one_if_yes_gpio?0b00:0b11)<<(3+8);
+		printf( "CSW writing: %08x\n", csw );
+		MCF.WriteHalfWord( dev, 0x1FFFF802, csw );
+		ret |= MCF.WaitForDoneOp( dev );
+		ret |= MCF.WaitForFlash( dev );
+	}
+
+
+	MCF.ReadWord( dev, 0x40022010, &csw ); // FLASH->CTLR = 0x40022010
+	printf( "CTLR: %08x\n", csw );
+	csw &= ~(1<<9);//OBPG, OBWRE
+	MCF.WriteWord( dev, 0x40022010, csw );
+
+#endif
+	printf( "RET: %d\n", ret );
+	return 0;
+#endif
 }
 
 int DefaultPrintChipInfo( void * dev )
@@ -1023,8 +1276,12 @@ int SetupAutomaticHighLevelFunctions( void * dev )
 		MCF.ReadBinaryBlob = DefaultReadBinaryBlob;
 	if( !MCF.WriteWord )
 		MCF.WriteWord = DefaultWriteWord;
+	if( !MCF.WriteHalfWord )
+		MCF.WriteHalfWord = DefaultWriteHalfWord;
 	if( !MCF.ReadWord )
 		MCF.ReadWord = DefaultReadWord;
+	if( !MCF.ReadHalfWord )
+		MCF.ReadHalfWord = DefaultReadHalfWord;
 	if( !MCF.Erase )
 		MCF.Erase = DefaultErase;
 	if( !MCF.HaltMode )
@@ -1039,6 +1296,8 @@ int SetupAutomaticHighLevelFunctions( void * dev )
 		MCF.PrintChipInfo = DefaultPrintChipInfo;
 	if( !MCF.Unbrick )
 		MCF.Unbrick = DefaultUnbrick;
+	if( !MCF.ConfigureNRSTAsGPIO )
+		MCF.ConfigureNRSTAsGPIO = DefaultConfigureNRSTAsGPIO;
 
 	struct InternalState * iss = malloc( sizeof( struct InternalState ) );
 	iss->statetag = 0;

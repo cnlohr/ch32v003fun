@@ -664,10 +664,6 @@ mini_pprintf(int (*puts)(char*s, int len, void* buf), void* buf, const char *fmt
 int main() __attribute__((used));
 void SystemInit( void ) __attribute__((used));
 
-void InterruptVector()         __attribute__((naked)) __attribute((section(".init"))) __attribute__((used)) __attribute((weak));
-void handle_reset()            __attribute__((naked)) __attribute((section(".text.handle_reset"))) __attribute__((used));
-void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) __attribute__((naked)) __attribute__((used));
-
 extern uint32_t * _sbss;
 extern uint32_t * _ebss;
 extern uint32_t * _data_lma;
@@ -712,7 +708,11 @@ void TIM1_TRG_COM_IRQHandler( void )     __attribute__((section(".text.vector_ha
 void TIM1_CC_IRQHandler( void )          __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void TIM2_IRQHandler( void )             __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 
-void InterruptVector()
+void InterruptVector()         __attribute__((naked)) __attribute((section(".init"))) __attribute((weak,alias("InterruptVectorDefault")));
+void InterruptVectorDefault()  __attribute__((naked)) __attribute((section(".init")));
+
+
+void InterruptVectorDefault()
 {
 	asm volatile( "\n\
 	.align  2\n\
@@ -758,7 +758,6 @@ void InterruptVector()
 	.word   TIM1_CC_IRQHandler        /* TIM1 Capture Compare */           \n\
 	.word   TIM2_IRQHandler           /* TIM2 */                           \n");
 }
-
 
 void handle_reset()
 {
@@ -820,6 +819,38 @@ void SystemInit48HSI( void )
 	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x08);                // Wait till PLL is used as system clock source
 }
 
+
+void SystemInitHSE( int HSEBYP )
+{
+	// Values lifted from the EVT.  There is little to no documentation on what this does.
+	RCC->CTLR  = RCC_HSION | RCC_HSEON | RCC_PLLON | HSEBYP;      // Enable HSE and keep HSI+PLL on.
+	while(!(RCC->CTLR&RCC_HSERDY));
+	// Not using PLL.
+	FLASH->ACTLR = FLASH_ACTLR_LATENCY_0;                         // 1 Cycle Latency
+	RCC->INTR  = 0x009F0000;                                      // Clear PLL, CSSC, HSE, HSI and LSI ready flags.
+	RCC->CFGR0 = RCC_HPRE_DIV1 | RCC_SW_HSE;                      // HCLK = SYSCLK = APB1 and use HSE for System Clock.
+	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x04);   // Wait till HSE is used as system clock source
+	RCC->CTLR = RCC_HSEON | HSEBYP; // Turn off HSI + PLL.
+}
+
+
+void SystemInitHSEPLL( int HSEBYP )
+{
+	// Values lifted from the EVT.  There is little to no documentation on what this does.
+	RCC->CTLR  = RCC_HSION | RCC_HSEON | RCC_PLLON | HSEBYP;       // Enable HSE and keep HSI+PLL on.
+	while(!(RCC->CTLR&RCC_HSERDY));
+	RCC->CFGR0 = RCC_SW_HSE | RCC_HPRE_DIV1;                       // HCLK = SYSCLK = APB1 and use HSE for System Clock.
+	FLASH->ACTLR = FLASH_ACTLR_LATENCY_1;                          // 1 Cycle Latency
+	RCC->CTLR  = RCC_HSEON | HSEBYP;                               // Turn off PLL and HSI.
+	RCC->CFGR0 = RCC_SW_HSE | RCC_HPRE_DIV1 | RCC_PLLSRC_HSE_Mul2; // Use PLL with HSE.
+	RCC->CTLR  = RCC_HSEON | RCC_PLLON | HSEBYP;                   // Turn PLL Back on..
+	while((RCC->CTLR & RCC_PLLRDY) == 0);                          // Wait till PLL is ready
+	RCC->CFGR0 = RCC_SW_PLL | RCC_HPRE_DIV1 | RCC_PLLSRC_HSE_Mul2; // Select PLL as system clock source
+	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x08);    // Wait till PLL is used as system clock source
+}
+
+
+
 void SetupUART( int uartBRR )
 {
 	// Enable GPIOD and UART.
@@ -855,15 +886,17 @@ int _write(int fd, const char *buf, int size)
 	#define DMDATA0 ((volatile uint32_t*)0xe00000f4)
 	#define DMDATA1 ((volatile uint32_t*)0xe00000f8)
 
-
 	char buffer[4] = { 0 };
 	int place = 0;
+	uint32_t timeout = 160000; // Give up after ~40ms
 	while( place < size )
 	{
 		int tosend = size - place;
 		if( tosend > 7 ) tosend = 7;
 
-		while( ((*DMDATA0) & 0x80) );
+		while( ((*DMDATA0) & 0x80) )
+			if( timeout-- == 0 ) return place;
+		timeout = 160000;
 
 		uint32_t d;
 		int t = 3;
@@ -893,8 +926,13 @@ void SetupDebugPrintf()
 {
 	// Clear out the sending flag.
 	*DMDATA1 = 0x0;
+	*DMDATA0 = 0x80;
 }
 
+void WaitForDebuggerToAttach()
+{
+	while( ((*DMDATA0) & 0x80) );
+}
 
 void DelaySysTick( uint32_t n )
 {

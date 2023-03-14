@@ -11,16 +11,17 @@ In contrast, blinky is only 500 bytes with ch32v003fun, boots faster, and signif
 As it currently stands it is still designed to use the WCH-Link to do the SDIO programming.  Though I would like to ALSO support an open source programmer.
 
 ch32v003fun contains:
-2. Examples using ch32v003fun, but not as many as using the HAL.
-3. "minichlink" which uses the WCH CH-Link with libusb, for cross-platform use.
-4. An extra copy of libgcc so you can use unusual risc-v build chains, located in the `misc/libgcc.a`.
-5. A folder named "ch32v003fun" containing a single self-contained source file and header file for compling apps for the ch32v003.
-6. On some systems ability to "printf" back through
+1. Examples using ch32v003fun, but not as many as using the HAL.
+2. "minichlink" which uses the WCH CH-Link with libusb, for cross-platform use.
+3. An extra copy of libgcc so you can use unusual risc-v build chains, located in the `misc/libgcc.a`.
+4. A folder named "ch32v003fun" containing a single self-contained source file and header file for compling apps for the ch32v003.
+5. On some systems ability to "printf" back through
+6. A demo bootloader.
 
 In Progress:
 1. Other programmer support (ESP32-S2 works, currently)
 2. OpenOCD-compatible build for `minichlink`.
-3. Improved performance of ESP32-S2 programmer.
+3. Full-chip-write for faster flash.
 4. Support for `NHC-Link042`
 5. Write more demos.
 

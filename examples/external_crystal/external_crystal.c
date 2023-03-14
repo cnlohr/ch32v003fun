@@ -1,15 +1,16 @@
-/* Small example showing how to use the SWIO programming pin to 
-   do printf through the debug interface */
+// Could be defined here, or in the processor defines.
+#define SYSTEM_CORE_CLOCK 24000000
 
 #include "ch32v003fun.h"
 #include <stdio.h>
+
+#define APB_CLOCK SYSTEM_CORE_CLOCK
 
 uint32_t count;
 
 int main()
 {
-	SystemInit48HSI();
-	SetupDebugPrintf();
+	SystemInitHSE( 0 );
 
 	// Enable GPIOs
 	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOC;
@@ -30,11 +31,10 @@ int main()
 	{
 		GPIOD->BSHR = 1 | (1<<4);	 // Turn on GPIOs
 		GPIOC->BSHR = 1;
-		printf( "+%d\n", count++ );
+		Delay_Ms( 250 );
 		GPIOD->BSHR = (1<<16) | (1<<(16+4)); // Turn off GPIODs
 		GPIOC->BSHR = (1<<16);
-		printf( "-%d\n", count++ );
+		Delay_Ms( 250 );
 		count++;
 	}
 }
-

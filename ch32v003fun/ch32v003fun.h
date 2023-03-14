@@ -4819,6 +4819,9 @@ extern "C" {
 #define DELAY_US_TIME (SYSTEM_CORE_CLOCK / 8000000)
 #define DELAY_MS_TIME (SYSTEM_CORE_CLOCK / 8000)
 
+void handle_reset()            __attribute__((naked)) __attribute((section(".text.handle_reset"))) __attribute__((used));
+void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) __attribute__((naked)) __attribute__((used));
+
 void DelaySysTick( uint32_t n );
 
 #define Delay_Us(n) DelaySysTick( n * DELAY_US_TIME )
@@ -4830,6 +4833,11 @@ void SystemInit(void) __attribute__((used));
 
 // Useful functions
 void SystemInit48HSI( void );
+// NOTE: HSEBYP is ORed with RCC_CTLR.  Set it to RCC_HSEBYP or 0.
+// If you are using an external oscillator, set it to RCC_HSEBYP.  Otherwise, if you are using a crystal, it must be 0.
+void SystemInitHSE( int HSEBYP );
+void SystemInitHSEPLL( int HSEBYP );
+
 
 #define UART_BAUD_RATE 115200
 #define OVER8DIV 4
@@ -4842,6 +4850,9 @@ void SystemInit48HSI( void );
 void SetupUART( int uartBRR );
 
 void SetupDebugPrintf();
+
+void WaitForDebuggerToAttach();
+
 
 #ifdef __cplusplus
 };

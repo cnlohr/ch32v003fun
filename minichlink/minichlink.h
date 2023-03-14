@@ -31,7 +31,8 @@ struct MiniChlinkFunctions
 	int (*Erase)( void * dev, uint32_t address, uint32_t length, int type ); //type = 0 for fast, 1 for whole-chip
 
 	// MUST be 4-byte-aligned.
-	int (*WriteWord)( void * dev, uint32_t address_to_write, uint32_t data ); // Flags = 1 for "doing a fast FLASH write."
+	int (*VoidHighLevelState)( void * dev );
+	int (*WriteWord)( void * dev, uint32_t address_to_write, uint32_t data );
 	int (*ReadWord)( void * dev, uint32_t address_to_read, uint32_t * data );
 
 	int (*WaitForFlash)( void * dev );
@@ -52,6 +53,12 @@ struct MiniChlinkFunctions
 	int (*PollTerminal)( void * dev, uint8_t * buffer, int maxlen );
 
 	int (*PerformSongAndDance)( void * dev );
+
+	int (*VendorCommand)( void * dev, const char * command );
+
+	// Do Not override these.  they are cursed.
+	int (*WriteHalfWord)( void * dev, uint32_t address_to_write, uint32_t data );
+	int (*ReadHalfWord)( void * dev, uint32_t address_to_read, uint32_t * data );
 };
 
 /** If you are writing a driver, the minimal number of functions you can implement are:
@@ -110,6 +117,9 @@ void * TryInit_ESP32S2CHFUN();
 
 // Returns 0 if ok, populated, 1 if not populated.
 int SetupAutomaticHighLevelFunctions( void * dev );
+
+// Useful for converting numbers like 0x, etc.
+int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber );
 
 #endif
 
