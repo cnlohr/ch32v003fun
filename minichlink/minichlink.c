@@ -1059,6 +1059,9 @@ int DefaultUnbrick( void * dev )
 	printf( "Entering Unbrick Mode\n" );
 	MCF.Control3v3( dev, 0 );
 	MCF.DelayUS( dev, 60000 );
+	MCF.DelayUS( dev, 60000 );
+	MCF.DelayUS( dev, 60000 );
+	MCF.DelayUS( dev, 60000 );
 	MCF.Control3v3( dev, 1 );
 	MCF.DelayUS( dev, 100 );
 	MCF.FlushLLCommands( dev );
