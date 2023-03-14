@@ -920,7 +920,6 @@ int _write(int fd, const char *buf, int size)
 	}
 	return size;
 }
-#endif
 
 void SetupDebugPrintf()
 {
@@ -933,6 +932,8 @@ void WaitForDebuggerToAttach()
 {
 	while( ((*DMDATA0) & 0x80) );
 }
+
+#endif
 
 void DelaySysTick( uint32_t n )
 {
