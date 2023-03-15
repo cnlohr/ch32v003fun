@@ -158,8 +158,8 @@ keep_going:
 					goto unimplemented;
 				do
 				{
-					uint8_t buffer[128];
-					int r = MCF.PollTerminal( dev, buffer, sizeof( buffer ) );
+					uint8_t buffer[256];
+					int r = MCF.PollTerminal( dev, buffer, sizeof( buffer ), 0, 0 );
 					if( r < 0 )
 					{
 						fprintf( stderr, "Terminal dead.  code %d\n", r );
@@ -1004,7 +1004,7 @@ static int DefaultHaltMode( void * dev, int mode )
 // Returns negative if error.
 // Returns 0 if no text waiting.
 // maxlen MUST be at least 8 characters.  We null terminate.
-int DefaultPollTerminal( void * dev, uint8_t * buffer, int maxlen )
+int DefaultPollTerminal( void * dev, uint8_t * buffer, int maxlen, uint32_t leaveflagA, int leaveflagB )
 {
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
 
@@ -1021,13 +1021,11 @@ int DefaultPollTerminal( void * dev, uint8_t * buffer, int maxlen )
 	if( maxlen < 8 ) return -9;
 
 	// DMDATA1:
-	//  bits 0..5 = # printf chars.
-	//  bit  6 = host-wants-to-say-something.
 	//  bit  7 = host-acknowledge.
 	if( rr & 0x80 )
 	{
 		int ret = 0;
-		int num_printf_chars = (rr & 0x3f)-4;  // Actaully can't be more than 32.
+		int num_printf_chars = (rr & 0xf)-4;
 
 		if( num_printf_chars > 0 && num_printf_chars <= 7)
 		{
@@ -1043,7 +1041,8 @@ int DefaultPollTerminal( void * dev, uint8_t * buffer, int maxlen )
 			buffer[num_printf_chars] = 0;
 			ret = num_printf_chars;
 		}
-		MCF.WriteReg32( dev, DMDATA0, 0x00 ); // Write that we acknowledge the data.
+		if( leaveflagA ) MCF.WriteReg32( dev, DMDATA1, leaveflagB );
+		MCF.WriteReg32( dev, DMDATA0, leaveflagA ); // Write that we acknowledge the data.
 		return ret;
 	}
 	else

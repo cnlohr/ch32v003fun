@@ -13,7 +13,6 @@
 #include <ch32v003fun.h>
 
 int errno;
-int _write(int fd, const char *buf, int size);
 
 int mini_vsnprintf(char *buffer, unsigned int buffer_len, const char *fmt, va_list va);
 int mini_vpprintf(int (*puts)(char* s, int len, void* buf), void* buf, const char *fmt, va_list va);

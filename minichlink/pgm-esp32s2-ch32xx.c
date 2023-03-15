@@ -313,7 +313,7 @@ int ESPVendorCommand( void * dev, const char * cmd )
 		Write1( dev, 0 ); 
 		Write1( dev, 0 ); 
 		Write1( dev, 0 ); 
-	ESPFlushLLCommands( dev );
+		ESPFlushLLCommands( dev );
 	}
 	else
 	{
@@ -321,6 +321,45 @@ int ESPVendorCommand( void * dev, const char * cmd )
 	}
 	return 0;
 }
+
+int ESPPollTerminal( void * dev, uint8_t * buffer, int maxlen, uint32_t leaveflagA, int leaveflagB )
+{
+	struct ESP32ProgrammerStruct * eps = (struct ESP32ProgrammerStruct *)dev;
+	ESPFlushLLCommands( dev );	
+	Write1( dev, 0xfe );
+	Write1( dev, 0x0d );
+	Write4LE( dev, leaveflagA );
+	Write4LE( dev, leaveflagB );
+	Write1( dev, 0xff );
+
+	ESPFlushLLCommands( dev );
+
+	int rlen = eps->reply[0];
+	if( rlen < 1 ) return -8;
+
+/*
+	int i;
+
+	printf( "RESP (ML %d): %d\n", maxlen,eps->reply[0] );
+
+	for( i = 0; i < eps->reply[0]; i++ )
+	{
+		printf( "%02x ", eps->reply[i+1] );
+		if( (i % 16) == 15 ) printf( "\n" );
+	}
+	printf( "\n" );
+*/
+	int errc = eps->reply[1];
+	if( errc > 7 ) return -7;
+
+	if( rlen - 1 >= maxlen ) return -6; 
+
+	memcpy( buffer, eps->reply + 2, rlen - 1 );
+
+
+	return rlen - 1;
+}
+
 
 void * TryInit_ESP32S2CHFUN()
 {
@@ -343,6 +382,7 @@ void * TryInit_ESP32S2CHFUN()
 	MCF.Control3v3 = ESPControl3v3;
 	MCF.Exit = ESPExit;
 	MCF.VoidHighLevelState = ESPVoidHighLevelState;
+	MCF.PollTerminal = ESPPollTerminal;
 
 	// These are optional. Disabling these is a good mechanismto make sure the core functions still work.
 	MCF.WriteWord = ESPWriteWord;

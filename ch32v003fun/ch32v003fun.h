@@ -4848,11 +4848,11 @@ void SystemInitHSEPLL( int HSEBYP );
 // You can write to this with printf(...) or puts(...)
 // Call with SetupUART( UART_BRR )
 void SetupUART( int uartBRR );
-
 void SetupDebugPrintf();
-
 void WaitForDebuggerToAttach();
 
+// Just a definition to the internal _write function.
+int _write(int fd, const char *buf, int size);
 
 #ifdef __cplusplus
 };

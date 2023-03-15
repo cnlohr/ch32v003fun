@@ -50,7 +50,8 @@ struct MiniChlinkFunctions
 	// Returns positive if received text.
 	// Returns negative if error.
 	// Returns 0 if no text waiting.
-	int (*PollTerminal)( void * dev, uint8_t * buffer, int maxlen );
+	// Note: YOU CANNOT make lsb of leaveflagA bit in place 0x80 be high!!!
+	int (*PollTerminal)( void * dev, uint8_t * buffer, int maxlen, uint32_t leaveflagA, int leaveflagB );
 
 	int (*PerformSongAndDance)( void * dev );
 

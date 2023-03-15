@@ -35,6 +35,8 @@ int main()
 		GPIOC->BSHR = (1<<16);
 		printf( "-%d\n", count++ );
 		count++;
+
+//		_write( 0, "xxxxxxx", 7 );
 	}
 }
 
