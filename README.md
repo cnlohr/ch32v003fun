@@ -25,6 +25,23 @@ In Progress:
 4. Support for `NHC-Link042`
 5. Write more demos.
 
+## Features
+
+### A fast "printf" debug over the programming interface.
+
+And by fast I mean very fast. Typically around 36kBytes/sec. 
+
+```
+./minichlink -T | pv > /dev/null
+Found ESP32S2 Programmer
+ 536KiB 0:00:15 [36.7KiB/s] [        <=>                     ]
+```
+
+You can just try out the `debugprintf` project, or call `SetupDebugPrintf();` and `printf()` away.
+
+### todo;;
+
+
 ## System Prep
 
 On WSL or Debian based OSes `apt-get install build-essential libnewlib-dev gcc-riscv64-unknown-elf libusb-1.0-0-dev libudev-dev`
@@ -44,7 +61,7 @@ In Linux this will "just work" using the `minichlink`.   In Windows if you want 
 
 In Windows, you can use this or you can use the WCH-LinkUtility to flash the built hex file.
 
-## For using EVT demos, check out the EVT folder.
+## ESP32S2 Programming
 
 ## WCH-Link
 
