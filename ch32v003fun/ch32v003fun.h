@@ -56,6 +56,9 @@ extern "C" {
 
 #define HSI_VALUE                 ((uint32_t)24000000) /* Value of the Internal oscillator in Hz */
 
+#ifndef HSITRIM
+    #define HSITRIM 0x10
+#endif
 
 /* Interrupt Number Definition, according to the selected device */
 typedef enum IRQn
