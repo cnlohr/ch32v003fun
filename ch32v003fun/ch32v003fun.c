@@ -807,8 +807,8 @@ asm volatile(
 void SystemInit48HSI( void )
 {
 	// Values lifted from the EVT.  There is little to no documentation on what this does.
-	RCC->CTLR  = RCC_HSION | RCC_PLLON;               // Use HSI, but enable PLL.
 	RCC->CFGR0 = RCC_HPRE_DIV1 | RCC_PLLSRC_HSI_Mul2; // PLLCLK = HSI * 2 = 48 MHz; HCLK = SYSCLK = APB1
+	RCC->CTLR  |= RCC_HSION | RCC_PLLON;              // Use HSI, but enable PLL.
 	FLASH->ACTLR = FLASH_ACTLR_LATENCY_1;             // 1 Cycle Latency
 	RCC->INTR  = 0x009F0000;                          // Clear PLL, CSSC, HSE, HSI and LSI ready flags.
 
