@@ -7,7 +7,9 @@
 #ifndef _COLOR_UTILITIES_H
 #define _COLOR_UTILITIES_H
 
-
+// To stop warnings about unused functions.
+static uint32_t EHSVtoHEX( uint8_t hue, uint8_t sat, uint8_t val ) __attribute__((used));
+static uint32_t TweenHexColors( uint32_t hexa, uint32_t hexb, int tween ) __attribute__((used));
 
 static uint32_t EHSVtoHEX( uint8_t hue, uint8_t sat, uint8_t val )
 {
@@ -136,6 +138,8 @@ static const unsigned char sintable[] = {
 
 static uint32_t TweenHexColors( uint32_t hexa, uint32_t hexb, int tween )
 {
+	if( tween <= 0 ) return hexa;
+	if( tween >= 255 ) return hexb;
 	int32_t aamt = 255-tween;
 	int32_t bamt = tween;
 	int32_t hab = hexa & 0xff;

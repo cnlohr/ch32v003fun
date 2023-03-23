@@ -7,16 +7,17 @@
 #include <string.h>
 
 #define WS2812DMA_IMPLEMENTATION
+#define WSRBG //For WS2816C's.
+#define NR_LEDS 191
 
 #include "ws2812b_dma_spi_led_driver.h"
 
 #include "color_utilities.h"
 
-#define NR_LEDS 191
 
 uint16_t phases[NR_LEDS];
 int frameno;
-volatile int tween = 0;
+volatile int tween = -NR_LEDS;
 
 // Callbacks that you must implement.
 uint32_t WS2812BLEDCallback( int ledno )
@@ -24,11 +25,11 @@ uint32_t WS2812BLEDCallback( int ledno )
 	uint8_t index = (phases[ledno])>>8;
 	uint8_t rsbase = sintable[index];
 	uint8_t rs = rsbase>>3;
-	uint32_t fire = huetable[(rs+190&0xff)] | (huetable[(rs+30&0xff)]<<8) | (huetable[(rs+0)]<<16);
-	uint32_t ice  = 0xff | ((rsbase)<<8) | ((rsbase)<<16);
+	uint32_t fire = (huetable[(rs+190)&0xff]<<16) | (huetable[(rs+30)&0xff]) | (huetable[(rs+0)]<<8);
+	uint32_t ice  = 0xff0000 | ((rsbase)<<8) | ((rsbase));
 
-	// Because this chip doesn't natively support multiplies, this can be very slow.
-	return TweenHexColors( fire, ice, tween ); // Where "tween" is a value from 0 ... 255
+	// Because this chip doesn't natively support multiplies, we are going to avoid tweening of 1..254.
+	return TweenHexColors( fire, ice, ((tween + ledno)>0)?255:0 ); // Where "tween" is a value from 0 ... 255
 }
 
 int main()
@@ -65,11 +66,11 @@ int main()
 
 		if( frameno == 1024 )
 		{
-			tweendir = 4;
+			tweendir = 1;
 		}
 		if( frameno == 2048 )
 		{
-			tweendir = -4;
+			tweendir = -1;
 			frameno = 0;
 		}
 
@@ -77,7 +78,7 @@ int main()
 		{
 			int t = tween + tweendir;
 			if( t > 255 ) t = 255;
-			if( t < 0 ) t = 0;
+			if( t < -NR_LEDS ) t = -NR_LEDS;
 			tween = t;
 		}
 

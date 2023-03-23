@@ -21,6 +21,7 @@ void SRAMCode( )
 "1: c.sw a1, 0(a0)\n"
 "   c.sw a2, 0(a0)\n"
 "   j 1b\n" );
+    __builtin_unreachable();
 }
 
 int main()

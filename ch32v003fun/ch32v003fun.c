@@ -897,7 +897,6 @@ int _write(int fd, const char *buf, int size)
 			if( timeout-- == 0 ) return place;
 		timeout = 160000;
 
-		uint32_t d;
 		int t = 3;
 		while( t < tosend )
 		{

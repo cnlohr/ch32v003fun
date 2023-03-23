@@ -34,14 +34,14 @@ uint32_t WS2812BLEDCallback( int ledno );
 
 #ifdef WS2812DMA_IMPLEMENTATION
 
-// Note first 2 LEDs of DMA Buffer are 0's as a "break"
+// Must be divisble by 4.
+#define DMALEDS 16
+
+// Note first n LEDs of DMA Buffer are 0's as a "break"
 // Need one extra LED at end to leave line high. 
 // This must be greater than WS2812B_RESET_PERIOD.
-//  1: Divisble by 2.
-//  2: 
-#define DMALEDS 16
 #define WS2812B_RESET_PERIOD 2
-#define DMA_BUFFER_LEN (((DMALEDS+1)/2)*6)
+#define DMA_BUFFER_LEN (((DMALEDS)/2)*6) // The +1 is for the buffered start.
 
 static uint16_t WS2812dmabuff[DMA_BUFFER_LEN];
 static volatile int WS2812LEDs;
@@ -98,12 +98,22 @@ static void WS2812FillBuffSec( uint16_t * ptr, int numhalfwords, int tce )
 
 		// Use a LUT to figure out how we should set the SPI line.
 		uint32_t ledval24bit = WS2812BLEDCallback( place++ );
+
+#ifdef WSRBG
+		ptr[0] = bitquartets[(ledval24bit>>12)&0xf];
+		ptr[1] = bitquartets[(ledval24bit>>8)&0xf];
+		ptr[2] = bitquartets[(ledval24bit>>20)&0xf];
+		ptr[3] = bitquartets[(ledval24bit>>16)&0xf];
+		ptr[4] = bitquartets[(ledval24bit>>4)&0xf];
+		ptr[5] = bitquartets[(ledval24bit>>0)&0xf];
+#else
 		ptr[0] = bitquartets[(ledval24bit>>20)&0xf];
 		ptr[1] = bitquartets[(ledval24bit>>16)&0xf];
 		ptr[2] = bitquartets[(ledval24bit>>12)&0xf];
 		ptr[3] = bitquartets[(ledval24bit>>8)&0xf];
 		ptr[4] = bitquartets[(ledval24bit>>4)&0xf];
 		ptr[5] = bitquartets[(ledval24bit>>0)&0xf];
+#endif
 		ptr += 6;
 		i += 6;
 	}
@@ -122,12 +132,12 @@ void DMA1_Channel3_IRQHandler( void )
 		// Clear all possible flags.
 		DMA1->INTFCR = DMA1_IT_GL3;
 
-		if( intfr & DMA1_IT_HT3 )
+		if( intfr & DMA1_IT_TC3 )
 		{
 			// Halfwaay (Fill in first part)
 			WS2812FillBuffSec( WS2812dmabuff, DMA_BUFFER_LEN / 2, 1 );
 		}
-		if( intfr & DMA1_IT_TC3 )
+		if( intfr & DMA1_IT_HT3 )
 		{
 			// Complete (Fill in second part)
 			WS2812FillBuffSec( WS2812dmabuff + DMA_BUFFER_LEN / 2, DMA_BUFFER_LEN / 2, 0 );
@@ -164,7 +174,7 @@ void WS2812BDMAInit( )
 
 	// MOSI, Configure GPIO Pin
 	GPIOC->CFGLR &= ~(0xf<<(4*6));
-	GPIOC->CFGLR |= (GPIO_Speed_50MHz | GPIO_CNF_OUT_PP_AF)<<(4*6);
+	GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP_AF)<<(4*6);
 
 	// Configure SPI 
 	SPI1->CTLR1 = 

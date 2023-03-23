@@ -30,10 +30,10 @@ int main()
 	{
 		GPIOD->BSHR = 1 | (1<<4);	 // Turn on GPIOs
 		GPIOC->BSHR = 1;
-		printf( "+%d\n", count++ );
+		printf( "+%lu\n", count++ );
 		GPIOD->BSHR = (1<<16) | (1<<(16+4)); // Turn off GPIODs
 		GPIOC->BSHR = (1<<16);
-		printf( "-%d\n", count++ );
+		printf( "-%lu\n", count++ );
 		count++;
 		//_write( 0, "xxxxxxx", 7 );
 	}

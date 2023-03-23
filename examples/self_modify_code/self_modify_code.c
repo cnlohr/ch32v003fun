@@ -91,7 +91,7 @@ int main()
 	{
 		uint32_t rv =  ReadCSRSelfModifySimple( i );
 		if( rv )
-			printf( "%03x = %08x\n", i, rv );
+			printf( "%03x = %08lx\n", i, rv );
 	}
 	printf( "Done\n" );
 	for(;;);
