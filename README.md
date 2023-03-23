@@ -85,7 +85,7 @@ To use the WCH-Link in WSL, it is required to "attach" the USB hardware on the W
 ```
 3. Plug in the WCH-Link to USB
 4. Run Powershell as admin and use the `usbipd list` command to list all connected devices
-5. Find the this device: `1a86:8010  WCH-Link (Interface 0)` and note the busid it is attached to, this is 
+5. Find the this device: `1a86:8010  WCH-Link (Interface 0)` and note the busid it is attached to
 6. In powershell, use the command `usbipd wsl attach --busid=<BUSID>` to attach the device at the busid from previous step
 7. You will hear the windows sound for the USB device being removed (and silently attached to WSL instead)
 8. In WSL, you will now be able to run `lsusb` and see that the SCH-Link is attached
