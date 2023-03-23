@@ -71,6 +71,29 @@ It enumerates as 2 interfaces.
 
 If you want to mess with the programming code in Windows, you will have to install WinUSB to the interface 0.  Then you can uninstall it in Device Manager under USB Devices.
 
+## WCH-Link Hardware access in WSL
+To use the WCH-Link in WSL, it is required to "attach" the USB hardware on the Windows side to WSL.  This is achieved using a tool called usbipd.
+
+1. On windows side, install the following MSI https://github.com/dorssel/usbipd-win/releases
+2. Install the WSL side client:
+    * For Debian: 
+```
+        sudo apt-get install usbip hwdata usbutils
+```
+    * For Ubuntu (not tested):
+```
+        sudo apt install linux-tools-5.4.0-77-generic linux-tools-virtual hwdata usbutils
+        sudo update-alternatives --install /usr/local/bin/usbip usbip `ls /usr/lib/linux-tools/*/usbip | tail -n1` 20
+```
+3. Plug in the WCH-Link to USB
+4. Run Powershell as admin and use the `usbipd list` command to list all connected devices
+5. Find the this device: `1a86:8010  WCH-Link (Interface 0)` and note the busid it is attached to, this is 
+6. In powershell, use the command `usbipd wsl attach --busid=<BUSID>` to attach the device at the busid from previous step
+7. You will hear the windows sound for the USB device being removed (and silently attached to WSL instead)
+8. In WSL, you will now be able to run `lsusb` and see that the SCH-Link is attached
+9. For unknown reasons, you must run make under root access in order to connect to the programmer with minichlink.  Recommend running `sudo make` when building and programming projects using WSL
+Feel free to solve this issue and figure out a way to give the user hardware access to WCH-Link and modify these instructions.
+
 ## minichlink
 
 I wrote some libusb copies of some of the basic functionality from WCH-Link, so you can use the little programmer dongle they give you to program the ch32v003. 
