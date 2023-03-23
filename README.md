@@ -77,9 +77,7 @@ To use the WCH-Link in WSL, it is required to "attach" the USB hardware on the W
 1. On windows side, install the following MSI https://github.com/dorssel/usbipd-win/releases
 2. Install the WSL side client:
     * For Debian: 
-```
-        sudo apt-get install usbip hwdata usbutils
-```
+        `sudo apt-get install usbip hwdata usbutils`
     * For Ubuntu (not tested):
 ```
         sudo apt install linux-tools-5.4.0-77-generic linux-tools-virtual hwdata usbutils
