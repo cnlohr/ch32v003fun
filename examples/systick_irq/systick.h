@@ -29,13 +29,8 @@ void systick_init(void)
 	/* Clear any existing IRQ */
     SysTick->SR &= ~SYSTICK_SR_CNTIF;
 	
-#if 1
 	/* Set the tick interval to 1ms for normal op */
     SysTick->CMP = (SYSTEM_CORE_CLOCK/1000)-1;
-#else	
-	/* Set the tick interval to 1s for debug */
-    SysTick->CMP = (SYSTEM_CORE_CLOCK)-1;
-#endif
 	
 	/* Start at zero */
     SysTick->CNT = 0;

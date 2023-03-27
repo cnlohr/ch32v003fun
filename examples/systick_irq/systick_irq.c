@@ -28,24 +28,6 @@ int main()
 	systick_init();
 	printf("done.\n\r");
 	
-#if 0
-	// Debugging - does ISR run & inc counter?
-	// this section shows that IRQs during print will reset system, but during
-	// inf while() do not.
-	
-	// does cnt inc?
-	uint32_t pcnt = systick_cnt;
-	while(1)
-	{
-		if(pcnt != systick_cnt)
-		{
-			printf("CNT = 0x%08X ", SysTick->CNT);
-			printf("systick_cnt = %d\n\r", systick_cnt);
-			pcnt = systick_cnt;
-		}
-	}
-#else
-	// Testing 1ms Systick
 	// Enable GPIOs
 	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOC;
 
@@ -61,16 +43,17 @@ int main()
 	GPIOC->CFGLR &= ~(0xf<<(4*0));
 	GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*0);
 
-	//printf("looping...\n\r");
+	printf("looping...\n\r");
 	while(1)
 	{
 		GPIOD->BSHR = 1 | (1<<4);	 // Turn on GPIOs
+		systick_delay_ms( 250 );
 		GPIOC->BSHR = 1;
 		systick_delay_ms( 250 );
 		GPIOD->BSHR = (1<<16) | (1<<(16+4)); // Turn off GPIODs
+		systick_delay_ms( 250 );
 		GPIOC->BSHR = (1<<16);
 		systick_delay_ms( 250 );
 		printf( "Count: %lu\n\r", count++ );
 	}
-#endif
 }
