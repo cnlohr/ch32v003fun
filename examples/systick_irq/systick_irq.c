@@ -28,27 +28,21 @@ int main()
 	systick_init();
 	printf("done.\n\r");
 	
-#if 1
+#if 0
 	// Debugging - does ISR run & inc counter?
 	// this section shows that IRQs during print will reset system, but during
 	// inf while() do not.
-	//while(1)
-	//for(int i=0;i<20;i++)
-	//{
-		//printf("i = %d ", i);
-		printf("CNT = 0x%08X ", SysTick->CNT);
-		printf("systick_cnt = 0x%08X\n\r", systick_cnt);
-	//}
 	
 	// does cnt inc?
-	//uint32_t pcnt = systick_cnt;
+	uint32_t pcnt = systick_cnt;
 	while(1)
 	{
-		//if(pcnt != systick_cnt)
-		//{
-		//	printf("systick_cnt = %d\n\r", systick_cnt);
-		//	pcnt = systick_cnt;
-		//}
+		if(pcnt != systick_cnt)
+		{
+			printf("CNT = 0x%08X ", SysTick->CNT);
+			printf("systick_cnt = %d\n\r", systick_cnt);
+			pcnt = systick_cnt;
+		}
 	}
 #else
 	// Testing 1ms Systick

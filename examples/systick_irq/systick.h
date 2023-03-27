@@ -29,11 +29,11 @@ void systick_init(void)
 	/* Clear any existing IRQ */
     SysTick->SR &= ~SYSTICK_SR_CNTIF;
 	
-#if 0
+#if 1
 	/* Set the tick interval to 1ms for normal op */
     SysTick->CMP = (SYSTEM_CORE_CLOCK/1000)-1;
 #else	
-	/* Set the tick interval to 100ms for debug */
+	/* Set the tick interval to 1s for debug */
     SysTick->CMP = (SYSTEM_CORE_CLOCK)-1;
 #endif
 	
@@ -49,19 +49,16 @@ void systick_init(void)
 #if 1
 /*
  * SysTick ISR just counts ticks
+ * note - the __attribute__((interrupt)) syntax is crucial!
  */
-void SysTick_Handler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
-//void SysTick_Handler(void) __attribute__((interrupt("interrupt")));
+void SysTick_Handler(void) __attribute__((interrupt));
 void SysTick_Handler(void)
 {
 	/* clear IRQ */
-    SysTick->SR &= ~SYSTICK_SR_CNTIF;
+    SysTick->SR &= 0;
 	
 	/* update counter */
 	systick_cnt++;
-	
-	printf("systick_cnt = 0x%08X\n\r", systick_cnt);
-
 }
 #endif
 
