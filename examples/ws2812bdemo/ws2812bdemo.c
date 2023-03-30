@@ -25,8 +25,8 @@ uint32_t WS2812BLEDCallback( int ledno )
 	uint8_t index = (phases[ledno])>>8;
 	uint8_t rsbase = sintable[index];
 	uint8_t rs = rsbase>>3;
-	uint32_t fire = (huetable[(rs+190)&0xff]<<16) | (huetable[(rs+30)&0xff]) | (huetable[(rs+0)]<<8);
-	uint32_t ice  = 0xff0000 | ((rsbase)<<8) | ((rsbase));
+	uint32_t fire = (huetable[(rs+190)&0xff]<<16) | (huetable[(rs+30)&0xff]) | ((huetable[(rs+0)]>>1)<<8);
+	uint32_t ice  = 0x7f0000 | ((rsbase>>1)<<8) | ((rsbase>>1));
 
 	// Because this chip doesn't natively support multiplies, we are going to avoid tweening of 1..254.
 	return TweenHexColors( fire, ice, ((tween + ledno)>0)?255:0 ); // Where "tween" is a value from 0 ... 255

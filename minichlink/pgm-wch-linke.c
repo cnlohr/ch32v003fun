@@ -193,9 +193,10 @@ printf( "  5: %d\n", bOn );
 	return 0;
 }
 
-static int LEUnbrick( void * dev )
+static int LEUnbrick( void * d )
 {
 	printf( "Sending unbrick\n" );
+	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
 	wch_link_command( (libusb_device_handle *)dev, "\x81\x0d\x01\x0f\x09", 5, 0, 0, 0 );
 	printf( "Done unbrick\n" );
 	return 0;
