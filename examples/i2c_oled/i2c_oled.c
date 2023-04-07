@@ -25,6 +25,8 @@ int main()
 	// init i2c and oled
 	printf("initializing i2c oled...");
 	oled_init();
+	memset(oled_buffer, 0x88, sizeof(oled_buffer));
+	oled_refresh();
 	printf("done.\n\r");
 		
 	printf("looping...\n\r");

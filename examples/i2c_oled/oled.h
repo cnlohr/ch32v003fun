@@ -10,7 +10,7 @@
 #include <string.h>
 
 // I2C clock rate
-#define I2C_CLKRATE 80000
+#define I2C_CLKRATE 100000
 
 // OLED I2C address
 #define OLED_ADDR 0x3c
@@ -64,7 +64,7 @@ void i2c_init(void)
 	I2C1->CTLR1 |= I2C_CTLR1_ACK;
 	
 	// is this needed for a master?
-	I2C1->OADDR1 = 2;
+	I2C1->OADDR1 = OLED_ADDR;
 }
 
 /*
@@ -92,10 +92,85 @@ uint8_t i2c_chk_evt(uint32_t event_mask)
 }
 
 /*
+ * common packet send
+ */
+void i2c_send(uint8_t *data, uint8_t sz)
+{
+	int32_t timeout;
+	
+	// wait for not busy
+	timeout = TIMEOUT_MAX;
+	while((I2C1->STAR2 & I2C_STAR2_BUSY) && (timeout--));
+	if(timeout==-1)
+	{
+		printf("i2c_send - timeout waiting for not busy\n\r");
+		i2c_error();
+		return;
+	}
+
+	// Set START condition
+	I2C1->CTLR1 |= I2C_CTLR1_START;
+	
+	// wait for master mode select
+	timeout = TIMEOUT_MAX;
+	while((!i2c_chk_evt(I2C_EVENT_MASTER_MODE_SELECT)) && (timeout--));
+	if(timeout==-1)
+	{
+		printf("i2c_send - timeout waiting for master mode\n\r");
+		i2c_error();
+		return;
+	}
+	
+	// send 7-bit address + write flag
+	I2C1->DATAR = OLED_ADDR<<1;
+
+	// wait for transmit condition
+	timeout = TIMEOUT_MAX;
+	while((!i2c_chk_evt(I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED)) && (timeout--));
+	if(timeout==-1)
+	{
+		printf("i2c_send - timeout waiting for transmit mode\n\r");
+		i2c_error();
+		return;
+	}
+
+	// send data one byte at a time
+	while(sz--)
+	{
+		// wait for TX Empty
+		timeout = TIMEOUT_MAX;
+		while(!(I2C1->STAR1 & I2C_STAR1_TXE) && (timeout--));
+		if(timeout==-1)
+		{
+			printf("i2c_send :%d - timeout waiting for tx empty\n\r", sz);
+			i2c_error();
+			return;
+		}
+		
+		// send command
+		I2C1->DATAR = *data++;
+	}
+
+	// wait for tx complete
+	timeout = TIMEOUT_MAX;
+	while((!i2c_chk_evt(I2C_EVENT_MASTER_BYTE_TRANSMITTED)) && (timeout--));
+	if(timeout==-1)
+	{
+		printf("i2c_send - timeout waiting for byte transmitted\n\r");
+		i2c_error();
+		return;
+	}
+
+	// set STOP condition
+	I2C1->CTLR1 |= I2C_CTLR1_STOP;	
+}
+
+/*
  * send OLED command byte
  */
 void oled_cmd(uint8_t cmd)
 {
+#if 0
 	int32_t timeout;
 	
 	// wait for not busy
@@ -122,7 +197,7 @@ void oled_cmd(uint8_t cmd)
 	}
 	
 	// send 7-bit address + write flag
-	I2C1->DATAR = OLED_ADDR<<1;
+	I2C1->DATAR = OLED_ADDR << 1;
 
 	// wait for transmit condition
 	timeout = TIMEOUT_MAX;
@@ -172,6 +247,13 @@ void oled_cmd(uint8_t cmd)
 
 	// set STOP condition
 	I2C1->CTLR1 |= I2C_CTLR1_STOP;
+#else
+	uint8_t pkt[2];
+	
+	pkt[0] = 0;
+	pkt[1] = cmd;
+	i2c_send(pkt, 2);
+#endif
 }
 
 /*
@@ -179,6 +261,7 @@ void oled_cmd(uint8_t cmd)
  */
 void oled_data(uint8_t *data, uint8_t sz)
 {
+#if 1
 	int32_t timeout;
 	
 	// max 32 bytes
@@ -225,7 +308,7 @@ void oled_data(uint8_t *data, uint8_t sz)
 	while(!(I2C1->STAR1 & I2C_STAR1_TXE) && (timeout--));
 	if(timeout==-1)
 	{
-		printf("oled_data - timeout waiting for tx empty\n\r");
+		printf("oled_data H - timeout waiting for tx empty\n\r");
 		i2c_error();
 		return;
 	}
@@ -241,7 +324,7 @@ void oled_data(uint8_t *data, uint8_t sz)
 		while(!(I2C1->STAR1 & I2C_STAR1_TXE) && (timeout--));
 		if(timeout==-1)
 		{
-			printf("oled_cmd - timeout waiting for tx empty\n\r");
+			printf("oled_data P:%d - timeout waiting for tx empty\n\r", sz);
 			i2c_error();
 			return;
 		}
@@ -249,7 +332,7 @@ void oled_data(uint8_t *data, uint8_t sz)
 		// send command
 		I2C1->DATAR = *data++;
 	}
-	
+
 	// wait for tx complete
 	timeout = TIMEOUT_MAX;
 	while((!i2c_chk_evt(I2C_EVENT_MASTER_BYTE_TRANSMITTED)) && (timeout--));
@@ -262,6 +345,16 @@ void oled_data(uint8_t *data, uint8_t sz)
 
 	// set STOP condition
 	I2C1->CTLR1 |= I2C_CTLR1_STOP;
+#else
+	uint8_t pkt[33];
+	
+	// max 32 bytes
+	sz = sz > 32 ? 32 : sz;
+	
+	pkt[0] = 0x40;
+	memcpy(&pkt[1], data, sz);
+	i2c_send(pkt, sz+1);
+#endif
 }
 
 #define SSD1306_SETCONTRAST 0x81
@@ -344,6 +437,7 @@ void oled_setbuf(uint8_t color)
 /*
  * Send the frame buffer
  */
+#define I2C_PSZ 1
 void oled_refresh(void)
 {
 	uint16_t i;
@@ -353,13 +447,13 @@ void oled_refresh(void)
 	oled_cmd(OLED_W-1); // Column end address (127 = reset)
 	
 	oled_cmd(SSD1306_PAGEADDR);
-	oled_cmd(4); // Page start address (0 = reset)
-	oled_cmd(7); // Page end address
+	oled_cmd(0); // Page start address (0 = reset)
+	oled_cmd(3); // Page end address
 
-    for (i=0;i<sizeof(oled_buffer);i+=16)
+    for (i=0;i<sizeof(oled_buffer);i+=I2C_PSZ)
 	{
 		/* send a block of data */
-		oled_data(&oled_buffer[i], 16);
+		oled_data(&oled_buffer[i], I2C_PSZ);
 	}
 }
 
