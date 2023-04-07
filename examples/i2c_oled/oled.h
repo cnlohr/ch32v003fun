@@ -74,7 +74,7 @@ void i2c_error(void)
 {
 	// toggle SWRST bit
 	I2C1->CTLR1 |= I2C_CTLR1_SWRST;
-	I2C1->CTLR1 &= ~I2C_CTLR1_SWRST;	
+	I2C1->CTLR1 &= ~I2C_CTLR1_SWRST;
 }
 
 // event codes we use
@@ -87,7 +87,8 @@ void i2c_error(void)
  */
 uint8_t i2c_chk_evt(uint32_t event_mask)
 {
-	uint32_t status = (I2C1->STAR2<<16) | I2C1->STAR1;
+	/* read order matters here! STAR1 before STAR2!! */
+	uint32_t status = I2C1->STAR1 | (I2C1->STAR2<<16);
 	return (status & event_mask) == event_mask;
 }
 
@@ -170,90 +171,11 @@ void i2c_send(uint8_t *data, uint8_t sz)
  */
 void oled_cmd(uint8_t cmd)
 {
-#if 0
-	int32_t timeout;
-	
-	// wait for not busy
-	timeout = TIMEOUT_MAX;
-	while((I2C1->STAR2 & I2C_STAR2_BUSY) && (timeout--));
-	if(timeout==-1)
-	{
-		printf("oled_cmd - timeout waiting for not busy\n\r");
-		i2c_error();
-		return;
-	}
-	
-	// Set START condition
-	I2C1->CTLR1 |= I2C_CTLR1_START;
-	
-	// wait for master mode select
-	timeout = TIMEOUT_MAX;
-	while((!i2c_chk_evt(I2C_EVENT_MASTER_MODE_SELECT)) && (timeout--));
-	if(timeout==-1)
-	{
-		printf("oled_cmd - timeout waiting for master mode\n\r");
-		i2c_error();
-		return;
-	}
-	
-	// send 7-bit address + write flag
-	I2C1->DATAR = OLED_ADDR << 1;
-
-	// wait for transmit condition
-	timeout = TIMEOUT_MAX;
-	while((!i2c_chk_evt(I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED)) && (timeout--));
-	if(timeout==-1)
-	{
-		printf("oled_cmd - timeout waiting for transmit mode\n\r");
-		i2c_error();
-		return;
-	}
-
-	// wait for TX Empty
-	timeout = TIMEOUT_MAX;
-	while(!(I2C1->STAR1 & I2C_STAR1_TXE) && (timeout--));
-	if(timeout==-1)
-	{
-		printf("oled_cmd - timeout waiting for tx empty\n\r");
-		i2c_error();
-		return;
-	}
-		
-	// send command flag
-	I2C1->DATAR = 0;
-	
-	// wait for TX Empty
-	timeout = TIMEOUT_MAX;
-	while(!(I2C1->STAR1 & I2C_STAR1_TXE) && (timeout--));
-	if(timeout==-1)
-	{
-		printf("oled_cmd - timeout waiting for tx empty\n\r");
-		i2c_error();
-		return;
-	}
-		
-	// send command
-	I2C1->DATAR = cmd;
-	
-	// wait for tx complete
-	timeout = TIMEOUT_MAX;
-	while((!i2c_chk_evt(I2C_EVENT_MASTER_BYTE_TRANSMITTED)) && (timeout--));
-	if(timeout==-1)
-	{
-		printf("oled_cmd - timeout waiting for byte transmitted\n\r");
-		i2c_error();
-		return;
-	}
-
-	// set STOP condition
-	I2C1->CTLR1 |= I2C_CTLR1_STOP;
-#else
 	uint8_t pkt[2];
 	
 	pkt[0] = 0;
 	pkt[1] = cmd;
 	i2c_send(pkt, 2);
-#endif
 }
 
 /*
@@ -261,91 +183,6 @@ void oled_cmd(uint8_t cmd)
  */
 void oled_data(uint8_t *data, uint8_t sz)
 {
-#if 1
-	int32_t timeout;
-	
-	// max 32 bytes
-	sz = sz > 32 ? 32 : sz;
-	
-	// wait for not busy
-	timeout = TIMEOUT_MAX;
-	while((I2C1->STAR2 & I2C_STAR2_BUSY) && (timeout--));
-	if(timeout==-1)
-	{
-		printf("oled_data - timeout waiting for not busy\n\r");
-		i2c_error();
-		return;
-	}
-
-	// Set START condition
-	I2C1->CTLR1 |= I2C_CTLR1_START;
-	
-	// wait for master mode select
-	timeout = TIMEOUT_MAX;
-	while((!i2c_chk_evt(I2C_EVENT_MASTER_MODE_SELECT)) && (timeout--));
-	if(timeout==-1)
-	{
-		printf("oled_data - timeout waiting for master mode\n\r");
-		i2c_error();
-		return;
-	}
-	
-	// send 7-bit address + write flag
-	I2C1->DATAR = OLED_ADDR<<1;
-
-	// wait for transmit condition
-	timeout = TIMEOUT_MAX;
-	while((!i2c_chk_evt(I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED)) && (timeout--));
-	if(timeout==-1)
-	{
-		printf("oled_data - timeout waiting for transmit mode\n\r");
-		i2c_error();
-		return;
-	}
-
-	// wait for TX Empty
-	timeout = TIMEOUT_MAX;
-	while(!(I2C1->STAR1 & I2C_STAR1_TXE) && (timeout--));
-	if(timeout==-1)
-	{
-		printf("oled_data H - timeout waiting for tx empty\n\r");
-		i2c_error();
-		return;
-	}
-		
-	// send data flag
-	I2C1->DATAR = 0x40;
-	
-	// send data one byte at a time
-	while(sz--)
-	{
-		// wait for TX Empty
-		timeout = TIMEOUT_MAX;
-		while(!(I2C1->STAR1 & I2C_STAR1_TXE) && (timeout--));
-		if(timeout==-1)
-		{
-			printf("oled_data P:%d - timeout waiting for tx empty\n\r", sz);
-			i2c_error();
-			return;
-		}
-		
-		// send command
-		I2C1->DATAR = *data++;
-	}
-
-	// wait for tx complete
-	timeout = TIMEOUT_MAX;
-	while((!i2c_chk_evt(I2C_EVENT_MASTER_BYTE_TRANSMITTED)) && (timeout--));
-	if(timeout==-1)
-	{
-		printf("oled_data - timeout waiting for byte transmitted\n\r");
-		i2c_error();
-		return;
-	}
-
-	// set STOP condition
-	I2C1->CTLR1 |= I2C_CTLR1_STOP;
-#else
 	uint8_t pkt[33];
 	
 	// max 32 bytes
@@ -354,7 +191,6 @@ void oled_data(uint8_t *data, uint8_t sz)
 	pkt[0] = 0x40;
 	memcpy(&pkt[1], data, sz);
 	i2c_send(pkt, sz+1);
-#endif
 }
 
 #define SSD1306_SETCONTRAST 0x81
@@ -437,7 +273,7 @@ void oled_setbuf(uint8_t color)
 /*
  * Send the frame buffer
  */
-#define I2C_PSZ 1
+#define I2C_PSZ 16
 void oled_refresh(void)
 {
 	uint16_t i;
