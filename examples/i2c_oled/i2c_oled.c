@@ -23,12 +23,17 @@ int main()
 	printf("\r\r\n\ni2c_oled example\n\r");
 
 	// init i2c and oled
+	Delay_Ms( 100 );	// give OLED some more time
 	printf("initializing i2c oled...");
-	oled_init();
-	memset(oled_buffer, 0x88, sizeof(oled_buffer));
-	oled_refresh();
-	printf("done.\n\r");
-		
+	if(!oled_init())
+	{
+		memset(oled_buffer, 0x88, sizeof(oled_buffer));
+		oled_refresh();
+		printf("done.\n\r");
+	}
+	else
+		printf("failed.\n\r");
+	
 	printf("looping...\n\r");
 	while(1)
 	{

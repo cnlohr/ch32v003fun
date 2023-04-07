@@ -13,24 +13,12 @@
 #define TIMEOUT_MAX 100000
 
 /*
- * init I2C
+ * init just I2C
  */
-void i2c_init(void)
+void i2c_setup(void)
 {
 	uint16_t tempreg;
 	
-	// Enable GPIOC and I2C
-	RCC->APB2PCENR |= RCC_APB2Periph_GPIOC;
-	RCC->APB1PCENR |= RCC_APB1Periph_I2C1;
-	
-	// PC1/PC2 are SDA/SCL, 50MHz Output PP CNF = 11: Mux OD, MODE = 11: Out 50MHz
-	GPIOC->CFGLR &= ~(GPIO_CFGLR_MODE1 | GPIO_CFGLR_CNF1 |
-						GPIO_CFGLR_MODE1 | GPIO_CFGLR_CNF1);
-	GPIOC->CFGLR |= GPIO_CFGLR_CNF1_1 | GPIO_CFGLR_CNF1_0 |
-					GPIO_CFGLR_MODE1_1 | GPIO_CFGLR_MODE1_0 |
-					GPIO_CFGLR_CNF2_1 | GPIO_CFGLR_CNF2_0 |
-					GPIO_CFGLR_MODE2_1 | GPIO_CFGLR_MODE2_0;
-		
 	// Reset I2C1 to init all regs
 	RCC->APB1PRSTR |= RCC_APB1Periph_I2C1;
 	RCC->APB1PRSTR &= ~RCC_APB1Periph_I2C1;
@@ -59,13 +47,55 @@ void i2c_init(void)
 }
 
 /*
+ * init I2C and GPIO
+ */
+void i2c_init(void)
+{
+	// Enable GPIOC and I2C
+	RCC->APB2PCENR |= RCC_APB2Periph_GPIOC;
+	RCC->APB1PCENR |= RCC_APB1Periph_I2C1;
+	
+	// PC1/PC2 are SDA/SCL, 50MHz Output PP CNF = 11: Mux OD, MODE = 11: Out 50MHz
+	GPIOC->CFGLR &= ~(GPIO_CFGLR_MODE1 | GPIO_CFGLR_CNF1 |
+						GPIO_CFGLR_MODE1 | GPIO_CFGLR_CNF1);
+	GPIOC->CFGLR |= GPIO_CFGLR_CNF1_1 | GPIO_CFGLR_CNF1_0 |
+					GPIO_CFGLR_MODE1_1 | GPIO_CFGLR_MODE1_0 |
+					GPIO_CFGLR_CNF2_1 | GPIO_CFGLR_CNF2_0 |
+					GPIO_CFGLR_MODE2_1 | GPIO_CFGLR_MODE2_0;
+	
+	// load I2C regs
+	i2c_setup();
+}
+
+/*
+ * error descriptions
+ */
+char *errstr[] =
+{
+	"not busy",
+	"master mode",
+	"transmit mode",
+	"tx empty",
+	"transmit complete",
+};
+
+/*
  * error handler
  */
-void i2c_error(void)
+uint8_t i2c_error(uint8_t err)
 {
-	// toggle SWRST bit
+	// report error
+	printf("i2c_error - timeout waiting for %s\n\r", errstr[err]);
+	
+#if 0
+	// toggle SWRST bit - doesn't really seem to help
 	I2C1->CTLR1 |= I2C_CTLR1_SWRST;
 	I2C1->CTLR1 &= ~I2C_CTLR1_SWRST;
+#else
+	i2c_setup();
+#endif
+
+	return 1;
 }
 
 // event codes we use
@@ -84,9 +114,9 @@ uint8_t i2c_chk_evt(uint32_t event_mask)
 }
 
 /*
- * common packet send
+ * packet send
  */
-void i2c_send(uint8_t addr, uint8_t *data, uint8_t sz)
+uint8_t i2c_send(uint8_t addr, uint8_t *data, uint8_t sz)
 {
 	int32_t timeout;
 	
@@ -94,11 +124,7 @@ void i2c_send(uint8_t addr, uint8_t *data, uint8_t sz)
 	timeout = TIMEOUT_MAX;
 	while((I2C1->STAR2 & I2C_STAR2_BUSY) && (timeout--));
 	if(timeout==-1)
-	{
-		printf("i2c_send - timeout waiting for not busy\n\r");
-		i2c_error();
-		return;
-	}
+		return i2c_error(0);
 
 	// Set START condition
 	I2C1->CTLR1 |= I2C_CTLR1_START;
@@ -107,11 +133,7 @@ void i2c_send(uint8_t addr, uint8_t *data, uint8_t sz)
 	timeout = TIMEOUT_MAX;
 	while((!i2c_chk_evt(I2C_EVENT_MASTER_MODE_SELECT)) && (timeout--));
 	if(timeout==-1)
-	{
-		printf("i2c_send - timeout waiting for master mode\n\r");
-		i2c_error();
-		return;
-	}
+		return i2c_error(1);
 	
 	// send 7-bit address + write flag
 	I2C1->DATAR = addr<<1;
@@ -120,11 +142,7 @@ void i2c_send(uint8_t addr, uint8_t *data, uint8_t sz)
 	timeout = TIMEOUT_MAX;
 	while((!i2c_chk_evt(I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED)) && (timeout--));
 	if(timeout==-1)
-	{
-		printf("i2c_send - timeout waiting for transmit mode\n\r");
-		i2c_error();
-		return;
-	}
+		return i2c_error(2);
 
 	// send data one byte at a time
 	while(sz--)
@@ -133,11 +151,7 @@ void i2c_send(uint8_t addr, uint8_t *data, uint8_t sz)
 		timeout = TIMEOUT_MAX;
 		while(!(I2C1->STAR1 & I2C_STAR1_TXE) && (timeout--));
 		if(timeout==-1)
-		{
-			printf("i2c_send :%d - timeout waiting for tx empty\n\r", sz);
-			i2c_error();
-			return;
-		}
+			return i2c_error(3);
 		
 		// send command
 		I2C1->DATAR = *data++;
@@ -147,14 +161,13 @@ void i2c_send(uint8_t addr, uint8_t *data, uint8_t sz)
 	timeout = TIMEOUT_MAX;
 	while((!i2c_chk_evt(I2C_EVENT_MASTER_BYTE_TRANSMITTED)) && (timeout--));
 	if(timeout==-1)
-	{
-		printf("i2c_send - timeout waiting for byte transmitted\n\r");
-		i2c_error();
-		return;
-	}
+		return i2c_error(4);
 
 	// set STOP condition
-	I2C1->CTLR1 |= I2C_CTLR1_STOP;	
+	I2C1->CTLR1 |= I2C_CTLR1_STOP;
+	
+	// we're happy
+	return 0;
 }
 
 
