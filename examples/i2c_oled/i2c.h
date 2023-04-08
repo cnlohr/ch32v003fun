@@ -12,6 +12,14 @@
 // I2C Timeout count
 #define TIMEOUT_MAX 100000
 
+// uncomment this to enable IRQ-driven operation
+#define I2C_IRQ
+
+#ifdef I2C_IRQ
+// some stuff that IRQ mode needs
+volatile uint8_t i2c_send_buffer[64], *i2c_send_ptr, i2c_send_sz, i2c_irq_state;
+#endif
+
 /*
  * init just I2C
  */
@@ -38,6 +46,14 @@ void i2c_setup(void)
 	// fast mode not yet handled here
 #endif
 	I2C1->CKCFGR = tempreg;
+
+#ifdef I2C_IRQ
+	// enable IRQ driven operation
+	NVIC_EnableIRQ(I2C1_EV_IRQn);
+	
+	// initialize the state
+	i2c_irq_state = 0;
+#endif
 	
 	// Enable I2C
 	I2C1->CTLR1 |= I2C_CTLR1_PE;
@@ -108,8 +124,97 @@ uint8_t i2c_chk_evt(uint32_t event_mask)
 	return (status & event_mask) == event_mask;
 }
 
+#ifdef I2C_IRQ
 /*
- * packet send
+ * packet send for IRQ-driven operation
+ */
+uint8_t i2c_send(uint8_t addr, uint8_t *data, uint8_t sz)
+{
+	int32_t timeout;
+	
+	// error out if buffer under/overflow
+	if((sz > sizeof(i2c_send_buffer)) || !sz)
+		return 2;
+	
+	// wait for previous packet to finish
+	while(i2c_irq_state);
+	
+	// init buffer for sending
+	i2c_send_sz = sz;
+	i2c_send_ptr = i2c_send_buffer;
+	memcpy((uint8_t *)i2c_send_buffer, data, sz);
+	
+	// wait for not busy
+	timeout = TIMEOUT_MAX;
+	while((I2C1->STAR2 & I2C_STAR2_BUSY) && (timeout--));
+	if(timeout==-1)
+		return i2c_error(0);
+
+	// Set START condition
+	I2C1->CTLR1 |= I2C_CTLR1_START;
+
+	// wait for master mode select
+	timeout = TIMEOUT_MAX;
+	while((!i2c_chk_evt(I2C_EVENT_MASTER_MODE_SELECT)) && (timeout--));
+	if(timeout==-1)
+		return i2c_error(1);
+	
+	// send 7-bit address + write flag
+	I2C1->DATAR = addr<<1;
+
+	// wait for transmit condition
+	timeout = TIMEOUT_MAX;
+	while((!i2c_chk_evt(I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED)) && (timeout--));
+	if(timeout==-1)
+		return i2c_error(2);
+
+	// Enable TXE interrupt
+	I2C1->CTLR2 |= I2C_CTLR2_ITBUFEN | I2C_CTLR2_ITEVTEN;
+	i2c_irq_state = 1;
+	
+	// exit
+	return 0;
+}
+
+/*
+ * IRQ handler for I2C events
+ */
+void I2C1_EV_IRQHandler(void) __attribute__((interrupt));
+void I2C1_EV_IRQHandler(void)
+{
+	uint16_t STAR1, STAR2;
+	
+	// read status, clear any events
+	STAR1 = I2C1->STAR1;
+	STAR2 = I2C1->STAR2;
+	
+	/* check for TXE */
+	if(STAR1 & I2C_STAR1_TXE)
+	{
+		/* check for remaining data */
+		if(i2c_send_sz--)
+			I2C1->DATAR = *i2c_send_ptr++;
+
+		/* was that the last byte? */
+		if(!i2c_send_sz)
+		{
+			// disable TXE interrupt
+			I2C1->CTLR2 &= ~(I2C_CTLR2_ITBUFEN | I2C_CTLR2_ITEVTEN);
+			
+			// reset IRQ state
+			i2c_irq_state = 0;
+			
+			// wait for tx complete
+			while(!i2c_chk_evt(I2C_EVENT_MASTER_BYTE_TRANSMITTED));
+
+			// set STOP condition
+			I2C1->CTLR1 |= I2C_CTLR1_STOP;
+		}
+	}
+}
+#else
+/*
+ * packet send for polled operation
  */
 uint8_t i2c_send(uint8_t addr, uint8_t *data, uint8_t sz)
 {
@@ -164,6 +269,6 @@ uint8_t i2c_send(uint8_t addr, uint8_t *data, uint8_t sz)
 	// we're happy
 	return 0;
 }
-
+#endif
 
 #endif
