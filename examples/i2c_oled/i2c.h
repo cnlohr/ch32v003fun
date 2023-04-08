@@ -87,13 +87,8 @@ uint8_t i2c_error(uint8_t err)
 	// report error
 	printf("i2c_error - timeout waiting for %s\n\r", errstr[err]);
 	
-#if 0
-	// toggle SWRST bit - doesn't really seem to help
-	I2C1->CTLR1 |= I2C_CTLR1_SWRST;
-	I2C1->CTLR1 &= ~I2C_CTLR1_SWRST;
-#else
+	// reset & initialize I2C
 	i2c_setup();
-#endif
 
 	return 1;
 }
