@@ -6,8 +6,6 @@ pixels, lines, circles, rectangles and 8x8 character font rendering. Out of the
 box this demo cycles through a few different graphic screens to test out the
 various drawing primitives.
 
-[OLED video](doc/oled.mp4)
-
 ## Use
 Connect an SSD1306-based OLED in I2C interface mode to pins PC1 (SCL) and PC2 (SDA)
 of the CH32V003 with proper I2C pullup resistors and observe the various graphic
