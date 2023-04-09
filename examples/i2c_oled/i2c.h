@@ -18,6 +18,9 @@
 #ifdef I2C_IRQ
 // some stuff that IRQ mode needs
 volatile uint8_t i2c_send_buffer[64], *i2c_send_ptr, i2c_send_sz, i2c_irq_state;
+
+// uncomment this to enable time diags in IRQ
+//#define IRQ_DIAG
 #endif
 
 /*
@@ -79,6 +82,16 @@ void i2c_init(void)
 					GPIO_CFGLR_CNF2_1 | GPIO_CFGLR_CNF2_0 |
 					GPIO_CFGLR_MODE2_1 | GPIO_CFGLR_MODE2_0;
 	
+#ifdef IRQ_DIAG
+	// GPIO diags on PC3/PC4
+	GPIOC->CFGLR &= ~(0xf<<(4*3));
+	GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*3);
+	GPIOC->BSHR = (1<<(16+3));
+	GPIOC->CFGLR &= ~(0xf<<(4*4));
+	GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*4);
+	GPIOC->BSHR = (1<<(16+4));
+#endif
+
 	// load I2C regs
 	i2c_setup();
 }
@@ -132,12 +145,21 @@ uint8_t i2c_send(uint8_t addr, uint8_t *data, uint8_t sz)
 {
 	int32_t timeout;
 	
+#ifdef IRQ_DIAG
+	GPIOC->BSHR = (1<<(3));
+#endif
+	
 	// error out if buffer under/overflow
 	if((sz > sizeof(i2c_send_buffer)) || !sz)
 		return 2;
 	
 	// wait for previous packet to finish
 	while(i2c_irq_state);
+	
+#ifdef IRQ_DIAG
+	GPIOC->BSHR = (1<<(16+3));
+	GPIOC->BSHR = (1<<(4));
+#endif
 	
 	// init buffer for sending
 	i2c_send_sz = sz;
@@ -171,6 +193,10 @@ uint8_t i2c_send(uint8_t addr, uint8_t *data, uint8_t sz)
 	// Enable TXE interrupt
 	I2C1->CTLR2 |= I2C_CTLR2_ITBUFEN | I2C_CTLR2_ITEVTEN;
 	i2c_irq_state = 1;
+
+#ifdef IRQ_DIAG
+	GPIOC->BSHR = (1<<(16+4));
+#endif
 	
 	// exit
 	return 0;
@@ -182,8 +208,12 @@ uint8_t i2c_send(uint8_t addr, uint8_t *data, uint8_t sz)
 void I2C1_EV_IRQHandler(void) __attribute__((interrupt));
 void I2C1_EV_IRQHandler(void)
 {
-	uint16_t STAR1, STAR2;
+	uint16_t STAR1, STAR2 __attribute__((unused));
 	
+#ifdef IRQ_DIAG
+	GPIOC->BSHR = (1<<(4));
+#endif
+
 	// read status, clear any events
 	STAR1 = I2C1->STAR1;
 	STAR2 = I2C1->STAR2;
@@ -211,6 +241,10 @@ void I2C1_EV_IRQHandler(void)
 			I2C1->CTLR1 |= I2C_CTLR1_STOP;
 		}
 	}
+
+#ifdef IRQ_DIAG
+	GPIOC->BSHR = (1<<(16+4));
+#endif
 }
 #else
 /*
