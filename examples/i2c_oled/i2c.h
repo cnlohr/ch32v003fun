@@ -7,7 +7,10 @@
 #define _I2C_H
 
 // I2C clock rate
-#define I2C_CLKRATE 100000
+#define I2C_CLKRATE 400000
+
+// uncomment this for high-speed 36% duty cycle, otherwise 33%
+#define I2C_DUTY
 
 // I2C Timeout count
 #define TIMEOUT_MAX 100000
@@ -46,7 +49,16 @@ void i2c_setup(void)
 	// standard mode good to 100kHz
 	tempreg = (APB_CLOCK/(2*I2C_CLKRATE))&I2C_CKCFGR_CCR;
 #else
-	// fast mode not yet handled here
+	// fast mode over 100kHz
+#ifndef I2C_DUTY
+	// 33% duty cycle
+	tempreg = (APB_CLOCK/(3*I2C_CLKRATE))&I2C_CKCFGR_CCR;
+#else
+	// 36% duty cycle
+	tempreg = (APB_CLOCK/(25*I2C_CLKRATE))&I2C_CKCFGR_CCR;
+	tempreg |= I2C_CKCFGR_DUTY;
+#endif
+	tempreg |= I2C_CKCFGR_FS;
 #endif
 	I2C1->CKCFGR = tempreg;
 
