@@ -6,8 +6,11 @@
 #ifndef _I2C_H
 #define _I2C_H
 
-// I2C clock rate
-#define I2C_CLKRATE 800000
+// I2C Bus clock rate - must be lower the Logic clock rate
+#define I2C_CLKRATE 1000000
+
+// I2C Logic clock rate - must be higher than Bus clock rate
+#define I2C_PRERATE 2000000
 
 // uncomment this for high-speed 36% duty cycle, otherwise 33%
 #define I2C_DUTY
@@ -40,7 +43,7 @@ void i2c_setup(void)
 	// set freq
 	tempreg = I2C1->CTLR2;
 	tempreg &= ~I2C_CTLR2_FREQ;
-	tempreg |= (APB_CLOCK/1000000)&I2C_CTLR2_FREQ;
+	tempreg |= (APB_CLOCK/I2C_PRERATE)&I2C_CTLR2_FREQ;
 	I2C1->CTLR2 = tempreg;
 	
 	// Set clock config
