@@ -12,6 +12,7 @@ https://user-images.githubusercontent.com/1132011/230734071-dee305de-5aad-4ca0-a
 ## Build options
 There are a few build-time options in the i2c.h source:
 * I2C_CLKRATE - defines the I2C bus clock rate. Both 100kHz and 400kHz are supported.
+800kHz has been seen to work but 1MHz did not.
 * I2C_DUTY - for I2C_CLKRATE > 100kHz this specifies the duty cycle, either 33% or 36%.
 * TIMEOUT_MAX - the amount of tries in busy-wait loops before giving up. This value
 depends on the I2C_CLKRATE and should not affect normal operation.

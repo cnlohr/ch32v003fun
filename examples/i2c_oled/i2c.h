@@ -7,7 +7,7 @@
 #define _I2C_H
 
 // I2C clock rate
-#define I2C_CLKRATE 400000
+#define I2C_CLKRATE 800000
 
 // uncomment this for high-speed 36% duty cycle, otherwise 33%
 #define I2C_DUTY
