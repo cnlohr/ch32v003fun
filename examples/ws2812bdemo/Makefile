@@ -7,9 +7,16 @@ PREFIX:=riscv64-unknown-elf
 CH32V003FUN:=../../ch32v003fun
 MINICHLINK:=../../minichlink
 
+ifeq ($(OS),Windows_NT)
+# On Windows, all the major RISC-V GCC installs are missing the -ec libgcc.
+LIB_GCC=../../misc/libgcc.a
+else
+LIB_GCC=-lgcc
+endif
+
 CFLAGS:= \
 	-g -Os -flto -ffunction-sections \
-	-static-libgcc -lgcc \
+	-static-libgcc $(LIB_GCC) \
 	-march=rv32ec \
 	-mabi=ilp32e \
 	-I/usr/include/newlib \
