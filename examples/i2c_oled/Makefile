@@ -9,16 +9,9 @@ GPIO_Toggle:=EXAM/GPIO/GPIO_Toggle/User
 CH32V003FUN:=../../ch32v003fun
 MINICHLINK:=../../minichlink
 
-ifeq ($(OS),Windows_NT)
-# On Windows, all the major RISC-V GCC installs are missing the -ec libgcc.
-LIB_GCC=../../misc/libgcc.a
-else
-LIB_GCC=-lgcc
-endif
-
 CFLAGS:= \
 	-g -Os -flto -ffunction-sections \
-	-static-libgcc $(LIB_GCC) \
+	-static-libgcc \
 	-march=rv32ec \
 	-mabi=ilp32e \
 	-I/usr/include/newlib \
@@ -26,7 +19,7 @@ CFLAGS:= \
 	-nostdlib \
 	-I. -DSTDOUT_UART -Wall
 
-LDFLAGS:=-T $(CH32V003FUN)/ch32v003fun.ld -Wl,--gc-sections
+LDFLAGS:=-T $(CH32V003FUN)/ch32v003fun.ld -Wl,--gc-sections -L../../misc -lgcc
 
 SYSTEM_C:=$(CH32V003FUN)/ch32v003fun.c
 
