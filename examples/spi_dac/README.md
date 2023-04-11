@@ -47,6 +47,8 @@ Connect a PT8211 DAC as follows:
 * DAC pin 6 (LCH) - left channel output
 * DAC pin 8 (RCH) - right channel output
 
+![Schematic of SPI DAC hookup](spi_dac_schem.png)
+
 Connect an oscilloscope to the left and right channel outputs and observe a
 sine waveform at 187Hz on the right channel output and a sawtooth wave at
 47Hz on the left channel output.
