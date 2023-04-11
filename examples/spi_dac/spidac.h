@@ -7,12 +7,13 @@
 #define _SPIDAC_H
 
 #include <stdint.h>
+#include "Sine16bit.h"
 
 // uncomment this to enable GPIO diag
 #define DAC_DIAG
 
 // uncomment this to fill the buffer with static test data
-#define DAC_STATIC
+//#define DAC_STATIC
 
 // uncomment this for timer-generated DMA
 #define DAC_TIMDMA
@@ -20,6 +21,7 @@
 #define DACBUFSZ 32
 
 uint16_t dac_buffer[DACBUFSZ];
+uint32_t osc_phs[2], osc_frq[2];
 
 /*
  * initialize SPI and DMA
@@ -27,13 +29,20 @@ uint16_t dac_buffer[DACBUFSZ];
 void spidac_init( void )
 {
 #ifdef DAC_STATIC
+	// fill output buffer with diag data
 	uint16_t data = 0xffff;
 	for(int i=0;i<DACBUFSZ;i++)
 	{
 		/* just a full-scale ramp for now */
 		dac_buffer[i] = data;
 		data >>= 1;
-	}	
+	}
+#else
+	// init two oscillators
+	osc_phs[0] = 0;
+	osc_phs[1] = 0;
+	osc_frq[0] = 0x01000000;
+	osc_frq[1] = 0x00400000;
 #endif
 	
 	// Enable DMA + Peripherals
@@ -61,33 +70,8 @@ void spidac_init( void )
 	SPI1->CTLR1 = 
 		SPI_NSS_Soft | SPI_CPHA_1Edge | SPI_CPOL_Low | SPI_DataSize_16b |
 		SPI_Mode_Master | SPI_Direction_1Line_Tx |
-		SPI_BaudRatePrescaler_32;
+		SPI_BaudRatePrescaler_16;
 
-#ifndef DAC_TIMDMA
-	// SPI generates DMA Req
-	SPI1->CTLR2 = SPI_CTLR2_TXDMAEN;
-	//SPI1->HSCR = 1;
-
-	// enable SPI port
-	SPI1->CTLR1 |= CTLR1_SPE_Set;
-
-	//DMA1_Channel3 is for SPI1TX
-	DMA1_Channel3->PADDR = (uint32_t)&SPI1->DATAR;
-	DMA1_Channel3->MADDR = (uint32_t)dac_buffer;
-	DMA1_Channel3->CNTR  = DACBUFSZ;
-	DMA1_Channel3->CFGR  =
-		DMA_M2M_Disable |		 
-		DMA_Priority_VeryHigh |
-		DMA_MemoryDataSize_HalfWord |
-		DMA_PeripheralDataSize_HalfWord |
-		DMA_MemoryInc_Enable |
-		DMA_Mode_Circular |
-		DMA_DIR_PeripheralDST |
-		DMA_IT_TC | DMA_IT_HT;
-
-	NVIC_EnableIRQ( DMA1_Channel3_IRQn );
-	DMA1_Channel3->CFGR |= DMA_CFGR1_EN;
-#else
 	// enable SPI port
 	SPI1->CTLR1 |= CTLR1_SPE_Set;
 
@@ -112,7 +96,7 @@ void spidac_init( void )
 	TIM1->PSC = 0x0000;
 	
 	// Auto Reload - sets period to ~47kHz
-	TIM1->ATRLR = 1023;
+	TIM1->ATRLR = 499;
 	
 	// Reload immediately
 	TIM1->SWEVGR |= TIM_UG;
@@ -124,7 +108,7 @@ void spidac_init( void )
 	TIM1->CHCTLR2 |= TIM_OC4M_2 | TIM_OC4M_1;
 	
 	// Set the Capture Compare Register value to 50% initially
-	TIM1->CH4CVR = 512;
+	TIM1->CH4CVR = 256;
 	
 	// Enable TIM1 outputs
 	TIM1->BDTR |= TIM_MOE;
@@ -151,7 +135,6 @@ void spidac_init( void )
 
 	NVIC_EnableIRQ( DMA1_Channel4_IRQn );
 	DMA1_Channel4->CFGR |= DMA_CFGR1_EN;
-#endif
 }
 
 /*
@@ -159,53 +142,22 @@ void spidac_init( void )
  */
 void dac_update(uint16_t *buffer)
 {
+	int i;
+	
+	// fill the buffer with stereo data
+	for(i=0;i<DACBUFSZ/2;i+=2)
+	{
+		// right chl
+		*buffer++ = Sine16bit[osc_phs[0]>>24];
+		osc_phs[0] += osc_frq[0];
+		
+		// left chl
+		//*buffer++ = Sine16bit[osc_phs[1]>>24];
+		*buffer++ = osc_phs[1]>>16;
+		osc_phs[1] += osc_frq[1];
+	}
 }
 
-#ifndef DAC_TIMDMA
-/*
- * SPI DMA IRQ Handler
- */
-void DMA1_Channel3_IRQHandler( void ) __attribute__((interrupt));
-void DMA1_Channel3_IRQHandler( void ) 
-{
-#ifdef DAC_DIAG
-	GPIOD->BSHR = 1;
-#endif
-	
-	// why is this needed? Can't just direct compare the reg in tests below
-	volatile uint16_t intfr = DMA1->INTFR;
-
-	if( intfr & DMA1_IT_TC3 )
-	{
-		// Transfer complete - update 2nd half
-		dac_update(dac_buffer+DACBUFSZ/2);
-		
-		// clear TC IRQ
-		DMA1->INTFCR = DMA1_IT_TC3;
-		
-		GPIOC->BSHR = (1<<1); // NSS 1
-	}
-	
-	if( intfr & DMA1_IT_HT3 )
-	{
-		// Half transfer - update first half
-		dac_update(dac_buffer);
-		
-		// clear HT IRQ
-		DMA1->INTFCR = DMA1_IT_HT3;
-		
-		GPIOC->BSHR = (1<<(1+16)); // NSS 0
-	}
-
-	// clear the Global IRQ
-	DMA1->INTFCR = DMA1_IT_GL3;
-	
-#ifdef DAC_DIAG
-	GPIOD->BSHR = 1<<16;
-#endif
-}
-
-#else
 /*
  * TIM1CH4 DMA IRQ Handler
  */
@@ -248,8 +200,4 @@ void DMA1_Channel4_IRQHandler( void )
 	GPIOD->BSHR = 1<<16;
 #endif
 }
-
-#endif
-
-
 #endif
