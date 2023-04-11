@@ -61,7 +61,7 @@ void spidac_init( void )
 	SPI1->CTLR1 = 
 		SPI_NSS_Soft | SPI_CPHA_1Edge | SPI_CPOL_Low | SPI_DataSize_16b |
 		SPI_Mode_Master | SPI_Direction_1Line_Tx |
-		SPI_BaudRatePrescaler_16;
+		SPI_BaudRatePrescaler_32;
 
 #ifndef DAC_TIMDMA
 	// SPI generates DMA Req
@@ -104,6 +104,8 @@ void spidac_init( void )
 	RCC->APB2PRSTR &= ~RCC_APB2Periph_TIM1;
 	
 	// CTLR1: default is up, events generated, edge align
+	// CTLR1: up/down, events on both edges
+	TIM1->CTLR1 = TIM_CMS;
 	// SMCFGR: default clk input is CK_INT
 	
 	// Prescaler 
