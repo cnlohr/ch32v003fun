@@ -16,7 +16,7 @@ TIM1 on the CH32V003 is set up to generate a 48kHz square wave which is output
 on GPIO pin PC4 and serves as the frame sync or WS. The timer is configured to
 run in center-aligned mode 3 which generates DMA requests on both rising and
 falling edges. Channel 4 is configured as the output and the threshold is set
-to 50%.
+to 50% and the overall period is set to 48kHz.
 
 ### SPI setup
 SPI1 is configured for 16-bit TX with a bit clock of 48MHz/8 (3MHz) which is
@@ -47,5 +47,6 @@ Connect a PT8211 DAC as follows:
 * DAC pin 6 (LCH) - left channel output
 * DAC pin 8 (RCH) - right channel output
 
-Connect an oscilloscope to the left and right channel outputs and observe
-sine and sawtooth waves at different frequencies.
+Connect an oscilloscope to the left and right channel outputs and observe a
+sine waveform at 187Hz on the right channel output and a sawtooth wave at
+47Hz on the left channel output.
