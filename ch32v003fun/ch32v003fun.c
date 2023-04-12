@@ -765,7 +765,8 @@ void handle_reset()
 .option norelax\n\
 	la gp, __global_pointer$\n\
 .option pop\n\
-	la sp, _eusrstack\n"
+	la sp, _eusrstack\n\
+.option arch, +zicsr\n"
 	// Setup the interrupt vector, processor status and INTSYSCR.
 "	li a0, 0x80\n\
 	csrw mstatus, a0\n\
