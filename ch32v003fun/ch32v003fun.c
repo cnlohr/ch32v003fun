@@ -32,7 +32,11 @@ int printf(const char* format, ...)
 	return ret_status;
 }
 
-
+int putchar(int c)
+{
+	return _write( 0, (const char *)(&c), 1 );
+}
+	
 /* Some stuff from MUSL
 
 
