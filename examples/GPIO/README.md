@@ -10,3 +10,6 @@ Only use one pin for one thing and you should be fine.
 # GPIO Example
 Connect LED + 1k resistor to each pin (C0 to C7 and D4) and GND.
 Marvel at the colorful glory.
+
+
+https://user-images.githubusercontent.com/104343143/231577551-d8775b18-f1e3-4b84-afbd-2cb4b4edda6e.mp4
