@@ -31,11 +31,6 @@ int printf(const char* format, ...)
 	va_end( args );
 	return ret_status;
 }
-
-int putchar(int c)
-{
-	return _write( 0, (const char *)(&c), 1 );
-}
 	
 /* Some stuff from MUSL
 
@@ -883,13 +878,21 @@ int _write(int fd, const char *buf, int size)
 	}
 	return size;
 }
+
+// single char to UART
+int putchar(int c)
+{
+	while( !(USART1->STATR & USART_FLAG_TC));
+	USART1->DATAR = (const char)c;
+	return 1;
+}
 #else
 // For debug writing to the debug interface.
+#define DMDATA0 ((volatile uint32_t*)0xe00000f4)
+#define DMDATA1 ((volatile uint32_t*)0xe00000f8)
+
 int _write(int fd, const char *buf, int size)
 {
-	#define DMDATA0 ((volatile uint32_t*)0xe00000f4)
-	#define DMDATA1 ((volatile uint32_t*)0xe00000f8)
-
 	char buffer[4] = { 0 };
 	int place = 0;
 	uint32_t timeout = 160000; // Give up after ~40ms
@@ -922,6 +925,15 @@ int _write(int fd, const char *buf, int size)
 		place += tosend;
 	}
 	return size;
+}
+
+// single to debug intf
+int putchar(int c)
+{
+	int timeout = 16000;
+	while( ((*DMDATA0) & 0x80) ) if( timeout-- == 0 ) return 0;
+	*DMDATA0 = 0x85 | ((const char)c<<8);
+	return 1;
 }
 
 void SetupDebugPrintf()
