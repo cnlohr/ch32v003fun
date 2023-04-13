@@ -931,9 +931,9 @@ int _write(int fd, const char *buf, int size)
 int putchar(int c)
 {
 	int timeout = 16000;
-    while( ((*DMDATA0) & 0x80) ) if( timeout-- == 0 ) return 0;
-    *DMDATA0 = 0x85 | ((const char)c<<8);
-    return 1;
+	while( ((*DMDATA0) & 0x80) ) if( timeout-- == 0 ) return 0;
+	*DMDATA0 = 0x85 | ((const char)c<<8);
+	return 1;
 }
 
 void SetupDebugPrintf()
