@@ -28,7 +28,7 @@ mysterious effects and less error checking.
 you know what you're doing.
 
 ## Use
-Connect an SSD1306-based OLED in I2C interface mode to pins PC1 (SCL) and PC2 (SDA)
+Connect an SSD1306-based OLED in I2C interface mode to pins PC1 (SDA) and PC2 (SCL)
 of the CH32V003 with proper I2C pullup resistors and observe the various graphic
 images that cycle at approximately 2 second intervals.
 
