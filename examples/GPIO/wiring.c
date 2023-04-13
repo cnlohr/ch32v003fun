@@ -1,6 +1,6 @@
 //#include <stdio.h>
 
-#include "wiring_digital.h"
+#include "wiring.h"
 #include <stdint.h>
 
 
@@ -20,7 +20,7 @@ enum GPIOports getPort (enum GPIOpins pin) {
 
 
 
-void enablePort(enum GPIOports port) {
+void portEnable(enum GPIOports port) {
 	// Enable GPIOs
 	switch (port) {
 		case port_A:
@@ -158,4 +158,94 @@ uint8_t digitalRead(uint8_t pin) {
 
 	int8_t result = (GPIOx->INDR >> PinOffset) & 1;
 	return result;
+}
+
+
+
+
+
+void ADCinit() {
+	// select ADC clock source
+	// ADCCLK = 24 MHz => RCC_ADCPRE = 0: divide by 2
+	RCC->CFGR0 &= ~(0x1F<<11);
+
+	// enable clock to the ADC
+	RCC->APB2PCENR |= RCC_APB2Periph_ADC1;
+
+	// Reset the ADC to init all regs
+	RCC->APB2PRSTR |= RCC_APB2Periph_ADC1;
+	RCC->APB2PRSTR &= ~RCC_APB2Periph_ADC1;
+
+	// set sampling time for all inputs to 241 cycles
+	for (uint8_t i = Ain0_A2; i <= AinVcal; i++) {
+		ADCsetSampletime(i, Ast_241cy_default);
+	}
+
+	// set trigger to software
+	ADC1->CTLR2 |= ADC_EXTSEL;
+
+	// pre-clear conversion queue
+	ADC1->RSQR1 = 0;
+	ADC1->RSQR2 = 0;
+	ADC1->RSQR3 = 0;
+
+	// power the ADC
+	ADCsetPower(1);
+}
+
+
+
+void ADCsetSampletime(enum ANALOGinputs input, enum ANALOGsampletimes time) {
+	// clear
+	ADC1->SAMPTR2 &= ~(0b111)<<(3*input);
+	// set
+	ADC1->SAMPTR2 |= time<<(3*input);	// 0:7 => 3/9/15/30/43/57/73/241 cycles
+}
+
+
+
+void ADCsetPower(uint8_t enable) {
+	if (enable) {
+		ADC1->CTLR2 |= ADC_ADON;
+		if (enable == 1) {
+			// auto-cal each time after turning on the ADC
+			// can be overridden by calling with enable > 1.
+			ADCcalibrate();					
+		}
+	}
+	else {
+		ADC1->CTLR2 &= ~(ADC_ADON);
+	}
+}
+
+
+
+void ADCcalibrate() {
+	// reset calibration
+	ADC1->CTLR2 |= ADC_RSTCAL;
+	while(ADC1->CTLR2 & ADC_RSTCAL);
+	
+	// calibrate
+	ADC1->CTLR2 |= ADC_CAL;
+	while(ADC1->CTLR2 & ADC_CAL);
+}
+
+
+
+// inspired by arduinos analogRead()
+uint16_t analogRead(enum ANALOGinputs input) {
+	// set mux to selected input
+	ADC1->RSQR3 = input;
+
+	// may need a delay right here for the mux to actually finish switching??
+	// Arduino inserts a full ms delay right here!
+	
+	// start sw conversion (auto clears)
+	ADC1->CTLR2 |= ADC_SWSTART;
+	
+	// wait for conversion complete
+	while(!(ADC1->STATR & ADC_EOC));
+	
+	// get result
+	return ADC1->RDATAR;
 }

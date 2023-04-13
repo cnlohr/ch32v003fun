@@ -1,4 +1,4 @@
-TARGET:=GPIO
+TARGET:=GPIO_analogRead
 
 all : flash
 
