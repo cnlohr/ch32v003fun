@@ -31,7 +31,7 @@ int main()
 		printf("Looping on test modes...");
 		while(1)
 		{
-			for(uint8_t mode=0;mode<5;mode++)
+			for(uint8_t mode=0;mode<=6;mode++)
 			{
 				// clear buffer for next mode
 				oled_setbuf(0);
@@ -79,7 +79,13 @@ int main()
 						
 						oled_xorrect(64, 0, 64, 32);
 						break;
-					
+					case 5:
+						oled_drawstr_sz(0,0, "sz 8x8", 1, fontsize_8x8);
+						oled_drawstr_sz(0,16, "16x16", 1, fontsize_16x16);
+						break;
+					case 6:
+						oled_drawstr_sz(0,0, "32x32", 1, fontsize_32x32);
+						break;
 					default:
 						break;
 				}

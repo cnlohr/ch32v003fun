@@ -484,6 +484,70 @@ void oled_drawstr(uint8_t x, uint8_t y, char *str, uint8_t color)
 }
 
 /*
+ * enum for font size
+ */
+typedef enum {
+    fontsize_8x8 = 1,
+    fontsize_16x16 = 2,
+    fontsize_32x32 = 4
+} font_size_t;
+
+/*
+ * Draw character to the display buffer, scaled to size
+ */
+void oled_drawchar_sz(uint8_t x, uint8_t y, uint8_t chr, uint8_t color, font_size_t font_size)
+{
+    uint16_t i, j, col;
+    uint8_t d;
+
+    // Determine the font scale factor based on the font_size parameter
+    uint8_t font_scale = (uint8_t)font_size;
+
+    // Loop through each row of the font data
+    for (i = 0; i < 8; i++)
+    {
+        // Retrieve the font data for the current row
+        d = fontdata[(chr << 3) + i];
+
+        // Loop through each column of the font data
+        for (j = 0; j < 8; j++)
+        {
+            // Determine the color to draw based on the current bit in the font data
+            if (d & 0x80)
+                col = color;
+            else
+                col = (~color) & 1;
+
+            // Draw the pixel at the original size and scaled size using nested for-loops
+            for (uint8_t k = 0; k < font_scale; k++) {
+                for (uint8_t l = 0; l < font_scale; l++) {
+                    oled_drawPixel(x + (j * font_scale) + k, y + (i * font_scale) + l, col);
+                }
+            }
+
+            // Move to the next bit in the font data
+            d <<= 1;
+        }
+    }
+}
+
+/*
+ * draw a string to the display buffer, scaled to size
+ */
+void oled_drawstr_sz(uint8_t x, uint8_t y, char *str, uint8_t color, font_size_t font_size)
+{
+	uint8_t c;
+	
+	while((c=*str++))
+	{
+		oled_drawchar_sz(x, y, c, color, font_size);
+		x += 8 * font_size;
+		if(x>128 - 8 * font_size)
+			break;
+	}
+}
+
+/*
  * initialize I2C and OLED
  */
 uint8_t oled_init(void)
