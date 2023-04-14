@@ -484,58 +484,17 @@ void oled_drawstr(uint8_t x, uint8_t y, char *str, uint8_t color)
 }
 
 /*
- * Draw character to the display buffer, scaled to size
+ * enum for font size
  */
-
 typedef enum {
     fontsize_8x8 = 1,
     fontsize_16x16 = 2,
     fontsize_32x32 = 4
 } font_size_t;
+
 /*
-void oled_drawchar_sz(uint8_t x, uint8_t y, uint8_t chr, uint8_t color, font_size_t font_size)
-{
-    uint16_t i, j, col;
-    uint8_t d;
-
-    uint8_t font_scale = (uint8_t)font_size;
-
-    for (i = 0; i < 8; i++)
-    {
-        d = fontdata[(chr << 3) + i];
-        for (j = 0; j < 8; j++)
-        {
-            if (d & 0x80)
-                col = color;
-            else
-                col = (~color) & 1;
-
-            oled_drawPixel(x + (j * font_scale), y + (i * font_scale), col);
-
-            // Draw pixel at 2x larger size
-            if (font_scale > 1) {
-                oled_drawPixel(x + (j * font_scale) + 1, y + (i * font_scale), col);
-                oled_drawPixel(x + (j * font_scale), y + (i * font_scale) + 1, col);
-                oled_drawPixel(x + (j * font_scale) + 1, y + (i * font_scale) + 1, col);
-            }
-
-            // Draw pixel at 4x larger size
-            if (font_scale > 2) {
-                oled_drawPixel(x + (j * font_scale) + 2, y + (i * font_scale), col);
-                oled_drawPixel(x + (j * font_scale), y + (i * font_scale) + 2, col);
-                oled_drawPixel(x + (j * font_scale) + 2, y + (i * font_scale) + 2, col);
-
-                oled_drawPixel(x + (j * font_scale) + 1, y + (i * font_scale) + 2, col);
-                oled_drawPixel(x + (j * font_scale) + 2, y + (i * font_scale) + 1, col);
-            }
-
-            // next bit
-            d <<= 1;
-        }
-    }
-}
-*/
-
+ * Draw character to the display buffer, scaled to size
+ */
 void oled_drawchar_sz(uint8_t x, uint8_t y, uint8_t chr, uint8_t color, font_size_t font_size)
 {
     uint16_t i, j, col;
