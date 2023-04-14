@@ -1,12 +1,7 @@
-#ifndef WIRING_DIGITAL_H
-#define WIRING_DIGITAL_H
+#ifndef WIRING_H
+#define WIRING_H
 
 #include "../../ch32v003fun/ch32v003fun.h"
-
-// Define the pins that will be used for GPIO
-#define MY_GPIO_PIN_1 1
-#define MY_GPIO_PIN_2 2
-// Add more pins as needed
 
 
 
@@ -63,11 +58,42 @@ enum GPIOpinState {
 	pinState_high,
 };
 
+enum ANALOGinputs {
+	Ain0_A2,
+	Ain1_A1,
+	Ain2_C4,
+	Ain3_D2,
+	Ain4_D3,
+	Ain5_D5,
+	Ain6_D6,
+	Ain7_D4,
+	AinVref,
+	AinVcal,
+};
+
+enum ANALOGsampletimes {
+	Ast_3cy,
+	Ast_9cy,
+	Ast_15cy,
+	Ast_30cy,
+	Ast_43cy,
+	Ast_57cy,
+	Ast_73cy,
+	Ast_241cy_default,
+};
+
+
 enum GPIOports getPort (enum GPIOpins pin);
 
-void enablePort(enum GPIOports port);
+void portEnable(enum GPIOports port);
 void pinMode(enum GPIOpins pin, enum GPIOpinMode mode);
 void digitalWrite(enum GPIOpins pin, uint8_t value);
 uint8_t digitalRead(uint8_t pin);
 
-#endif					// WIRING_DIGITAL_H
+void ADCinit();
+void ADCsetPower(uint8_t enable);
+void ADCsetSampletime(enum ANALOGinputs input, enum ANALOGsampletimes time);
+void ADCcalibrate();
+uint16_t analogRead(enum ANALOGinputs input);
+
+#endif					// WIRING_H

@@ -24,23 +24,23 @@ int main() {
 	// GPIO D4 Push-Pull
 	pinMode(pin_D4, pinMode_O_pushPull);
 
+	pinMode(pin_D6, pinMode_I_analog);
+	ADCinit();
+
 	while (1) {
-		// Turn on pins
-		digitalWrite(pin_C0, high);
 		digitalWrite(pin_D4, high);
-		Delay_Ms(250);
-		// Turn off pins
-		digitalWrite(pin_C0, low);
-		digitalWrite(pin_D4, low);
-		Delay_Ms(250);
+		uint8_t leds_to_turn_on = (uint8_t)(((float)(analogRead(Ain6_D6)) / 1024.f) * 8.f * 1.2 - 1.f);
+		uint8_t led_i = 0;
 		for (int i = pin_C0; i <= pin_C7; i++) {
-			digitalWrite(i, high);
-			Delay_Ms(50);
+			if (led_i < leds_to_turn_on) {
+				digitalWrite(i, high);
+			}
+			else {
+				digitalWrite(i, low);
+			}
+			led_i++;
 		}
-		for (int i = pin_C7; i >= pin_C0; i--) {
-			digitalWrite(i, low);
-			Delay_Ms(50);
-		}
+		digitalWrite(pin_D4, low);
 		Delay_Ms(250);
 		count++;
 	}
