@@ -20,8 +20,7 @@ void opamp_init( void )
 	//EXTEN->EXTEN_CTR |= EXTEN_OPA_PSEL;
 
 	// select op-amp neg pin: 0 = PA1, 1 = PD0
-	//EXTEN->EXTEN_CTR |= EXTEN_OPA_PSEL;
-
+	//EXTEN->EXTEN_CTR |= EXTEN_OPA_NSEL;
 }
 #endif
 

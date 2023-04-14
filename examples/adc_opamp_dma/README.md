@@ -39,6 +39,12 @@ installing zero-ohm resistors.
 * Using PD7 as an op-amp input requires disabling the NRST function which must
 be done by accessing the user option byte in flash memory.
 
+For this case I went off of the WCH EVT board and lashed up a "raw" CH32V003
+on a breadboard using the PA1 and PA2 pins.
+
+![breadboard lashup](breadboard.png)
+![op-amp schematic](adc_opamp.png)
+
 ## Use
 To test ADC DMA only, flash the code to a device and connect a serial terminal
 to pin PD5. Observe four columns of data printed for the ADC results on
@@ -46,4 +52,5 @@ PD4, PD3, PD2 and C4. With nothing connected they will float around 1.6V and
 yield results near 500. Grounding any of those pins will force the result to 0
 while tying the pin to VDD will force it to 1023.
 
-Testing the op-amp is TBD.
+Testing the op-amp, connect as in the schematic above and observe that the first
+column shows a value that's 5.7x greater than the second column.
