@@ -35,22 +35,16 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v3
-    - name: Cache pip
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
     - name: Cache PlatformIO
       uses: actions/cache@v3
       with:
         path: ~/.platformio
-        key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+        key: ${{ runner.os }}-pio
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: "3.9"
+        cache: 'pip'
     - name: Install PlatformIO
       run: |
         python -m pip install --upgrade pip
