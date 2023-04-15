@@ -4822,8 +4822,13 @@ extern "C" {
 #define DELAY_US_TIME (SYSTEM_CORE_CLOCK / 8000000)
 #define DELAY_MS_TIME (SYSTEM_CORE_CLOCK / 8000)
 
+#if defined(__APPLE__) && defined(__MACH__)
+void handle_reset()            __attribute__((naked)) __attribute((section("__TEXT,.text.ha_re"))) __attribute__((used));
+void DefaultIRQHandler( void ) __attribute__((section("__TEXT,.text.ve_ha"))) __attribute__((naked)) __attribute__((used));
+#else
 void handle_reset()            __attribute__((naked)) __attribute((section(".text.handle_reset"))) __attribute__((used));
 void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) __attribute__((naked)) __attribute__((used));
+#endif
 
 void DelaySysTick( uint32_t n );
 
