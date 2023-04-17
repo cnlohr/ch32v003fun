@@ -6,7 +6,7 @@ If on Linux, be sure to type make sure to install the `99-WCH-LinkE.rules` build
 
 On Windows, if you need to you can install the WinUSB driver over the WCH interface 1.
 
-The exe here is about 12kB and contains everything except for the libusb driver.  In Linux you need `libusb-1.0-dev`.
+The exe here is about 18kB and contains everything except for the libusb driver.  In Linux you need `libusb-1.0-dev`.
 
 ## Usage
 
