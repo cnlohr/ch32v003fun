@@ -29,6 +29,10 @@ int main( int argc, char ** argv )
 	{
 		fprintf( stderr, "Found ESP32S2 Programmer\n" );
 	}
+    else if ((dev = TryInit_NHCLink042()))
+    {
+        fprintf( stderr, "Found NHC-Link042 Programmer\n" );
+    }
 	else
 	{
 		fprintf( stderr, "Error: Could not initialize any supported programmers\n" );
@@ -407,7 +411,7 @@ help:
 	fprintf( stderr, " -r [output binary image] [memory address, decimal or 0x, try 0x08000000] [size, decimal or 0x, try 16384]\n" );
 	fprintf( stderr, "   Note: for memory addresses, you can use 'flash' 'launcher' 'bootloader' 'option' 'ram' and say \"ram+0x10\" for instance\n" );
 	fprintf( stderr, "   For filename, you can use - for raw or + for hex.\n" );
-	fprintf( stderr, " -T is a terminal. This MUST be the last argument if used.\n" );
+	fprintf( stderr, " -T is a terminal. This MUST be the last argument.  You MUST have resumed or \n" );
 
 	return -1;	
 
@@ -720,7 +724,7 @@ static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t dat
 
 	iss->currentstateval += 4;
 
-	return ret;
+	return 0;
 }
 
 
