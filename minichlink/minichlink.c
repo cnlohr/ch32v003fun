@@ -407,7 +407,7 @@ help:
 	fprintf( stderr, " -r [output binary image] [memory address, decimal or 0x, try 0x08000000] [size, decimal or 0x, try 16384]\n" );
 	fprintf( stderr, "   Note: for memory addresses, you can use 'flash' 'launcher' 'bootloader' 'option' 'ram' and say \"ram+0x10\" for instance\n" );
 	fprintf( stderr, "   For filename, you can use - for raw or + for hex.\n" );
-	fprintf( stderr, " -T is a terminal. This MUST be the last argument.  You MUST have resumed or \n" );
+	fprintf( stderr, " -T is a terminal. This MUST be the last argument if used.\n" );
 
 	return -1;	
 
