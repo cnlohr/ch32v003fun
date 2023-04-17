@@ -1,0 +1,833 @@
+Dependencies for Project 'NHC-Link042', Target 'NHC-Link042': (DO NOT MODIFY !)
+CompilerVersion: 5060960::V5.06 update 7 (build 960)::.\v6
+F (.\User\it.c)(0x549412E5)(-c --cpu Cortex-M0 -D__MICROLIB -g -O3 --apcs=interwork -I .\User -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc" -I .\LibUSB -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include"-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Device\Include-D__UVISION_VERSION="538" -DSTM32F042x6 -DUSE_STDPERIPH_DRIVER -DSTM32F042 -DINTERNAL_PULLUP -DUSB_CLOCK_SOURCE_CRS-o .\obj\it.o --omf_browse .\obj\it.crf --depend .\obj\it.d)
+F (.\User\main.c)(0x6400B8AF)(-c --cpu Cortex-M0 -D__MICROLIB -g -O3 --apcs=interwork -I .\User -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc" -I .\LibUSB -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include"-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Device\Include-D__UVISION_VERSION="538" -DSTM32F042x6 -DUSE_STDPERIPH_DRIVER -DSTM32F042 -DINTERNAL_PULLUP -DUSB_CLOCK_SOURCE_CRS-o .\obj\main.o --omf_browse .\obj\main.crf --depend .\obj\main.d)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x52E22984)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cm0.h)(0x52DE2F98)
+I (C:\Keil_v5\ARM\v6\include\stdint.h)(0x5E8E4AD2)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmInstr.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmFunc.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x52E22984)
+I (.\User\stm32f0xx_conf.h)(0x53CF513E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_adc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_can.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_cec.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crs.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_comp.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dac.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dbgmcu.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dma.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_exti.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_flash.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_gpio.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_syscfg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_i2c.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_iwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_pwr.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rcc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rtc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_spi.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_tim.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_usart.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_wwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_misc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_usr.h)(0x52EA295E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_core.h)(0x52EA295E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_dcd.h)(0x52EB4B90)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_core.h)(0x52EB4B90)
+I (.\User\usb_conf.h)(0x552D0F28)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_regs.h)(0x52EA28FC)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_dcd_int.h)(0x52EB4B90)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_pwr.h)(0x52EB4B98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_bsp.h)(0x52EA28FA)
+I (User\usbd_desc.h)(0x6400BA9E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_req.h)(0x52EA295E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_ioreq.h)(0x52EA295E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_def.h)(0x52EB4B98)
+I (.\User\usbd_conf.h)(0x52EA23DC)
+I (C:\Keil_v5\ARM\v6\include\stdbool.h)(0x5E8E4AD2)
+I (.\User\usbd_desc.h)(0x6400BA9E)
+F (.\User\usb_bsp.c)(0x6400B928)(-c --cpu Cortex-M0 -D__MICROLIB -g -O3 --apcs=interwork -I .\User -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc" -I .\LibUSB -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include"-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Device\Include-D__UVISION_VERSION="538" -DSTM32F042x6 -DUSE_STDPERIPH_DRIVER -DSTM32F042 -DINTERNAL_PULLUP -DUSB_CLOCK_SOURCE_CRS-o .\obj\usb_bsp.o --omf_browse .\obj\usb_bsp.crf --depend .\obj\usb_bsp.d)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_bsp.h)(0x52EA28FA)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_dcd.h)(0x52EB4B90)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_core.h)(0x52EB4B90)
+I (.\User\usb_conf.h)(0x552D0F28)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x52E22984)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cm0.h)(0x52DE2F98)
+I (C:\Keil_v5\ARM\v6\include\stdint.h)(0x5E8E4AD2)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmInstr.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmFunc.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x52E22984)
+I (.\User\stm32f0xx_conf.h)(0x53CF513E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_adc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_can.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_cec.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crs.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_comp.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dac.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dbgmcu.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dma.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_exti.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_flash.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_gpio.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_syscfg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_i2c.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_iwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_pwr.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rcc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rtc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_spi.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_tim.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_usart.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_wwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_misc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_regs.h)(0x52EA28FC)
+I (User\config.h)(0x5494D40F)
+F (.\User\usbd_pwr.c)(0x52EB4F02)(-c --cpu Cortex-M0 -D__MICROLIB -g -O3 --apcs=interwork -I .\User -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc" -I .\LibUSB -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include"-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Device\Include-D__UVISION_VERSION="538" -DSTM32F042x6 -DUSE_STDPERIPH_DRIVER -DSTM32F042 -DINTERNAL_PULLUP -DUSB_CLOCK_SOURCE_CRS-o .\obj\usbd_pwr.o --omf_browse .\obj\usbd_pwr.crf --depend .\obj\usbd_pwr.d)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_pwr.h)(0x52EB4B98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_core.h)(0x52EA295E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_dcd.h)(0x52EB4B90)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_core.h)(0x52EB4B90)
+I (.\User\usb_conf.h)(0x552D0F28)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x52E22984)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cm0.h)(0x52DE2F98)
+I (C:\Keil_v5\ARM\v6\include\stdint.h)(0x5E8E4AD2)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmInstr.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmFunc.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x52E22984)
+I (.\User\stm32f0xx_conf.h)(0x53CF513E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_adc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_can.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_cec.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crs.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_comp.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dac.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dbgmcu.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dma.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_exti.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_flash.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_gpio.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_syscfg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_i2c.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_iwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_pwr.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rcc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rtc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_spi.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_tim.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_usart.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_wwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_misc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_regs.h)(0x52EA28FC)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_dcd_int.h)(0x52EB4B90)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_bsp.h)(0x52EA28FA)
+F (.\User\usbd_desc.c)(0x6400BAD1)(-c --cpu Cortex-M0 -D__MICROLIB -g -O3 --apcs=interwork -I .\User -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc" -I .\LibUSB -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include"-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Device\Include-D__UVISION_VERSION="538" -DSTM32F042x6 -DUSE_STDPERIPH_DRIVER -DSTM32F042 -DINTERNAL_PULLUP -DUSB_CLOCK_SOURCE_CRS-o .\obj\usbd_desc.o --omf_browse .\obj\usbd_desc.crf --depend .\obj\usbd_desc.d)
+I (User\usbd_desc.h)(0x6400BA9E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_req.h)(0x52EA295E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_ioreq.h)(0x52EA295E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_def.h)(0x52EB4B98)
+I (.\User\usbd_conf.h)(0x52EA23DC)
+I (.\User\usb_conf.h)(0x552D0F28)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x52E22984)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cm0.h)(0x52DE2F98)
+I (C:\Keil_v5\ARM\v6\include\stdint.h)(0x5E8E4AD2)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmInstr.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmFunc.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x52E22984)
+I (.\User\stm32f0xx_conf.h)(0x53CF513E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_adc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_can.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_cec.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crs.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_comp.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dac.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dbgmcu.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dma.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_exti.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_flash.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_gpio.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_syscfg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_i2c.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_iwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_pwr.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rcc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rtc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_spi.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_tim.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_usart.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_wwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_misc.h)(0x52E22986)
+I (C:\Keil_v5\ARM\v6\include\stdbool.h)(0x5E8E4AD2)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_core.h)(0x52EA295E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_dcd.h)(0x52EB4B90)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_core.h)(0x52EB4B90)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_regs.h)(0x52EA28FC)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_dcd_int.h)(0x52EB4B90)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_pwr.h)(0x52EB4B98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_bsp.h)(0x52EA28FA)
+I (.\User\usbd_desc.h)(0x6400BA9E)
+F (.\User\usbd_usr.c)(0x5494E9F2)(-c --cpu Cortex-M0 -D__MICROLIB -g -O3 --apcs=interwork -I .\User -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc" -I .\LibUSB -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include"-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Device\Include-D__UVISION_VERSION="538" -DSTM32F042x6 -DUSE_STDPERIPH_DRIVER -DSTM32F042 -DINTERNAL_PULLUP -DUSB_CLOCK_SOURCE_CRS-o .\obj\usbd_usr.o --omf_browse .\obj\usbd_usr.crf --depend .\obj\usbd_usr.d)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_usr.h)(0x52EA295E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_core.h)(0x52EA295E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_dcd.h)(0x52EB4B90)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_core.h)(0x52EB4B90)
+I (.\User\usb_conf.h)(0x552D0F28)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x52E22984)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cm0.h)(0x52DE2F98)
+I (C:\Keil_v5\ARM\v6\include\stdint.h)(0x5E8E4AD2)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmInstr.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmFunc.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x52E22984)
+I (.\User\stm32f0xx_conf.h)(0x53CF513E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_adc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_can.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_cec.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crs.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_comp.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dac.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dbgmcu.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dma.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_exti.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_flash.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_gpio.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_syscfg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_i2c.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_iwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_pwr.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rcc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rtc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_spi.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_tim.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_usart.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_wwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_misc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_regs.h)(0x52EA28FC)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_dcd_int.h)(0x52EB4B90)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_pwr.h)(0x52EB4B98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_bsp.h)(0x52EA28FA)
+F (.\User\stm32_it.c)(0x5494EA3A)(-c --cpu Cortex-M0 -D__MICROLIB -g -O3 --apcs=interwork -I .\User -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc" -I .\LibUSB -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include"-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Device\Include-D__UVISION_VERSION="538" -DSTM32F042x6 -DUSE_STDPERIPH_DRIVER -DSTM32F042 -DINTERNAL_PULLUP -DUSB_CLOCK_SOURCE_CRS-o .\obj\stm32_it.o --omf_browse .\obj\stm32_it.crf --depend .\obj\stm32_it.d)
+I (User\stm32_it.h)(0x6400B924)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x52E22984)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cm0.h)(0x52DE2F98)
+I (C:\Keil_v5\ARM\v6\include\stdint.h)(0x5E8E4AD2)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmInstr.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmFunc.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x52E22984)
+I (.\User\stm32f0xx_conf.h)(0x53CF513E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_adc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_can.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_cec.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crs.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_comp.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dac.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dbgmcu.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dma.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_exti.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_flash.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_gpio.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_syscfg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_i2c.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_iwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_pwr.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rcc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rtc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_spi.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_tim.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_usart.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_wwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_misc.h)(0x52E22986)
+I (User\config.h)(0x5494D40F)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_usr.h)(0x52EA295E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_core.h)(0x52EA295E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_dcd.h)(0x52EB4B90)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_core.h)(0x52EB4B90)
+I (.\User\usb_conf.h)(0x552D0F28)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_regs.h)(0x52EA28FC)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_dcd_int.h)(0x52EB4B90)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_pwr.h)(0x52EB4B98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_bsp.h)(0x52EA28FA)
+I (User\usbd_desc.h)(0x6400BA9E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_req.h)(0x52EA295E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_ioreq.h)(0x52EA295E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_def.h)(0x52EB4B98)
+I (.\User\usbd_conf.h)(0x52EA23DC)
+I (C:\Keil_v5\ARM\v6\include\stdbool.h)(0x5E8E4AD2)
+I (.\User\usbd_desc.h)(0x6400BA9E)
+F (.\User\NHC_WCH_SDI.c)(0x6400B461)(-c --cpu Cortex-M0 -D__MICROLIB -g -O3 --apcs=interwork -I .\User -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc" -I .\LibUSB -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include"-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Device\Include-D__UVISION_VERSION="538" -DSTM32F042x6 -DUSE_STDPERIPH_DRIVER -DSTM32F042 -DINTERNAL_PULLUP -DUSB_CLOCK_SOURCE_CRS-o .\obj\nhc_wch_sdi.o --omf_browse .\obj\nhc_wch_sdi.crf --depend .\obj\nhc_wch_sdi.d)
+I (User\NHC_WCH_SDI.h)(0x6400B067)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x52E22984)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cm0.h)(0x52DE2F98)
+I (C:\Keil_v5\ARM\v6\include\stdint.h)(0x5E8E4AD2)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmInstr.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmFunc.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x52E22984)
+I (.\User\stm32f0xx_conf.h)(0x53CF513E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_adc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_can.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_cec.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crs.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_comp.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dac.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dbgmcu.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dma.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_exti.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_flash.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_gpio.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_syscfg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_i2c.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_iwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_pwr.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rcc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rtc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_spi.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_tim.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_usart.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_wwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_misc.h)(0x52E22986)
+F (.\User\NHC_WCH_SDI.h)(0x6400B067)()
+F (.\User\config.h)(0x5494D40F)()
+F (.\User\usbd_desc.h)(0x6400BA9E)()
+F (.\LibUSB\LibUSB.c)(0x643C940C)(-c --cpu Cortex-M0 -D__MICROLIB -g -O3 --apcs=interwork -I .\User -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc" -I .\LibUSB -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include"-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Device\Include-D__UVISION_VERSION="538" -DSTM32F042x6 -DUSE_STDPERIPH_DRIVER -DSTM32F042 -DINTERNAL_PULLUP -DUSB_CLOCK_SOURCE_CRS-o .\obj\libusb.o --omf_browse .\obj\libusb.crf --depend .\obj\libusb.d)
+I (LibUSB\LibUSB.h)(0x54BA00DA)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_req.h)(0x52EA295E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_ioreq.h)(0x52EA295E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_def.h)(0x52EB4B98)
+I (.\User\usbd_conf.h)(0x52EA23DC)
+I (.\User\usb_conf.h)(0x552D0F28)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x52E22984)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cm0.h)(0x52DE2F98)
+I (C:\Keil_v5\ARM\v6\include\stdint.h)(0x5E8E4AD2)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmInstr.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmFunc.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x52E22984)
+I (.\User\stm32f0xx_conf.h)(0x53CF513E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_adc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_can.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_cec.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crs.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_comp.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dac.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dbgmcu.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dma.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_exti.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_flash.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_gpio.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_syscfg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_i2c.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_iwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_pwr.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rcc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rtc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_spi.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_tim.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_usart.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_wwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_misc.h)(0x52E22986)
+I (C:\Keil_v5\ARM\v6\include\stdbool.h)(0x5E8E4AD2)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_core.h)(0x52EA295E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_dcd.h)(0x52EB4B90)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_core.h)(0x52EB4B90)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_regs.h)(0x52EA28FC)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_dcd_int.h)(0x52EB4B90)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_pwr.h)(0x52EB4B98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_bsp.h)(0x52EA28FA)
+I (.\User\usbd_desc.h)(0x6400BA9E)
+I (.\User\NHC_WCH_SDI.h)(0x6400B067)
+F (.\User\system_stm32f0xx.c)(0x550590EF)(-c --cpu Cortex-M0 -D__MICROLIB -g -O3 --apcs=interwork -I .\User -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc" -I .\LibUSB -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include"-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Device\Include-D__UVISION_VERSION="538" -DSTM32F042x6 -DUSE_STDPERIPH_DRIVER -DSTM32F042 -DINTERNAL_PULLUP -DUSB_CLOCK_SOURCE_CRS-o .\obj\system_stm32f0xx.o --omf_browse .\obj\system_stm32f0xx.crf --depend .\obj\system_stm32f0xx.d)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x52E22984)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cm0.h)(0x52DE2F98)
+I (C:\Keil_v5\ARM\v6\include\stdint.h)(0x5E8E4AD2)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmInstr.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmFunc.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x52E22984)
+I (.\User\stm32f0xx_conf.h)(0x53CF513E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_adc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_can.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_cec.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crs.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_comp.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dac.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dbgmcu.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dma.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_exti.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_flash.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_gpio.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_syscfg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_i2c.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_iwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_pwr.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rcc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rtc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_spi.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_tim.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_usart.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_wwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_misc.h)(0x52E22986)
+F (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Source\Templates\arm\startup_stm32f042.s)(0x52E22984)(--cpu Cortex-M0 -g --apcs=interwork --pd "__MICROLIB SETA 1"-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Device\Include--pd "__UVISION_VERSION SETA 538" --pd "STM32F042x6 SETA 1"--list .\lst\startup_stm32f042.lst --xref -o .\obj\startup_stm32f042.o --depend .\obj\startup_stm32f042.d)
+F (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\src\stm32f0xx_crs.c)(0x52E22986)(-c --cpu Cortex-M0 -D__MICROLIB -g -O3 --apcs=interwork -I .\User -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc" -I .\LibUSB -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include"-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Device\Include-D__UVISION_VERSION="538" -DSTM32F042x6 -DUSE_STDPERIPH_DRIVER -DSTM32F042 -DINTERNAL_PULLUP -DUSB_CLOCK_SOURCE_CRS-o .\obj\stm32f0xx_crs.o --omf_browse .\obj\stm32f0xx_crs.crf --depend .\obj\stm32f0xx_crs.d)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crs.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x52E22984)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cm0.h)(0x52DE2F98)
+I (C:\Keil_v5\ARM\v6\include\stdint.h)(0x5E8E4AD2)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmInstr.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmFunc.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x52E22984)
+I (.\User\stm32f0xx_conf.h)(0x53CF513E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_adc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_can.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_cec.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_comp.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dac.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dbgmcu.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dma.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_exti.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_flash.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_gpio.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_syscfg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_i2c.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_iwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_pwr.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rcc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rtc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_spi.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_tim.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_usart.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_wwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_misc.h)(0x52E22986)
+F (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\src\stm32f0xx_exti.c)(0x52E22986)(-c --cpu Cortex-M0 -D__MICROLIB -g -O3 --apcs=interwork -I .\User -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc" -I .\LibUSB -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include"-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Device\Include-D__UVISION_VERSION="538" -DSTM32F042x6 -DUSE_STDPERIPH_DRIVER -DSTM32F042 -DINTERNAL_PULLUP -DUSB_CLOCK_SOURCE_CRS-o .\obj\stm32f0xx_exti.o --omf_browse .\obj\stm32f0xx_exti.crf --depend .\obj\stm32f0xx_exti.d)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_exti.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x52E22984)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cm0.h)(0x52DE2F98)
+I (C:\Keil_v5\ARM\v6\include\stdint.h)(0x5E8E4AD2)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmInstr.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmFunc.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x52E22984)
+I (.\User\stm32f0xx_conf.h)(0x53CF513E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_adc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_can.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_cec.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crs.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_comp.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dac.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dbgmcu.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dma.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_flash.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_gpio.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_syscfg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_i2c.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_iwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_pwr.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rcc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rtc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_spi.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_tim.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_usart.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_wwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_misc.h)(0x52E22986)
+F (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\src\stm32f0xx_gpio.c)(0x52E22986)(-c --cpu Cortex-M0 -D__MICROLIB -g -O3 --apcs=interwork -I .\User -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc" -I .\LibUSB -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include"-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Device\Include-D__UVISION_VERSION="538" -DSTM32F042x6 -DUSE_STDPERIPH_DRIVER -DSTM32F042 -DINTERNAL_PULLUP -DUSB_CLOCK_SOURCE_CRS-o .\obj\stm32f0xx_gpio.o --omf_browse .\obj\stm32f0xx_gpio.crf --depend .\obj\stm32f0xx_gpio.d)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_gpio.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x52E22984)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cm0.h)(0x52DE2F98)
+I (C:\Keil_v5\ARM\v6\include\stdint.h)(0x5E8E4AD2)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmInstr.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmFunc.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x52E22984)
+I (.\User\stm32f0xx_conf.h)(0x53CF513E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_adc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_can.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_cec.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crs.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_comp.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dac.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dbgmcu.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dma.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_exti.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_flash.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_syscfg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_i2c.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_iwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_pwr.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rcc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rtc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_spi.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_tim.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_usart.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_wwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_misc.h)(0x52E22986)
+F (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\src\stm32f0xx_rcc.c)(0x52E22986)(-c --cpu Cortex-M0 -D__MICROLIB -g -O3 --apcs=interwork -I .\User -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc" -I .\LibUSB -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include"-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Device\Include-D__UVISION_VERSION="538" -DSTM32F042x6 -DUSE_STDPERIPH_DRIVER -DSTM32F042 -DINTERNAL_PULLUP -DUSB_CLOCK_SOURCE_CRS-o .\obj\stm32f0xx_rcc.o --omf_browse .\obj\stm32f0xx_rcc.crf --depend .\obj\stm32f0xx_rcc.d)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rcc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x52E22984)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cm0.h)(0x52DE2F98)
+I (C:\Keil_v5\ARM\v6\include\stdint.h)(0x5E8E4AD2)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmInstr.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmFunc.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x52E22984)
+I (.\User\stm32f0xx_conf.h)(0x53CF513E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_adc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_can.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_cec.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crs.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_comp.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dac.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dbgmcu.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dma.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_exti.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_flash.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_gpio.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_syscfg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_i2c.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_iwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_pwr.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rtc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_spi.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_tim.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_usart.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_wwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_misc.h)(0x52E22986)
+F (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\src\stm32f0xx_syscfg.c)(0x52E22986)(-c --cpu Cortex-M0 -D__MICROLIB -g -O3 --apcs=interwork -I .\User -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc" -I .\LibUSB -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include"-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Device\Include-D__UVISION_VERSION="538" -DSTM32F042x6 -DUSE_STDPERIPH_DRIVER -DSTM32F042 -DINTERNAL_PULLUP -DUSB_CLOCK_SOURCE_CRS-o .\obj\stm32f0xx_syscfg.o --omf_browse .\obj\stm32f0xx_syscfg.crf --depend .\obj\stm32f0xx_syscfg.d)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_syscfg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x52E22984)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cm0.h)(0x52DE2F98)
+I (C:\Keil_v5\ARM\v6\include\stdint.h)(0x5E8E4AD2)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmInstr.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmFunc.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x52E22984)
+I (.\User\stm32f0xx_conf.h)(0x53CF513E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_adc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_can.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_cec.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crs.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_comp.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dac.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dbgmcu.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dma.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_exti.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_flash.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_gpio.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_i2c.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_iwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_pwr.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rcc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rtc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_spi.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_tim.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_usart.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_wwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_misc.h)(0x52E22986)
+F (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\src\stm32f0xx_tim.c)(0x52E22986)(-c --cpu Cortex-M0 -D__MICROLIB -g -O3 --apcs=interwork -I .\User -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc" -I .\LibUSB -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include"-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Device\Include-D__UVISION_VERSION="538" -DSTM32F042x6 -DUSE_STDPERIPH_DRIVER -DSTM32F042 -DINTERNAL_PULLUP -DUSB_CLOCK_SOURCE_CRS-o .\obj\stm32f0xx_tim.o --omf_browse .\obj\stm32f0xx_tim.crf --depend .\obj\stm32f0xx_tim.d)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_tim.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x52E22984)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cm0.h)(0x52DE2F98)
+I (C:\Keil_v5\ARM\v6\include\stdint.h)(0x5E8E4AD2)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmInstr.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmFunc.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x52E22984)
+I (.\User\stm32f0xx_conf.h)(0x53CF513E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_adc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_can.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_cec.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crs.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_comp.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dac.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dbgmcu.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dma.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_exti.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_flash.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_gpio.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_syscfg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_i2c.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_iwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_pwr.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rcc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rtc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_spi.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_usart.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_wwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_misc.h)(0x52E22986)
+F (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\src\stm32f0xx_misc.c)(0x52E22986)(-c --cpu Cortex-M0 -D__MICROLIB -g -O3 --apcs=interwork -I .\User -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc" -I .\LibUSB -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include"-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Device\Include-D__UVISION_VERSION="538" -DSTM32F042x6 -DUSE_STDPERIPH_DRIVER -DSTM32F042 -DINTERNAL_PULLUP -DUSB_CLOCK_SOURCE_CRS-o .\obj\stm32f0xx_misc.o --omf_browse .\obj\stm32f0xx_misc.crf --depend .\obj\stm32f0xx_misc.d)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_misc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x52E22984)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cm0.h)(0x52DE2F98)
+I (C:\Keil_v5\ARM\v6\include\stdint.h)(0x5E8E4AD2)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmInstr.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmFunc.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x52E22984)
+I (.\User\stm32f0xx_conf.h)(0x53CF513E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_adc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_can.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_cec.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crs.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_comp.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dac.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dbgmcu.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dma.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_exti.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_flash.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_gpio.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_syscfg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_i2c.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_iwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_pwr.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rcc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rtc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_spi.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_tim.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_usart.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_wwdg.h)(0x52E22986)
+F (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\src\usb_core.c)(0x52EB4B90)(-c --cpu Cortex-M0 -D__MICROLIB -g -O3 --apcs=interwork -I .\User -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc" -I .\LibUSB -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include"-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Device\Include-D__UVISION_VERSION="538" -DSTM32F042x6 -DUSE_STDPERIPH_DRIVER -DSTM32F042 -DINTERNAL_PULLUP -DUSB_CLOCK_SOURCE_CRS-o .\obj\usb_core.o --omf_browse .\obj\usb_core.crf --depend .\obj\usb_core.d)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_core.h)(0x52EB4B90)
+I (.\User\usb_conf.h)(0x552D0F28)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x52E22984)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cm0.h)(0x52DE2F98)
+I (C:\Keil_v5\ARM\v6\include\stdint.h)(0x5E8E4AD2)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmInstr.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmFunc.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x52E22984)
+I (.\User\stm32f0xx_conf.h)(0x53CF513E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_adc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_can.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_cec.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crs.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_comp.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dac.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dbgmcu.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dma.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_exti.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_flash.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_gpio.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_syscfg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_i2c.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_iwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_pwr.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rcc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rtc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_spi.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_tim.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_usart.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_wwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_misc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_regs.h)(0x52EA28FC)
+F (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\src\usb_dcd.c)(0x52EB4B90)(-c --cpu Cortex-M0 -D__MICROLIB -g -O3 --apcs=interwork -I .\User -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc" -I .\LibUSB -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include"-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Device\Include-D__UVISION_VERSION="538" -DSTM32F042x6 -DUSE_STDPERIPH_DRIVER -DSTM32F042 -DINTERNAL_PULLUP -DUSB_CLOCK_SOURCE_CRS-o .\obj\usb_dcd.o --omf_browse .\obj\usb_dcd.crf --depend .\obj\usb_dcd.d)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_dcd.h)(0x52EB4B90)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_core.h)(0x52EB4B90)
+I (.\User\usb_conf.h)(0x552D0F28)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x52E22984)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cm0.h)(0x52DE2F98)
+I (C:\Keil_v5\ARM\v6\include\stdint.h)(0x5E8E4AD2)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmInstr.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmFunc.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x52E22984)
+I (.\User\stm32f0xx_conf.h)(0x53CF513E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_adc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_can.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_cec.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crs.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_comp.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dac.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dbgmcu.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dma.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_exti.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_flash.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_gpio.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_syscfg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_i2c.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_iwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_pwr.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rcc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rtc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_spi.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_tim.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_usart.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_wwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_misc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_regs.h)(0x52EA28FC)
+F (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\src\usb_dcd_int.c)(0x52EB4B90)(-c --cpu Cortex-M0 -D__MICROLIB -g -O3 --apcs=interwork -I .\User -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc" -I .\LibUSB -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include"-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Device\Include-D__UVISION_VERSION="538" -DSTM32F042x6 -DUSE_STDPERIPH_DRIVER -DSTM32F042 -DINTERNAL_PULLUP -DUSB_CLOCK_SOURCE_CRS-o .\obj\usb_dcd_int.o --omf_browse .\obj\usb_dcd_int.crf --depend .\obj\usb_dcd_int.d)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_dcd_int.h)(0x52EB4B90)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_pwr.h)(0x52EB4B98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_core.h)(0x52EA295E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_dcd.h)(0x52EB4B90)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_core.h)(0x52EB4B90)
+I (.\User\usb_conf.h)(0x552D0F28)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x52E22984)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cm0.h)(0x52DE2F98)
+I (C:\Keil_v5\ARM\v6\include\stdint.h)(0x5E8E4AD2)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmInstr.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmFunc.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x52E22984)
+I (.\User\stm32f0xx_conf.h)(0x53CF513E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_adc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_can.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_cec.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crs.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_comp.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dac.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dbgmcu.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dma.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_exti.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_flash.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_gpio.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_syscfg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_i2c.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_iwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_pwr.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rcc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rtc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_spi.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_tim.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_usart.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_wwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_misc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_regs.h)(0x52EA28FC)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_bsp.h)(0x52EA28FA)
+F (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\src\usbd_core.c)(0x52EA295E)(-c --cpu Cortex-M0 -D__MICROLIB -g -O3 --apcs=interwork -I .\User -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc" -I .\LibUSB -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include"-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Device\Include-D__UVISION_VERSION="538" -DSTM32F042x6 -DUSE_STDPERIPH_DRIVER -DSTM32F042 -DINTERNAL_PULLUP -DUSB_CLOCK_SOURCE_CRS-o .\obj\usbd_core.o --omf_browse .\obj\usbd_core.crf --depend .\obj\usbd_core.d)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_core.h)(0x52EA295E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_dcd.h)(0x52EB4B90)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_core.h)(0x52EB4B90)
+I (.\User\usb_conf.h)(0x552D0F28)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x52E22984)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cm0.h)(0x52DE2F98)
+I (C:\Keil_v5\ARM\v6\include\stdint.h)(0x5E8E4AD2)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmInstr.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmFunc.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x52E22984)
+I (.\User\stm32f0xx_conf.h)(0x53CF513E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_adc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_can.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_cec.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crs.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_comp.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dac.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dbgmcu.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dma.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_exti.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_flash.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_gpio.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_syscfg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_i2c.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_iwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_pwr.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rcc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rtc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_spi.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_tim.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_usart.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_wwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_misc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_regs.h)(0x52EA28FC)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_dcd_int.h)(0x52EB4B90)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_pwr.h)(0x52EB4B98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_bsp.h)(0x52EA28FA)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_req.h)(0x52EA295E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_ioreq.h)(0x52EA295E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_def.h)(0x52EB4B98)
+I (.\User\usbd_conf.h)(0x52EA23DC)
+I (C:\Keil_v5\ARM\v6\include\stdbool.h)(0x5E8E4AD2)
+I (.\User\usbd_desc.h)(0x6400BA9E)
+F (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\src\usbd_ioreq.c)(0x52EA295E)(-c --cpu Cortex-M0 -D__MICROLIB -g -O3 --apcs=interwork -I .\User -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc" -I .\LibUSB -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include"-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Device\Include-D__UVISION_VERSION="538" -DSTM32F042x6 -DUSE_STDPERIPH_DRIVER -DSTM32F042 -DINTERNAL_PULLUP -DUSB_CLOCK_SOURCE_CRS-o .\obj\usbd_ioreq.o --omf_browse .\obj\usbd_ioreq.crf --depend .\obj\usbd_ioreq.d)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_ioreq.h)(0x52EA295E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_def.h)(0x52EB4B98)
+I (.\User\usbd_conf.h)(0x52EA23DC)
+I (.\User\usb_conf.h)(0x552D0F28)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x52E22984)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cm0.h)(0x52DE2F98)
+I (C:\Keil_v5\ARM\v6\include\stdint.h)(0x5E8E4AD2)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmInstr.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmFunc.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x52E22984)
+I (.\User\stm32f0xx_conf.h)(0x53CF513E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_adc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_can.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_cec.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crs.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_comp.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dac.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dbgmcu.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dma.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_exti.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_flash.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_gpio.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_syscfg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_i2c.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_iwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_pwr.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rcc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rtc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_spi.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_tim.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_usart.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_wwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_misc.h)(0x52E22986)
+I (C:\Keil_v5\ARM\v6\include\stdbool.h)(0x5E8E4AD2)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_core.h)(0x52EA295E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_dcd.h)(0x52EB4B90)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_core.h)(0x52EB4B90)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_regs.h)(0x52EA28FC)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_dcd_int.h)(0x52EB4B90)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_pwr.h)(0x52EB4B98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_bsp.h)(0x52EA28FA)
+F (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\src\usbd_req.c)(0x52EB4B98)(-c --cpu Cortex-M0 -D__MICROLIB -g -O3 --apcs=interwork -I .\User -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc" -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc" -I .\LibUSB -I ".\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include"-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Users\conta\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Device\Include-D__UVISION_VERSION="538" -DSTM32F042x6 -DUSE_STDPERIPH_DRIVER -DSTM32F042 -DINTERNAL_PULLUP -DUSB_CLOCK_SOURCE_CRS-o .\obj\usbd_req.o --omf_browse .\obj\usbd_req.crf --depend .\obj\usbd_req.d)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_req.h)(0x52EA295E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_ioreq.h)(0x52EA295E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_def.h)(0x52EB4B98)
+I (.\User\usbd_conf.h)(0x52EA23DC)
+I (.\User\usb_conf.h)(0x552D0F28)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x52E22984)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cm0.h)(0x52DE2F98)
+I (C:\Keil_v5\ARM\v6\include\stdint.h)(0x5E8E4AD2)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmInstr.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include\core_cmFunc.h)(0x52DE2F98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x52E22984)
+I (.\User\stm32f0xx_conf.h)(0x53CF513E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_adc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_can.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_cec.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_crs.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_comp.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dac.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dbgmcu.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_dma.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_exti.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_flash.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_gpio.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_syscfg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_i2c.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_iwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_pwr.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rcc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_rtc.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_spi.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_tim.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_usart.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_wwdg.h)(0x52E22986)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc\stm32f0xx_misc.h)(0x52E22986)
+I (C:\Keil_v5\ARM\v6\include\stdbool.h)(0x5E8E4AD2)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_core.h)(0x52EA295E)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_dcd.h)(0x52EB4B90)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_core.h)(0x52EB4B90)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_regs.h)(0x52EA28FC)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_dcd_int.h)(0x52EB4B90)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc\usbd_pwr.h)(0x52EB4B98)
+I (.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc\usb_bsp.h)(0x52EA28FA)
+I (.\User\usbd_desc.h)(0x6400BA9E)
