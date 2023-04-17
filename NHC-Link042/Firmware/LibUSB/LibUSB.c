@@ -312,7 +312,6 @@ uint8_t u8Buff[4 * 1024];
 #define WCH_SDI_WRITE 0xA3
 #define WCH_SDI_READ_MEM 0xA4
 #define WCH_SDI_WRITE_MEM 0xA5
-#define DELAY_US_CMD	0xA6
 
 /**
   * @brief  USBD_HID_DataOut
@@ -356,8 +355,6 @@ void u32tou8(uint32_t u32In, uint8_t *p)
     p[3] = u32In;
 }
 
-void NHC_Delay_Us(uint16_t u16Delay);
-
 static uint8_t  USBD_HID_DataOut (void  *pdev,
                               uint8_t epnum)
 {
@@ -365,8 +362,8 @@ static uint8_t  USBD_HID_DataOut (void  *pdev,
     //uint32_t u32Len;
     uint32_t u32Tmp;
     //uint32_t *pu32;
-    uint32_t i;
-    uint32_t n;
+    //uint32_t i;
+    //uint32_t n;
     //uint8_t *p;
 	
 	busy_on;
@@ -398,26 +395,6 @@ static uint8_t  USBD_HID_DataOut (void  *pdev,
 			u32Address = u8tou32(rxBuff + 1);
 			u32Tmp = u8tou32(rxBuff + 5);
 			NHC_WchSdi_WriteMem(u32Address, u32Tmp, rxBuff[9]);
-			break;
-		case DELAY_US_CMD:
-			u32Tmp = u8tou32(rxBuff + 1);
-			if (u32Tmp < 50000)
-			{
-				NHC_Delay_Us(u32Tmp);
-			}
-			else
-			{
-				n = u32Tmp / 50000;
-				for (i = 0; i < n; ++i)
-				{
-					NHC_Delay_Us(50000);
-				}
-				n = u32Tmp % 50000;
-				if (n)
-				{
-					NHC_Delay_Us(n);
-				}
-			}
 			break;
 	}
 	
