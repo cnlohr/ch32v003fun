@@ -48,6 +48,8 @@ On WSL or Debian based OSes `apt-get install build-essential libnewlib-dev gcc-r
 
 On Windows, download and install (to system) this copy of GCC10. https://gnutoolchains.com/risc-v/
 
+On macOS install the RISC-V toolchain with homebrew following the instructions at https://github.com/riscv-software-src/homebrew-riscv
+
 You can use the pre-compiled minichlink or 
 
 ## Running

@@ -720,7 +720,7 @@ static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t dat
 
 	iss->currentstateval += 4;
 
-	return 0;
+	return ret;
 }
 
 

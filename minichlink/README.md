@@ -8,6 +8,8 @@ On Windows, if you need to you can install the WinUSB driver over the WCH interf
 
 The exe here is about 18kB and contains everything except for the libusb driver.  In Linux you need `libusb-1.0-dev`.
 
+On macOS compile using `make -f Makefile.macos`, you need libusb installed which can be done with homebrew `brew install libusb`.
+
 ## Usage
 
 ```
