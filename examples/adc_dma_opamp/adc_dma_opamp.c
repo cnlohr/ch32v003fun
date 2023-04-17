@@ -51,9 +51,9 @@ int main()
 	printf("looping...\n\r");
 	while(1)
 	{
-		GPIOC->BSHR = (1<<1);	 // Turn on GPIOs
+		GPIOC->BSHR = 1<<1;	 // Turn on GPIOs
 		Delay_Ms( 100 );
-		GPIOC->BSHR = (1<<1+16); // Turn off GPIODs
+		GPIOC->BSHR = 1<<(1+16); // Turn off GPIODs
 		Delay_Ms( 100 );
 		printf( "%4d %4d ", adc_buffer[0], adc_buffer[1]);
 		printf( "%4d %4d\n\r", adc_buffer[2], adc_buffer[3]);

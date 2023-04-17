@@ -4,7 +4,7 @@ PREFIX:=riscv64-unknown-elf
 CH32V003FUN:=../../ch32v003fun
 MINICHLINK:=../../minichlink
 
-CFLAGS:= \
+CFLAGS+= \
 	-g -Os -flto -ffunction-sections \
 	-static-libgcc \
 	-march=rv32ec \
@@ -14,11 +14,11 @@ CFLAGS:= \
 	-nostdlib \
 	-I. -Wall
 
-LDFLAGS:=-T $(CH32V003FUN)/ch32v003fun.ld -Wl,--gc-sections -L../../misc -lgcc
+LDFLAGS+=-T $(CH32V003FUN)/ch32v003fun.ld -Wl,--gc-sections -L../../misc -lgcc
 
 SYSTEM_C:=$(CH32V003FUN)/ch32v003fun.c
 
-$(TARGET).elf : $(SYSTEM_C) $(TARGET).c
+$(TARGET).elf : $(SYSTEM_C) $(TARGET).c $(ADDITIONAL_C_FILES)
 	$(PREFIX)-gcc -o $@ $^ $(CFLAGS) $(LDFLAGS)
 
 $(TARGET).bin : $(TARGET).elf
