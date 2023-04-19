@@ -765,7 +765,7 @@ void handle_reset()
 	la gp, __global_pointer$\n\
 .option pop\n\
 	la sp, _eusrstack\n"
-#if __GNUC__ > 9
+#if __GNUC__ > 10
 ".option arch, +zicsr\n"
 #endif
 	// Setup the interrupt vector, processor status and INTSYSCR.
