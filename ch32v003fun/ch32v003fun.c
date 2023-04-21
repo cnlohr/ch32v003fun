@@ -897,9 +897,12 @@ int putchar(int c)
 	return 1;
 }
 #else
-// For debug writing to the debug interface.
-#define DMDATA0 ((volatile uint32_t*)0xe00000f4)
-#define DMDATA1 ((volatile uint32_t*)0xe00000f8)
+
+//           MSB .... LSB
+// DMDATA0: char3 char2 char1 [status word]
+// where [status word] is:
+//   b7 = is a "printf" waiting?
+//   b0..b3 = # of bytes in printf (+4).  (4 or higher indicates a print of some kind)
 
 int _write(int fd, const char *buf, int size)
 {
