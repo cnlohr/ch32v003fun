@@ -14,18 +14,22 @@ The exe here is about 12kB and contains everything except for the libusb driver.
 Usage: minichlink [args]
  single-letter args may be combined, i.e. -3r
  multi-part args cannot.
-	-3 Enable 3.3V
-	-5 Enable 5V
-	-t Disable 3.3V
-	-f Disable 5V
-	-r Release from reest
-	-R Place into Reset
-	-D Configure NRST as GPIO **WARNING** If you do this and you reconfig
-		the SWIO pin (PD1) on boot, your part can never again be programmed!
-	-d Configure NRST as NRST
-	-w [binary image to write]
-	-s [debug register] [value]
-	-g [debug register]
-	-o [memory address, decimal or 0x, try 0x08000000] [size, decimal or 0x, try 16384] [output binary image]
+ -3 Enable 3.3V
+ -5 Enable 5V
+ -t Disable 3.3V
+ -f Disable 5V
+ -u Clear all code flash - by power off (also can unbrick)
+ -b Reboot out of Halt
+ -e Resume from halt
+ -a Place into Halt
+ -D Configure NRST as GPIO
+ -d Configure NRST as NRST
+ -s [debug register] [value]
+ -g [debug register]
+ -w [binary image to write] [address, decimal or 0x, try0x08000000]
+ -r [output binary image] [memory address, decimal or 0x, try 0x08000000] [size, decimal or 0x, try 16384]
+   Note: for memory addresses, you can use 'flash' 'launcher' 'bootloader' 'option' 'ram' and say "ram+0x10" for instance
+   For filename, you can use - for raw or + for hex.
+ -T is a terminal. This MUST be the last argument.
 ```
  

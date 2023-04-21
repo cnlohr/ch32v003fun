@@ -46,6 +46,9 @@ int main( int argc, char ** argv )
 
 	int skip_startup = 
 		(argc > 1 && argv[1][0] == '-' && argv[1][1] == 'u' ) |
+		(argc > 1 && argv[1][0] == '-' && argv[1][1] == 'h' ) |
+		(argc > 1 && argv[1][0] == '-' && argv[1][1] == 't' ) |
+		(argc > 1 && argv[1][0] == '-' && argv[1][1] == 'f' ) |
 		(argc > 1 && argv[1][0] == '-' && argv[1][1] == 'X' );
 
 	if( !skip_startup && MCF.SetupInterface )
@@ -83,6 +86,7 @@ keep_going:
 		{
 			default:
 				fprintf( stderr, "Error: Unknown command %c\n", argchar[1] );
+			case 'h':
 				goto help;
 			case '3':
 				if( MCF.Control3v3 )
@@ -136,7 +140,7 @@ keep_going:
 				if( !MCF.Erase || MCF.Erase( dev, 0, 0, 1 ) )
 					goto unimplemented;
 				break;
-			case 'h':
+			case 'a':
 				if( !MCF.HaltMode || MCF.HaltMode( dev, 0 ) )
 					goto unimplemented;
 				break;
@@ -466,7 +470,7 @@ help:
 	fprintf( stderr, " -u Clear all code flash - by power off (also can unbrick)\n" );
 	fprintf( stderr, " -b Reboot out of Halt\n" );
 	fprintf( stderr, " -e Resume from halt\n" );
-	fprintf( stderr, " -h Place into Halt\n" );
+	fprintf( stderr, " -a Place into Halt\n" );
 	fprintf( stderr, " -D Configure NRST as GPIO\n" );
 	fprintf( stderr, " -d Configure NRST as NRST\n" );
 	fprintf( stderr, " -s [debug register] [value]\n" );
@@ -1158,7 +1162,8 @@ int DefaultUnbrick( void * dev )
 	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 );
 
 //  Many times we would clear the halt request, but in this case, we want to just leave it here, to prevent it from booting.
-//	MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
+//  TODO: Experiment and see if this is needed/wanted in cases.  NOTE: If you don't clear halt request, progarmmers can get stuck.
+	MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
 
 	MCF.FlushLLCommands( dev );
 
