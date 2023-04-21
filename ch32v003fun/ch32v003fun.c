@@ -820,6 +820,14 @@ void SystemInit48HSI( void )
 	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x08);                // Wait till PLL is used as system clock source
 }
 
+void SystemInit24HSI( void )
+{
+	// Values lifted from the EVT.  There is little to no documentation on what this does.
+	RCC->CFGR0 = RCC_HPRE_DIV1;                // PLLCLK = HCLK = SYSCLK = APB1
+	RCC->CTLR  = RCC_HSION | ((HSITRIM) << 3); // Use HSI, Only.
+	FLASH->ACTLR = FLASH_ACTLR_LATENCY_0;      // 1 Cycle Latency
+	RCC->INTR  = 0x009F0000;                   // Clear PLL, CSSC, HSE, HSI and LSI ready flags.
+}
 
 void SystemInitHSE( int HSEBYP )
 {

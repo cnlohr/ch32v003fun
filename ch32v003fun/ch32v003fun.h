@@ -4836,8 +4836,10 @@ void DelaySysTick( uint32_t n );
 int main() __attribute__((used));
 void SystemInit(void) __attribute__((used));
 
-// Useful functions
+// Initialization functions
 void SystemInit48HSI( void );
+void SystemInit24HSI( void );  // No PLL, just raw internal RC oscillator.
+
 // NOTE: HSEBYP is ORed with RCC_CTLR.  Set it to RCC_HSEBYP or 0.
 // If you are using an external oscillator, set it to RCC_HSEBYP.  Otherwise, if you are using a crystal, it must be 0.
 void SystemInitHSE( int HSEBYP );
