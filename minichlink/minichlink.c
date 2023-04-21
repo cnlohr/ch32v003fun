@@ -1088,7 +1088,12 @@ int DefaultUnbrick( void * dev )
 	// Make sure we are in halt.
 	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
 	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
-	MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
+	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // No, really make sure.
+	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 );
+
+//  Many times we would clear the halt request, but in this case, we want to just leave it here, to prevent it from booting.
+//	MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
+
 	MCF.FlushLLCommands( dev );
 
 	if( timeout == max_timeout ) 
