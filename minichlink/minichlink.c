@@ -175,6 +175,70 @@ keep_going:
 					}
 				} while( 1 );
 			}
+			case 's':
+			{
+				iarg+=2;
+				if( iarg >= argc )
+				{
+					fprintf( stderr, "Debug set commands require 2 parameters, a register and a value.\n" );
+					goto unimplemented;
+				}
+
+				uint32_t datareg = SimpleReadNumberInt( argv[iarg-1], DMDATA0 );
+				uint32_t value = SimpleReadNumberInt( argv[iarg], 0 ); 
+
+				if( MCF.WriteReg32 && MCF.FlushLLCommands )
+				{
+					MCF.FlushLLCommands( dev );	
+					MCF.WriteReg32( dev, datareg, value );
+					MCF.FlushLLCommands( dev );
+				}
+				else
+					goto unimplemented;
+				break;
+			}
+			case 'g':
+			{
+				iarg+=1;
+				if( iarg >= argc )
+				{
+					fprintf( stderr, "Debug get commands require 1 parameter, a register.\n" );
+					fprintf( stderr, "One of the following:\n"
+						"	DMDATA0        0x04\n"
+						"	DMDATA1        0x05\n"
+						"	DMCONTROL      0x10\n"
+						"	DMSTATUS       0x11\n"
+						"	DMHARTINFO     0x12\n"
+						"	DMABSTRACTCS   0x16\n"
+						"	DMCOMMAND      0x17\n"
+						"	DMABSTRACTAUTO 0x18\n"
+						"	DMPROGBUF0     0x20\n"
+						"	DMPROGBUF1     0x21\n"
+						"	DMPROGBUF2     0x22\n"
+						"	DMPROGBUF3     0x23\n"
+						"	DMPROGBUF4     0x24\n"
+						"	DMPROGBUF5     0x25\n"
+						"	DMPROGBUF6     0x26\n"
+						"	DMPROGBUF7     0x27\n"
+						"	DMCPBR       0x7C\n"
+						"	DMCFGR       0x7D\n"
+						"	DMSHDWCFGR   0x7E\n" );
+
+					goto unimplemented;
+				}
+
+				uint32_t datareg = SimpleReadNumberInt( argv[iarg-1], DMDATA0 );
+
+				if( MCF.WriteReg32 && MCF.FlushLLCommands )
+				{
+					uint32_t value;
+					int ret = MCF.ReadReg32( dev, datareg, &value );
+					printf( "REGISTER %02x: %08x, %d\n", datareg, value, ret );
+				}
+				else
+					goto unimplemented;
+				break;
+			}
 			case 'p':
 			{
 				if( MCF.PrintChipInfo )
@@ -405,6 +469,8 @@ help:
 	fprintf( stderr, " -h Place into Halt\n" );
 	fprintf( stderr, " -D Configure NRST as GPIO\n" );
 	fprintf( stderr, " -d Configure NRST as NRST\n" );
+	fprintf( stderr, " -s [debug register] [value]\n" );
+	fprintf( stderr, " -g [debug register]\n" );
 //	fprintf( stderr, " -P Enable Read Protection (UNTESTED)\n" );
 //	fprintf( stderr, " -p Disable Read Protection (UNTESTED)\n" );
 	fprintf( stderr, " -w [binary image to write] [address, decimal or 0x, try0x08000000]\n" );

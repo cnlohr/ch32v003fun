@@ -24,6 +24,8 @@ Usage: minichlink [args]
 		the SWIO pin (PD1) on boot, your part can never again be programmed!
 	-d Configure NRST as NRST
 	-w [binary image to write]
+	-s [debug register] [value]
+	-g [debug register]
 	-o [memory address, decimal or 0x, try 0x08000000] [size, decimal or 0x, try 16384] [output binary image]
 ```
  
