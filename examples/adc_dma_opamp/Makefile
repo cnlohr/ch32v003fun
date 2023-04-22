@@ -1,5 +1,7 @@
 TARGET:=adc_dma_opamp
 
+CFLAGS+=-DSTDOUT_UART
+
 include ../../ch32v003fun/ch32v003fun.mk
 
 all : flash

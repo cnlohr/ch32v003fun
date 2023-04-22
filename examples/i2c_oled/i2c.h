@@ -89,13 +89,13 @@ void i2c_init(void)
 	RCC->APB2PCENR |= RCC_APB2Periph_GPIOC;
 	RCC->APB1PCENR |= RCC_APB1Periph_I2C1;
 	
-	// PC1/PC2 are SDA/SCL, 50MHz Output PP CNF = 11: Mux OD, MODE = 11: Out 50MHz
-	GPIOC->CFGLR &= ~(GPIO_CFGLR_MODE1 | GPIO_CFGLR_CNF1 |
-						GPIO_CFGLR_MODE1 | GPIO_CFGLR_CNF1);
-	GPIOC->CFGLR |= GPIO_CFGLR_CNF1_1 | GPIO_CFGLR_CNF1_0 |
-					GPIO_CFGLR_MODE1_1 | GPIO_CFGLR_MODE1_0 |
-					GPIO_CFGLR_CNF2_1 | GPIO_CFGLR_CNF2_0 |
-					GPIO_CFGLR_MODE2_1 | GPIO_CFGLR_MODE2_0;
+	// PC1 is SDA, 10MHz Output, alt func, open-drain
+	GPIOC->CFGLR &= ~(0xf<<(4*1));
+	GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_OD_AF)<<(4*1);
+	
+	// PC2 is SCL, 10MHz Output, alt func, open-drain
+	GPIOC->CFGLR &= ~(0xf<<(4*2));
+	GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_OD_AF)<<(4*2);
 	
 #ifdef IRQ_DIAG
 	// GPIO diags on PC3/PC4
