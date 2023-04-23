@@ -90,7 +90,7 @@ int main()
  *            OB_RST_EN_DT128ms - Reset IO enable (PD7) and  Ignore delay time 128ms
 */
 	uint16_t OB_STOP = OB_STOP_NoRST;
-	uint16_t OB_IWDG = OB_IWDG_HW;
+	uint16_t OB_IWDG = OB_IWDG_SW;
 	uint16_t OB_STDBY = OB_STDBY_NoRST;
 	uint16_t OB_RST = OB_RST_EN_DT1ms;
 
