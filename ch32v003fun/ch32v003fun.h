@@ -4819,8 +4819,8 @@ static inline uint32_t __get_SP(void)
 extern "C" {
 #endif
 
-#define DELAY_US_TIME (SYSTEM_CORE_CLOCK / 8000000)
-#define DELAY_MS_TIME (SYSTEM_CORE_CLOCK / 8000)
+#define DELAY_US_TIME ((SYSTEM_CORE_CLOCK)/8000000)
+#define DELAY_MS_TIME ((SYSTEM_CORE_CLOCK)/8000)
 
 #if defined(__riscv) || defined(__riscv__)
 

@@ -967,7 +967,7 @@ void WaitForDebuggerToAttach()
 
 void DelaySysTick( uint32_t n )
 {
-	int32_t targend = SysTick->CNT + n;
-	while( (int32_t)( SysTick->CNT - targend ) < 0 );
+	uint32_t targend = SysTick->CNT + n;
+	while( ((int32_t)( SysTick->CNT - targend )) < 0 );
 }
 
