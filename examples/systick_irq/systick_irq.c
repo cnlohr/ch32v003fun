@@ -25,6 +25,9 @@ volatile uint32_t systick_cnt;
  */
 void systick_init(void)
 {
+	/* disable default SysTick behavior */
+	SysTick->CTLR = 0;
+	
 	/* enable the SysTick IRQ */
 	NVIC_EnableIRQ(SysTicK_IRQn);
 	

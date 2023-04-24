@@ -4,11 +4,11 @@ interrupts for timing. Many bare-metal and RTOS based embedded applications will
 use the Systick IRQ for timing, periodic housekeeping and task arbitration so
 knowing how to set that up is useful.
 
-Note that this example is *NOT* compatible with the Delay_Ms() function that's
-part of the ch32v003fun library - that function uses the Systick counter for
-doing busy-wait delays and will interfere with its use in generating predictable
-IRQs. Do not use the built-in Delay_Ms() and related functions when using Systick
-for IRQs.
+Note that this example is *NOT* compatible with the Delay_*() functions that are
+part of the ch32v003fun library - those functions use the Systick counter for
+doing busy-wait delays and assume that the CNT register rolls over at 32-bit
+maximum. Do not use the built-in Delay_Ms() and related functions when using
+Systick for IRQs.
 
 Note also the use of the  `__attribute__((interrupt))` syntax in declaring the
 IRQ handler. Some of the IRQ examples from the WCH HAL library have slightly
