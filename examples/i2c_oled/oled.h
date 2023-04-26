@@ -14,6 +14,35 @@
 // OLED I2C address
 #define OLED_ADDR 0x3c
 
+// comfortable I2C packet size for this OLED
+#define OLED_PSZ 32
+
+// what type of OLED - uncomment just one
+//#define OLED_64X32
+#define OLED_128X32
+//#define OLED_128X64
+
+// characteristics of each type
+#ifdef OLED_64X32
+#define OLED_W 64
+#define OLED_H 32
+#define OLED_FULLUSE
+#define OLED_OFFSET 32
+#endif
+
+#ifdef OLED_128X32
+#define OLED_W 128
+#define OLED_H 32
+#define OLED_OFFSET 0
+#endif
+
+#ifdef OLED_128X64
+#define OLED_W 128
+#define OLED_H 64
+#define OLED_FULLUSE
+#define OLED_OFFSET 0
+#endif
+
 /*
  * send OLED command byte
  */
@@ -81,7 +110,11 @@ const uint8_t oled_init_array[] =
     SSD1306_SETDISPLAYCLOCKDIV,            // 0xD5
     0x80,                                  // the suggested ratio 0x80
     SSD1306_SETMULTIPLEX,                  // 0xA8
-    0x3F,                                  // different for tiny
+#ifdef OLED_64X32
+	0x1F,                                  // for 64-wide displays
+#else
+	0x3F,                                  // for 128-wide displays
+#endif
     SSD1306_SETDISPLAYOFFSET,              // 0xD3
     0x00,                                  // no offset
 	SSD1306_SETSTARTLINE | 0x0,            // 0x40 | line
@@ -92,7 +125,7 @@ const uint8_t oled_init_array[] =
     SSD1306_SEGREMAP | 0x1,                // 0xA0 | bit
     SSD1306_COMSCANDEC,
     SSD1306_SETCOMPINS,                    // 0xDA
-    0x12,
+	0x12,                                  //
     SSD1306_SETCONTRAST,                   // 0x81
 	0x8F,
     SSD1306_SETPRECHARGE,                  // 0xd9
@@ -104,11 +137,9 @@ const uint8_t oled_init_array[] =
 	SSD1306_DISPLAYON,	                   // 0xAF --turn on oled panel
 	SSD1306_TERMINATE_CMDS                 // 0xFF --fake command to mark end
 };
-#define OLED_W 128
-#define OLED_H 32
 
 // the display buffer
-uint8_t oled_buffer[128*32/8];
+uint8_t oled_buffer[OLED_W*OLED_H/8];
 
 /*
  * set the buffer to a color
@@ -118,6 +149,7 @@ void oled_setbuf(uint8_t color)
 	memset(oled_buffer, color ? 0xFF : 0x00, sizeof(oled_buffer));
 }
 
+#ifndef OLED_FULLUSE
 /*
  * expansion array for OLED with every other row unused
  */
@@ -128,24 +160,24 @@ const uint8_t expand[16] =
 	0x80,0x82,0x88,0x8a,
 	0xa0,0xa2,0xa8,0xaa,
 };
+#endif
 
 /*
  * Send the frame buffer
  */
-#define OLED_PSZ 32		// comfortable I2C packet size for this OLED
 void oled_refresh(void)
 {
 	uint16_t i;
 	
 	oled_cmd(SSD1306_COLUMNADDR);
-	oled_cmd(0);   // Column start address (0 = reset)
-	oled_cmd(OLED_W-1); // Column end address (127 = reset)
+	oled_cmd(OLED_OFFSET);   // Column start address (0 = reset)
+	oled_cmd(OLED_OFFSET+OLED_W-1); // Column end address (127 = reset)
 	
 	oled_cmd(SSD1306_PAGEADDR);
 	oled_cmd(0); // Page start address (0 = reset)
 	oled_cmd(7); // Page end address
 
-#if 0
+#ifdef OLED_FULLUSE
 	/* for fully used rows just plow thru everything */
     for(i=0;i<sizeof(oled_buffer);i+=OLED_PSZ)
 	{
@@ -489,7 +521,8 @@ void oled_drawstr(uint8_t x, uint8_t y, char *str, uint8_t color)
 typedef enum {
     fontsize_8x8 = 1,
     fontsize_16x16 = 2,
-    fontsize_32x32 = 4
+    fontsize_32x32 = 4,
+	fontsize_64x64 = 8,
 } font_size_t;
 
 /*
