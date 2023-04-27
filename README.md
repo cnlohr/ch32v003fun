@@ -46,32 +46,46 @@ You can just try out the `debugprintf` project, or call `SetupDebugPrintf();` an
 
 On WSL or Debian based OSes `apt-get install build-essential libnewlib-dev gcc-riscv64-unknown-elf libusb-1.0-0-dev libudev-dev`
 
+On Arch/Manjaro, `sudo pacman -S base-devel libusb`, then from AUR install `riscv64-unknown-elf-gcc, riscv64-unknown-elf-binutils, riscv64-unknown-elf-newlib` (will compile for a long time).
+
 On Windows, download and install (to system) this copy of GCC10. https://gnutoolchains.com/risc-v/
 
 On macOS install the RISC-V toolchain with homebrew following the instructions at https://github.com/riscv-software-src/homebrew-riscv
 
-You can use the pre-compiled minichlink or 
+You can use the pre-compiled minichlink or go to minichlink dir and `make` it.
 
-## Running
+## Building and Flashing
 
 ```
 cd examples/blink
-make
+make flash
 ```
+Just use `make` if you want to compile but not flash.
 
-In Linux this will "just work" using the `minichlink`.   In Windows if you want to use minichlink, you will need to use Zadig to install WinUSB to the WCH-Link interface 0.
-
+In Linux this will "just work"(TM) using `minichlink`.
+In Windows, if you want to use minichlink, you will need to use Zadig to install WinUSB to the WCH-Link interface 0.
 In Windows, you can use this or you can use the WCH-LinkUtility to flash the built hex file.
+
 
 ## ESP32S2 Programming
 
-## WCH-Link
+## WCH-Link (E)
 
 It enumerates as 2 interfaces.
 0. the programming interface.  I can't get anything except the propreitary interface to work.
-1. the usb serial port built in.
+1. the built-in usb serial port. You can hook up UART D5=TX to RX and D6=RX to TX of the CH32V003 for printf/debugging, default speed is 115200. Both are optional, connect what you need.
 
 If you want to mess with the programming code in Windows, you will have to install WinUSB to the interface 0.  Then you can uninstall it in Device Manager under USB Devices.
+
+On linux you find the serial port with `ls -l /dev/ttyUSB* /dev/ttyACM*` and connect to it with `screen /dev/ttyACM0 115200`
+Adding your user to these groups will remove the need to `sudo` for access to the serial port:
+debian-based
+	`sudo usermod -a -G dialout $USER`
+arch-based
+	`sudo usermod -a -G uucp $USER`
+ 
+ You'll need to log out and in to see the change.
+
 
 ## WCH-Link Hardware access in WSL
 To use the WCH-Link in WSL, it is required to "attach" the USB hardware on the Windows side to WSL.  This is achieved using a tool called usbipd.
@@ -80,18 +94,21 @@ To use the WCH-Link in WSL, it is required to "attach" the USB hardware on the W
 2. Install the WSL side client:
     * For Debian: 
         `sudo apt-get install usbip hwdata usbutils`
+    * For Arch-based:
+        `sudo pacman -S usbip hwdata usbutils`
     * For Ubuntu (not tested):
 ```
         sudo apt install linux-tools-5.4.0-77-generic linux-tools-virtual hwdata usbutils
         sudo update-alternatives --install /usr/local/bin/usbip usbip `ls /usr/lib/linux-tools/*/usbip | tail -n1` 20
 ```
+
 3. Plug in the WCH-Link to USB
 4. Run Powershell as admin and use the `usbipd list` command to list all connected devices
 5. Find the this device: `1a86:8010  WCH-Link (Interface 0)` and note the busid it is attached to
 6. In powershell, use the command `usbipd wsl attach --busid=<BUSID>` to attach the device at the busid from previous step
 7. You will hear the windows sound for the USB device being removed (and silently attached to WSL instead)
 8. In WSL, you will now be able to run `lsusb` and see that the SCH-Link is attached
-9. For unknown reasons, you must run make under root access in order to connect to the programmer with minichlink.  Recommend running `sudo make` when building and programming projects using WSL
+9. For unknown reasons, you must run make under root access in order to connect to the programmer with minichlink.  Recommend running `sudo make flash` when building and programming projects using WSL
 Feel free to solve this issue and figure out a way to give the user hardware access to WCH-Link and modify these instructions.
 
 ## minichlink
