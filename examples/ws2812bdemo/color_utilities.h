@@ -194,7 +194,6 @@ static inline uint32_t FastMultiply( uint32_t big_num, uint32_t small_num )
 */
 }
 
-static uint32_t TweenHexColors( uint32_t hexa, uint32_t hexb, int tween ) 	__attribute__((section(".data")));
 static uint32_t TweenHexColors( uint32_t hexa, uint32_t hexb, int tween )
 {
 	if( tween <= 0 ) return hexa;
