@@ -120,6 +120,7 @@ static void WS2812FillBuffSec( uint16_t * ptr, int numhalfwords, int tce )
 	WS2812LEDPlace = place;
 }
 
+void DMA1_Channel3_IRQHandler( void ) __attribute__((interrupt));
 void DMA1_Channel3_IRQHandler( void ) 
 {
 	//GPIOD->BSHR = 1;	 // Turn on GPIOD0 for profiling
