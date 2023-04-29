@@ -33,7 +33,7 @@ int gdbbufferstate = 0;
 void HandleClientData( const uint8_t * rxdata, int len )
 {
 	int pl = 0;
-	do
+	for( pl = 0; pl < len; pl++ )
 	{
 		int c = rxdata[pl];
 		if( c == '$' )
@@ -47,11 +47,13 @@ void HandleClientData( const uint8_t * rxdata, int len )
 		default:
 			break;
 		case 1:
+			printf( "GOTTEM %c\n", c );
 			if( gdbbufferplace < 65535 )
 			{
 				gdbbuffer[gdbbufferplace++] = c;
 			}
 			if( c == '#' ) gdbbufferstate = 2;
+			break;
 		case 2:
 		case 3:
 			if( c >= '0' && c <= '9' ) c = c - '0';
@@ -60,26 +62,19 @@ void HandleClientData( const uint8_t * rxdata, int len )
 			if( gdbbufferstate == 2 ) gdbchecksum = c << 4;
 			else if( gdbbufferstate == 3 ) gdbchecksum = c << 4;
 			gdbbufferstate++;
-			break;
-		case 4:
-			// Got a packet?
-		{
-			int i;
-			for( i = 0; i < gdbbufferplace; i++ )
-			{
-			}
-		}
-		}
-	if( gdbbufferstate == 0 )
+			if( gdbbufferstate == 2 ) break;
 
-			printf( "rececived: %d\n", rx );
+			// Got a packet?
 			int i;
-			for( i = 0; i < rx;i ++ )
+			printf( "rececived: %d\n", gdbbufferplace );
+			for( i = 0; i < gdbbufferplace;i ++ )
 			{
-				printf( "%02x (%c) ", buffer[i], buffer[i] );
+				printf( "%c", gdbbuffer[i], gdbbuffer[i] );
 			}
 			printf( "\n" );
-
+			gdbbufferstate = 0;
+		}
+	}
 }
 
 #define GDBSERVER_PORT 2345
