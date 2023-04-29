@@ -123,5 +123,10 @@ int SetupAutomaticHighLevelFunctions( void * dev );
 // Useful for converting numbers like 0x, etc.
 int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber );
 
+
+int SetupGDBServer();
+int PollGDBServer();
+void ExitGDBServer();
+
 #endif
 

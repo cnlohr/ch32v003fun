@@ -162,8 +162,12 @@ keep_going:
 				break;
 			case 'T':
 			{
+
 				if( !MCF.PollTerminal )
 					goto unimplemented;
+
+				SetupGDBServer();
+
 				do
 				{
 					uint8_t buffer[256];
@@ -177,6 +181,7 @@ keep_going:
 					{
 						fwrite( buffer, r, 1, stdout ); 
 					}
+					PollGDBServer();
 				} while( 1 );
 			}
 			case 's':
@@ -201,7 +206,7 @@ keep_going:
 					goto unimplemented;
 				break;
 			}
-			case 'g':
+			case 'm':
 			{
 				iarg+=1;
 				if( iarg >= argc )
@@ -474,14 +479,14 @@ help:
 	fprintf( stderr, " -D Configure NRST as GPIO\n" );
 	fprintf( stderr, " -d Configure NRST as NRST\n" );
 	fprintf( stderr, " -s [debug register] [value]\n" );
-	fprintf( stderr, " -g [debug register]\n" );
+	fprintf( stderr, " -m [debug register]\n" );
 //	fprintf( stderr, " -P Enable Read Protection (UNTESTED)\n" );
 //	fprintf( stderr, " -p Disable Read Protection (UNTESTED)\n" );
 	fprintf( stderr, " -w [binary image to write] [address, decimal or 0x, try0x08000000]\n" );
 	fprintf( stderr, " -r [output binary image] [memory address, decimal or 0x, try 0x08000000] [size, decimal or 0x, try 16384]\n" );
 	fprintf( stderr, "   Note: for memory addresses, you can use 'flash' 'launcher' 'bootloader' 'option' 'ram' and say \"ram+0x10\" for instance\n" );
 	fprintf( stderr, "   For filename, you can use - for raw or + for hex.\n" );
-	fprintf( stderr, " -T is a terminal. This MUST be the last argument.  You MUST have resumed or \n" );
+	fprintf( stderr, " -T is a terminal. This MUST be the last argument. Also, will start a gdbserver.\n" );
 
 	return -1;	
 
