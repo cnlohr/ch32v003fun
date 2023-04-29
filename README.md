@@ -1,18 +1,15 @@
 # ch32v003fun
 
-An open source development "environment" for the [CH32V003](http://www.wch-ic.com/products/CH32V003.html) with gcc-riscv64 that can be used in Windows, Linux and/or WSL.  The CH32V003 is 10-cent part with a RISC-V EC core that runs at 48MHz, has 16kB of flash and 2kB of RAM and a bunch of peripherals.  It also comes in SOP-8, QFN-20 and SOIC packages.  You can get the datasheet [here](http://www.wch-ic.com/downloads/CH32V003DS0_PDF.html).
+An open source development environment (tooling, headers, examples) for the [CH32V003](http://www.wch-ic.com/products/CH32V003.html) with gcc-riscv64 that can be used in Windows (Native), Linux and/or WSL.  The CH32V003 is 10-cent part with a RISC-V EC core that runs at 48MHz, has 16kB of flash and 2kB of RAM and a bunch of peripherals.  It also comes in SOP-8, QFN-20 and SOIC packages.  You can get the datasheet [here](http://www.wch-ic.com/downloads/CH32V003DS0_PDF.html).
 
-The goal of this project is to develop the tooling and environment for efficient use of the CH32V003.  This means making it possible to have basic projects that are compact and require no proprietary tooling like their [MounRiver Studio(MRS)](http://www.wch-ic.com/products/www.mounriver.com/).
-
-The existing EVT is massive.  Just to boot the chip at all, it requires ~2kB of support functions and has to do things like software-divides and use a ton of space at startup to use their HAL.  This project specifically avoids the HAL and makes it so you can just use the [TRM](http://www.wch-ic.com/downloads/CH32V003RM_PDF.html).
-
-In contrast, blinky is only 500 bytes with ch32v003fun, boots faster, and significantly simpler overall.
-
-As it currently stands it is still designed to use the WCH-Link to do the SDIO programming.  Though I would like to ALSO support an open source programmer.
+The goal of this project is to develop the tooling and environment for efficient use of the CH32V003.  Avoid complicated HALs, and unleash the hardware! The existing EVT is massive, and dev environment weighty.  This project specifically avoids the HAL and makes it so you can just use the [TRM](http://www.wch-ic.com/downloads/CH32V003RM_PDF.html). In contrast, blinky is only 500 bytes with ch32v003fun, boots faster, and significantly simpler overall.
 
 ch32v003fun contains:
 1. Examples using ch32v003fun, but not as many as using the HAL.
 2. "minichlink" which uses the WCH CH-Link with libusb, for cross-platform use.
+  * An STM32F042 Programmer, the NHC-Link042
+  * An ESP32S2 Programmer, the [esp32s2-funprog](https://github.com/cnlohr/esp32s2-cookbook/tree/master/ch32v003programmer)
+  * The official WCH Link-E Programmer.
 3. An extra copy of libgcc so you can use unusual risc-v build chains, located in the `misc/libgcc.a`.
 4. A folder named "ch32v003fun" containing a single self-contained source file and header file for compling apps for the ch32v003.
 5. On some systems ability to "printf" back through
@@ -60,11 +57,12 @@ You can use the pre-compiled minichlink or go to minichlink dir and `make` it.
 cd examples/blink
 make flash
 ```
+
 Just use `make` if you want to compile but not flash.
 
 In Linux this will "just work"(TM) using `minichlink`.
 In Windows, if you want to use minichlink, you will need to use Zadig to install WinUSB to the WCH-Link interface 0.
-In Windows, you can use this or you can use the WCH-LinkUtility to flash the built hex file.
+The generated .hex file is compatible with the official WCH flash tool.
 
 
 ## ESP32S2 Programming
@@ -140,4 +138,3 @@ You can open a github ticket or join my Discord in the #ch32v003fun channel. htt
  * http://www.wch-ic.com/downloads/QingKeV2_Processor_Manual_PDF.html Processor Manual
  * http://www.wch-ic.com/downloads/CH32V003RM_PDF.html Technical Reference Manual
  * http://www.wch-ic.com/downloads/CH32V003DS0_PDF.html Datasheet
-
