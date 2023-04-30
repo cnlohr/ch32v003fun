@@ -160,13 +160,14 @@ keep_going:
 				else
 					goto unimplemented;
 				break;
+			case 'G':
 			case 'T':
 			{
-
 				if( !MCF.PollTerminal )
 					goto unimplemented;
 
-				SetupGDBServer();
+				if( argchar[1] == 'G' )
+					SetupGDBServer( dev );
 
 				do
 				{
@@ -181,8 +182,13 @@ keep_going:
 					{
 						fwrite( buffer, r, 1, stdout ); 
 					}
-					PollGDBServer();
+
+					if( argchar[1] == 'G' )
+						PollGDBServer( dev );
 				} while( 1 );
+
+				if( argchar[1] == 'G' )
+					ExitGDBServer( dev );
 			}
 			case 's':
 			{
@@ -480,6 +486,8 @@ help:
 	fprintf( stderr, " -d Configure NRST as NRST\n" );
 	fprintf( stderr, " -s [debug register] [value]\n" );
 	fprintf( stderr, " -m [debug register]\n" );
+	fprintf( stderr, " -T Terminal Only\n" );
+	fprintf( stderr, " -G Terminal + GDB\n" );
 //	fprintf( stderr, " -P Enable Read Protection (UNTESTED)\n" );
 //	fprintf( stderr, " -p Disable Read Protection (UNTESTED)\n" );
 	fprintf( stderr, " -w [binary image to write] [address, decimal or 0x, try0x08000000]\n" );
@@ -1036,6 +1044,30 @@ int DefaultReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t r
 	return 0;
 }
 
+int DefaultReadCPURegister( void * dev, uint32_t regno, uint32_t * regret )
+{
+	if( !MCF.WriteReg32 || !MCF.ReadReg32 )
+	{
+		fprintf( stderr, "Error: Can't read CPU register on this programmer because it is missing read/writereg32\n" );
+		return -5;
+	}
+
+	if( regno >= 16 ) regno = 0x7b1;
+	else regno |= 0x1000;
+
+	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
+	iss->statetag = STTAG( "XXXX" );
+
+	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
+	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
+	MCF.WriteReg32( dev, DMPROGBUF0, 0x00100073 ); // c.ebreak
+	MCF.WriteReg32( dev, DMABSTRACTAUTO, 0x00000000 ); // Disable Autoexec.
+	MCF.WriteReg32( dev, DMCOMMAND, 0x00220000 | regno ); // Read xN into DATA0.
+	int r = MCF.ReadReg32( dev, DMDATA0, regret );
+	printf( "REG: %d %08x %d\n", r, *regret, regno );
+	return r;
+}
+
 
 static int DefaultHaltMode( void * dev, int mode )
 {
@@ -1365,6 +1397,8 @@ int SetupAutomaticHighLevelFunctions( void * dev )
 		MCF.WriteWord = DefaultWriteWord;
 	if( !MCF.WriteHalfWord )
 		MCF.WriteHalfWord = DefaultWriteHalfWord;
+	if( !MCF.ReadCPURegister )
+		MCF.ReadCPURegister = DefaultReadCPURegister;
 	if( !MCF.ReadWord )
 		MCF.ReadWord = DefaultReadWord;
 	if( !MCF.ReadHalfWord )

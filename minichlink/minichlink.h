@@ -35,6 +35,8 @@ struct MiniChlinkFunctions
 	int (*WriteWord)( void * dev, uint32_t address_to_write, uint32_t data );
 	int (*ReadWord)( void * dev, uint32_t address_to_read, uint32_t * data );
 
+	int (*ReadCPURegister)( void * dev, uint32_t regno, uint32_t * regret );
+
 	int (*WaitForFlash)( void * dev );
 	int (*WaitForDoneOp)( void * dev );
 
@@ -124,9 +126,9 @@ int SetupAutomaticHighLevelFunctions( void * dev );
 int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber );
 
 
-int SetupGDBServer();
-int PollGDBServer();
-void ExitGDBServer();
+int SetupGDBServer( void * dev );
+int PollGDBServer( void * dev );
+void ExitGDBServer( void * dev );
 
 #endif
 
