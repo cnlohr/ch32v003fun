@@ -126,9 +126,8 @@ void RVNetPoll(void * dev )
 		if( statusrunning == 0 )
 		{
 			RVCommandPrologue( dev );
-
-			uint32_t dscr;
-			MCF.ReadCPURegister( dev, 0x7b0, &dscr );
+			//uint32_t dscr;
+			//MCF.ReadCPURegister( dev, 0x7b0, &dscr );
 			last_halt_reason = 5;//((dscr>>6)&3)+5;
 			RVSendGDBHaltReason( dev );
 		}
