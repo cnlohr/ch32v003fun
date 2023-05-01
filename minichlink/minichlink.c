@@ -172,19 +172,24 @@ keep_going:
 				do
 				{
 					uint8_t buffer[256];
-					int r = MCF.PollTerminal( dev, buffer, sizeof( buffer ), 0, 0 );
-					if( r < 0 )
+					if( !IsGDBServerInShadowHaltState( dev ) )
 					{
-						fprintf( stderr, "Terminal dead.  code %d\n", r );
-						return -32;
-					}
-					if( r > 0 )
-					{
-						fwrite( buffer, r, 1, stdout ); 
+						int r = MCF.PollTerminal( dev, buffer, sizeof( buffer ), 0, 0 );
+						if( r < 0 )
+						{
+							fprintf( stderr, "Terminal dead.  code %d\n", r );
+							return -32;
+						}
+						if( r > 0 )
+						{
+							fwrite( buffer, r, 1, stdout ); 
+						}
 					}
 
 					if( argchar[1] == 'G' )
+					{
 						PollGDBServer( dev );
+					}
 				} while( 1 );
 
 				if( argchar[1] == 'G' )
@@ -919,17 +924,34 @@ timedout:
 static int DefaultReadWord( void * dev, uint32_t address_to_read, uint32_t * data )
 {
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
-	if( iss->statetag != STTAG( "RDSQ" ) || address_to_read != iss->currentstateval )
+
+	int autoincrement = 1;
+	if( address_to_read == 0x40022010 || address_to_read == 0x4002200C )  // Don't autoincrement when checking flash flag. 
+		autoincrement = 0;
+
+	if( iss->statetag != STTAG( "RDSQ" ) || address_to_read != iss->currentstateval || autoincrement != iss->autoincrement)
 	{
 		if( iss->statetag != STTAG( "RDSQ" ) )
 		{
 			MCF.WriteReg32( dev, DMABSTRACTAUTO, 0 ); // Disable Autoexec.
+
 			// c.lw x8,0(x11) // Pull the address from DATA1
 			// c.lw x9,0(x8)  // Read the data at that location.
 			MCF.WriteReg32( dev, DMPROGBUF0, 0x40044180 );
-			// c.addi x8, 4
-			// c.sw x9, 0(x10) // Write back to DATA0
-			MCF.WriteReg32( dev, DMPROGBUF1, 0xc1040411 );
+			if( autoincrement )
+			{
+				// c.addi x8, 4
+				// c.sw x9, 0(x10) // Write back to DATA0
+
+				MCF.WriteReg32( dev, DMPROGBUF1, 0xc1040411 );
+			}
+			else
+			{
+				// c.nop
+				// c.sw x9, 0(x10) // Write back to DATA0
+
+				MCF.WriteReg32( dev, DMPROGBUF1, 0xc1040001 );
+			}
 			// c.sw x8, 0(x11) // Write addy to DATA1
 			// c.ebreak
 			MCF.WriteReg32( dev, DMPROGBUF2, 0x9002c180 );
@@ -938,7 +960,8 @@ static int DefaultReadWord( void * dev, uint32_t address_to_read, uint32_t * dat
 			{
 				StaticUpdatePROGBUFRegs( dev );
 			}
-			MCF.WriteReg32( dev, DMABSTRACTAUTO, 1 ); // Enable Autoexec.
+			MCF.WriteReg32( dev, DMABSTRACTAUTO, 1 ); // Enable Autoexec (different kind of autoinc than outer autoinc)
+			iss->autoincrement = autoincrement;
 		}
 
 		MCF.WriteReg32( dev, DMDATA1, address_to_read );
@@ -950,9 +973,11 @@ static int DefaultReadWord( void * dev, uint32_t address_to_read, uint32_t * dat
 		MCF.WaitForDoneOp( dev );
 	}
 
-	iss->currentstateval += 4;
+	if( iss->autoincrement )
+		iss->currentstateval += 4;
 
-	return MCF.ReadReg32( dev, DMDATA0, data );
+	int r = MCF.ReadReg32( dev, DMDATA0, data );
+	return r;
 }
 
 static int StaticUnlockFlash( void * dev, struct InternalState * iss )
@@ -1052,20 +1077,95 @@ int DefaultReadCPURegister( void * dev, uint32_t regno, uint32_t * regret )
 		return -5;
 	}
 
-	if( regno >= 16 ) regno = 0x7b1;
-	else regno |= 0x1000;
-
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
-	iss->statetag = STTAG( "XXXX" );
-
-	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
-	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
-	MCF.WriteReg32( dev, DMPROGBUF0, 0x00100073 ); // c.ebreak
 	MCF.WriteReg32( dev, DMABSTRACTAUTO, 0x00000000 ); // Disable Autoexec.
+	iss->statetag = STTAG( "REGR" );
+
 	MCF.WriteReg32( dev, DMCOMMAND, 0x00220000 | regno ); // Read xN into DATA0.
 	int r = MCF.ReadReg32( dev, DMDATA0, regret );
-	printf( "REG: %d %08x %d\n", r, *regret, regno );
+
 	return r;
+}
+
+int DefaultReadAllCPURegisters( void * dev, uint32_t * regret )
+{
+	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
+	MCF.WriteReg32( dev, DMABSTRACTAUTO, 0x00000001 ); // Disable Autoexec.
+	iss->statetag = STTAG( "RER2" );
+	int i;
+	for( i = 0; i < 16; i++ )
+	{
+		MCF.WriteReg32( dev, DMCOMMAND, 0x00220000 | 0x1000 | i ); // Read xN into DATA0.
+		if( MCF.ReadReg32( dev, DMDATA0, regret + i ) )
+		{
+			MCF.WriteReg32( dev, DMABSTRACTAUTO, 0x00000000 ); // Disable Autoexec.
+			return -5;
+		}
+	}
+	MCF.WriteReg32( dev, DMCOMMAND, 0x00220000 | 0x7b1 ); // Read xN into DATA0.
+	int r = MCF.ReadReg32( dev, DMDATA0, regret + i );
+	MCF.WriteReg32( dev, DMABSTRACTAUTO, 0x00000000 ); // Disable Autoexec.
+	return r;
+}
+
+int DefaultWriteAllCPURegisters( void * dev, uint32_t * regret )
+{
+	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
+	MCF.WriteReg32( dev, DMABSTRACTAUTO, 0x00000001 ); // Disable Autoexec.
+	iss->statetag = STTAG( "WER2" );
+	int i;
+	for( i = 0; i < 16; i++ )
+	{
+		MCF.WriteReg32( dev, DMCOMMAND, 0x00230000 | 0x1000 | i ); // Read xN into DATA0.
+		if( MCF.WriteReg32( dev, DMDATA0, regret[i] ) )
+		{
+			MCF.WriteReg32( dev, DMABSTRACTAUTO, 0x00000000 ); // Disable Autoexec.
+			return -5;
+		}
+	}
+	MCF.WriteReg32( dev, DMCOMMAND, 0x00230000 | 0x7b1 ); // Read xN into DATA0.
+	int r = MCF.WriteReg32( dev, DMDATA0, regret[i] );
+	MCF.WriteReg32( dev, DMABSTRACTAUTO, 0x00000000 ); // Disable Autoexec.
+	return r;
+}
+
+
+int DefaultWriteCPURegister( void * dev, uint32_t regno, uint32_t value )
+{
+	if( !MCF.WriteReg32 || !MCF.ReadReg32 )
+	{
+		fprintf( stderr, "Error: Can't read CPU register on this programmer because it is missing read/writereg32\n" );
+		return -5;
+	}
+
+	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
+	MCF.WriteReg32( dev, DMABSTRACTAUTO, 0x00000000 ); // Disable Autoexec.
+	iss->statetag = STTAG( "REGW" );
+	MCF.WriteReg32( dev, DMDATA0, value );
+	return MCF.WriteReg32( dev, DMCOMMAND, 0x00230000 | regno ); // Write xN from DATA0.
+}
+
+int DefaultSetEnableBreakpoints( void * dev, int is_enabled, int single_step )
+{
+	if( !MCF.ReadCPURegister || !MCF.WriteCPURegister )
+	{
+		fprintf( stderr, "Error: Can't set breakpoints on this programmer because it is missing read/writereg32\n" );
+		return -5;
+	}
+	uint32_t DCSR;
+	if( MCF.ReadCPURegister( dev, 0x7b0, &DCSR ) )
+		fprintf( stderr, "Error: DCSR could not be read\n" );
+	DCSR |= 0xb600;
+	if( single_step )
+		DCSR |= 4;
+	else
+		DCSR &=~4;
+
+	//printf( "Setting DCSR: %08x\n", DCSR );
+	if( MCF.WriteCPURegister( dev, 0x7b0, DCSR ) )
+		fprintf( stderr, "Error: DCSR could not be read\n" );
+
+	return 0;
 }
 
 
@@ -1379,6 +1479,13 @@ fail:
 	return -11;
 }
 
+int DefaultVoidHighLevelState( void * dev )
+{
+	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
+	iss->statetag = STTAG( "VOID" );
+	return 0;
+}
+
 int SetupAutomaticHighLevelFunctions( void * dev )
 {
 	// Will populate high-level functions from low-level functions.
@@ -1399,6 +1506,14 @@ int SetupAutomaticHighLevelFunctions( void * dev )
 		MCF.WriteHalfWord = DefaultWriteHalfWord;
 	if( !MCF.ReadCPURegister )
 		MCF.ReadCPURegister = DefaultReadCPURegister;
+	if( !MCF.WriteCPURegister )
+		MCF.WriteCPURegister = DefaultWriteCPURegister;
+	if( !MCF.WriteAllCPURegisters )
+		MCF.WriteAllCPURegisters = DefaultWriteAllCPURegisters;
+	if( !MCF.ReadAllCPURegisters )
+		MCF.ReadAllCPURegisters = DefaultReadAllCPURegisters;
+	if( !MCF.SetEnableBreakpoints )
+		MCF.SetEnableBreakpoints = DefaultSetEnableBreakpoints;
 	if( !MCF.ReadWord )
 		MCF.ReadWord = DefaultReadWord;
 	if( !MCF.ReadHalfWord )
@@ -1419,10 +1534,13 @@ int SetupAutomaticHighLevelFunctions( void * dev )
 		MCF.Unbrick = DefaultUnbrick;
 	if( !MCF.ConfigureNRSTAsGPIO )
 		MCF.ConfigureNRSTAsGPIO = DefaultConfigureNRSTAsGPIO;
+	if( !MCF.VoidHighLevelState )
+		MCF.VoidHighLevelState = DefaultVoidHighLevelState;
 
 	struct InternalState * iss = malloc( sizeof( struct InternalState ) );
 	iss->statetag = 0;
 	iss->currentstateval = 0;
+	iss->autoincrement = 0;
 
 	((struct ProgrammerStructBase*)dev)->internal = iss;
 	return 0;

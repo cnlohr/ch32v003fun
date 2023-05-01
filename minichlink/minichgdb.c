@@ -1,5 +1,9 @@
 // This file is loosely based on aappleby's GDBServer.
 
+// Connect in with:
+//   gdb-multiarch -ex 'target remote :2000' ./blink.elf 
+
+
 #include "minichlink.h"
 
 #ifdef WIN32
@@ -35,40 +39,120 @@ void SendReplyFull( const char * replyMessage );
 // TODO: Breakpoints
 // TODO: Unaligned access?
 
+// Mostly from PicoRVD.
+
+const char* memory_map = "l<?xml version=\"1.0\"?>"
+"<!DOCTYPE memory-map PUBLIC \"+//IDN gnu.org//DTD GDB Memory Map V1.0//EN\" \"http://sourceware.org/gdb/gdb-memory-map.dtd\">"
+"<memory-map>"
+"  <memory type=\"flash\" start=\"0x00000000\" length=\"0x4000\">"
+"    <property name=\"blocksize\">64</property>"
+"  </memory>"
+"  <memory type=\"ram\" start=\"0x20000000\" length=\"0x800\">"
+"    <property name=\"blocksize\">4</property>"
+"  </memory>"
+"</memory-map>";
+
 int shadow_running_state = 1;
+int last_halt_reason = 5;
+uint32_t backup_regs[17];
+
+int IsGDBServerInShadowHaltState( void * dev ) { return !shadow_running_state; }
+
+void RVCommandPrologue( void * dev )
+{
+	if( !MCF.ReadCPURegister )
+	{
+		fprintf( stderr, "Error: Programmer does not support register reading\n" );
+		exit( -5 );
+	}
+
+	MCF.WriteReg32( dev, DMABSTRACTAUTO, 0 );     // Disable autoexec.
+	if( MCF.ReadAllCPURegisters( dev, backup_regs ) )
+	{
+		fprintf( stderr, "WARNING: failed to preserve registers\n" );
+	}
+	MCF.VoidHighLevelState( dev );
+}
+
+void RVCommandEpilogue( void * dev )
+{
+	MCF.WriteReg32( dev, DMABSTRACTAUTO, 0 );   // Disable autoexec.
+	MCF.WriteAllCPURegisters( dev, backup_regs );
+	MCF.VoidHighLevelState( dev );
+}
 
 void RVNetConnect( void * dev )
 {
-	// ???
+	// ??? Should we actually halt?
 	MCF.HaltMode( dev, 0 );
+	MCF.SetEnableBreakpoints( dev, 1, 0 );
+	RVCommandPrologue( dev );
 	shadow_running_state = 0;
+}
+
+int RVSendGDBHaltReason( void * dev )
+{
+	char st[5];
+	sprintf( st, "T%02x", last_halt_reason );
+	SendReplyFull( st );
+	return 0;
 }
 
 void RVNetPoll(void * dev )
 {
-	// ???
+	if( !MCF.ReadReg32 )
+	{
+		fprintf( stderr, "Error: Can't poll GDB because no ReadReg32 supported on this programmer\n" );
+		return;
+	}
+
+	uint32_t status;
+	if( MCF.ReadReg32( dev, DMSTATUS, &status ) )
+	{
+		fprintf( stderr, "Error: Could not get part status\n" );
+		return;
+	}
+	int statusrunning = ((status & (1<<10)));
+
+	static int laststatus;
+	if( status != laststatus )
+	{
+		//printf( "DMSTATUS: %08x => %08x\n", laststatus, status );
+		laststatus = status;
+	}
+	if( statusrunning != shadow_running_state )
+	{
+		// If was running but now is halted.
+		if( statusrunning == 0 )
+		{
+			RVCommandPrologue( dev );
+
+			uint32_t dscr;
+			MCF.ReadCPURegister( dev, 0x7b0, &dscr );
+			last_halt_reason = 5;//((dscr>>6)&3)+5;
+			RVSendGDBHaltReason( dev );
+		}
+		shadow_running_state = statusrunning;
+	}
 }
 
 int RVReadCPURegister( void * dev, int regno, uint32_t * regret )
 {
 	if( shadow_running_state )
 	{
-		printf( "HALTTTTTTTTTTTTTTTTTTTTTT\n" );
 		MCF.HaltMode( dev, 0 );
+		RVCommandPrologue( dev ); printf( "GGGGG1\n" );
 		shadow_running_state = 0;
 	}
 
+	if( regno == 32 ) regno = 16; // Hack - Make 32 also 16 for old GDBs.
 	if( regno > 16 ) return 0; // Invalid register.
 
-	if( !MCF.ReadCPURegister )
-	{
-		fprintf( stderr, "Error: Programmer does not support register reading\n" );
-	}
-
-	return MCF.ReadCPURegister( dev, regno, regret );
+	*regret = backup_regs[regno];
+	return 0;
 }
 
-void RVContinueExec( void * dev )
+void RVDebugExec( void * dev, int halt_reset_or_resume )
 {
 	if( !MCF.HaltMode )
 	{
@@ -76,45 +160,44 @@ void RVContinueExec( void * dev )
 		exit( -6 );
 	}
 
-	if( !shadow_running_state )
-		MCF.HaltMode( dev, 2 );
-
-	shadow_running_state = 1;
-
-	//SendReplyFull( "T05" );
-	printf( "Cont\n" );
-}
-
-void RVStepExec( void * dev )
-{
-	if( !MCF.HaltMode )
+	// Special case halt_reset_or_resume = 4: Skip instruction and resume.
+	if( halt_reset_or_resume == 4 || halt_reset_or_resume == 2 )
 	{
-		fprintf( stderr, "Error: Can't alter halt mode with this programmer.\n" );
-		exit( -6 );
+		// For this we want to advance PC.
+		uint32_t exceptionptr = backup_regs[16];
+		uint32_t instruction = 0;
+		if( exceptionptr & 2 )
+		{
+			uint32_t part1, part2;
+			MCF.ReadWord( dev, exceptionptr & ~3, &part1 );
+			MCF.ReadWord( dev, (exceptionptr & ~3)+4, &part2 );
+			instruction = (part1 >> 16) | (part2 << 16);
+		}
+		else
+		{
+			MCF.ReadWord( dev, exceptionptr, &instruction );
+		}
+		if( instruction == 0x00100073 )
+			backup_regs[16]+=4;
+		else if( ( instruction & 0xffff ) == 0x9002 )
+			backup_regs[16]+=2;
+		halt_reset_or_resume = 2;
 	}
 
-	if( !shadow_running_state )
-		MCF.HaltMode( dev, 2 );
-
-	shadow_running_state = 1;
-
-	printf( "Step\n" );
-}
-
-void RVStopExec( void * dev )
-{
-	if( !MCF.HaltMode )
+	if( shadow_running_state != ( halt_reset_or_resume >= 2 ) )
 	{
-		fprintf( stderr, "Error: Can't alter halt mode with this programmer.\n" );
-		exit( -6 );
+		if( halt_reset_or_resume < 2 )
+		{
+			RVCommandPrologue( dev );
+		}
+		else
+		{
+			RVCommandEpilogue( dev );
+		}
+		MCF.HaltMode( dev, halt_reset_or_resume );
 	}
 
-	if( shadow_running_state )
-		MCF.HaltMode( dev, 0 );
-
-	shadow_running_state = 0;
-
-	printf( "Exec\n" );
+	shadow_running_state = halt_reset_or_resume >= 2;
 }
 
 int RVReadMem( void * dev, uint32_t memaddy, uint8_t * payload, int len )
@@ -124,16 +207,26 @@ int RVReadMem( void * dev, uint32_t memaddy, uint8_t * payload, int len )
 		fprintf( stderr, "Error: Can't alter halt mode with this programmer.\n" );
 		exit( -6 );
 	}
-
-	MCF.ReadBinaryBlob( dev, memaddy, len, payload );
-
-	return len;
+	int ret = MCF.ReadBinaryBlob( dev, memaddy, len, payload );
+	if( ret < 0 )
+	{
+		fprintf( stderr, "Error reading binary blob at %08x\n", memaddy );
+	}
+	return ret;
 }
 
 int RVHandleBreakpoint( void * dev, int set, uint32_t address )
 {
-	
-	return 0;
+	if( set )
+	{
+		MCF.SetEnableBreakpoints( dev, 1, 1 );
+	}
+	else
+	{
+		MCF.SetEnableBreakpoints( dev, 1, 0 );
+	}
+
+	return -1;
 }
 
 int RVWriteRAM(void * dev, uint32_t memaddy, uint32_t length, uint8_t * payload )
@@ -144,19 +237,36 @@ int RVWriteRAM(void * dev, uint32_t memaddy, uint32_t length, uint8_t * payload 
 		exit( -6 );
 	}
 
-	MCF.WriteBinaryBlob( dev, memaddy, length, payload );
+	int r = MCF.WriteBinaryBlob( dev, memaddy, length, payload );
 
-	return 0;
+	return r;
 }
 
 void RVHandleDisconnect( void * dev )
 {
-	// Do nothing?
+	MCF.HaltMode( dev, 0 );
+	MCF.SetEnableBreakpoints( dev, 0, 0 );
+	if( shadow_running_state == 0 )
+	{
+		RVCommandEpilogue( dev );
+	}
+	MCF.HaltMode( dev, 2 );
+	shadow_running_state = 1;
+}
+
+void RVHandleGDBBreakRequest( void * dev )
+{
+	if( shadow_running_state )
+	{
+		printf( "RVHandleGDBBreakRequest\n" );
+		MCF.HaltMode( dev, 0 );
+	}
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // Protocol Stuff
+
 
 int listenMode; // 0 for uninit.  1 for server, 2 for client.
 int serverSocket;
@@ -227,7 +337,6 @@ int StringMatch( const char * haystack, const char * mat )
 	return mat[i] == 0;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // General Protocol
 
@@ -263,17 +372,16 @@ void SendGDBReply( const void * data, int len, int docs )
 
 void SendReplyFull( const char * replyMessage )
 {
-	SendGDBReply( replyMessage, -1, 1 );
+	SendGDBReply( replyMessage, -1, '$' );
 }
 
 void HandleGDBPacket( void * dev, char * data, int len )
 {
 	int i;
 
+	//printf( ":::%s:::\n", data );
 	// Got a packet?
 	if( data[0] != '$' ) return;
-
-	puts( data );
 
 	data++;
 
@@ -282,7 +390,7 @@ void HandleGDBPacket( void * dev, char * data, int len )
 	{
 	case 'q':
 		if( StringMatch( data, "Attached" ) )
-		    SendReplyFull( "1" );
+		    SendReplyFull( "1" ); //Attached to an existing process.
 		else if( StringMatch( data, "Supported" ) )
 		    SendReplyFull( "PacketSize=f000;qXfer:memory-map:read+" );
 		else if( StringMatch( data, "C") ) // Get Current Thread ID. (Can't be -1 or 0.  Those are special)
@@ -291,11 +399,19 @@ void HandleGDBPacket( void * dev, char * data, int len )
 			SendReplyFull( "m1" );
 		else if( StringMatch( data, "sThreadInfo" ) )  // Query all active thread IDs, continued
 		    SendReplyFull( "l" );
+		else if( StringMatch( data, "Xfer:memory-map" ) )
+		    SendReplyFull( memory_map );
 		else
 			SendReplyFull( "" );
 		break;
 	case 'c':
-		RVContinueExec( dev );
+	case 'C':
+		RVDebugExec( dev, (cmd == 'C')?4:2 );
+		SendReplyFull( "OK" );
+		break;
+	case 'D':
+		// Handle disconnect.
+		RVHandleDisconnect( dev );
 		break;
 	case 'Z':
 	case 'z':
@@ -316,6 +432,7 @@ void HandleGDBPacket( void * dev, char * data, int len )
 	}
 	case 'm':
 	{
+		// Read memory (Binary)
 		uint32_t address_to_read = 0;
 		uint32_t length_to_read = 0;
 		if( ReadHex( &data, -1, &address_to_read ) < 0 ) goto err;
@@ -372,7 +489,9 @@ void HandleGDBPacket( void * dev, char * data, int len )
 		if( StringMatch( data, "Cont?" ) )
 		{
 			// Request a list of actions supported by the ‘vCont’ packet. 
-			SendReplyFull( "vCont;c;s;t;" );
+			// We don't support vCont
+			SendReplyFull( "vCont;s;c;t;" ); //no ;s
+			//SendReplyFull( "" );
 		}
 		else
 		{
@@ -409,7 +528,7 @@ void HandleGDBPacket( void * dev, char * data, int len )
 		break;
 	}
 	case '?': // Query reason for target halt.
-		SendReplyFull( "T05" ); // Ignoring - no need to stub, this is what PicoRVD does.
+		RVSendGDBHaltReason( dev );
 		break;
 	case 'H':
 		// This is for things like selecting threads.
@@ -437,10 +556,15 @@ void HandleClientData( void * dev, const uint8_t * rxdata, int len )
 	for( pl = 0; pl < len; pl++ )
 	{
 		int c = rxdata[pl];
-		if( c == '$' )
+		if( c == '$' && gdbbufferstate == 0 )
 		{
 			gdbbufferplace = 0;
 			gdbbufferstate = 1;
+		}
+		if( c == 3 && gdbbufferstate == 0 )
+		{
+			RVHandleGDBBreakRequest( dev );
+			continue;
 		}
 
 		switch( gdbbufferstate )
@@ -607,6 +731,7 @@ int PollGDBServer( void * dev )
 			serverSocket = tsocket;
 			listenMode = 2;
 			gdbbufferstate = 0;
+			RVNetConnect( dev );
 			// Established.
 		}
 		else if( listenMode == 2 )

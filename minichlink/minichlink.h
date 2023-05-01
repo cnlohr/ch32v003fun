@@ -35,7 +35,19 @@ struct MiniChlinkFunctions
 	int (*WriteWord)( void * dev, uint32_t address_to_write, uint32_t data );
 	int (*ReadWord)( void * dev, uint32_t address_to_read, uint32_t * data );
 
+	// Debugging operations.
+	//  Note: You must already be in break mode to use these otherwise they
+	//  will return nonsensical data.
+	// For x0...xN, use 0x1000 + regno.
+	// For PC, use 0x7b1
 	int (*ReadCPURegister)( void * dev, uint32_t regno, uint32_t * regret );
+	int (*WriteCPURegister)( void * dev, uint32_t regno, uint32_t regval );
+
+	// Actually returns 17 registers (All 16 CPU registers + the debug register)
+	int (*ReadAllCPURegisters)( void * dev, uint32_t * regret );
+	int (*WriteAllCPURegisters)( void * dev, uint32_t * regret );
+
+	int (*SetEnableBreakpoints)( void * dev, int halt_on_break, int single_step );
 
 	int (*WaitForFlash)( void * dev );
 	int (*WaitForDoneOp)( void * dev );
@@ -88,6 +100,7 @@ struct InternalState
 	uint32_t flash_unlocked;
 	int lastwriteflags;
 	int processor_in_mode;
+	int autoincrement;
 };
 
 
@@ -125,9 +138,13 @@ int SetupAutomaticHighLevelFunctions( void * dev );
 // Useful for converting numbers like 0x, etc.
 int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber );
 
+// For drivers to call
+int DefaultVoidHighLevelState( void * dev );
 
+// GDBSever Functions
 int SetupGDBServer( void * dev );
 int PollGDBServer( void * dev );
+int IsGDBServerInShadowHaltState( void * dev );
 void ExitGDBServer( void * dev );
 
 #endif
