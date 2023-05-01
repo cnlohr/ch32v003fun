@@ -2,8 +2,8 @@
 #define APB_CLOCK SYSTEM_CORE_CLOCK
 #include "../../ch32v003fun/ch32v003fun.h"
 
-#include "SPI.h"
-
+#define CH32V003_SPI_IMPLEMENTATION
+#include "ch32v003_SPI.h"
 #include "nrf24l01.h"
 
 /*start of low level functions, specific to the mcu and compiler*/

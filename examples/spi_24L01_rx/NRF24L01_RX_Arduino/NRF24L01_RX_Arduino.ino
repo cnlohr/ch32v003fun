@@ -5,11 +5,15 @@ extern "C"{
   #include "nrf24l01.h"
 }
 
-#define TIME_GAP      300
 
+
+#define TIME_GAP 300
 uint8_t ascending_number = 0;
 char txt[16];
 
+
+
+//######### debug fn
 
 void uint8_to_binary_string(uint8_t value, char* output, int len) {
     for (int i = 0; i < len; i++) {
@@ -40,6 +44,10 @@ void print_debug() {
   print_reg("EN_RXADDR    ", EN_RXADDR_ADDRESS);
 }
 
+
+
+//######### LED fn
+
 //LED_BUILTIN is pin 13 is SCK of SPI, already using that
 void led_on() {
   digitalWrite(4, HIGH);
@@ -50,6 +58,8 @@ void led_off() {
 }
 
 
+
+//######### RX fn
 
 uint8_t recvnumber() {
   return nrf24_receive(&ascending_number, 1);
@@ -90,18 +100,17 @@ void receive() {
 }
 
 
+//######### MAIN
+
 void setup()
 {
   Serial.begin(115200);
-
-  Serial.println("\n\n\n   kys!\n");
 
   Serial.print("\r\r\n\nspi_24L01_RX\n\r");
   
   Serial.print("initializing radio as RX...");
   nrf24_device(RECEIVER, RESET);      //initializing nrf24l01+ as a receiver device with one simple function call
   nrf24_rf_power(18);                 //default TX power is -6dB, pretty strong, reduce to -18dBm for one room (ACK = TX)
-
   Serial.println("done");
   
   pinMode(4, OUTPUT);

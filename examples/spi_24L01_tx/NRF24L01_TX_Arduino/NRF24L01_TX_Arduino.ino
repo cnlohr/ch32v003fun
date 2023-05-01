@@ -1,14 +1,19 @@
 //transmitter code example, transmits an ascending number every TIME_GAP milliseconds in NO_ACK_MODE. can be switched to ACK_MODE
 //payload length of 1 or 16 byte, 1Mbps datarate, -6 dbm rf transmit power, channel 32 of 125
+
 extern "C"{
 	#include "nrf24l01.h"
 }
 
-#define TIME_GAP    1000
 
+
+#define TIME_GAP 1000
 uint8_t ascending_number = 0;
 char txt[16];
 
+
+
+//######### debug fn
 
 void uint8_to_binary_string(uint8_t value, char* output, int len) {
     for (int i = 0; i < len; i++) {
@@ -17,7 +22,6 @@ void uint8_to_binary_string(uint8_t value, char* output, int len) {
     }
     output[len] = '\0';
 }
-
 
 void print_reg(char* name, uint8_t addr) {
   Serial.print("         ");
@@ -42,6 +46,8 @@ void print_debug() {
 
 
 
+//######### LED fn
+
 //LED_BUILTIN is pin 13 is SCK of SPI, already using that
 void led_on() {
   digitalWrite(4, HIGH);
@@ -52,6 +58,7 @@ void led_off() {
 }
 
 
+//######### TX fn
 
 uint8_t sendnumber() {
   return nrf24_transmit(&ascending_number, 1, ACK_MODE);
@@ -97,21 +104,24 @@ void send() {
 
 
 
+//######### MAIN
 
 void setup()
 {
-  Serial.begin(115200);                          
-  
-  pinMode(4, OUTPUT);
+  Serial.begin(115200);
 
   Serial.print("\r\r\n\nspi_24L01_TX\n\r");
 
   Serial.print("initializing radio as TX...");
   nrf24_device(TRANSMITTER, RESET);     //initializing nrf24l01+ as a transmitter using one simple function
-  nrf24_rf_power(18)                    //default TX power is -6dB, pretty strong, reduce to -18dBm for one room
+  nrf24_rf_power(18);                   //default TX power is -6dB, pretty strong, reduce to -18dBm for one room
   Serial.print("done.\n\r");
 
+  pinMode(4, OUTPUT);
+
   print_debug();
+
+  delay(1000);
 
   Serial.print("entering loop\n\r");
 }

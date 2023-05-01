@@ -4,10 +4,6 @@
 #include <stdio.h>
 #include <stdint.h>
 
-
-
-
-
 #define STARTUP_DELAY                 150             /*in milliseconds*/
 #define POWER_DOWN_DELAY              2
 #define STANDBYI_DELAY                2
@@ -66,6 +62,9 @@
 #define RECEIVE_FIFO_EMPTY            2
 #define TX_BUFFER                     1
 #define RX_BUFFER                     0
+// return states for nrf24_rf_channel_test_busy
+#define CHANNEL_CLEAR                 0
+#define CHANNEL_BUSY                  1
 
 /*bits definition section*/
 #define MASK_RX_DR          6               /*mask interrupt caused by RX_DR: 1 interrupt not reflected on IRQ pin (IRQ is active low), inside CONFIG register*/
@@ -116,7 +115,6 @@
 #define RX_P_NO_2           3
 #define RX_P_NO_1           2
 #define RX_P_NO_0           1
-//#define TX_FULL             0
 #define PLOS_CNT_3          7               /*inside OBSERVE_TX register, counts the total number of retransmissions since last channel change. reset by writing to RF_CH*/
 #define PLOS_CNT_2          6
 #define PLOS_CNT_1          5
@@ -191,6 +189,8 @@ void nrf24_mode(uint8_t mode);
 void nrf24_SPI(uint8_t input);
 void nrf24_CE(uint8_t input);
 void nrf24_address_width(uint8_t address_width);
+uint8_t nrf24_rf_channel_read_busy(uint8_t rf_channel);
+uint8_t nrf24_rf_channel_test_busy(uint8_t rf_channel, uint16_t ms_to_test);
 void nrf24_rf_channel(uint8_t rf_channel);
 void nrf24_rf_power(uint8_t rf_power);
 void nrf24_rf_datarate(uint16_t rf_datarate);
@@ -205,6 +205,8 @@ void nrf24_datapipe_address_configuration();
 void nrf24_datapipe_ptx(uint8_t datapipe_number);
 void nrf24_automatic_retransmit_setup(uint16_t delay_time, uint8_t retransmit_count);
 void nrf24_auto_acknowledgment_setup(uint8_t datapipe);
+void nrf24_payload_without_ack(uint8_t state);
+void nrf24_payload_with_ack(uint8_t state);
 void nrf24_dynamic_payload(uint8_t state, uint8_t datapipe);
 void nrf24_device(uint8_t device_mode, uint8_t reset_state);
 void nrf24_send_payload(uint8_t *payload, uint8_t payload_width);

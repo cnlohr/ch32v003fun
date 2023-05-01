@@ -1,8 +1,9 @@
 #include "nrf24l01.h"
 
-uint8_t NRF24_en_ack = ENABLE;
-uint8_t NRF24_en_dynamic_payload = ENABLE;
-
+/*nRF24L01+ features, enable / disable as needed*/
+static uint8_t NRF24_en_ack = ENABLE;
+static uint8_t NRF24_en_no_ack = ENABLE;
+static uint8_t NRF24_en_dynamic_payload = ENABLE;
 
 /*global variables related to this file*/
 static uint8_t SPI_command;                                       /*1 byte spi command*/
@@ -13,7 +14,7 @@ static uint8_t current_address_width;                             /*current addr
 static uint8_t reset_flag = 0;                                    /*reset flag lets the software know if the nrf24l01+ has ever been reset or not*/
 static uint8_t current_mode = DEVICE_NOT_INITIALIZED;             /*current mode of operation: DEVICE_NOT_INITIALIZED, PRX, PTX, STANDBYI, STANDBYII, POWER_DOWN*/
 static uint8_t current_payload_width;                             /*payload width could be from 1 to 32 bytes, in either dynamic or static forms*/
-static uint8_t current_acknowledgement_state = NO_ACK_MODE;       
+static uint8_t current_acknowledgement_state = NO_ACK_MODE;
 
 /*2 dimensional array of pipe addresses (5 byte address width) by default. you can change addresses using a new array later.
   Pipe 1 address could be anything. pipe 3 to 6 addresses share the first 4 bytes with pipe 2 and only differ in byte 5*/
@@ -26,42 +27,6 @@ uint8_t datapipe_address[MAXIMUM_NUMBER_OF_DATAPIPES][ADDRESS_WIDTH_DEFAULT] = {
   {0X20, 0XC3, 0XC2, 0XC1, 0XA5}
 };
 
-/*function to enable or disable sending without acknowledge.
-   if disabled, you cannot disable acknowledging a payload. manipulates EN_DYN_ACK inside FEATURE*/
-void nrf24_payload_without_ack(uint8_t state)
-{
-  nrf24_read(FEATURE_ADDRESS, &register_current_value, 1, CLOSE);
-  if (state == ENABLE)
-  {
-    register_new_value = register_current_value | (1 << EN_DYN_ACK);
-  }
-  else
-  {
-    register_new_value = register_current_value & (~(1 << EN_DYN_ACK));
-  }
-  nrf24_write(FEATURE_ADDRESS, &register_new_value, 1, CLOSE);
-}
-
-void nrf24_payload_with_ack(uint8_t state) {
-  if (state == ENABLE)
-  {
-    nrf24_read(FEATURE_ADDRESS, &register_current_value, 1, CLOSE);
-    register_new_value = register_current_value | (1 << EN_ACK_PAY) | (1 << EN_DPL);
-    nrf24_write(FEATURE_ADDRESS, &register_new_value, 1, CLOSE);
-    nrf24_read(DYNPD_ADDRESS, &register_current_value, 1, CLOSE);
-    register_new_value = register_current_value | 0b111111;
-    nrf24_write(DYNPD_ADDRESS, &register_new_value, 1, CLOSE);
-  }
-  else
-  {
-    nrf24_read(FEATURE_ADDRESS, &register_current_value, 1, CLOSE);
-    register_new_value = register_current_value & (~((1 << EN_ACK_PAY) | (1 << EN_DPL)));
-    nrf24_write(FEATURE_ADDRESS, &register_new_value, 1, CLOSE);
-  }
-}
-
-
-
 /*function for PTX device to transmit 1 to 32 bytes of data, used for both dynamic payload length
    and static payload length methods. acknowledgemet state could be NO_ACK_MODE or ACK_MODE*/
 uint8_t nrf24_transmit(uint8_t *payload, uint8_t payload_width, uint8_t acknowledgement_state)
@@ -72,7 +37,7 @@ uint8_t nrf24_transmit(uint8_t *payload, uint8_t payload_width, uint8_t acknowle
     current_acknowledgement_state = acknowledgement_state;      /*setting the acknowledgement state to either NO_ACK or ACK, based on input*/
     if (NRF24_en_dynamic_payload == ENABLE)
       current_payload_width = payload_width;
-    nrf24_send_payload(payload, current_payload_width);          /*the actual function to send data*/
+    nrf24_send_payload(payload, payload_width);          /*the actual function to send data*/
     return (TRANSMIT_BEGIN);                                     /*TX FIFO is not full and nrf24l01+ mode is standby ii or ptx*/
   }
   else
@@ -102,24 +67,6 @@ void nrf24_send_payload(uint8_t *payload, uint8_t payload_width)
 /*reports back transmit status: TRANSMIT_DONE, TRANSMIT_FAILED (in case of reaching maximum number of retransmits in auto acknowledgement mode)
   and TRANSMIT_IN_PROGRESS, if neither flags are set. automatically resets the '1' flags.*/
 uint8_t nrf24_transmit_status()
-{
-  nrf24_read(STATUS_ADDRESS, &register_current_value, 1, CLOSE);      /*status register is read to check TX_DS flag*/
-  if (register_current_value & (1 << TX_DS))                          /*if the TX_DS == 1, */
-  {
-    nrf24_write(STATUS_ADDRESS, &register_current_value, 1, CLOSE);   /*reseting the TX_DS flag. as mentioned by datasheet, writing '1' to a flag resets that flag*/
-    return TRANSMIT_DONE;
-  }
-  else if (register_current_value & (1 << MAX_RT))
-  {
-    nrf24_write(STATUS_ADDRESS, &register_current_value, 1, CLOSE);   /*reseting the MAX_RT flag. as mentioned by datasheet, writing '1' to a flag resets that flag*/
-	nrf24_flush(TX_BUFFER);
-    return TRANSMIT_FAILED;
-  }
-  else
-    return TRANSMIT_IN_PROGRESS;
-}
-
-uint8_t nrf24_transmit_status_clear()
 {
   nrf24_read(STATUS_ADDRESS, &register_current_value, 1, CLOSE);      /*status register is read to check TX_DS flag*/
   if (register_current_value & (1 << TX_DS))                          /*if the TX_DS == 1, */
@@ -213,7 +160,7 @@ uint8_t nrf24_flush(uint8_t fifo_select)
 /*must be called atleast once, which happens with calling nrf24_device function*/
 void nrf24_reset()
 {
-  reset_flag = 1;
+  reset_flag = RESET;
   nrf24_CE(CE_OFF);
   register_new_value = CONFIG_REGISTER_DEFAULT;
   nrf24_write(CONFIG_ADDRESS, &register_new_value, 1, CLOSE);
@@ -252,7 +199,7 @@ void nrf24_reset()
   nrf24_automatic_retransmit_setup(RETRANSMIT_DELAY_DEFAULT, RETRANSMIT_COUNT_DEFAULT);
   nrf24_auto_acknowledgment_setup(NUMBER_OF_DP_DEFAULT);
   nrf24_dynamic_payload(NRF24_en_dynamic_payload, NUMBER_OF_DP_DEFAULT);
-  nrf24_payload_without_ack(ENABLE);
+  nrf24_payload_without_ack(NRF24_en_no_ack);
   nrf24_payload_with_ack(NRF24_en_ack);
 }
 
@@ -316,11 +263,8 @@ void nrf24_automatic_retransmit_setup(uint16_t delay_time, uint8_t retransmit_co
 /*setting auto acknoledgement on datapipes*/
 void nrf24_auto_acknowledgment_setup(uint8_t datapipe)
 {
-  /*
   if (datapipe < 7)
     register_new_value = (1 << datapipe) - 1;
-  */
-  register_new_value = EN_AA_REGISTER_DEFAULT;
   nrf24_write(EN_AA_ADDRESS, &register_new_value, 1, CLOSE);
 }
 
@@ -336,10 +280,54 @@ void nrf24_dynamic_payload(uint8_t state, uint8_t datapipe)
     if (datapipe < 7)
       register_new_value = (1 << datapipe) - 1;                       /*turning on dynamic payload width on chosen datapipes, using DYNPD register*/
     nrf24_write(DYNPD_ADDRESS, &register_new_value, 1, CLOSE);
+    NRF24_en_dynamic_payload = ENABLE;
   }
   else
   {
     register_new_value = register_current_value & (~(1 << EN_DPL));
+    nrf24_write(FEATURE_ADDRESS, &register_new_value, 1, CLOSE);
+    NRF24_en_dynamic_payload = DISABLE;
+  }
+}
+
+/*function to enable or disable sending without acknowledge.
+   if disabled, TX must send a payload with ACK-request and receiver must be able to answer it.
+   manipulates EN_DYN_ACK inside FEATURE*/
+void nrf24_payload_without_ack(uint8_t state)
+{
+  if (state == ENABLE)
+  {
+    nrf24_read(FEATURE_ADDRESS, &register_current_value, 1, CLOSE);
+    register_new_value = register_current_value | (1 << EN_DYN_ACK);
+    nrf24_write(FEATURE_ADDRESS, &register_new_value, 1, CLOSE);
+  }
+  else
+  {
+    nrf24_read(FEATURE_ADDRESS, &register_current_value, 1, CLOSE);
+    register_new_value = register_current_value & (~(1 << EN_DYN_ACK));
+    nrf24_write(FEATURE_ADDRESS, &register_new_value, 1, CLOSE);
+  }
+}
+
+/*function to enable or disable sending with acknowledge.
+   if disabled, the payload can be sent only without ACK-request.
+   manipulates EN_ACK_PAY and EN_DPL inside FEATURE as Dynamic Payload Length is required.*/
+void nrf24_payload_with_ack(uint8_t state)
+{
+  if (state == ENABLE)
+  {
+    nrf24_read(FEATURE_ADDRESS, &register_current_value, 1, CLOSE);
+    register_new_value = register_current_value | (1 << EN_ACK_PAY) | (1 << EN_DPL);
+    nrf24_write(FEATURE_ADDRESS, &register_new_value, 1, CLOSE);
+    nrf24_read(DYNPD_ADDRESS, &register_current_value, 1, CLOSE);
+	// enable dynamic payload for all pipes
+    register_new_value = register_current_value | 0b111111;
+    nrf24_write(DYNPD_ADDRESS, &register_new_value, 1, CLOSE);
+  }
+  else
+  {
+    nrf24_read(FEATURE_ADDRESS, &register_current_value, 1, CLOSE);
+    register_new_value = register_current_value & (~((1 << EN_ACK_PAY) | (1 << EN_DPL)));
     nrf24_write(FEATURE_ADDRESS, &register_new_value, 1, CLOSE);
   }
 }
@@ -445,6 +433,58 @@ void nrf24_rf_power(uint8_t rf_power)
       break;
   }
   nrf24_write(RF_SETUP_ADDRESS, &register_new_value, 1, CLOSE);
+}
+
+/*read whether the current channel is busy (has traffic), needs to be called from RX mode*/
+uint8_t nrf24_rf_channel_read_busy(uint8_t rf_channel)
+{
+  uint8_t signals_detected;
+  nrf24_read(RPD_REG_ADDRESS, &signals_detected, 1, CLOSE);
+  if (signals_detected) {
+    return CHANNEL_BUSY;
+  }
+  else {
+    return CHANNEL_CLEAR;
+  }
+}
+
+/*test whether a channel is busy (has traffic), waiting for ms_to_test*/
+uint8_t nrf24_rf_channel_test_busy(uint8_t rf_channel, uint16_t ms_to_test)
+{
+  if ((rf_channel <= 125) && (rf_channel >= 1))
+  {
+    // back up old channel
+    uint8_t previous_channel;
+    nrf24_read(RF_CH_ADDRESS, &previous_channel, 1, CLOSE);
+    // back up old mode
+    uint8_t previous_mode = current_mode;
+    // switch to new channel
+    nrf24_rf_channel(rf_channel);
+    // switch to RX, Received Power Detector is set to 0 and begins sampling
+    if (previous_mode != PRX) {
+      nrf24_mode(PRX);
+    }
+    // wait at least 1 ms before declaring channel clear
+    delay_function(1 > ms_to_test ? 1 : ms_to_test);
+    // Received Power Detector latches to 1 if there was a signal >-64dBm for at least 40 uS consecutively since RX mode was enabled
+    uint8_t signals_detected = nrf24_rf_channel_read_busy(rf_channel);
+    // switch back to old channel
+    nrf24_rf_channel(previous_channel);
+    // switch back to old mode
+    if (previous_mode != PRX) {
+      nrf24_mode(previous_mode);
+    }
+    if (signals_detected) {
+      return CHANNEL_BUSY;
+    }
+    else {
+      return CHANNEL_CLEAR;
+    }
+  }
+  else
+  {
+		return CHANNEL_BUSY;
+  }
 }
 
 /*nrf24l01+ RF channel selection, from 1 to 125*/

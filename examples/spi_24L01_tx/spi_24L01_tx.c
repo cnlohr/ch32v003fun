@@ -3,22 +3,22 @@
  * 04-26-2023 recallmenot 
  */
 
-// Could be defined here, or in the processor defines.
 #define SYSTEM_CORE_CLOCK 48000000
 #define APB_CLOCK SYSTEM_CORE_CLOCK
 
 #include "../../ch32v003fun/ch32v003fun.h"
-#include "SPI.h"
 #include <stdio.h>
 #include "nrf24l01.h"
 
-#define TIME_GAP			 1000
 
+
+#define TIME_GAP 1000
 uint8_t ascending_number = 0x00;
 char txt[16];
 
 
-// ####### start of main program ###############################################################
+
+//######### debug fn
 
 void uint8_to_binary_string(uint8_t value, char* output, int len) {
 		for (int i = 0; i < len; i++) {
@@ -50,6 +50,7 @@ void print_debug() {
 
 
 
+//######### LED fn
 
 // led is PD4 to LED1 on board, which is (-)
 void led_on() {
@@ -60,6 +61,9 @@ void led_off() {
 	GPIOD->BSHR |= 1<<4;
 }
 
+
+
+//######### TX fn
 
 uint8_t sendnumber() {
 	return nrf24_transmit(&ascending_number, 1, ACK_MODE);
@@ -107,17 +111,15 @@ void send() {
 
 
 
+//######### MAIN
+
+
 int main()
 {
 	SystemInit48HSI();
 
 	// start serial @ default 115200bps
 	SetupUART( UART_BRR );
-
-	// GPIO D4 Push-Pull for foreground blink
-	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD;
-	GPIOD->CFGLR &= ~(0xf<<(4*4));
-	GPIOD->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*4);
 
 	printf("\r\r\n\nspi_24L01_TX\n\r");
 
@@ -127,6 +129,13 @@ int main()
 	printf("done.\n\r");
 
 	print_debug();
+
+	// GPIO D4 Push-Pull for foreground blink
+	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD;
+	GPIOD->CFGLR &= ~(0xf<<(4*4));
+	GPIOD->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*4);
+
+	Delay_Ms(1000);
 
 	printf("looping...\n\r");
 	while(1)
