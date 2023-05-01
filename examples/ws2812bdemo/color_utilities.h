@@ -136,6 +136,64 @@ static const unsigned char sintable[] = {
 	0x26, 0x28, 0x2a, 0x2d, 0x2f, 0x31, 0x34, 0x36, 0x39, 0x3c, 0x3e, 0x41, 0x44, 0x47, 0x49, 0x4c, 
 	0x4f, 0x52, 0x55, 0x58, 0x5b, 0x5e, 0x61, 0x64, 0x67, 0x6a, 0x6d, 0x70, 0x73, 0x76, 0x79, 0x7d, };
 
+static inline uint32_t FastMultiply( uint32_t big_num, uint32_t small_num ) __attribute__((section(".data")));
+static inline uint32_t FastMultiply( uint32_t big_num, uint32_t small_num )
+{
+	// The CH32V003 is an EC core, so no hardware multiply. GCC's way multiply
+	// is slow, so I wrote this.
+	//
+	// This basically does this:
+	//	return small_num * big_num;
+	//
+	// Note: This does NOT check for zero to begin with, though this still
+	// produces the correct results, it is a little weird that even if
+	// small_num is zero it executes once.
+	//
+	// Additionally note, instead of the if( m&1 ) you can do the following:
+	//  ret += multiplciant & neg(multiplicand & 1).
+	//
+	// BUT! Shockingly! That is slower than an extra branch! The CH32V003
+	//  can branch unbelievably fast.
+	//
+	// This is functionally equivelent and much faster.
+	//
+	// Perf numbers, with small_num set to 180V.
+	//  No multiply:         21.3% CPU Usage
+	//  Assembly below:      42.4% CPU Usage  (1608 bytes for whole program)
+	//  C version:           41.4% CPU Usage  (1600 bytes for whole program)
+	//  Using GCC (__mulsi3) 65.4% CPU Usage  (1652 bytes for whole program)
+	//
+	// The multiply can be done manually:
+	uint32_t ret = 0;
+	uint32_t multiplicand = small_num;
+	uint32_t mutliplicant = big_num;
+	do
+	{
+		if( multiplicand & 1 )
+			ret += mutliplicant;
+		mutliplicant<<=1;
+		multiplicand>>=1;
+	} while( multiplicand );
+	return ret;
+
+	// Which is equivelent to the following assembly (If you were curious)
+/*
+	uint32_t ret = 0;
+	asm volatile( "\n\
+		.option   rvc;\n\
+	1:	andi t0, %[small], 1\n\
+		beqz t0, 2f\n\
+		add %[ret], %[ret], %[big]\n\
+	2:	srli %[small], %[small], 1\n\
+		slli %[big], %[big], 1\n\
+		bnez %[small], 1b\n\
+	" :
+		[ret]"=&r"(ret), [big]"+&r"(big_num), [small]"+&r"(small_num) : :
+		"t0" );
+	return ret;
+*/
+}
+
 static uint32_t TweenHexColors( uint32_t hexa, uint32_t hexb, int tween )
 {
 	if( tween <= 0 ) return hexa;
@@ -148,9 +206,9 @@ static uint32_t TweenHexColors( uint32_t hexa, uint32_t hexb, int tween )
 	int32_t hbb = hexb & 0xff;
 	int32_t hbr = (hexb>>8) & 0xff;
 	int32_t hbg = (hexb>>16) & 0xff;
-	int32_t b = (hab * aamt + hbb * bamt + 128) >> 8;
-	int32_t r = (har * aamt + hbr * bamt + 128) >> 8;
-	int32_t g = (hag * aamt + hbg * bamt + 128) >> 8;
+	int32_t b = (FastMultiply( hab, aamt ) + FastMultiply( hbb, bamt ) + 128) >> 8;
+	int32_t r = (FastMultiply( har, aamt ) + FastMultiply( hbr, bamt ) + 128) >> 8;
+	int32_t g = (FastMultiply( hag, aamt ) + FastMultiply( hbg, bamt ) + 128) >> 8;
 	return b | (r<<8) | (g<<16);
 }
 
