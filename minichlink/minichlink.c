@@ -498,7 +498,7 @@ help:
 	fprintf( stderr, " -w [binary image to write] [address, decimal or 0x, try0x08000000]\n" );
 	fprintf( stderr, " -r [output binary image] [memory address, decimal or 0x, try 0x08000000] [size, decimal or 0x, try 16384]\n" );
 	fprintf( stderr, "   Note: for memory addresses, you can use 'flash' 'launcher' 'bootloader' 'option' 'ram' and say \"ram+0x10\" for instance\n" );
-	fprintf( stderr, "   For filename, you can use - for raw or + for hex.\n" );
+	fprintf( stderr, "   For filename, you can use - for raw (terminal) or + for hex (inline).\n" );
 	fprintf( stderr, " -T is a terminal. This MUST be the last argument. Also, will start a gdbserver.\n" );
 
 	return -1;	
@@ -720,6 +720,7 @@ static int DefaultReadHalfWord( void * dev, uint32_t address_to_write, uint16_t 
 	uint32_t rr;
 	ret |= MCF.ReadReg32( dev, DMDATA0, &rr );
 	*data = rr;
+	return ret;
 }
 
 
@@ -745,8 +746,6 @@ static int DefaultWriteByte( void * dev, uint32_t address_to_write, uint8_t data
 
 	ret |= MCF.WaitForDoneOp( dev );
 	iss->currentstateval = -1;
-
-
 	return ret;
 }
 
@@ -775,6 +774,7 @@ static int DefaultReadByte( void * dev, uint32_t address_to_write, uint8_t * dat
 	uint32_t rr;
 	ret |= MCF.ReadReg32( dev, DMDATA0, &rr );
 	*data = rr;
+	return ret;
 }
 
 
@@ -909,18 +909,19 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 
 
 	uint8_t tempblock[64];
-	int sblock =  address_to_write & ~0x3f;
-	int eblock = ( address_to_write + blob_size + 0x3f) & ~0x3f;
+	int sblock =  address_to_write >> 6;
+	int eblock = ( address_to_write + blob_size + 0x3f) >> 6;
 	int b;
 	int rsofar = 0;
 	for( b = sblock; b < eblock; b++ )
 	{
 		int offset_in_block = address_to_write - (b * 64);
-		if( address_to_write < 0 ) address_to_write = 0;
+		if( offset_in_block < 0 ) offset_in_block = 0;
 		int end_o_plus_one_in_block = ( address_to_write + blob_size ) - (b*64);
 		if( end_o_plus_one_in_block > 64 ) end_o_plus_one_in_block = 64;
 		int	base = b * 64;
-		if( address_to_write == 0 && end_o_plus_one_in_block == 64 )
+
+		if( offset_in_block == 0 && end_o_plus_one_in_block == 64 )
 		{
 			if( MCF.BlockWrite64 ) 
 			{
@@ -928,7 +929,7 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 				rsofar += 64;
 				if( r )
 				{
-					fprintf( stderr, "Error writing block at memory %08x\n", address_to_write );
+					fprintf( stderr, "Error writing block at memory %08x\n", base );
 					return r;
 				}
 			}
@@ -963,20 +964,22 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 			//Ok, we have to do something wacky.
 			if( is_flash )
 			{
-				MCF.ReadBlob( dev, base, 64, tempblock );
+				MCF.ReadBinaryBlob( dev, base, 64, tempblock );
 
 				MCF.Erase( dev, base, 64, 0 );
 				MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG ); // THIS IS REQUIRED, (intptr_t)&FLASH->CTLR = 0x40022010
 				MCF.WriteWord( dev, 0x40022010, CR_BUF_RST | CR_PAGE_PG );  // (intptr_t)&FLASH->CTLR = 0x40022010
 
 				// Permute tempblock
-				memcpy( tempblock + offset_in_block, blob + rsofar, end_o_plus_one_in_block - offset_in_block );
-				rsofar += end_o_plus_one_in_block - offset_in_block;
+				int tocopy = end_o_plus_one_in_block - offset_in_block;
+				printf( "MEMCPY: %p %p %d (%d %d)\n", tempblock + offset_in_block, blob + rsofar, tocopy, end_o_plus_one_in_block, offset_in_block );
+				memcpy( tempblock + offset_in_block, blob + rsofar, tocopy );
+				rsofar += tocopy;
 
 				int j;
 				for( j = 0; j < 16; j++ )
 				{
-					MCF.WriteWord( dev, j*4+base, tempblock + j * 4 );
+					MCF.WriteWord( dev, j*4+base, *(uint32_t*)(tempblock + j * 4) );
 					rsofar += 4;
 				}
 				MCF.WriteWord( dev, 0x40022014, base );  //0x40022014 -> FLASH->ADDR
@@ -989,35 +992,40 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 				int j;
 				for( j = 0; j < 16; j++ )
 				{
-					uint32_t taddy = j*4+base;
-
-					int caddy = offset_in_block - taddy;
-					if( caddy < 0 ) 
-XXX PICK UP HERE
-#if 0
+					uint32_t taddy = j*4;
 					if( offset_in_block <= taddy && end_o_plus_one_in_block >= taddy + 4 )
 					{
-						MCF.WriteWord( dev, j*4+base, tempblock + j * 4 );
+						MCF.WriteWord( dev, taddy + base, *(uint32_t*)(blob + rsofar) );
+						rsofar += 4;
 					}
 					else if( ( offset_in_block & 1 ) || ( end_o_plus_one_in_block & 1 ) )
 					{
 						// Bytes only.
 						int j;
-						for( j = 0; j < 2; j+=2 )
+						for( j = 0; j < 4; j++ )
 						{
-							MCF.WriteByte
+							if( taddy >= offset_in_block && taddy < end_o_plus_one_in_block )
+							{
+								MCF.WriteByte( dev, taddy + base, *(uint32_t*)(blob + rsofar) );
+								rsofar ++;
+							}
+							taddy++;
 						}
 					}
 					else
 					{
 						// Half-words
 						int j;
-						for( j = 0; j < 4; j++ )
+						for( j = 0; j < 4; j+=2 )
 						{
+							if( taddy >= offset_in_block && taddy < end_o_plus_one_in_block )
+							{
+								MCF.WriteHalfWord( dev, taddy + base, *(uint32_t*)(blob + rsofar) );
+								rsofar +=2;
+							}
+							taddy+=2;
 						}
 					}
-					rsofar += 4;
-#endif
 				}
 			}
 		}
@@ -1165,16 +1173,54 @@ int DefaultReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t r
 {
 	uint32_t rpos = address_to_read_from;
 	uint32_t rend = address_to_read_from + read_size;
+
 	while( rpos < rend )
 	{
-		uint32_t rw;
-		int r = DefaultReadWord( dev, rpos, &rw );
-		if( r ) return r;
+		int r;
 		int remain = rend - rpos;
-		if( remain > 3 ) remain = 4;
-		memcpy( blob, &rw, remain );
-		blob += 4;
-		rpos += 4;
+printf( "%08x %08x %d\n", rpos, rend, remain );
+		if( ( rpos & 3 ) == 0 && remain >= 4 )
+		{
+			uint32_t rw;
+			r = MCF.ReadWord( dev, rpos, &rw );
+			if( r ) return r;
+			memcpy( blob, &rw, remain );
+			blob += 4;
+			rpos += 4;
+		}
+		else
+		{
+			if( ( rpos & 1 ) )
+			{
+				uint8_t rw;
+				r = MCF.ReadByte( dev, rpos, &rw );
+				if( r ) return r;
+				memcpy( blob, &rw, 1 );
+				blob += 1;
+				rpos += 1;
+				remain -= 1;
+			}
+			if( ( rpos & 2 ) && remain >= 2 )
+			{
+				uint16_t rw;
+				r = MCF.ReadHalfWord( dev, rpos, &rw );
+				if( r ) return r;
+				memcpy( blob, &rw, 2 );
+				blob += 2;
+				rpos += 2;
+				remain -= 2;
+			}
+			if( remain >= 1 )
+			{
+				uint8_t rw;
+				r = MCF.ReadByte( dev, rpos, &rw );
+				if( r ) return r;
+				memcpy( blob, &rw, 1 );
+				blob += 1;
+				rpos += 1;
+				remain -= 1;
+			}
+		}
 	}
 	return 0;
 }
