@@ -24,10 +24,10 @@ struct MiniChlinkFunctions
 	int (*HaltMode)( void * dev, int mode ); //0 for halt, 1 for reset, 2 for resume
 	int (*ConfigureNRSTAsGPIO)( void * dev, int one_if_yes_gpio );
 
-	// WARNING: Reading/writing must be at 32-bit boundaries for 32-bit sizes.
-	// WARNING: Writing binary blobs may write groups of 64-bytes.
+	// No boundary or limit rules.  Must support any combination of alignment and size.
 	int (*WriteBinaryBlob)( void * dev, uint32_t address_to_write, uint32_t blob_size, uint8_t * blob );
 	int (*ReadBinaryBlob)( void * dev, uint32_t address_to_read_from, uint32_t read_size, uint8_t * blob );
+
 	int (*Erase)( void * dev, uint32_t address, uint32_t length, int type ); //type = 0 for fast, 1 for whole-chip
 
 	// MUST be 4-byte-aligned.
@@ -71,9 +71,12 @@ struct MiniChlinkFunctions
 
 	int (*VendorCommand)( void * dev, const char * command );
 
-	// Do Not override these.  they are cursed.
-	int (*WriteHalfWord)( void * dev, uint32_t address_to_write, uint32_t data );
-	int (*ReadHalfWord)( void * dev, uint32_t address_to_read, uint32_t * data );
+	// Probably no need to override these.  The base layer handles them.
+	int (*WriteHalfWord)( void * dev, uint32_t address_to_write, uint16_t data );
+	int (*ReadHalfWord)( void * dev, uint32_t address_to_read, uint16_t * data );
+
+	int (*WriteByte)( void * dev, uint32_t address_to_write, uint8_t data );
+	int (*ReadByte)( void * dev, uint32_t address_to_read, uint8_t * data );
 };
 
 /** If you are writing a driver, the minimal number of functions you can implement are:

@@ -669,7 +669,7 @@ static int InternalUnlockBootloader( void * dev )
 
 
 
-static int DefaultWriteHalfWord( void * dev, uint32_t address_to_write, uint32_t data )
+static int DefaultWriteHalfWord( void * dev, uint32_t address_to_write, uint16_t data )
 {
 	int ret = 0;
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
@@ -695,7 +695,7 @@ static int DefaultWriteHalfWord( void * dev, uint32_t address_to_write, uint32_t
 	return ret;
 }
 
-static int DefaultReadHalfWord( void * dev, uint32_t address_to_write, uint32_t * data )
+static int DefaultReadHalfWord( void * dev, uint32_t address_to_write, uint16_t * data )
 {
 	int ret = 0;
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
@@ -706,7 +706,7 @@ static int DefaultReadHalfWord( void * dev, uint32_t address_to_write, uint32_t 
 
 	// Different address, so we don't need to re-write all the program regs.
 	// lh x8,0(x9)  // Write to the address.
-	MCF.WriteReg32( dev, DMPROGBUF0, 0x00049403 );
+	MCF.WriteReg32( dev, DMPROGBUF0, 0x00049403 ); // lh x8, 0(x9)
 	MCF.WriteReg32( dev, DMPROGBUF1, 0x00100073 ); // c.ebreak
 
 	MCF.WriteReg32( dev, DMDATA0, address_to_write );
@@ -717,8 +717,64 @@ static int DefaultReadHalfWord( void * dev, uint32_t address_to_write, uint32_t 
 	ret |= MCF.WaitForDoneOp( dev );
 	iss->currentstateval = -1;
 
+	uint32_t rr;
+	ret |= MCF.ReadReg32( dev, DMDATA0, &rr );
+	*data = rr;
+}
 
-	return ret | MCF.ReadReg32( dev, DMDATA0, data );
+
+
+static int DefaultWriteByte( void * dev, uint32_t address_to_write, uint8_t data )
+{
+	int ret = 0;
+	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
+	if( MCF.VoidHighLevelState ) MCF.VoidHighLevelState( dev );
+	iss->statetag = STTAG( "XXXX" );
+
+	MCF.WriteReg32( dev, DMABSTRACTAUTO, 0x00000000 ); // Disable Autoexec.
+
+	// Different address, so we don't need to re-write all the program regs.
+	// sh x8,0(x9)  // Write to the address.
+	MCF.WriteReg32( dev, DMPROGBUF0, 0x00848023 ); // sb x8, 0(x9)
+	MCF.WriteReg32( dev, DMPROGBUF1, 0x00100073 ); // c.ebreak
+
+	MCF.WriteReg32( dev, DMDATA0, address_to_write );
+	MCF.WriteReg32( dev, DMCOMMAND, 0x00231009 ); // Copy data to x9
+	MCF.WriteReg32( dev, DMDATA0, data );
+	MCF.WriteReg32( dev, DMCOMMAND, 0x00271008 ); // Copy data to x8, and execute program.
+
+	ret |= MCF.WaitForDoneOp( dev );
+	iss->currentstateval = -1;
+
+
+	return ret;
+}
+
+static int DefaultReadByte( void * dev, uint32_t address_to_write, uint8_t * data )
+{
+	int ret = 0;
+	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
+	if( MCF.VoidHighLevelState ) MCF.VoidHighLevelState( dev );
+	iss->statetag = STTAG( "XXXX" );
+
+	MCF.WriteReg32( dev, DMABSTRACTAUTO, 0x00000000 ); // Disable Autoexec.
+
+	// Different address, so we don't need to re-write all the program regs.
+	// lb x8,0(x9)  // Write to the address.
+	MCF.WriteReg32( dev, DMPROGBUF0, 0x00048403 ); // lb x8, 0(x9)
+	MCF.WriteReg32( dev, DMPROGBUF1, 0x00100073 ); // c.ebreak
+
+	MCF.WriteReg32( dev, DMDATA0, address_to_write );
+	MCF.WriteReg32( dev, DMCOMMAND, 0x00231009 ); // Copy data to x9
+	MCF.WriteReg32( dev, DMCOMMAND, 0x00241000 ); // Only execute.
+	MCF.WriteReg32( dev, DMCOMMAND, 0x00221008 ); // Read x8 into DATA0.
+
+	ret |= MCF.WaitForDoneOp( dev );
+	iss->currentstateval = -1;
+
+	uint32_t rr;
+	ret |= MCF.ReadReg32( dev, DMDATA0, &rr );
+	*data = rr;
 }
 
 
@@ -830,7 +886,7 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 	if( (address_to_write & 0xff000000) == 0x08000000 || (address_to_write & 0xff000000) == 0x00000000 || (address_to_write & 0x1FFFF800) == 0x1FFFF000 ) 
 		is_flash = 1;
 
-	if( is_flash && MCF.BlockWrite64 && ( address_to_write & 0x3f ) == 0 )
+	if( is_flash && MCF.BlockWrite64 && ( address_to_write & 0x3f ) == 0 && ( blob_size & 0x3f ) == 0 )
 	{
 		int i;
 		for( i = 0; i < blob_size; i+= 64 )
@@ -845,76 +901,130 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 		return 0;
 	}
 
-	if( is_flash ) 
+	if( is_flash && !iss->flash_unlocked )
 	{
-		// Need to unlock flash.
-		// Flash reg base = 0x40022000,
-		// FLASH_MODEKEYR => 0x40022024
-		// FLASH_KEYR => 0x40022004
-
-		if( !iss->flash_unlocked )
-		{
-			if( ( rw = StaticUnlockFlash( dev, iss ) ) )
-				return rw;
-		}
-
-		is_flash = 1;
-
-		printf( "Erasing TO %08x %08x\n", address_to_write, blob_size );
-		MCF.Erase( dev, address_to_write, blob_size, 0 );
+		if( ( rw = StaticUnlockFlash( dev, iss ) ) )
+			return rw;
 	}
-	printf( "Done\n" );
-	MCF.FlushLLCommands( dev );
-	MCF.DelayUS( dev, 100 ); // Why do we need this?
 
-	uint32_t wp = address_to_write;
-	uint32_t ew = wp + blob_size;
-	int group = -1;
 
-	while( wp < ew )
+	uint8_t tempblock[64];
+	int sblock =  address_to_write & ~0x3f;
+	int eblock = ( address_to_write + blob_size + 0x3f) & ~0x3f;
+	int b;
+	int rsofar = 0;
+	for( b = sblock; b < eblock; b++ )
 	{
-		if( is_flash )
+		int offset_in_block = address_to_write - (b * 64);
+		if( address_to_write < 0 ) address_to_write = 0;
+		int end_o_plus_one_in_block = ( address_to_write + blob_size ) - (b*64);
+		if( end_o_plus_one_in_block > 64 ) end_o_plus_one_in_block = 64;
+		int	base = b * 64;
+		if( address_to_write == 0 && end_o_plus_one_in_block == 64 )
 		{
-			group = (wp & 0xffffffc0);
-			MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG ); // THIS IS REQUIRED, (intptr_t)&FLASH->CTLR = 0x40022010
-			MCF.WriteWord( dev, 0x40022010, CR_BUF_RST | CR_PAGE_PG );  // (intptr_t)&FLASH->CTLR = 0x40022010
-
-			int j;
-			for( j = 0; j < 16; j++ )
+			if( MCF.BlockWrite64 ) 
 			{
-				int index = (wp-address_to_write);
-				uint32_t data = 0xffffffff;
-				if( index + 3 < blob_size )
-					data = ((uint32_t*)blob)[index/4];
-				else if( (int32_t)(blob_size - index) > 0 )
+				int r = MCF.BlockWrite64( dev, base, blob + rsofar );
+				rsofar += 64;
+				if( r )
 				{
-					printf( "%d %d\n", blob_size, index );
-					memcpy( &data, &blob[index], blob_size - index );
+					fprintf( stderr, "Error writing block at memory %08x\n", address_to_write );
+					return r;
 				}
-				MCF.WriteWord( dev, wp, data );
-				wp += 4;
 			}
-			MCF.WriteWord( dev, 0x40022014, group );  //0x40022014 -> FLASH->ADDR
-			MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG|CR_STRT_Set ); // 0x40022010 -> FLASH->CTLR
-			if( MCF.WaitForFlash ) MCF.WaitForFlash( dev );
+			else 					// Block Write not avaialble
+			{
+				if( is_flash )
+				{
+					MCF.Erase( dev, base, 64, 0 );
+					MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG ); // THIS IS REQUIRED, (intptr_t)&FLASH->CTLR = 0x40022010
+					MCF.WriteWord( dev, 0x40022010, CR_BUF_RST | CR_PAGE_PG );  // (intptr_t)&FLASH->CTLR = 0x40022010
+				}
+
+				int j;
+				for( j = 0; j < 16; j++ )
+				{
+					uint32_t writeword;
+					memcpy( &writeword, blob + rsofar, 4 );
+					MCF.WriteWord( dev, j*4+base, writeword );
+					rsofar += 4;
+				}
+
+				if( is_flash )
+				{
+					MCF.WriteWord( dev, 0x40022014, base );  //0x40022014 -> FLASH->ADDR
+					MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG|CR_STRT_Set ); // 0x40022010 -> FLASH->CTLR
+					if( MCF.WaitForFlash ) MCF.WaitForFlash( dev );
+				}
+			}
 		}
 		else
 		{
-			int index = (wp-address_to_write);
-			uint32_t data = 0xffffffff;
-			if( index + 3 < blob_size )
-				data = ((uint32_t*)blob)[index/4];
-			else if( (int32_t)(blob_size - index) > 0 )
-				memcpy( &data, &blob[index], blob_size - index );
-			MCF.WriteWord( dev, wp, data );
-			wp += 4;
+			//Ok, we have to do something wacky.
+			if( is_flash )
+			{
+				MCF.ReadBlob( dev, base, 64, tempblock );
+
+				MCF.Erase( dev, base, 64, 0 );
+				MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG ); // THIS IS REQUIRED, (intptr_t)&FLASH->CTLR = 0x40022010
+				MCF.WriteWord( dev, 0x40022010, CR_BUF_RST | CR_PAGE_PG );  // (intptr_t)&FLASH->CTLR = 0x40022010
+
+				// Permute tempblock
+				memcpy( tempblock + offset_in_block, blob + rsofar, end_o_plus_one_in_block - offset_in_block );
+				rsofar += end_o_plus_one_in_block - offset_in_block;
+
+				int j;
+				for( j = 0; j < 16; j++ )
+				{
+					MCF.WriteWord( dev, j*4+base, tempblock + j * 4 );
+					rsofar += 4;
+				}
+				MCF.WriteWord( dev, 0x40022014, base );  //0x40022014 -> FLASH->ADDR
+				MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG|CR_STRT_Set ); // 0x40022010 -> FLASH->CTLR
+				if( MCF.WaitForFlash && MCF.WaitForFlash( dev ) ) goto timedout;
+			}
+			else
+			{
+				// Accessing RAM.  Be careful to only do the needed operations.
+				int j;
+				for( j = 0; j < 16; j++ )
+				{
+					uint32_t taddy = j*4+base;
+
+					int caddy = offset_in_block - taddy;
+					if( caddy < 0 ) 
+XXX PICK UP HERE
+#if 0
+					if( offset_in_block <= taddy && end_o_plus_one_in_block >= taddy + 4 )
+					{
+						MCF.WriteWord( dev, j*4+base, tempblock + j * 4 );
+					}
+					else if( ( offset_in_block & 1 ) || ( end_o_plus_one_in_block & 1 ) )
+					{
+						// Bytes only.
+						int j;
+						for( j = 0; j < 2; j+=2 )
+						{
+							MCF.WriteByte
+						}
+					}
+					else
+					{
+						// Half-words
+						int j;
+						for( j = 0; j < 4; j++ )
+						{
+						}
+					}
+					rsofar += 4;
+#endif
+				}
+			}
 		}
 	}
 
-	if( is_flash )
-	{
-		if( MCF.WaitForFlash && MCF.WaitForFlash( dev ) ) goto timedout;
-	}
+	MCF.FlushLLCommands( dev );
+	MCF.DelayUS( dev, 100 ); // Why do we need this?
 	return 0;
 timedout:
 	fprintf( stderr, "Timed out\n" );
@@ -1504,6 +1614,8 @@ int SetupAutomaticHighLevelFunctions( void * dev )
 		MCF.WriteWord = DefaultWriteWord;
 	if( !MCF.WriteHalfWord )
 		MCF.WriteHalfWord = DefaultWriteHalfWord;
+	if( !MCF.WriteByte )
+		MCF.WriteByte = DefaultWriteByte;
 	if( !MCF.ReadCPURegister )
 		MCF.ReadCPURegister = DefaultReadCPURegister;
 	if( !MCF.WriteCPURegister )
@@ -1518,6 +1630,8 @@ int SetupAutomaticHighLevelFunctions( void * dev )
 		MCF.ReadWord = DefaultReadWord;
 	if( !MCF.ReadHalfWord )
 		MCF.ReadHalfWord = DefaultReadHalfWord;
+	if( !MCF.ReadByte )
+		MCF.ReadByte = DefaultReadByte;
 	if( !MCF.Erase )
 		MCF.Erase = DefaultErase;
 	if( !MCF.HaltMode )
