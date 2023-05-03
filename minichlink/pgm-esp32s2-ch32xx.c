@@ -252,6 +252,7 @@ int ESPVoidHighLevelState( void * dev )
 	struct ESP32ProgrammerStruct * eps = (struct ESP32ProgrammerStruct *)dev;
 	Write2LE( eps, 0x05fe );
 	ESPFlushLLCommands( dev );	
+	DefaultVoidHighLevelState( dev );
 	return 0;
 }
 

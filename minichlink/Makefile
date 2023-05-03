@@ -4,6 +4,12 @@ all : $(TOOLS)
 
 CFLAGS:=-O0 -g3 -Wall
 
+C_S:=minichlink.c pgm-wch-linke.c pgm-esp32s2-ch32xx.c nhc-link042.c minichgdb.c
+
+# General Note: To use with GDB, gdb-multiarch
+# gdb-multilib {file}
+# target remote :2345
+
 ifeq ($(OS),Windows_NT)
 	LDFLAGS:=-lpthread -lusb-1.0 -lsetupapi
 else
@@ -20,13 +26,14 @@ else
 	endif
 endif
 
+# will need mingw-w64-x86-64-dev gcc-mingw-w64-x86-64
+minichlink.exe : $(C_S)
+	x86_64-w64-mingw32-gcc -o $@ $^ -Os -s -lsetupapi ./libusb-1.0.dll
 
-
-
-minichlink : minichlink.c pgm-wch-linke.c pgm-esp32s2-ch32xx.c nhc-link042.c
+minichlink : $(C_S)
 	gcc -o $@ $^ $(LDFLAGS) $(CFLAGS) $(INCS)
 
-minichlink.so : minichlink.c pgm-wch-linke.c pgm-esp32s2-ch32xx.c nhc-link042.c
+minichlink.so : $(C_S)
 	gcc -o $@ $^ $(LDFLAGS) $(CFLAGS) $(INCS) -shared -fPIC
 
 install_udev_rules :

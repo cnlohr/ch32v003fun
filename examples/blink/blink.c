@@ -7,7 +7,6 @@
 #define APB_CLOCK SYSTEM_CORE_CLOCK
 
 uint32_t count;
-
 int main()
 {
 	SystemInit48HSI();
@@ -26,6 +25,8 @@ int main()
 	// GPIO C0 Push-Pull
 	GPIOC->CFGLR &= ~(0xf<<(4*0));
 	GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*0);
+
+	count = &count;
 
 	while(1)
 	{
