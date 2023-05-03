@@ -166,8 +166,11 @@ keep_going:
 				if( !MCF.PollTerminal )
 					goto unimplemented;
 
-				if( argchar[1] == 'G' )
-					SetupGDBServer( dev );
+				if( argchar[1] == 'G' && SetupGDBServer( dev ) )
+				{
+					printf( "Error: can't start GDB server\n" );
+					return -1;
+				}
 
 				do
 				{
@@ -192,8 +195,10 @@ keep_going:
 					}
 				} while( 1 );
 
+				// Currently unreachable - consider reachable-ing
 				if( argchar[1] == 'G' )
 					ExitGDBServer( dev );
+				break;
 			}
 			case 's':
 			{
@@ -886,6 +891,10 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 	if( (address_to_write & 0xff000000) == 0x08000000 || (address_to_write & 0xff000000) == 0x00000000 || (address_to_write & 0x1FFFF800) == 0x1FFFF000 ) 
 		is_flash = 1;
 
+	// We can't write into flash when mapped to 0x00000000
+	if( is_flash )
+		address_to_write |= 0x08000000;
+
 	if( is_flash && MCF.BlockWrite64 && ( address_to_write & 0x3f ) == 0 && ( blob_size & 0x3f ) == 0 )
 	{
 		int i;
@@ -913,6 +922,7 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 	int eblock = ( address_to_write + blob_size + 0x3f) >> 6;
 	int b;
 	int rsofar = 0;
+
 	for( b = sblock; b < eblock; b++ )
 	{
 		int offset_in_block = address_to_write - (b * 64);
@@ -965,14 +975,12 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 			if( is_flash )
 			{
 				MCF.ReadBinaryBlob( dev, base, 64, tempblock );
-
 				MCF.Erase( dev, base, 64, 0 );
 				MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG ); // THIS IS REQUIRED, (intptr_t)&FLASH->CTLR = 0x40022010
 				MCF.WriteWord( dev, 0x40022010, CR_BUF_RST | CR_PAGE_PG );  // (intptr_t)&FLASH->CTLR = 0x40022010
 
 				// Permute tempblock
 				int tocopy = end_o_plus_one_in_block - offset_in_block;
-				printf( "MEMCPY: %p %p %d (%d %d)\n", tempblock + offset_in_block, blob + rsofar, tocopy, end_o_plus_one_in_block, offset_in_block );
 				memcpy( tempblock + offset_in_block, blob + rsofar, tocopy );
 				rsofar += tocopy;
 
@@ -1178,7 +1186,7 @@ int DefaultReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t r
 	{
 		int r;
 		int remain = rend - rpos;
-printf( "%08x %08x %d\n", rpos, rend, remain );
+
 		if( ( rpos & 3 ) == 0 && remain >= 4 )
 		{
 			uint32_t rw;

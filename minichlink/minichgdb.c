@@ -56,6 +56,12 @@ int shadow_running_state = 1;
 int last_halt_reason = 5;
 uint32_t backup_regs[17];
 
+#define MAX_SOFTWARE_BREAKPOINTS 128
+int num_software_breakpoints = 0;
+uint8_t  software_breakpoint_type[MAX_SOFTWARE_BREAKPOINTS]; // 0 = not in use, 1 = 32-bit, 2 = 16-bit.
+uint32_t software_breakpoint_addy[MAX_SOFTWARE_BREAKPOINTS];
+uint32_t previous_word_at_breakpoint_address[MAX_SOFTWARE_BREAKPOINTS];
+
 int IsGDBServerInShadowHaltState( void * dev ) { return !shadow_running_state; }
 
 void RVCommandPrologue( void * dev )
@@ -140,7 +146,7 @@ int RVReadCPURegister( void * dev, int regno, uint32_t * regret )
 	if( shadow_running_state )
 	{
 		MCF.HaltMode( dev, 0 );
-		RVCommandPrologue( dev ); printf( "GGGGG1\n" );
+		RVCommandPrologue( dev );
 		shadow_running_state = 0;
 	}
 
@@ -214,18 +220,88 @@ int RVReadMem( void * dev, uint32_t memaddy, uint8_t * payload, int len )
 	return ret;
 }
 
-int RVHandleBreakpoint( void * dev, int set, uint32_t address )
+static int InternalDisableBreakpoint( void * dev, int i )
 {
-	if( set )
+	int r;
+	if( software_breakpoint_type[i] == 1 )
 	{
-		MCF.SetEnableBreakpoints( dev, 1, 1 );
+		//32-bit instruction
+		r = MCF.WriteBinaryBlob( dev, software_breakpoint_addy[i], 4, (uint8_t*)&previous_word_at_breakpoint_address[i] );
 	}
 	else
 	{
-		MCF.SetEnableBreakpoints( dev, 1, 0 );
+		//16-bit instruction
+		r = MCF.WriteBinaryBlob( dev, software_breakpoint_addy[i], 2, (uint8_t*)&previous_word_at_breakpoint_address[i] );
+	}
+	previous_word_at_breakpoint_address[i] = 0;
+	software_breakpoint_type[i] = 0;
+	software_breakpoint_addy[i] = 0;
+	return r;
+}
+
+int RVHandleBreakpoint( void * dev, int set, uint32_t address )
+{
+	int i;
+	int first_free = -1;
+	for( i = 0; i < MAX_SOFTWARE_BREAKPOINTS; i++ )
+	{
+		if( software_breakpoint_type[i] && software_breakpoint_addy[i] == address )
+			break;
+		if( first_free < 0 && software_breakpoint_type[i] == 0 )
+			first_free = i;
 	}
 
-	return -1;
+	if( i != MAX_SOFTWARE_BREAKPOINTS )
+	{
+		// There is already a break slot here.
+		if( !set )
+		{
+			InternalDisableBreakpoint( dev, i );
+		}
+		else
+		{
+			// Already set.
+		}
+	}
+	else
+	{
+		if( first_free == -1 )
+		{
+			fprintf( stderr, "Error: Too many breakpoints\n" );
+			return -1;
+		}
+		if( set )
+		{
+			i = first_free;
+			uint32_t readval_at_addy;
+			int r = MCF.ReadBinaryBlob( dev, address, 4, (uint8_t*)&readval_at_addy );
+			if( r ) return -5;
+			if( ( readval_at_addy & 3 ) == 3 ) // Check opcode LSB's.
+			{
+				// 32-bit instruction.
+				software_breakpoint_type[i] = 1;
+				software_breakpoint_addy[i] = address;
+				previous_word_at_breakpoint_address[i] = readval_at_addy;
+				uint32_t ebreak = 0x00100073; // ebreak
+				MCF.WriteBinaryBlob( dev, address, 4, (uint8_t*)&ebreak );
+			}
+			else
+			{
+				// 16-bit instructions
+				software_breakpoint_type[i] = 2;
+				software_breakpoint_addy[i] = address;
+				previous_word_at_breakpoint_address[i] = readval_at_addy & 0xffff;
+				uint32_t ebreak = 0x9002; // c.ebreak
+				MCF.WriteBinaryBlob( dev, address, 2, (uint8_t*)&ebreak );
+			}
+		}
+		else
+		{
+			// Already unset.
+		}
+	}
+
+		return 0;
 }
 
 int RVWriteRAM(void * dev, uint32_t memaddy, uint32_t length, uint8_t * payload )
@@ -245,6 +321,16 @@ void RVHandleDisconnect( void * dev )
 {
 	MCF.HaltMode( dev, 0 );
 	MCF.SetEnableBreakpoints( dev, 0, 0 );
+
+	int i;
+	for( i = 0; i < MAX_SOFTWARE_BREAKPOINTS; i++ )
+	{
+		if( software_breakpoint_type[i]  )
+		{
+			InternalDisableBreakpoint( dev, i );
+		}
+	}
+
 	if( shadow_running_state == 0 )
 	{
 		RVCommandEpilogue( dev );
@@ -257,7 +343,6 @@ void RVHandleGDBBreakRequest( void * dev )
 {
 	if( shadow_running_state )
 	{
-		printf( "RVHandleGDBBreakRequest\n" );
 		MCF.HaltMode( dev, 0 );
 	}
 }
@@ -365,6 +450,7 @@ void SendGDBReply( const void * data, int len, int docs )
 	
 	if( listenMode == 2 )
 	{
+		//printf( ">>>>%s<<<<(%d)\n", data );
 		send( serverSocket, data, len, MSG_NOSIGNAL );
 	}
 }
@@ -424,7 +510,9 @@ void HandleGDBPacket( void * dev, char * data, int len )
 		if( *(data++) != ',' ) goto err;
 		if( ReadHex( &data, -1, &time ) < 0 ) goto err;
 		if( RVHandleBreakpoint( dev, cmd == 'Z', addr ) == 0 )
+		{
 			SendReplyFull( "OK" );
+		}
 		else
 			goto err;
 		break;
