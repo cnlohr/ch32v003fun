@@ -10,6 +10,9 @@
  *   3: Define MICROGDBSTUB_IMPLEMENTATION at least in one place this is included in your program.
  *   4: If you want to let this manage the server as a network device, simply #define MICROGDBSTUB_SOCKETS
  *
+ * To connect to your GDBStub running, you can:
+ *  gdb-multiarch -ex 'target remote :2000' ./blink.elf 
+ *
  */
 
 #ifndef _MICROGDBSTUB_H
