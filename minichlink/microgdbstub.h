@@ -4,6 +4,8 @@
  *  You may freely license this file under the MIT-x11, or the 2- or 3- or New BSD Licenses.
  *  You may also use this as though it is public domain.
  *
+ * This project is based off of picorvd. https://github.com/aappleby/PicoRVD/
+ *
  * Simply:
  *   1: define the RV_ Functions
  *   2: Call the MicroGDB* functions needed.

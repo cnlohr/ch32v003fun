@@ -28,7 +28,7 @@ void SendReplyFull( const char * replyMessage );
 ///////////////////////////////////////////////////////////////////////////////
 // Actual Chip Operations
 
-// Several pieces from picorvd.
+// Several pieces from picorvd. https://github.com/aappleby/PicoRVD/
 int shadow_running_state = 1;
 int last_halt_reason = 5;
 uint32_t backup_regs[17];
