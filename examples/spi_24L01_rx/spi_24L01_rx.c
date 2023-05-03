@@ -53,12 +53,12 @@ void print_debug() {
 //######### LED fn
 
 // wire PD4 to LED1 on the dev board (-)
-void led_on() {
-	GPIOD->BSHR |= 1<<(16+4);
+inline void led_on() {
+	GPIOD->BSHR = 1<<(16+4);
 }
 
-void led_off() {
-	GPIOD->BSHR |= 1<<4;
+inline void led_off() {
+	GPIOD->BSHR = 1<<4;
 }
 
 
@@ -116,6 +116,7 @@ int main()
 	printf("initializing radio as RX...");
 	nrf24_device(RECEIVER, RESET);
 	nrf24_rf_power(18);						//default TX power is -6dB, pretty strong, reduce to -18dBm for one room (ACK = TX)
+	//nrf24_automatic_retransmit_setup(RETRANSMIT_DELAY_DEFAULT, 0);
 	printf("done.\n\r");
 
 	print_debug();

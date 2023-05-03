@@ -53,12 +53,12 @@ void print_debug() {
 //######### LED fn
 
 // led is PD4 to LED1 on board, which is (-)
-void led_on() {
-	GPIOD->BSHR |= 1<<(16+4);
+inline void led_on() {
+	GPIOD->BSHR = 1<<(16+4);
 }
 
-void led_off() {
-	GPIOD->BSHR |= 1<<4;
+inline void led_off() {
+	GPIOD->BSHR = 1<<4;
 }
 
 

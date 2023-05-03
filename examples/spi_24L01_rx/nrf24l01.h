@@ -204,7 +204,7 @@ void nrf24_prx_static_payload_width(uint8_t static_payload_width, uint8_t number
 void nrf24_datapipe_address_configuration();
 void nrf24_datapipe_ptx(uint8_t datapipe_number);
 void nrf24_automatic_retransmit_setup(uint16_t delay_time, uint8_t retransmit_count);
-void nrf24_auto_acknowledgment_setup(uint8_t datapipe);
+void nrf24_auto_acknowledge_datapipe(uint8_t datapipe);
 void nrf24_payload_without_ack(uint8_t state);
 void nrf24_payload_with_ack(uint8_t state);
 void nrf24_dynamic_payload(uint8_t state, uint8_t datapipe);

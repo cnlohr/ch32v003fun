@@ -197,7 +197,8 @@ void nrf24_reset()
   /*nrf24_datapipe_ptx(1);*/
   nrf24_prx_static_payload_width(STATIC_PAYLOAD_WIDTH_DEFAULT, NUMBER_OF_DP_DEFAULT);
   nrf24_automatic_retransmit_setup(RETRANSMIT_DELAY_DEFAULT, RETRANSMIT_COUNT_DEFAULT);
-  nrf24_auto_acknowledgment_setup(NUMBER_OF_DP_DEFAULT);
+  nrf24_auto_acknowledge_datapipe(NUMBER_OF_DP_DEFAULT);
+  nrf24_auto_acknowledge_datapipe(0);
   nrf24_dynamic_payload(NRF24_en_dynamic_payload, NUMBER_OF_DP_DEFAULT);
   nrf24_payload_without_ack(NRF24_en_no_ack);
   nrf24_payload_with_ack(NRF24_en_ack);
@@ -261,17 +262,18 @@ void nrf24_automatic_retransmit_setup(uint16_t delay_time, uint8_t retransmit_co
 }
 
 /*setting auto acknoledgement on datapipes*/
-void nrf24_auto_acknowledgment_setup(uint8_t datapipe)
+void nrf24_auto_acknowledge_datapipe(uint8_t datapipe)
 {
   if (datapipe < 7)
-    register_new_value = (1 << datapipe) - 1;
+    register_new_value = (1 << datapipe);
   nrf24_write(EN_AA_ADDRESS, &register_new_value, 1, CLOSE);
 }
 
 /*turns on or off the dynamic payload width capability*/
 void nrf24_dynamic_payload(uint8_t state, uint8_t datapipe)
 {
-  nrf24_auto_acknowledgment_setup(datapipe);                        /*setting auto acknowledgment before setting dynamic payload*/
+  nrf24_auto_acknowledge_datapipe(datapipe);                        /*setting auto acknowledgment before setting dynamic payload*/
+  nrf24_auto_acknowledge_datapipe(0);
   nrf24_read(FEATURE_ADDRESS, &register_current_value, 1, CLOSE);
   if (state == ENABLE)
   {

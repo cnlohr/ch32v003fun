@@ -2,6 +2,11 @@
 #define APB_CLOCK SYSTEM_CORE_CLOCK
 #include "../../ch32v003fun/ch32v003fun.h"
 
+
+#define CH32V003_SPI_SPEED_HZ 1000000
+#define CH32V003_SPI_DIRECTION_2LINE_TXRX
+#define CH32V003_SPI_CLK_MODE_POL0_PHA0			//leading = rising		trailing = falling		sample on leading		default if you're unsure
+#define CH32V003_SPI_NSS_SOFTWARE_ANY_MANUAL	// toggle manually!
 #define CH32V003_SPI_IMPLEMENTATION
 #include "ch32v003_SPI.h"
 #include "nrf24l01.h"
@@ -18,7 +23,7 @@ void delay_function(uint32_t duration_ms)
 /*SPI control: master, interrupts disabled, clock polarity low when idle, clock phase falling edge, clock up tp 1 MHz*/
 void SPI_Initializer()
 {
-	SPI_init(1000000, SPI_clk_mode_pol0_pha0_default, SPI_data_direction_2line_TxRx, SPI_NSS_software_any_manual);
+	SPI_init();
 	SPI_begin_8();
 }
 
@@ -29,22 +34,22 @@ void pinout_Initializer()
 	GPIOC->CFGLR &= ~(0xf<<(4*0));
 	GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*0);
 	// CSN high
-	GPIOC->BSHR |= (1<<0);
+	GPIOC->BSHR = (1<<0);
 	// CE on PC4
 	GPIOC->CFGLR &= ~(0xf<<(4*4));
 	GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*4);
 	// CE HIGH
-	GPIOC->BSHR |= (1<<4);
+	GPIOC->BSHR = (1<<4);
 }
 
 /*CSN pin manipulation to high or low (SPI on or off)*/
 void nrf24_SPI(uint8_t input)
 {
 	if (input > 0) {
-		GPIOC->BSHR |= (1<<(0+0));
+		GPIOC->BSHR = (1<<(0+0));
 	}
 	else {
-		GPIOC->BSHR |= (1<<(16+0));
+		GPIOC->BSHR = (1<<(16+0));
 	}
 }
 
@@ -58,9 +63,9 @@ uint8_t SPI_send_command(uint8_t command)
 void nrf24_CE(uint8_t input)
 {
 	if (input > 0) {
-		GPIOC->BSHR |= (1<<(0+4));
+		GPIOC->BSHR = (1<<(0+4));
 	}
 	else {
-		GPIOC->BSHR |= (1<<(16+4));
+		GPIOC->BSHR = (1<<(16+4));
 	}
 }
