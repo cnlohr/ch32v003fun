@@ -1,0 +1,12 @@
+{
+    "cmake.configureOnOpen": false,
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/home/cnlohr/git/ch32v003fun/examples/blink",
+            "sbinaryPath": "/home/cnlohr/git/ch32v003fun/examples/blink/blink.elf",
+            "binaryArgs": []
+        }
+    ],
+    "editor.insertSpaces": false,
+    "editor.tabSize": 4
+}
