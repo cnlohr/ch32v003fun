@@ -6,7 +6,8 @@
 
 #define APB_CLOCK SYSTEM_CORE_CLOCK
 
-uint32_t count;
+volatile uint32_t count;
+
 int main()
 {
 	SystemInit48HSI();
@@ -26,8 +27,6 @@ int main()
 	GPIOC->CFGLR &= ~(0xf<<(4*0));
 	GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*0);
 
-	count = &count;
-
 	while(1)
 	{
 		GPIOD->BSHR = 1 | (1<<4);	 // Turn on GPIOs
@@ -35,8 +34,9 @@ int main()
 		Delay_Ms( 250 );
 		GPIOD->BSHR = (1<<16) | (1<<(16+4)); // Turn off GPIODs
 		GPIOC->BSHR = (1<<16);
-		Delay_Ms( 250 );
+		Delay_Ms( count );
 		count++;
+		if( count > 250 ) count = 0;
 	}
 }
 
