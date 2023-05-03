@@ -301,7 +301,7 @@ int RVHandleBreakpoint( void * dev, int set, uint32_t address )
 		}
 	}
 
-		return 0;
+	return 0;
 }
 
 int RVWriteRAM(void * dev, uint32_t memaddy, uint32_t length, uint8_t * payload )
