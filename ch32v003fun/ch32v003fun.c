@@ -71,6 +71,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 typedef void * mbstate_t;
 
+#ifdef UNICODE
 size_t wcrtomb(char *restrict s, wchar_t wc, mbstate_t *restrict st)
 {
 	if (!s) return 1;
@@ -108,6 +109,7 @@ int wctomb(char *s, wchar_t wc)
 	if (!s) return 0;
 	return wcrtomb(s, wc, 0);
 }
+#endif
 size_t strlen(const char *s) { const char *a = s;for (; *s; s++);return s-a; }
 size_t strnlen(const char *s, size_t n) { const char *p = memchr(s, 0, n); return p ? p-s : n;}
 void *memset(void *dest, int c, size_t n) { unsigned char *s = dest; for (; n; n--, s++) *s = c; return dest; }
