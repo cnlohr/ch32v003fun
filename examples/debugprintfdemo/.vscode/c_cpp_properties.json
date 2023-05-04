@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/../../ch32v003fun"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "linux-clang-x64",
+            "compilerArgs": [
+                "-DCH32V003FUN_BASE"
+            ]
+        }
+    ],
+    "version": 4
+}

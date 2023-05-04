@@ -31,6 +31,9 @@ $(TARGET).bin : $(TARGET).elf
 monitor : 
 	$(MINICHLINK)/minichlink -T
 
+gdbserver : 
+	$(MINICHLINK)/minichlink -G || true
+
 cv_flash : $(TARGET).bin
 	make -C $(MINICHLINK) all
 	$(MINICHLINK)/minichlink -w $< flash -b
