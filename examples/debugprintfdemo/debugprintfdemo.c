@@ -34,7 +34,6 @@ int main()
 		GPIOD->BSHR = (1<<16) | (1<<(16+4)); // Turn off GPIODs
 		GPIOC->BSHR = (1<<16);
 		printf( "-%lu\n", count++ );
-		//_write( 0, "xxxxxxx", 7 );
 	}
 }
 
