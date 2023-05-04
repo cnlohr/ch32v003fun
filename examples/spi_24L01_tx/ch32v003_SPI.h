@@ -127,31 +127,31 @@ _Static_assert(SPI_CLK_PRESCALER >= 0 && SPI_CLK_PRESCALER <= 7, "SPI_CLK_PRESCA
 #endif
 
 #if ((defined(CH32V003_SPI_CLK_MODE_POL0_PHA0) ? 1 : 0) + \
-     (defined(CH32V003_SPI_CLK_MODE_POL0_PHA1) ? 1 : 0) + \
-     (defined(CH32V003_SPI_CLK_MODE_POL1_PHA0) ? 1 : 0) + \
-     (defined(CH32V003_SPI_CLK_MODE_POL1_PHA1) ? 1 : 0)) > 1
-    #warning "more than one of the CH32V003_SPI_CLK_MODE_ options were defined!"
+	(defined(CH32V003_SPI_CLK_MODE_POL0_PHA1) ? 1 : 0) + \
+	(defined(CH32V003_SPI_CLK_MODE_POL1_PHA0) ? 1 : 0) + \
+	(defined(CH32V003_SPI_CLK_MODE_POL1_PHA1) ? 1 : 0)) > 1
+	#warning "more than one of the CH32V003_SPI_CLK_MODE_ options were defined!"
 #endif
 #if ((defined(CH32V003_SPI_CLK_MODE_POL0_PHA0) ? 1 : 0) + \
-     (defined(CH32V003_SPI_CLK_MODE_POL0_PHA1) ? 1 : 0) + \
-     (defined(CH32V003_SPI_CLK_MODE_POL1_PHA0) ? 1 : 0) + \
-     (defined(CH32V003_SPI_CLK_MODE_POL1_PHA1) ? 1 : 0)) == 0
-    #warning "none of the CH32V003_SPI_CLK_MODE_ options were defined!"
+	(defined(CH32V003_SPI_CLK_MODE_POL0_PHA1) ? 1 : 0) + \
+	(defined(CH32V003_SPI_CLK_MODE_POL1_PHA0) ? 1 : 0) + \
+	(defined(CH32V003_SPI_CLK_MODE_POL1_PHA1) ? 1 : 0)) == 0
+	#warning "none of the CH32V003_SPI_CLK_MODE_ options were defined!"
 #endif
 
 #if ((defined(CH32V003_SPI_NSS_HARDWARE_PC0) ? 1 : 0) + \
-     (defined(CH32V003_SPI_NSS_HARDWARE_PC1) ? 1 : 0) + \
-     (defined(CH32V003_SPI_NSS_SOFTWARE_PC3) ? 1 : 0) + \
-     (defined(CH32V003_SPI_NSS_SOFTWARE_PC4) ? 1 : 0) + \
-     (defined(CH32V003_SPI_NSS_SOFTWARE_ANY_MANUAL) ? 1 : 0)) > 1
-    #warning "more than one of the CH32V003_SPI_NSS_ options were defined!"
+	(defined(CH32V003_SPI_NSS_HARDWARE_PC1) ? 1 : 0) + \
+	(defined(CH32V003_SPI_NSS_SOFTWARE_PC3) ? 1 : 0) + \
+	(defined(CH32V003_SPI_NSS_SOFTWARE_PC4) ? 1 : 0) + \
+	(defined(CH32V003_SPI_NSS_SOFTWARE_ANY_MANUAL) ? 1 : 0)) > 1
+	#warning "more than one of the CH32V003_SPI_NSS_ options were defined!"
 #endif
 #if ((defined(CH32V003_SPI_NSS_HARDWARE_PC0) ? 1 : 0) + \
-     (defined(CH32V003_SPI_NSS_HARDWARE_PC1) ? 1 : 0) + \
-     (defined(CH32V003_SPI_NSS_SOFTWARE_PC3) ? 1 : 0) + \
-     (defined(CH32V003_SPI_NSS_SOFTWARE_PC4) ? 1 : 0) + \
-     (defined(CH32V003_SPI_NSS_SOFTWARE_ANY_MANUAL) ? 1 : 0)) == 0
-    #warning "none of the CH32V003_SPI_NSS_ options were defined!"
+	(defined(CH32V003_SPI_NSS_HARDWARE_PC1) ? 1 : 0) + \
+	(defined(CH32V003_SPI_NSS_SOFTWARE_PC3) ? 1 : 0) + \
+	(defined(CH32V003_SPI_NSS_SOFTWARE_PC4) ? 1 : 0) + \
+	(defined(CH32V003_SPI_NSS_SOFTWARE_ANY_MANUAL) ? 1 : 0)) == 0
+	#warning "none of the CH32V003_SPI_NSS_ options were defined!"
 #endif
 
 
@@ -318,17 +318,13 @@ static inline void restore_interrupts() {
 
 //########  small internal function definitions, static inline
 static inline void SPI_wait_TX_complete() {
-	while(!(SPI1->STATR & SPI_STATR_TXE)) {
-		asm volatile("nop");
-	}
+	while(!(SPI1->STATR & SPI_STATR_TXE)) {}
 }
 static inline uint8_t SPI_is_RX_empty() {
 	return SPI1->STATR & SPI_STATR_RXNE;
 }
 static inline void SPI_wait_RX_available() {
-	while(!(SPI1->STATR & SPI_STATR_RXNE)) {
-		asm volatile("nop");
-	}
+	while(!(SPI1->STATR & SPI_STATR_RXNE)) {}
 }
 
 
