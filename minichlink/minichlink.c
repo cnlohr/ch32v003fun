@@ -171,6 +171,10 @@ keep_going:
 					printf( "Error: can't start GDB server\n" );
 					return -1;
 				}
+				if( argchar[1] == 'G' )
+				{
+					printf( "GDBServer Running\n" );
+				}
 
 				do
 				{

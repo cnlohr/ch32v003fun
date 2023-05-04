@@ -33,6 +33,7 @@ int RVHandleBreakpoint( void * dev, int set, uint32_t address );
 int RVWriteRAM(void * dev, uint32_t memaddy, uint32_t length, uint8_t * payload );
 void RVHandleDisconnect( void * dev );
 void RVHandleGDBBreakRequest( void * dev );
+void RVHandleKillRequest( void * dev );
 
 #ifdef MICROGDBSTUB_SOCKETS
 int MicroGDBPollServer( void * dev );
@@ -170,6 +171,9 @@ void HandleGDBPacket( void * dev, char * data, int len )
 		// Handle disconnect.
 		RVHandleDisconnect( dev );
 		break;
+	case 'k':
+		RVHandleKillRequest( dev ); // no reply.
+		break;
 	case 'Z':
 	case 'z':
 	{
@@ -249,8 +253,7 @@ void HandleGDBPacket( void * dev, char * data, int len )
 		{
 			// Request a list of actions supported by the ‘vCont’ packet. 
 			// We don't support vCont
-			SendReplyFull( "vCont;s;c;t;" ); //no ;s
-			//SendReplyFull( "" );
+			SendReplyFull( "vCont;s;c;t;" ); //no ;s maybe?
 		}
 		else
 		{

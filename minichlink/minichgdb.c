@@ -17,7 +17,7 @@ const char* MICROGDBSTUB_MEMORY_MAP = "l<?xml version=\"1.0\"?>"
 "    <property name=\"blocksize\">64</property>"
 "  </memory>"
 "  <memory type=\"ram\" start=\"0x20000000\" length=\"0x800\">"
-"    <property name=\"blocksize\">4</property>"
+"    <property name=\"blocksize\">1</property>"
 "  </memory>"
 "</memory-map>";
 
@@ -41,6 +41,10 @@ uint32_t previous_word_at_breakpoint_address[MAX_SOFTWARE_BREAKPOINTS];
 
 int IsGDBServerInShadowHaltState( void * dev ) { return !shadow_running_state; }
 
+static int InternalClearFlashOfSoftwareBreakpoint( void * dev, int i );
+static int InternalWriteBreakpointIntoAddress( void * v, int i );
+
+
 void RVCommandPrologue( void * dev )
 {
 	if( !MCF.ReadCPURegister )
@@ -62,6 +66,7 @@ void RVCommandEpilogue( void * dev )
 	MCF.WriteReg32( dev, DMABSTRACTAUTO, 0 );   // Disable autoexec.
 	MCF.WriteAllCPURegisters( dev, backup_regs );
 	MCF.VoidHighLevelState( dev );
+	MCF.WriteReg32( dev, DMDATA0, 0 );
 }
 
 void RVNetConnect( void * dev )
@@ -109,8 +114,6 @@ void RVNetPoll(void * dev )
 		if( statusrunning == 0 )
 		{
 			RVCommandPrologue( dev );
-			//uint32_t dscr;
-			//MCF.ReadCPURegister( dev, 0x7b0, &dscr );
 			last_halt_reason = 5;//((dscr>>6)&3)+5;
 			RVSendGDBHaltReason( dev );
 		}
@@ -145,24 +148,50 @@ void RVDebugExec( void * dev, int halt_reset_or_resume )
 	// Special case halt_reset_or_resume = 4: Skip instruction and resume.
 	if( halt_reset_or_resume == 4 || halt_reset_or_resume == 2 )
 	{
+		// First see if we already know about this breakpoint
+		int matchingbreakpoint = -1;
 		// For this we want to advance PC.
 		uint32_t exceptionptr = backup_regs[16];
 		uint32_t instruction = 0;
-		if( exceptionptr & 2 )
+
+		int i;
+		for( i = 0; i < MAX_SOFTWARE_BREAKPOINTS; i++ )
 		{
-			uint32_t part1, part2;
-			MCF.ReadWord( dev, exceptionptr & ~3, &part1 );
-			MCF.ReadWord( dev, (exceptionptr & ~3)+4, &part2 );
-			instruction = (part1 >> 16) | (part2 << 16);
+			if( exceptionptr == software_breakpoint_addy[i] && software_breakpoint_type[i] )
+			{
+				matchingbreakpoint = i;
+			}
+		}
+
+		if( matchingbreakpoint >= 0 )
+		{
+			// This is a known breakpoint.  Need to set it back.  Single Step.  Then continue.
+			InternalClearFlashOfSoftwareBreakpoint( dev, matchingbreakpoint );
+			MCF.SetEnableBreakpoints( dev, 1, 1 );
+			InternalWriteBreakpointIntoAddress( dev, matchingbreakpoint );
 		}
 		else
 		{
-			MCF.ReadWord( dev, exceptionptr, &instruction );
+			// Unknown breakpoint (was originally in the firmware)
+			// Just proceed past it.
+			if( exceptionptr & 2 )
+			{
+				uint32_t part1, part2;
+				MCF.ReadWord( dev, exceptionptr & ~3, &part1 );
+				MCF.ReadWord( dev, (exceptionptr & ~3)+4, &part2 );
+				instruction = (part1 >> 16) | (part2 << 16);
+			}
+			else
+			{
+				MCF.ReadWord( dev, exceptionptr, &instruction );
+			}
+			if( instruction == 0x00100073 )
+				backup_regs[16]+=4;
+			else if( ( instruction & 0xffff ) == 0x9002 )
+				backup_regs[16]+=2;
+			else
+				; //No change, it is a normal instruction.
 		}
-		if( instruction == 0x00100073 )
-			backup_regs[16]+=4;
-		else if( ( instruction & 0xffff ) == 0x9002 )
-			backup_regs[16]+=2;
 		halt_reset_or_resume = 2;
 	}
 
@@ -197,7 +226,7 @@ int RVReadMem( void * dev, uint32_t memaddy, uint8_t * payload, int len )
 	return ret;
 }
 
-static int InternalDisableBreakpoint( void * dev, int i )
+static int InternalClearFlashOfSoftwareBreakpoint( void * dev, int i )
 {
 	int r;
 	if( software_breakpoint_type[i] == 1 )
@@ -210,6 +239,33 @@ static int InternalDisableBreakpoint( void * dev, int i )
 		//16-bit instruction
 		r = MCF.WriteBinaryBlob( dev, software_breakpoint_addy[i], 2, (uint8_t*)&previous_word_at_breakpoint_address[i] );
 	}
+
+	return r;
+}
+
+static int InternalWriteBreakpointIntoAddress( void * dev, int i )
+{
+	int r;
+	uint32_t address = software_breakpoint_addy[i];
+	if( software_breakpoint_type[i] == 1 )
+	{
+		//32-bit instruction
+		uint32_t ebreak = 0x00100073; // ebreak
+		r = MCF.WriteBinaryBlob( dev, address, 4, (uint8_t*)&ebreak );
+	}
+	else
+	{
+		//16-bit instruction
+		uint32_t ebreak = 0x9002; // c.ebreak
+		r = MCF.WriteBinaryBlob( dev, address, 2, (uint8_t*)&ebreak );
+	}
+	return r;
+}
+
+static int InternalDisableBreakpoint( void * dev, int i )
+{
+	int r;
+	r = InternalClearFlashOfSoftwareBreakpoint( dev, i );
 	previous_word_at_breakpoint_address[i] = 0;
 	software_breakpoint_type[i] = 0;
 	software_breakpoint_addy[i] = 0;
@@ -259,8 +315,6 @@ int RVHandleBreakpoint( void * dev, int set, uint32_t address )
 				software_breakpoint_type[i] = 1;
 				software_breakpoint_addy[i] = address;
 				previous_word_at_breakpoint_address[i] = readval_at_addy;
-				uint32_t ebreak = 0x00100073; // ebreak
-				MCF.WriteBinaryBlob( dev, address, 4, (uint8_t*)&ebreak );
 			}
 			else
 			{
@@ -268,9 +322,8 @@ int RVHandleBreakpoint( void * dev, int set, uint32_t address )
 				software_breakpoint_type[i] = 2;
 				software_breakpoint_addy[i] = address;
 				previous_word_at_breakpoint_address[i] = readval_at_addy & 0xffff;
-				uint32_t ebreak = 0x9002; // c.ebreak
-				MCF.WriteBinaryBlob( dev, address, 2, (uint8_t*)&ebreak );
 			}
+			InternalWriteBreakpointIntoAddress( dev, i );
 		}
 		else
 		{
@@ -339,6 +392,11 @@ void ExitGDBServer( void * dev )
 int SetupGDBServer( void * dev )
 {
 	return MicroGDBStubStartup( dev );
+}
+
+void RVHandleKillRequest( void * dev )
+{
+	// Do nothing.
 }
 
 
