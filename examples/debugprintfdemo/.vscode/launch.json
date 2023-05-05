@@ -19,7 +19,7 @@
 				"ignoreFailures": true
 			}
 			],
-			"miDebuggerPath": "/usr/bin/gdb-multiarch",
+			"miDebuggerPath": "gdb-multiarch",
 			"miDebuggerServerAddress": "127.0.0.1:2000"
 		},
 		{

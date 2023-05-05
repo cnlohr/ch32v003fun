@@ -28,11 +28,19 @@ $(TARGET).bin : $(TARGET).elf
 	$(PREFIX)-objcopy -O binary $< $(TARGET).bin
 	$(PREFIX)-objcopy -O ihex $< $(TARGET).hex
 
+ifeq ($(OS),Windows_NT)
+closechlink :
+	-taskkill /F /IM minichlink.exe /T
+else
+closechlink :
+	-killall minichlink
+endif
+
 monitor : 
 	$(MINICHLINK)/minichlink -T
 
 gdbserver : 
-	$(MINICHLINK)/minichlink -G || true
+	-$(MINICHLINK)/minichlink -beG
 
 cv_flash : $(TARGET).bin
 	make -C $(MINICHLINK) all

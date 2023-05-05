@@ -183,6 +183,7 @@ void HandleGDBPacket( void * dev, char * data, int len )
 		break;
 	case 'c':
 	case 'C':
+	case 's':
 		RVDebugExec( dev, (cmd == 'C')?4:2 );
 		SendReplyFull( "OK" );
 		break;

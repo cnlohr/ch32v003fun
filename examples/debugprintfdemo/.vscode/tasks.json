@@ -11,12 +11,12 @@
 				"panel": "shared",
 				"showReuseMessage" : false
 			},
-			"command": "killall minichlink; make flash",
+			"command": "make closechlink flash",
 		},
 		{
 			"type": "shell",
 			"label": "run_flash_and_gdbserver",
-			"command": "killall minichlink; make flash gdbserver",
+			"command": "make closechlink flash gdbserver",
 
 			"presentation": {
 				"echo": true,
