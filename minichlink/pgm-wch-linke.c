@@ -19,42 +19,6 @@ struct LinkEProgrammerStruct
 #define WCHTIMEOUT 5000
 #define WCHCHECK(x) if( (status = x) ) { fprintf( stderr, "Bad USB Operation on " __FILE__ ":%d (%d)\n", __LINE__, status ); exit( status ); }
 
-const uint8_t * bootloader = (const uint8_t*)
-"\x21\x11\x22\xca\x26\xc8\x93\x77\x15\x00\x99\xcf\xb7\x06\x67\x45" \
-"\xb7\x27\x02\x40\x93\x86\x36\x12\x37\x97\xef\xcd\xd4\xc3\x13\x07" \
-"\xb7\x9a\xd8\xc3\xd4\xd3\xd8\xd3\x93\x77\x25\x00\x9d\xc7\xb7\x27" \
-"\x02\x40\x98\x4b\xad\x66\x37\x33\x00\x40\x13\x67\x47\x00\x98\xcb" \
-"\x98\x4b\x93\x86\xa6\xaa\x13\x67\x07\x04\x98\xcb\xd8\x47\x05\x8b" \
-"\x63\x16\x07\x10\x98\x4b\x6d\x9b\x98\xcb\x93\x77\x45\x00\xa9\xcb" \
-"\x93\x07\xf6\x03\x99\x83\x2e\xc0\x2d\x63\x81\x76\x3e\xc4\xb7\x32" \
-"\x00\x40\xb7\x27\x02\x40\x13\x03\xa3\xaa\xfd\x16\x98\x4b\xb7\x03" \
-"\x02\x00\x33\x67\x77\x00\x98\xcb\x02\x47\xd8\xcb\x98\x4b\x13\x67" \
-"\x07\x04\x98\xcb\xd8\x47\x05\x8b\x69\xe7\x98\x4b\x75\x8f\x98\xcb" \
-"\x02\x47\x13\x07\x07\x04\x3a\xc0\x22\x47\x7d\x17\x3a\xc4\x79\xf7" \
-"\x93\x77\x85\x00\xf1\xcf\x93\x07\xf6\x03\x2e\xc0\x99\x83\x37\x27" \
-"\x02\x40\x3e\xc4\x1c\x4b\xc1\x66\x2d\x63\xd5\x8f\x1c\xcb\x37\x07" \
-"\x00\x20\x13\x07\x07\x20\xb7\x27\x02\x40\xb7\x03\x08\x00\xb7\x32" \
-"\x00\x40\x13\x03\xa3\xaa\x94\x4b\xb3\xe6\x76\x00\x94\xcb\xd4\x47" \
-"\x85\x8a\xf5\xfe\x82\x46\xba\x84\x37\x04\x04\x00\x36\xc2\xc1\x46" \
-"\x36\xc6\x92\x46\x84\x40\x11\x07\x84\xc2\x94\x4b\xc1\x8e\x94\xcb" \
-"\xd4\x47\x85\x8a\xb1\xea\x92\x46\xba\x84\x91\x06\x36\xc2\xb2\x46" \
-"\xfd\x16\x36\xc6\xf9\xfe\x82\x46\xd4\xcb\x94\x4b\x93\xe6\x06\x04" \
-"\x94\xcb\xd4\x47\x85\x8a\x85\xee\xd4\x47\xc1\x8a\x85\xce\xd8\x47" \
-"\xb7\x06\xf3\xff\xfd\x16\x13\x67\x07\x01\xd8\xc7\x98\x4b\x21\x45" \
-"\x75\x8f\x98\xcb\x52\x44\xc2\x44\x61\x01\x02\x90\x23\x20\xd3\x00" \
-"\xf5\xb5\x23\xa0\x62\x00\x3d\xb7\x23\xa0\x62\x00\x55\xb7\x23\xa0" \
-"\x62\x00\xc1\xb7\x82\x46\x93\x86\x06\x04\x36\xc0\xa2\x46\xfd\x16" \
-"\x36\xc4\xb5\xf2\x98\x4b\xb7\x06\xf3\xff\xfd\x16\x75\x8f\x98\xcb" \
-"\x41\x89\x05\xcd\x2e\xc0\x0d\x06\x02\xc4\x09\x82\xb7\x07\x00\x20" \
-"\x32\xc6\x93\x87\x07\x20\x98\x43\x13\x86\x47\x00\xa2\x47\x82\x46" \
-"\x8a\x07\xb6\x97\x9c\x43\x63\x1c\xf7\x00\xa2\x47\x85\x07\x3e\xc4" \
-"\xa2\x46\x32\x47\xb2\x87\xe3\xe0\xe6\xfe\x01\x45\x61\xb7\x41\x45" \
-"\x51\xb7\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" \
-"\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" \
-"\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff";
-
-int bootloader_len = 512;
-
 void wch_link_command( libusb_device_handle * devh, const void * command_v, int commandlen, int * transferred, uint8_t * reply, int replymax )
 {
 	uint8_t * command = (uint8_t*)command_v;
@@ -65,7 +29,6 @@ void wch_link_command( libusb_device_handle * devh, const void * command_v, int 
 	if( !transferred ) transferred = &transferred_local;
 	status = libusb_bulk_transfer( devh, 0x01, command, commandlen, transferred, WCHTIMEOUT );
 	if( status ) goto sendfail;
-
 	got_to_recv = 1;
 	if( !reply )
 	{
@@ -142,6 +105,45 @@ static inline libusb_device_handle * wch_link_base_setup( int inhibit_startup )
 	return devh;
 }
 
+// DMI_OP decyphered From https://github.com/karlp/openocd-hacks/blob/27af153d4a373f29ad93dab28a01baffb7894363/src/jtag/drivers/wlink.c
+// Thanks, CW2 for pointing this out.  See DMI_OP for more info.
+int LEWriteReg32( void * dev, uint8_t reg_7_bit, uint32_t command )
+{
+	libusb_device_handle * devh = ((struct LinkEProgrammerStruct*)dev)->devh;
+
+	const uint8_t iOP = 2; // op 2 = write
+	uint8_t req[] = {
+		0x81, 0x08, 0x06, reg_7_bit,
+			(command >> 24) & 0xff,
+			(command >> 16) & 0xff,
+			(command >> 8) & 0xff,
+			(command >> 0) & 0xff,
+			iOP };
+
+	wch_link_command( devh, req, sizeof(req), 0, 0, 0 );
+	return 0;
+}
+
+int LEReadReg32( void * dev, uint8_t reg_7_bit, uint32_t * commandresp )
+{
+	libusb_device_handle * devh = ((struct LinkEProgrammerStruct*)dev)->devh;
+	const uint8_t iOP = 1; // op 1 = read
+	uint32_t transferred;
+	uint8_t rbuff[128] = { 0 };
+	uint8_t req[] = {
+		0x81, 0x08, 0x06, reg_7_bit,
+			0, 0, 0, 0,
+			iOP };
+	wch_link_command( devh, req, sizeof( req ), (int*)&transferred, rbuff, sizeof( rbuff ) );
+	*commandresp = ( rbuff[4]<<24 ) | (rbuff[5]<<16) | (rbuff[6]<<8) | (rbuff[7]<<0);
+	return 0;
+}
+
+int LEFlushLLCommands( void * dev )
+{
+	return 0;
+}
+
 static int LESetupInterface( void * d )
 {
 	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
@@ -167,13 +169,22 @@ static int LESetupInterface( void * d )
 	fprintf( stderr, "Part UUID    : %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n", rbuff[4], rbuff[5], rbuff[6], rbuff[7], rbuff[8], rbuff[9], rbuff[10], rbuff[11] );
 	fprintf( stderr, "PFlags       : %02x-%02x-%02x-%02x\n", rbuff[12], rbuff[13], rbuff[14], rbuff[15] );
 	fprintf( stderr, "Part Type (B): %02x-%02x-%02x-%02x\n", rbuff[16], rbuff[17], rbuff[18], rbuff[19] );
+	
+	int r = MCF.WaitForDoneOp( d );
+	if( r )
+	{
+		fprintf( stderr, "Error: WaitForDoneOp(...) failed\n" );
+	}
+
+	//Default behavior for other programmers is to be/stay in halt mode as much as possible.
+	MCF.HaltMode( d, 2 );
 	return 0;
 }
 
 static int LEControl3v3( void * d, int bOn )
 {
 	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
-printf( "3v3: %d\n", bOn );
+
 	if( bOn )
 		wch_link_command( (libusb_device_handle *)dev, "\x81\x0d\x01\x09", 4, 0, 0, 0 );
 	else
@@ -184,7 +195,6 @@ printf( "3v3: %d\n", bOn );
 static int LEControl5v( void * d, int bOn )
 {
 	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
-printf( "  5: %d\n", bOn );
 
 	if( bOn )
 		wch_link_command( (libusb_device_handle *)dev, "\x81\x0d\x01\x0b", 4, 0, 0, 0 );
@@ -202,7 +212,106 @@ static int LEUnbrick( void * d )
 	return 0;
 }
 
-static int LEHaltMode( void * d, int mode )
+
+static int LEConfigureNRSTAsGPIO( void * d, int one_if_yes_gpio )
+{
+	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
+
+	if( one_if_yes_gpio )
+	{
+		wch_link_multicommands( (libusb_device_handle *)dev, 2, 11, "\x81\x06\x08\x02\xff\xff\xff\xff\xff\xff\xff", 4, "\x81\x0b\x01\x01" );
+	}
+	else
+	{
+		wch_link_multicommands( (libusb_device_handle *)dev, 2, 11, "\x81\x06\x08\x02\xf7\xff\xff\xff\xff\xff\xff", 4, "\x81\x0b\x01\x01" );
+	}
+	return 0;
+}
+
+int LEExit( void * d )
+{
+	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
+
+	wch_link_command( (libusb_device_handle *)dev, "\x81\x0d\x01\xff", 4, 0, 0, 0);
+	return 0;
+}
+
+void * TryInit_WCHLinkE()
+{
+	libusb_device_handle * wch_linke_devh;
+	wch_linke_devh = wch_link_base_setup(0);
+	if( !wch_linke_devh ) return 0;
+
+
+	struct LinkEProgrammerStruct * ret = malloc( sizeof( struct LinkEProgrammerStruct ) );
+	memset( ret, 0, sizeof( *ret ) );
+	ret->devh = wch_linke_devh;
+	ret->lasthaltmode = 0;
+
+	MCF.ReadReg32 = LEReadReg32;
+	MCF.WriteReg32 = LEWriteReg32;
+	MCF.FlushLLCommands = LEFlushLLCommands;
+
+	MCF.SetupInterface = LESetupInterface;
+	MCF.Control3v3 = LEControl3v3;
+	MCF.Control5v = LEControl5v;
+	MCF.Unbrick = LEUnbrick;
+	MCF.ConfigureNRSTAsGPIO = LEConfigureNRSTAsGPIO;
+	//MCF.WriteBinaryBlob = LEWriteBinaryBlob;
+	//MCF.ReadBinaryBlob = LEReadBinaryBlob;
+	MCF.Exit = LEExit;
+	return ret;
+};
+
+
+
+
+
+
+
+
+// Graveyard.
+
+#if 0
+
+
+const uint8_t * bootloader = (const uint8_t*)
+"\x21\x11\x22\xca\x26\xc8\x93\x77\x15\x00\x99\xcf\xb7\x06\x67\x45" \
+"\xb7\x27\x02\x40\x93\x86\x36\x12\x37\x97\xef\xcd\xd4\xc3\x13\x07" \
+"\xb7\x9a\xd8\xc3\xd4\xd3\xd8\xd3\x93\x77\x25\x00\x9d\xc7\xb7\x27" \
+"\x02\x40\x98\x4b\xad\x66\x37\x33\x00\x40\x13\x67\x47\x00\x98\xcb" \
+"\x98\x4b\x93\x86\xa6\xaa\x13\x67\x07\x04\x98\xcb\xd8\x47\x05\x8b" \
+"\x63\x16\x07\x10\x98\x4b\x6d\x9b\x98\xcb\x93\x77\x45\x00\xa9\xcb" \
+"\x93\x07\xf6\x03\x99\x83\x2e\xc0\x2d\x63\x81\x76\x3e\xc4\xb7\x32" \
+"\x00\x40\xb7\x27\x02\x40\x13\x03\xa3\xaa\xfd\x16\x98\x4b\xb7\x03" \
+"\x02\x00\x33\x67\x77\x00\x98\xcb\x02\x47\xd8\xcb\x98\x4b\x13\x67" \
+"\x07\x04\x98\xcb\xd8\x47\x05\x8b\x69\xe7\x98\x4b\x75\x8f\x98\xcb" \
+"\x02\x47\x13\x07\x07\x04\x3a\xc0\x22\x47\x7d\x17\x3a\xc4\x79\xf7" \
+"\x93\x77\x85\x00\xf1\xcf\x93\x07\xf6\x03\x2e\xc0\x99\x83\x37\x27" \
+"\x02\x40\x3e\xc4\x1c\x4b\xc1\x66\x2d\x63\xd5\x8f\x1c\xcb\x37\x07" \
+"\x00\x20\x13\x07\x07\x20\xb7\x27\x02\x40\xb7\x03\x08\x00\xb7\x32" \
+"\x00\x40\x13\x03\xa3\xaa\x94\x4b\xb3\xe6\x76\x00\x94\xcb\xd4\x47" \
+"\x85\x8a\xf5\xfe\x82\x46\xba\x84\x37\x04\x04\x00\x36\xc2\xc1\x46" \
+"\x36\xc6\x92\x46\x84\x40\x11\x07\x84\xc2\x94\x4b\xc1\x8e\x94\xcb" \
+"\xd4\x47\x85\x8a\xb1\xea\x92\x46\xba\x84\x91\x06\x36\xc2\xb2\x46" \
+"\xfd\x16\x36\xc6\xf9\xfe\x82\x46\xd4\xcb\x94\x4b\x93\xe6\x06\x04" \
+"\x94\xcb\xd4\x47\x85\x8a\x85\xee\xd4\x47\xc1\x8a\x85\xce\xd8\x47" \
+"\xb7\x06\xf3\xff\xfd\x16\x13\x67\x07\x01\xd8\xc7\x98\x4b\x21\x45" \
+"\x75\x8f\x98\xcb\x52\x44\xc2\x44\x61\x01\x02\x90\x23\x20\xd3\x00" \
+"\xf5\xb5\x23\xa0\x62\x00\x3d\xb7\x23\xa0\x62\x00\x55\xb7\x23\xa0" \
+"\x62\x00\xc1\xb7\x82\x46\x93\x86\x06\x04\x36\xc0\xa2\x46\xfd\x16" \
+"\x36\xc4\xb5\xf2\x98\x4b\xb7\x06\xf3\xff\xfd\x16\x75\x8f\x98\xcb" \
+"\x41\x89\x05\xcd\x2e\xc0\x0d\x06\x02\xc4\x09\x82\xb7\x07\x00\x20" \
+"\x32\xc6\x93\x87\x07\x20\x98\x43\x13\x86\x47\x00\xa2\x47\x82\x46" \
+"\x8a\x07\xb6\x97\x9c\x43\x63\x1c\xf7\x00\xa2\x47\x85\x07\x3e\xc4" \
+"\xa2\x46\x32\x47\xb2\x87\xe3\xe0\xe6\xfe\x01\x45\x61\xb7\x41\x45" \
+"\x51\xb7\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" \
+"\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" \
+"\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff";
+
+int bootloader_len = 512;
+
+static int InternalLinkEHaltMode( void * d, int mode )
 {
 	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
 	if( mode == ((struct LinkEProgrammerStruct*)d)->lasthaltmode )
@@ -222,32 +331,16 @@ static int LEHaltMode( void * d, int mode )
 	}
 	else
 	{
-		return -93;
+		return -999;
 	}
 	return 0;
 }
-
-static int LEConfigureNRSTAsGPIO( void * d, int one_if_yes_gpio )
-{
-	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
-
-	if( one_if_yes_gpio )
-	{
-		wch_link_multicommands( (libusb_device_handle *)dev, 2, 11, "\x81\x06\x08\x02\xff\xff\xff\xff\xff\xff\xff", 4, "\x81\x0b\x01\x01" );
-	}
-	else
-	{
-		wch_link_multicommands( (libusb_device_handle *)dev, 2, 11, "\x81\x06\x08\x02\xf7\xff\xff\xff\xff\xff\xff", 4, "\x81\x0b\x01\x01" );
-	}
-	return 0;
-}
-
 
 static int LEReadBinaryBlob( void * d, uint32_t offset, uint32_t amount, uint8_t * readbuff )
 {
 	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
 
-	LEHaltMode( d, 0 );
+	InternalLinkEHaltMode( d, 0 );
 
 	int i;
 	int status;
@@ -305,7 +398,7 @@ static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len,
 {
 	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
 
-	LEHaltMode( d, 0 );
+	InternalLinkEHaltMode( d, 0 );
 
 	int i;
 	int status;
@@ -366,41 +459,4 @@ static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len,
 	}
 	return 0;
 }
-
-int LEExit( void * d )
-{
-	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
-
-	wch_link_command( (libusb_device_handle *)dev, "\x81\x0d\x01\xff", 4, 0, 0, 0);
-	return 0;
-}
-
-void * TryInit_WCHLinkE()
-{
-	libusb_device_handle * wch_linke_devh;
-	wch_linke_devh = wch_link_base_setup(0);
-	if( !wch_linke_devh ) return 0;
-
-
-	struct LinkEProgrammerStruct * ret = malloc( sizeof( struct LinkEProgrammerStruct ) );
-	memset( ret, 0, sizeof( *ret ) );
-	ret->devh = wch_linke_devh;
-	ret->lasthaltmode = 0;
-
-	MCF.WriteReg32 = 0;
-	MCF.ReadReg32 = 0;
-
-	MCF.SetupInterface = LESetupInterface;
-	MCF.Control3v3 = LEControl3v3;
-	MCF.Control5v = LEControl5v;
-	MCF.Unbrick = LEUnbrick;
-	MCF.HaltMode = LEHaltMode;
-	MCF.ConfigureNRSTAsGPIO = LEConfigureNRSTAsGPIO;
-	MCF.WriteBinaryBlob = LEWriteBinaryBlob;
-	MCF.ReadBinaryBlob = LEReadBinaryBlob;
-	MCF.Exit = LEExit;
-	return ret;
-};
-
-
-
+#endif

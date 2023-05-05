@@ -55,8 +55,29 @@ void MicroGDBStubHandleClientData( void * dev, const uint8_t * rxdata, int len )
 #include <stdio.h>
 #include <stdlib.h>
 
-uint16_t htons(uint16_t hostshort);
-uint32_t htonl(uint32_t hostlong);
+#ifdef MICROGDBSTUB_SOCKETS
+#if defined( WIN32 ) || defined( _WIN32 )
+#include <winsock2.h>
+#if !defined( POLLIN ) 
+typedef struct pollfd { SOCKET fd; SHORT  events; SHORT  revents; };
+#define POLLIN 0x0001
+#define POLLERR 0x008
+#define POLLHUP 0x010
+int WSAAPI WSAPoll(struct pollfd * fdArray, ULONG       fds, INT         timeout );
+#endif
+#define poll WSAPoll
+#define socklen_t uint32_t
+#define SHUT_RDWR SD_BOTH
+#define MSG_NOSIGNAL 0
+#else
+#define closesocket close
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <linux/in.h>
+#include <unistd.h>
+#include <poll.h>
+#endif
+#endif
 
 char gdbbuffer[65536];
 uint8_t gdbchecksum = 0;
@@ -268,7 +289,7 @@ void HandleGDBPacket( void * dev, char * data, int len )
 		{
 			uint32_t regret;
 			if( RVReadCPURegister( dev, i, &regret ) ) goto err;
-			sprintf( cts + i * 8, "%08x", htonl( regret ) );
+			sprintf( cts + i * 8, "%08x", (uint32_t)htonl( regret ) );
 		}
 		SendReplyFull( cts );
 		break;
@@ -284,7 +305,7 @@ void HandleGDBPacket( void * dev, char * data, int len )
 			char cts[9];
 			uint32_t regret;
 			if( RVReadCPURegister( dev, regno, &regret ) ) goto err;
-			sprintf( cts, "%08x", htonl( regret ) );
+			sprintf( cts, "%08x", (uint32_t)htonl( regret ) );
 			SendReplyFull( cts );
 		}
 		break;
@@ -387,23 +408,8 @@ void MicroGDBStubHandleClientData( void * dev, const uint8_t * rxdata, int len )
 
 #ifdef MICROGDBSTUB_SOCKETS
 
-
-#ifdef WIN32
-#include <winsock2.h>
-#define socklen_t uint32_t
-#define SHUT_RDWR SD_BOTH
-#define MSG_NOSIGNAL 0
-#else
-#define closesocket close
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <linux/in.h>
-#endif
-
 #include <fcntl.h>
-#include <unistd.h>
 #include <sys/time.h>
-#include <poll.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -436,7 +442,7 @@ static int GDBListen( void * dev )
 	}
 
 	//Disable SO_LINGER (Well, enable it but turn it way down)
-#ifdef WIN32
+#if defined( WIN32 ) || defined( _WIN32 )
 	struct linger lx;
 	lx.l_onoff = 1;
 	lx.l_linger = 0;
@@ -520,7 +526,7 @@ int MicroGDBPollServer( void * dev )
 			struct   sockaddr_in tin;
 			socklen_t addrlen  = sizeof(tin);
 			memset( &tin, 0, addrlen );
-			int tsocket = accept( serverSocket, (struct sockaddr *)&tin, &addrlen );
+			int tsocket = accept( serverSocket, (struct sockaddr *)&tin, (int*)&addrlen );
 			closesocket( serverSocket );
 			serverSocket = tsocket;
 			listenMode = 2;
@@ -532,7 +538,7 @@ int MicroGDBPollServer( void * dev )
 		{
 			// Got data from a peer.
 			uint8_t buffer[16384];
-			ssize_t rx = recv( serverSocket, buffer, sizeof( buffer ), MSG_NOSIGNAL );
+			ssize_t rx = recv( serverSocket, (char*)buffer, sizeof( buffer ), MSG_NOSIGNAL );
 			if( rx == 0 )
 			{
 				MicroGDBStubHandleDisconnect( dev );
@@ -597,7 +603,7 @@ void MicroGDBStubSendReply( const void * data, int len, int docs )
 
 int MicroGDBStubStartup( void * dev )
 {
-#ifdef WIN32
+#if defined( WIN32 ) || defined( _WIN32 )
 {
     WORD wVersionRequested;
     WSADATA wsaData;

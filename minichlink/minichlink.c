@@ -256,9 +256,9 @@ keep_going:
 					goto unimplemented;
 				}
 
-				uint32_t datareg = SimpleReadNumberInt( argv[iarg-1], DMDATA0 );
+				uint32_t datareg = SimpleReadNumberInt( argv[iarg], DMDATA0 );
 
-				if( MCF.WriteReg32 && MCF.FlushLLCommands )
+				if( MCF.ReadReg32 && MCF.FlushLLCommands )
 				{
 					uint32_t value;
 					int ret = MCF.ReadReg32( dev, datareg, &value );
@@ -846,7 +846,6 @@ static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t dat
 		}
 		iss->lastwriteflags = is_flash;
 
-
 		iss->statetag = STTAG( "WRSQ" );
 		iss->currentstateval = address_to_write;
 
@@ -979,6 +978,7 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 			if( is_flash )
 			{
 				MCF.ReadBinaryBlob( dev, base, 64, tempblock );
+
 				MCF.Erase( dev, base, 64, 0 );
 				MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG ); // THIS IS REQUIRED, (intptr_t)&FLASH->CTLR = 0x40022010
 				MCF.WriteWord( dev, 0x40022010, CR_BUF_RST | CR_PAGE_PG );  // (intptr_t)&FLASH->CTLR = 0x40022010
@@ -1044,7 +1044,7 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 	}
 
 	MCF.FlushLLCommands( dev );
-	MCF.DelayUS( dev, 100 ); // Why do we need this?
+	if(MCF.DelayUS) MCF.DelayUS( dev, 100 ); // Why do we need this?
 	return 0;
 timedout:
 	fprintf( stderr, "Timed out\n" );
@@ -1053,6 +1053,7 @@ timedout:
 
 static int DefaultReadWord( void * dev, uint32_t address_to_read, uint32_t * data )
 {
+	int r = 0;
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
 
 	int autoincrement = 1;
@@ -1100,13 +1101,13 @@ static int DefaultReadWord( void * dev, uint32_t address_to_read, uint32_t * dat
 		iss->statetag = STTAG( "RDSQ" );
 		iss->currentstateval = address_to_read;
 
-		MCF.WaitForDoneOp( dev );
+		r |= MCF.WaitForDoneOp( dev );
 	}
 
 	if( iss->autoincrement )
 		iss->currentstateval += 4;
 
-	int r = MCF.ReadReg32( dev, DMDATA0, data );
+	r |= MCF.ReadReg32( dev, DMDATA0, data );
 	return r;
 }
 
@@ -1168,12 +1169,11 @@ int DefaultErase( void * dev, uint32_t address, uint32_t length, int type )
 		{
 			// Step 4:  set PAGE_ER of FLASH_CTLR(0x40022010)
 			MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_PAGE_ER ); // Actually FTER
-
 			// Step 5: Write the first address of the fast erase page to the FLASH_ADDR register.
 			MCF.WriteWord( dev, (intptr_t)&FLASH->ADDR, chunk_to_erase  );
 
 			// Step 6: Set the STAT bit of FLASH_CTLR register to '1' to initiate a fast page erase (64 bytes) action.
-			MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_STRT_Set|CR_PAGE_ER );
+			MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_STRT_Set | CR_PAGE_ER );
 			if( MCF.WaitForFlash && MCF.WaitForFlash( dev ) ) return -99;
 			chunk_to_erase+=64;
 		}
@@ -1709,10 +1709,7 @@ int SetupAutomaticHighLevelFunctions( void * dev )
 	if( !MCF.VoidHighLevelState )
 		MCF.VoidHighLevelState = DefaultVoidHighLevelState;
 
-	struct InternalState * iss = malloc( sizeof( struct InternalState ) );
-	iss->statetag = 0;
-	iss->currentstateval = 0;
-	iss->autoincrement = 0;
+	struct InternalState * iss = calloc( 1, sizeof( struct InternalState ) );
 
 	((struct ProgrammerStructBase*)dev)->internal = iss;
 	return 0;
