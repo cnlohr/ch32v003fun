@@ -1,5 +1,3 @@
-OS_NAME := $(shell uname -s | tr A-Z a-z)
-
 TOOLS:=minichlink minichlink.so
 
 all : $(TOOLS)
@@ -12,9 +10,10 @@ C_S:=minichlink.c pgm-wch-linke.c pgm-esp32s2-ch32xx.c nhc-link042.c minichgdb.c
 # gdb-multilib {file}
 # target remote :2345
 
-ifeq ($(OS_name),windows_nt)
+ifeq ($(OS),Windows_NT)
 	LDFLAGS:=-lpthread -lusb-1.0 -lsetupapi
 else
+	OS_NAME := $(shell uname -s | tr A-Z a-z)
 	ifeq ($(OS_NAME),linux)
 		LDFLAGS:=-lpthread -lusb-1.0 -ludev
 	endif
