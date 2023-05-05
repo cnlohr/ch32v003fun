@@ -7,3 +7,6 @@ https://user-images.githubusercontent.com/104343143/235313119-4facb0b4-9f8d-4b79
 
 
 https://user-images.githubusercontent.com/104343143/235313123-14a2114d-388a-4c98-89b9-63e5e40de682.mp4
+
+## nRF24L01(+) library
+This is the doing of [Reza Ebrahimi](https://github.com/ebrezadev), I've just included a copy of [his library](https://github.com/ebrezadev/nRF24L01-C-Driver) here and made some modifications.
