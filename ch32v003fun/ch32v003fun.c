@@ -71,6 +71,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 typedef void * mbstate_t;
 
+#ifdef UNICODE
 size_t wcrtomb(char *restrict s, wchar_t wc, mbstate_t *restrict st)
 {
 	if (!s) return 1;
@@ -108,6 +109,7 @@ int wctomb(char *s, wchar_t wc)
 	if (!s) return 0;
 	return wcrtomb(s, wc, 0);
 }
+#endif
 size_t strlen(const char *s) { const char *a = s;for (; *s; s++);return s-a; }
 size_t strnlen(const char *s, size_t n) { const char *p = memchr(s, 0, n); return p ? p-s : n;}
 void *memset(void *dest, int c, size_t n) { unsigned char *s = dest; for (; n; n--, s++) *s = c; return dest; }
@@ -764,8 +766,10 @@ void handle_reset()
 .option norelax\n\
 	la gp, __global_pointer$\n\
 .option pop\n\
-	la sp, _eusrstack\n\
-.option arch, +zicsr\n"
+	la sp, _eusrstack\n"
+#if __GNUC__ > 10
+".option arch, +zicsr\n"
+#endif
 	// Setup the interrupt vector, processor status and INTSYSCR.
 "	li a0, 0x80\n\
 	csrw mstatus, a0\n\
@@ -798,6 +802,8 @@ asm volatile(
 	bne a1, a2, 1b\n\
 2:\n" );
 
+	SysTick->CTLR = 1;
+
 	// set mepc to be main as the root app.
 asm volatile(
 "	csrw mepc, %[main]\n"
@@ -818,6 +824,14 @@ void SystemInit48HSI( void )
 	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x08);                // Wait till PLL is used as system clock source
 }
 
+void SystemInit24HSI( void )
+{
+	// Values lifted from the EVT.  There is little to no documentation on what this does.
+	RCC->CFGR0 = RCC_HPRE_DIV1;                // PLLCLK = HCLK = SYSCLK = APB1
+	RCC->CTLR  = RCC_HSION | ((HSITRIM) << 3); // Use HSI, Only.
+	FLASH->ACTLR = FLASH_ACTLR_LATENCY_0;      // 1 Cycle Latency
+	RCC->INTR  = 0x009F0000;                   // Clear PLL, CSSC, HSE, HSI and LSI ready flags.
+}
 
 void SystemInitHSE( int HSEBYP )
 {
@@ -887,9 +901,12 @@ int putchar(int c)
 	return 1;
 }
 #else
-// For debug writing to the debug interface.
-#define DMDATA0 ((volatile uint32_t*)0xe00000f4)
-#define DMDATA1 ((volatile uint32_t*)0xe00000f8)
+
+//           MSB .... LSB
+// DMDATA0: char3 char2 char1 [status word]
+// where [status word] is:
+//   b7 = is a "printf" waiting?
+//   b0..b3 = # of bytes in printf (+4).  (4 or higher indicates a print of some kind)
 
 int _write(int fd, const char *buf, int size)
 {
@@ -952,11 +969,7 @@ void WaitForDebuggerToAttach()
 
 void DelaySysTick( uint32_t n )
 {
-    SysTick->SR &= ~(1 << 0);
-    SysTick->CMP = n;
-    SysTick->CNT = 0; 
-    SysTick->CTLR |=(1 << 0);
-    while(!(SysTick->SR & (1 << 0)));
-    SysTick->CTLR &= ~(1 << 0);
+	uint32_t targend = SysTick->CNT + n;
+	while( ((int32_t)( SysTick->CNT - targend )) < 0 );
 }
 

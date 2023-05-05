@@ -4819,11 +4819,22 @@ static inline uint32_t __get_SP(void)
 extern "C" {
 #endif
 
-#define DELAY_US_TIME (SYSTEM_CORE_CLOCK / 8000000)
-#define DELAY_MS_TIME (SYSTEM_CORE_CLOCK / 8000)
+#define DELAY_US_TIME ((SYSTEM_CORE_CLOCK)/8000000)
+#define DELAY_MS_TIME ((SYSTEM_CORE_CLOCK)/8000)
+
+#if defined(__riscv) || defined(__riscv__) || defined( CH32V003FUN_BASE )
+
+// Stuff that can only be compiled on device (not for the programmer, or other host programs)
 
 void handle_reset()            __attribute__((naked)) __attribute((section(".text.handle_reset"))) __attribute__((used));
 void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) __attribute__((naked)) __attribute__((used));
+
+
+// For debug writing to the debug interface.
+#define DMDATA0 ((volatile uint32_t*)0xe00000f4)
+#define DMDATA1 ((volatile uint32_t*)0xe00000f8)
+
+#endif
 
 void DelaySysTick( uint32_t n );
 
@@ -4834,13 +4845,14 @@ void DelaySysTick( uint32_t n );
 int main() __attribute__((used));
 void SystemInit(void) __attribute__((used));
 
-// Useful functions
+// Initialization functions
 void SystemInit48HSI( void );
+void SystemInit24HSI( void );  // No PLL, just raw internal RC oscillator.
+
 // NOTE: HSEBYP is ORed with RCC_CTLR.  Set it to RCC_HSEBYP or 0.
 // If you are using an external oscillator, set it to RCC_HSEBYP.  Otherwise, if you are using a crystal, it must be 0.
 void SystemInitHSE( int HSEBYP );
 void SystemInitHSEPLL( int HSEBYP );
-
 
 #define UART_BAUD_RATE 115200
 #define OVER8DIV 4

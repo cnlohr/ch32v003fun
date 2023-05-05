@@ -24,10 +24,10 @@ struct MiniChlinkFunctions
 	int (*HaltMode)( void * dev, int mode ); //0 for halt, 1 for reset, 2 for resume
 	int (*ConfigureNRSTAsGPIO)( void * dev, int one_if_yes_gpio );
 
-	// WARNING: Reading/writing must be at 32-bit boundaries for 32-bit sizes.
-	// WARNING: Writing binary blobs may write groups of 64-bytes.
+	// No boundary or limit rules.  Must support any combination of alignment and size.
 	int (*WriteBinaryBlob)( void * dev, uint32_t address_to_write, uint32_t blob_size, uint8_t * blob );
 	int (*ReadBinaryBlob)( void * dev, uint32_t address_to_read_from, uint32_t read_size, uint8_t * blob );
+
 	int (*Erase)( void * dev, uint32_t address, uint32_t length, int type ); //type = 0 for fast, 1 for whole-chip
 
 	// MUST be 4-byte-aligned.
@@ -35,8 +35,22 @@ struct MiniChlinkFunctions
 	int (*WriteWord)( void * dev, uint32_t address_to_write, uint32_t data );
 	int (*ReadWord)( void * dev, uint32_t address_to_read, uint32_t * data );
 
+	// Debugging operations.
+	//  Note: You must already be in break mode to use these otherwise they
+	//  will return nonsensical data.
+	// For x0...xN, use 0x1000 + regno.
+	// For PC, use 0x7b1
+	int (*ReadCPURegister)( void * dev, uint32_t regno, uint32_t * regret );
+	int (*WriteCPURegister)( void * dev, uint32_t regno, uint32_t regval );
+
+	// Actually returns 17 registers (All 16 CPU registers + the debug register)
+	int (*ReadAllCPURegisters)( void * dev, uint32_t * regret );
+	int (*WriteAllCPURegisters)( void * dev, uint32_t * regret );
+
+	int (*SetEnableBreakpoints)( void * dev, int halt_on_break, int single_step );
+
 	int (*WaitForFlash)( void * dev );
-	int (*WaitForDoneOp)( void * dev );
+	int (*WaitForDoneOp)( void * dev, int ignore );
 
 	int (*PrintChipInfo)( void * dev );
 
@@ -57,9 +71,12 @@ struct MiniChlinkFunctions
 
 	int (*VendorCommand)( void * dev, const char * command );
 
-	// Do Not override these.  they are cursed.
-	int (*WriteHalfWord)( void * dev, uint32_t address_to_write, uint32_t data );
-	int (*ReadHalfWord)( void * dev, uint32_t address_to_read, uint32_t * data );
+	// Probably no need to override these.  The base layer handles them.
+	int (*WriteHalfWord)( void * dev, uint32_t address_to_write, uint16_t data );
+	int (*ReadHalfWord)( void * dev, uint32_t address_to_read, uint16_t * data );
+
+	int (*WriteByte)( void * dev, uint32_t address_to_write, uint8_t data );
+	int (*ReadByte)( void * dev, uint32_t address_to_read, uint8_t * data );
 };
 
 /** If you are writing a driver, the minimal number of functions you can implement are:
@@ -86,6 +103,9 @@ struct InternalState
 	uint32_t flash_unlocked;
 	int lastwriteflags;
 	int processor_in_mode;
+	int autoincrement;
+	uint32_t ram_base;
+	uint32_t ram_size;
 };
 
 
@@ -115,12 +135,22 @@ extern struct MiniChlinkFunctions MCF;
 // Returns 'dev' on success, else 0.
 void * TryInit_WCHLinkE();
 void * TryInit_ESP32S2CHFUN();
+void * TryInit_NHCLink042(void);
 
 // Returns 0 if ok, populated, 1 if not populated.
 int SetupAutomaticHighLevelFunctions( void * dev );
 
 // Useful for converting numbers like 0x, etc.
 int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber );
+
+// For drivers to call
+int DefaultVoidHighLevelState( void * dev );
+
+// GDBSever Functions
+int SetupGDBServer( void * dev );
+int PollGDBServer( void * dev );
+int IsGDBServerInShadowHaltState( void * dev );
+void ExitGDBServer( void * dev );
 
 #endif
 

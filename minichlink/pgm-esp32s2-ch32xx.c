@@ -206,7 +206,7 @@ static int ESPWaitForFlash( void * dev )
 	return 0;
 }
 
-static int ESPWaitForDoneOp( void * dev )
+static int ESPWaitForDoneOp( void * dev, int ignore )
 {
 	struct ESP32ProgrammerStruct * eps = (struct ESP32ProgrammerStruct *)dev;
 	if( SRemain( eps ) < 2 )
@@ -252,6 +252,7 @@ int ESPVoidHighLevelState( void * dev )
 	struct ESP32ProgrammerStruct * eps = (struct ESP32ProgrammerStruct *)dev;
 	Write2LE( eps, 0x05fe );
 	ESPFlushLLCommands( dev );	
+	DefaultVoidHighLevelState( dev );
 	return 0;
 }
 
