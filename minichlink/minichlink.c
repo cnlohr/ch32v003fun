@@ -589,7 +589,7 @@ static int DefaultWaitForFlash( void * dev )
 	return 0;
 }
 
-static int DefaultWaitForDoneOp( void * dev )
+static int DefaultWaitForDoneOp( void * dev, int ignore )
 {
 	int r;
 	uint32_t rrv;
@@ -601,7 +601,7 @@ static int DefaultWaitForDoneOp( void * dev )
 	while( rrv & (1<<12) );
 	if( (rrv >> 8 ) & 7 )
 	{
-		fprintf( stderr, "Fault writing memory (DMABSTRACTS = %08x)\n", rrv );
+		if( !ignore ) fprintf( stderr, "Fault writing memory (DMABSTRACTS = %08x)\n", rrv );
 		MCF.WriteReg32( dev, DMABSTRACTCS, 0x00000700 );
 		return -9;
 	}
@@ -697,7 +697,7 @@ static int DefaultWriteHalfWord( void * dev, uint32_t address_to_write, uint16_t
 	MCF.WriteReg32( dev, DMDATA0, data );
 	MCF.WriteReg32( dev, DMCOMMAND, 0x00271008 ); // Copy data to x8, and execute program.
 
-	ret |= MCF.WaitForDoneOp( dev );
+	ret |= MCF.WaitForDoneOp( dev, 0 );
 	iss->currentstateval = -1;
 
 
@@ -723,7 +723,7 @@ static int DefaultReadHalfWord( void * dev, uint32_t address_to_write, uint16_t 
 	MCF.WriteReg32( dev, DMCOMMAND, 0x00241000 ); // Only execute.
 	MCF.WriteReg32( dev, DMCOMMAND, 0x00221008 ); // Read x8 into DATA0.
 
-	ret |= MCF.WaitForDoneOp( dev );
+	ret |= MCF.WaitForDoneOp( dev, 0 );
 	iss->currentstateval = -1;
 
 	uint32_t rr;
@@ -753,7 +753,7 @@ static int DefaultWriteByte( void * dev, uint32_t address_to_write, uint8_t data
 	MCF.WriteReg32( dev, DMDATA0, data );
 	MCF.WriteReg32( dev, DMCOMMAND, 0x00271008 ); // Copy data to x8, and execute program.
 
-	ret |= MCF.WaitForDoneOp( dev );
+	ret |= MCF.WaitForDoneOp( dev, 0 );
 	iss->currentstateval = -1;
 	return ret;
 }
@@ -777,7 +777,7 @@ static int DefaultReadByte( void * dev, uint32_t address_to_write, uint8_t * dat
 	MCF.WriteReg32( dev, DMCOMMAND, 0x00241000 ); // Only execute.
 	MCF.WriteReg32( dev, DMCOMMAND, 0x00221008 ); // Read x8 into DATA0.
 
-	ret |= MCF.WaitForDoneOp( dev );
+	ret |= MCF.WaitForDoneOp( dev, 0 );
 	iss->currentstateval = -1;
 
 	uint32_t rr;
@@ -850,7 +850,7 @@ static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t dat
 		iss->currentstateval = address_to_write;
 
 		if( is_flash )
-			ret |= MCF.WaitForDoneOp( dev );
+			ret |= MCF.WaitForDoneOp( dev, 0 );
 	}
 	else
 	{
@@ -865,11 +865,11 @@ static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t dat
 		{
 			// XXX TODO: This likely can be a very short delay.
 			// XXX POSSIBLE OPTIMIZATION REINVESTIGATE.
-			ret |= MCF.WaitForDoneOp( dev );
+			ret |= MCF.WaitForDoneOp( dev, 0 );
 		}
 		else
 		{
-			ret |= MCF.WaitForDoneOp( dev );
+			ret |= MCF.WaitForDoneOp( dev, 0 );
 		}
 	}
 
@@ -1101,13 +1101,15 @@ static int DefaultReadWord( void * dev, uint32_t address_to_read, uint32_t * dat
 		iss->statetag = STTAG( "RDSQ" );
 		iss->currentstateval = address_to_read;
 
-		r |= MCF.WaitForDoneOp( dev );
+		r |= MCF.WaitForDoneOp( dev, 0 );
 	}
 
 	if( iss->autoincrement )
 		iss->currentstateval += 4;
 
 	r |= MCF.ReadReg32( dev, DMDATA0, data );
+	if( iss->currentstateval == iss->ram_base + iss->ram_size )
+		MCF.WaitForDoneOp( dev, 1 ); // Ignore any post-errors. 
 	return r;
 }
 
@@ -1234,6 +1236,7 @@ int DefaultReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t r
 			}
 		}
 	}
+	MCF.WaitForDoneOp( dev, 0 );
 	return 0;
 }
 
@@ -1514,22 +1517,22 @@ int DefaultConfigureNRSTAsGPIO( void * dev, int one_if_yes_gpio  )
 	}
 	ctlr |= CR_OPTER_Set | CR_STRT_Set; // OBER
 	MCF.WriteWord( dev, 0x40022010, ctlr ); // FLASH->CTLR = 0x40022010
-	ret |= MCF.WaitForDoneOp( dev );
+	ret |= MCF.WaitForDoneOp( dev, 0 );
 	ret |= MCF.WaitForFlash( dev );
 
 	MCF.WriteHalfWord( dev, (intptr_t)&OB->RDPR, RDP_Key );
 
     ctlr &=~CR_OPTER_Reset;
 	MCF.WriteWord( dev, 0x40022010, ctlr ); // FLASH->CTLR = 0x40022010
-	ret |= MCF.WaitForDoneOp( dev );
+	ret |= MCF.WaitForDoneOp( dev, 0 );
 	ret |= MCF.WaitForFlash( dev );
     ctlr |= CR_OPTPG_Set;
 	MCF.WriteWord( dev, 0x40022010, ctlr ); // FLASH->CTLR = 0x40022010
-	ret |= MCF.WaitForDoneOp( dev );
+	ret |= MCF.WaitForDoneOp( dev, 0 );
 	ret |= MCF.WaitForFlash( dev );
     ctlr &=~CR_OPTPG_Reset;
 	MCF.WriteWord( dev, 0x40022010, ctlr ); // FLASH->CTLR = 0x40022010
-	ret |= MCF.WaitForDoneOp( dev );
+	ret |= MCF.WaitForDoneOp( dev, 0 );
 	ret |= MCF.WaitForFlash( dev );
 
 
@@ -1541,14 +1544,14 @@ int DefaultConfigureNRSTAsGPIO( void * dev, int one_if_yes_gpio  )
 	}
 	ctlr |= CR_OPTPG_Set; //OBPG
 	MCF.WriteWord( dev, 0x40022010, ctlr ); // FLASH->CTLR = 0x40022010
-	ret |= MCF.WaitForDoneOp( dev );
+	ret |= MCF.WaitForDoneOp( dev, 0 );
 	ret |= MCF.WaitForFlash( dev );
 
 	uint32_t config = OB_IWDG_HW | OB_STOP_NoRST | OB_STDBY_NoRST | (one_if_yes_gpio?OB_RST_NoEN:OB_RST_EN_DT1ms) | (uint16_t)0xE0;
 	printf( "Config (%08x): %08x\n", (intptr_t)&OB->USER, config );
 	MCF.WriteHalfWord( dev,  (intptr_t)&OB->USER, config );
 
-	ret |= MCF.WaitForDoneOp( dev );
+	ret |= MCF.WaitForDoneOp( dev, 0 );
 	ret |= MCF.WaitForFlash( dev );
 
 	ctlr &= CR_OPTPG_Reset;
@@ -1579,7 +1582,7 @@ int DefaultConfigureNRSTAsGPIO( void * dev, int one_if_yes_gpio  )
 	csw |= 1<<5;//OBER;
 	MCF.WriteWord( dev, 0x40022010, csw ); // FLASH->CTLR = 0x40022010
 	MCF.WriteHalfWord( dev, 0x1FFFF802, 0xffff );
-	ret |= MCF.WaitForDoneOp( dev );
+	ret |= MCF.WaitForDoneOp( dev, 0 );
 	ret |= MCF.WaitForFlash( dev );
 
 	MCF.ReadWord( dev, 0x40022010, &csw ); // FLASH->CTLR = 0x40022010
@@ -1604,7 +1607,7 @@ int DefaultConfigureNRSTAsGPIO( void * dev, int one_if_yes_gpio  )
 		csw |= (one_if_yes_gpio?0b00:0b11)<<(3+8);
 		printf( "CSW writing: %08x\n", csw );
 		MCF.WriteHalfWord( dev, 0x1FFFF802, csw );
-		ret |= MCF.WaitForDoneOp( dev );
+		ret |= MCF.WaitForDoneOp( dev, 0 );
 		ret |= MCF.WaitForFlash( dev );
 	}
 
@@ -1710,6 +1713,8 @@ int SetupAutomaticHighLevelFunctions( void * dev )
 		MCF.VoidHighLevelState = DefaultVoidHighLevelState;
 
 	struct InternalState * iss = calloc( 1, sizeof( struct InternalState ) );
+	iss->ram_base = 0x20000000;
+	iss->ram_size = 2048;
 
 	((struct ProgrammerStructBase*)dev)->internal = iss;
 	return 0;

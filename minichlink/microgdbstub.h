@@ -24,8 +24,6 @@
 void RVNetPoll(void * dev );
 int RVSendGDBHaltReason( void * dev );
 void RVNetConnect( void * dev );
-int RVSendGDBHaltReason( void * dev );
-void RVNetPoll(void * dev );
 int RVReadCPURegister( void * dev, int regno, uint32_t * regret );
 void RVDebugExec( void * dev, int halt_reset_or_resume );
 int RVReadMem( void * dev, uint32_t memaddy, uint8_t * payload, int len );
@@ -274,7 +272,7 @@ void HandleGDBPacket( void * dev, char * data, int len )
 		{
 			// Request a list of actions supported by the ‘vCont’ packet. 
 			// We don't support vCont
-			SendReplyFull( "vCont;s;c;t;" ); //no ;s maybe?
+			SendReplyFull( "vCont;;c;;" ); //no ;s or ;t because we don't implement them.
 		}
 		else
 		{

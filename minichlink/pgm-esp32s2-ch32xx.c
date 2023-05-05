@@ -206,7 +206,7 @@ static int ESPWaitForFlash( void * dev )
 	return 0;
 }
 
-static int ESPWaitForDoneOp( void * dev )
+static int ESPWaitForDoneOp( void * dev, int ignore )
 {
 	struct ESP32ProgrammerStruct * eps = (struct ESP32ProgrammerStruct *)dev;
 	if( SRemain( eps ) < 2 )

@@ -159,6 +159,16 @@ static int LESetupInterface( void * d )
 	// This puts the processor on hold to allow the debugger to run.
 	wch_link_command( dev, "\x81\x0d\x01\x02", 4, 0, 0, 0 ); // Reply: Ignored, 820d050900300500
 
+	// For some reason, if we don't do this sometimes the programmer starts in a hosey mode.
+	MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
+	MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // Initiate a halt request.
+	MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // No, really make sure.
+	MCF.WriteReg32( d, DMABSTRACTCS, 0x00000700 ); // Ignore any pending errors.
+	MCF.WriteReg32( d, DMPROGBUF0, 0x00100073 );
+	MCF.WriteReg32( d, DMABSTRACTAUTO, 0 );
+	MCF.WriteReg32( d, DMCOMMAND, 0x00261000 ); // Read x0
+
+	// This puts the processor on hold to allow the debugger to run.
 	wch_link_command( dev, "\x81\x11\x01\x09", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Chip ID + Other data (see below)
 	if( transferred != 20 )
 	{
@@ -170,14 +180,6 @@ static int LESetupInterface( void * d )
 	fprintf( stderr, "PFlags       : %02x-%02x-%02x-%02x\n", rbuff[12], rbuff[13], rbuff[14], rbuff[15] );
 	fprintf( stderr, "Part Type (B): %02x-%02x-%02x-%02x\n", rbuff[16], rbuff[17], rbuff[18], rbuff[19] );
 	
-	int r = MCF.WaitForDoneOp( d );
-	if( r )
-	{
-		fprintf( stderr, "Error: WaitForDoneOp(...) failed\n" );
-	}
-
-	//Default behavior for other programmers is to be/stay in halt mode as much as possible.
-	MCF.HaltMode( d, 2 );
 	return 0;
 }
 

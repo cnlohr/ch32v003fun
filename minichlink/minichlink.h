@@ -50,7 +50,7 @@ struct MiniChlinkFunctions
 	int (*SetEnableBreakpoints)( void * dev, int halt_on_break, int single_step );
 
 	int (*WaitForFlash)( void * dev );
-	int (*WaitForDoneOp)( void * dev );
+	int (*WaitForDoneOp)( void * dev, int ignore );
 
 	int (*PrintChipInfo)( void * dev );
 
@@ -104,6 +104,8 @@ struct InternalState
 	int lastwriteflags;
 	int processor_in_mode;
 	int autoincrement;
+	uint32_t ram_base;
+	uint32_t ram_size;
 };
 
 
