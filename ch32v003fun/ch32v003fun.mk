@@ -14,7 +14,7 @@ CFLAGS+= \
 	-nostdlib \
 	-I. -Wall
 
-LDFLAGS+=-T $(CH32V003FUN)/ch32v003fun.ld -Wl,--gc-sections -L../../misc -lgcc
+LDFLAGS+=-T $(CH32V003FUN)/ch32v003fun.ld -Wl,--gc-sections -L$(CH32V003FUN)/../misc -lgcc
 
 SYSTEM_C:=$(CH32V003FUN)/ch32v003fun.c
 

@@ -38,7 +38,7 @@ minichlink.so : $(C_S)
 	gcc -o $@ $^ $(LDFLAGS) $(CFLAGS) $(INCS) -shared -fPIC
 
 minichlink.dll : $(C_S)
-	x86_64-w64-mingw32-gcc -o $@ $^ $(LDFLAGS) $(CFLAGS) $(INCS) -shared
+	x86_64-w64-mingw32-gcc -o $@ $^ $(LDFLAGS) $(CFLAGS) $(INCS) -shared -DMINICHLINK_AS_LIBRARY
 
 install_udev_rules :
 	cp 99-WCH-LinkE.rules /etc/udev/rules.d/
