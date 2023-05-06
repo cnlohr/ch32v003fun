@@ -13,7 +13,6 @@ struct LinkEProgrammerStruct
 {
 	void * internal;
 	libusb_device_handle * devh;
-	int lasthaltmode;
 };
 
 #define WCHTIMEOUT 5000
@@ -248,7 +247,6 @@ void * TryInit_WCHLinkE()
 	struct LinkEProgrammerStruct * ret = malloc( sizeof( struct LinkEProgrammerStruct ) );
 	memset( ret, 0, sizeof( *ret ) );
 	ret->devh = wch_linke_devh;
-	ret->lasthaltmode = 0;
 
 	MCF.ReadReg32 = LEReadReg32;
 	MCF.WriteReg32 = LEWriteReg32;

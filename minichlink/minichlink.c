@@ -56,8 +56,6 @@ int main( int argc, char ** argv )
 		fprintf( stderr, "Error: Could not initialize any supported programmers\n" );
 		return -32;
 	}
-	
-	SetupAutomaticHighLevelFunctions( dev );
 
 	int status;
 	int must_be_end = 0;
