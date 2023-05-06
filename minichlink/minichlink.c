@@ -11,14 +11,14 @@
 #include "minichlink.h"
 #include "../ch32v003fun/ch32v003fun.h"
 
-static int64_t StringToMemoryAddress( const char * number );
-static void StaticUpdatePROGBUFRegs( void * dev );
-static int InternalUnlockBootloader( void * dev );
+static int64_t StringToMemoryAddress( const char * number ) __attribute__((used));
+static void StaticUpdatePROGBUFRegs( void * dev ) __attribute__((used));
+static int InternalUnlockBootloader( void * dev ) __attribute__((used));
 
 void TestFunction(void * v );
 struct MiniChlinkFunctions MCF;
 
-int main( int argc, char ** argv )
+void * MiniCHLinkInitAsDLL( struct MiniChlinkFunctions ** MCFO )
 {
 	void * dev = 0;
 	if( (dev = TryInit_WCHLinkE()) )
@@ -34,6 +34,24 @@ int main( int argc, char ** argv )
         fprintf( stderr, "Found NHC-Link042 Programmer\n" );
     }
 	else
+	{
+		fprintf( stderr, "Error: Could not initialize any supported programmers\n" );
+		return 0;
+	}
+	
+	SetupAutomaticHighLevelFunctions( dev );
+	if( MCFO )
+	{
+		*MCFO = &MCF;
+	}
+	return dev;
+}
+
+#if !defined( MINICHLINK_AS_LIBRARY ) && !defined( MINICHLINK_IMPORT )
+int main( int argc, char ** argv )
+{
+	void * dev = MiniCHLinkInitAsDLL( 0 );
+	if( !dev )
 	{
 		fprintf( stderr, "Error: Could not initialize any supported programmers\n" );
 		return -32;
@@ -516,7 +534,7 @@ unimplemented:
 	fprintf( stderr, "Error: Command '%s' unimplemented on this programmer.\n", lastcommand );
 	return -1;
 }
-
+#endif
 
 #if defined(WINDOWS) || defined(WIN32) || defined(_WIN32)
 #define strtoll _strtoi64
