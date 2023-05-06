@@ -55,14 +55,15 @@ You can use the pre-compiled minichlink or go to minichlink dir and `make` it.
 
 ```
 cd examples/blink
-make flash
+make
 ```
 
-Just use `make` if you want to compile but not flash.
+In Linux this will "just work"(TM) using `minichlink`.  
+In Windows, if you want to use minichlink, you will need to use Zadig to install WinUSB to the WCH-Link interface 0.  
+The generated .hex file is compatible with the official WCH flash tool.  
 
-In Linux this will "just work"(TM) using `minichlink`.
-In Windows, if you want to use minichlink, you will need to use Zadig to install WinUSB to the WCH-Link interface 0.
-The generated .hex file is compatible with the official WCH flash tool.
+text = code, data = constants and initialization values, bss = uninitialized values.  
+dec is the sum of the 3 and reflects the number of bytes in flash that will get taken up by the program.
 
 
 ## ESP32S2 Programming
@@ -75,7 +76,9 @@ It enumerates as 2 interfaces.
 
 If you want to mess with the programming code in Windows, you will have to install WinUSB to the interface 0.  Then you can uninstall it in Device Manager under USB Devices.
 
-On linux you find the serial port with `ls -l /dev/ttyUSB* /dev/ttyACM*` and connect to it with `screen /dev/ttyACM0 115200`
+On linux you find the serial port with `ls -l /dev/ttyUSB* /dev/ttyACM*` and connect to it with `screen /dev/ttyACM0 115200`  
+Disconnect with `CTRL+a` `:quit`.  
+
 Adding your user to these groups will remove the need to `sudo` for access to the serial port:
 debian-based
 	`sudo usermod -a -G dialout $USER`
@@ -106,8 +109,19 @@ To use the WCH-Link in WSL, it is required to "attach" the USB hardware on the W
 6. In powershell, use the command `usbipd wsl attach --busid=<BUSID>` to attach the device at the busid from previous step
 7. You will hear the windows sound for the USB device being removed (and silently attached to WSL instead)
 8. In WSL, you will now be able to run `lsusb` and see that the SCH-Link is attached
-9. For unknown reasons, you must run make under root access in order to connect to the programmer with minichlink.  Recommend running `sudo make flash` when building and programming projects using WSL
-Feel free to solve this issue and figure out a way to give the user hardware access to WCH-Link and modify these instructions.
+9. For unknown reasons, you must run make under root access in order to connect to the programmer with minichlink.  Recommend running `sudo make` when building and programming projects using WSL. This may work too (to be confirmed):
+
+### non-root access on linux
+Unlike serial interfaces, by default, the USB device is owned by root, has group set to root and everyone else may only read.
+1. Get the vendor:device ID of the WCH-Link from `lsusb`.
+2. Create a udev rule with `sudo nano /etc/udev/rules.d/80-USB_WCH-Link.rules`, paste (CTRL+SHIFT+V) `SUBSYSTEM=="usb", ATTR{idVendor}=="1a86", ATTR{idProduct}=="8010", MODE="0666"` and save, replacing the idVendor and idProduct if what you got previously was different.
+3. Reboot or reload the udev rules with `sudo udevadm control --reload-rules && sudo udevadm trigger` 
+4. ???
+5. profit
+Now anyone on your PC has access to the WCH-Link device, so you can stop using sudo for make.  
+I don't think there are any security risks here.
+You may also tie this to the WCH-Link serial number or some other attribute from `udevadm info -a -n /dev/bus/usb/busid/deviceid` with the bus id and device id you got from lsusb earlier.
+
 
 ## minichlink
 
