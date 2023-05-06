@@ -619,7 +619,24 @@ static int DefaultWaitForDoneOp( void * dev, int ignore )
 	while( rrv & (1<<12) );
 	if( (rrv >> 8 ) & 7 )
 	{
-		if( !ignore ) fprintf( stderr, "Fault writing memory (DMABSTRACTS = %08x)\n", rrv );
+		if( !ignore )
+		{
+			const char * errortext = 0;
+			switch( (rrv>>8)&7 )
+			{
+			case 1: errortext = "Command in execution"; break;
+			case 2: errortext = "Abstract Command Unsupported"; break;
+			case 3: errortext = "Execption executing Abstract Command"; break;
+			case 4: errortext = "Processor not halted."; break;
+			case 5: errortext = "Bus Error"; break;
+			case 6: errortext = "Parity Bit"; break;
+			default: errortext = "Other Error"; break;
+			}
+
+			uint32_t temp;
+			MCF.ReadReg32( dev, DMSTATUS, &temp );
+			fprintf( stderr, "Fault writing memory (DMABSTRACTS = %08x) (%s) DMSTATUS: %08x\n", rrv, errortext, temp );
+		}
 		MCF.WriteReg32( dev, DMABSTRACTCS, 0x00000700 );
 		return -9;
 	}
@@ -1126,6 +1143,7 @@ static int DefaultReadWord( void * dev, uint32_t address_to_read, uint32_t * dat
 		iss->currentstateval += 4;
 
 	r |= MCF.ReadReg32( dev, DMDATA0, data );
+
 	if( iss->currentstateval == iss->ram_base + iss->ram_size )
 		MCF.WaitForDoneOp( dev, 1 ); // Ignore any post-errors. 
 	return r;
@@ -1364,9 +1382,14 @@ static int DefaultHaltMode( void * dev, int mode )
 	switch ( mode )
 	{
 	case 0:
+		MCF.WriteReg32( dev, DMSHDWCFGR, 0x5aa50000 | (1<<10) ); // Shadow Config Reg
+		MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // CFGR (1<<10 == Allow output from slave)
+		MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // Bug in silicon?  If coming out of cold boot, and we don't do our little "song and dance" this has to be called.
+
 		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
 		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
-		MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
+//		MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.  This is recommended, but not doing it seems more stable.
+		// Sometimes, even if the processor is halted but the MSB is clear, it will spuriously start?
 		MCF.FlushLLCommands( dev );
 		break;
 	case 1:
@@ -1377,6 +1400,10 @@ static int DefaultHaltMode( void * dev, int mode )
 		MCF.FlushLLCommands( dev );
 		break;
 	case 2:
+		MCF.WriteReg32( dev, DMSHDWCFGR, 0x5aa50000 | (1<<10) ); // Shadow Config Reg
+		MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // CFGR (1<<10 == Allow output from slave)
+		MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // Bug in silicon?  If coming out of cold boot, and we don't do our little "song and dance" this has to be called.
+
 		MCF.WriteReg32( dev, DMCONTROL, 0x40000001 ); // resumereq
 		MCF.FlushLLCommands( dev );
 		break;
@@ -1396,6 +1423,17 @@ static int DefaultHaltMode( void * dev, int mode )
 		MCF.FlushLLCommands( dev );
 		break;
 	}
+#if 0
+	int i;
+	for( i = 0; i < 100; i++ )
+	{
+		uint32_t temp = 0;
+		MCF.ReadReg32( dev, DMSTATUS, &temp );
+		fprintf( stderr, "DMSTATUS: %08x\n", temp );
+		usleep( 20000);
+	}
+#endif
+
 	iss->processor_in_mode = mode;
 	return 0;
 }

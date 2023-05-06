@@ -159,7 +159,7 @@ int ESPReadWord( void * dev, uint32_t address_to_read, uint32_t * data )
 	Write4LE( eps, address_to_read );
 	ESPFlushLLCommands( eps );
 
-//	printf( "Got: %d\n", eps->replylen );
+//     printf( "Got: %d\n", eps->replylen );
 	if( eps->replylen < 5 )
 	{
 		return -9;
