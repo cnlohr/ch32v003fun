@@ -191,6 +191,13 @@ keep_going:
 				{
 					printf( "GDBServer Running\n" );
 				}
+				else
+				{
+					// In case we aren't running already.
+					MCF.HaltMode( dev, 2 );
+
+					//XXX TODO: Why do some programmers start automatically, and others don't? 
+				}
 
 				do
 				{
