@@ -368,6 +368,8 @@ keep_going:
 					goto unimplemented;
 				}
 
+				printf( "Read %d bytes\n", (int)amount );
+
 				if( hex )
 				{
 					int i;
@@ -1238,8 +1240,11 @@ int DefaultReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t r
 		{
 			uint32_t rw;
 			r = MCF.ReadWord( dev, rpos, &rw );
+			//printf( "RW: %d %08x %08x\n", r, rpos, rw );
 			if( r ) return r;
-			memcpy( blob, &rw, remain );
+			int rem = remain;
+			if( rem > 4 ) rem = 4;
+			memcpy( blob, &rw, rem);
 			blob += 4;
 			rpos += 4;
 		}
