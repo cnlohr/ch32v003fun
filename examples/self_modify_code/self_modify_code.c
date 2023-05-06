@@ -10,7 +10,7 @@ uint32_t count;
 
 // This is a complicated way to do it from C land, as a demonstration
 
-// Tell the compiler to put this code in the .data section.  That
+// Tell the compiler to put this code in the .srodata section.  That
 // will cause the startup code to copy it from flash into RAM where
 // it can be easily modified at runtime.
 uint32_t ReadCSRSelfModify( uint16_t whichcsr ) __attribute__(( section(".srodata"))) __attribute__((noinline));
