@@ -119,6 +119,8 @@ Anyone who wants to write a good/nice utility should probably look at the code i
 
 ## VSCode + PlatformIO
 
+Note: This is genearlly used for CI on this repo.  However, note that this is **not** the path that allows for debugging on Windows.
+
 This project can also be built, uploaded and debugged with VSCode and the PlatformIO extension. Simply clone and open this project in VSCode and have the PlatformIO extension installed.
 
 See [here](https://github.com/Community-PIO-CH32V/platform-ch32v) for further details.
