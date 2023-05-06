@@ -119,7 +119,20 @@ int LEWriteReg32( void * dev, uint8_t reg_7_bit, uint32_t command )
 			(command >> 0) & 0xff,
 			iOP };
 
-	wch_link_command( devh, req, sizeof(req), 0, 0, 0 );
+	uint8_t resp[128];
+	uint32_t resplen;
+	wch_link_command( devh, req, sizeof(req), &resplen, resp, sizeof(resp) );
+	if( resplen != 9 || resp[3] != reg_7_bit )
+	{
+		fprintf( stderr, "Error setting write reg. Tell cnlohr. Maybe we should allow retries here?\n" );
+		fprintf( stderr, "RR: %d :", resplen );
+		int i;
+		for( i = 0; i < resplen; i++ )
+		{
+			fprintf( stderr, "%02x ", resp[i] );
+		}
+		fprintf( stderr, "\n" );
+	}
 	return 0;
 }
 
@@ -135,6 +148,27 @@ int LEReadReg32( void * dev, uint8_t reg_7_bit, uint32_t * commandresp )
 			iOP };
 	wch_link_command( devh, req, sizeof( req ), (int*)&transferred, rbuff, sizeof( rbuff ) );
 	*commandresp = ( rbuff[4]<<24 ) | (rbuff[5]<<16) | (rbuff[6]<<8) | (rbuff[7]<<0);
+	if( transferred != 9 || rbuff[3] != reg_7_bit )
+	{
+		fprintf( stderr, "Error setting write reg. Tell cnlohr. Maybe we should allow retries here?\n" );
+		fprintf( stderr, "RR: %d :", transferred );
+		int i;
+		for( i = 0; i < transferred; i++ )
+		{
+			fprintf( stderr, "%02x ", rbuff[i] );
+		}
+		fprintf( stderr, "\n" );
+	}
+	/*
+	printf( "RR: %d :", transferred );
+	int i;
+	for( i = 0; i < transferred; i++ )
+	{
+		printf( "%02x ", rbuff[i] );
+	}
+	printf( "\n" );
+	*/
+
 	return 0;
 }
 
@@ -257,8 +291,6 @@ void * TryInit_WCHLinkE()
 	MCF.Control5v = LEControl5v;
 	MCF.Unbrick = LEUnbrick;
 	MCF.ConfigureNRSTAsGPIO = LEConfigureNRSTAsGPIO;
-	//MCF.WriteBinaryBlob = LEWriteBinaryBlob;
-	//MCF.ReadBinaryBlob = LEReadBinaryBlob;
 	MCF.Exit = LEExit;
 	return ret;
 };
@@ -274,6 +306,9 @@ void * TryInit_WCHLinkE()
 
 #if 0
 
+	// No need to use these and the propreitary blob.
+	//MCF.WriteBinaryBlob = LEWriteBinaryBlob;
+	//MCF.ReadBinaryBlob = LEReadBinaryBlob;
 
 const uint8_t * bootloader = (const uint8_t*)
 "\x21\x11\x22\xca\x26\xc8\x93\x77\x15\x00\x99\xcf\xb7\x06\x67\x45" \
