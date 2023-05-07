@@ -45,21 +45,5 @@ IRQ		  | NC			|	MISO	| C7
 
 And then wire D4 to LED1 on the evaluation board.
 
-#### Arduino example
-As I currently only have the one ch32v003 evaluation board, I had to talk to an Arduino.
-That's why there is a dir with Arduino files lurking in here on our christian server.
-
-#### pinout for Arduino
-same perspective
-nRF     | UNO     | nRF   | UNO
---------|---------|-------|-------
-VCC		  | 3V3			|	GND		| GND
-CSN/SS	| 9				| CE		| 8
-MOSI	  | 11			| SCK		| 13
-IRQ		  | NC			| MISO	| 12
-
-And an LED on pin 4, for current-limiting resistor 1k is usually safe with 5V.
-
-## license
-Any code I provide here is use-as-you-please and contains 0 guarantees!
-No "but you have to publish source code"-deathgrip like GPL!
+#### Arduino friend
+If, like me, you only have the one ch32v003 evaluation board, you can find a [friend for it here](https://github.com/recallmenot/ch32v003fun_friends/tree/main/Arduino/NRF24L01_RX).
