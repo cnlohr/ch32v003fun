@@ -1,18 +1,15 @@
 # ch32v003fun
 
-An open source development "environment" for the [CH32V003](http://www.wch-ic.com/products/CH32V003.html) with gcc-riscv64 that can be used in Windows, Linux and/or WSL.  The CH32V003 is 10-cent part with a RISC-V EC core that runs at 48MHz, has 16kB of flash and 2kB of RAM and a bunch of peripherals.  It also comes in SOP-8, QFN-20 and SOIC packages.  You can get the datasheet [here](http://www.wch-ic.com/downloads/CH32V003DS0_PDF.html).
+An open source development environment (tooling, headers, examples) for the [CH32V003](http://www.wch-ic.com/products/CH32V003.html) with gcc-riscv64 that can be used in Windows (Native), Linux and/or WSL.  The CH32V003 is 10-cent part with a RISC-V EC core that runs at 48MHz, has 16kB of flash and 2kB of RAM and a bunch of peripherals.  It also comes in SOP-8, QFN-20 and SOIC packages.  You can get the datasheet [here](http://www.wch-ic.com/downloads/CH32V003DS0_PDF.html).
 
-The goal of this project is to develop the tooling and environment for efficient use of the CH32V003.  This means making it possible to have basic projects that are compact and require no proprietary tooling like their [MounRiver Studio(MRS)](http://www.wch-ic.com/products/www.mounriver.com/).
-
-The existing EVT is massive.  Just to boot the chip at all, it requires ~2kB of support functions and has to do things like software-divides and use a ton of space at startup to use their HAL.  This project specifically avoids the HAL and makes it so you can just use the [TRM](http://www.wch-ic.com/downloads/CH32V003RM_PDF.html).
-
-In contrast, blinky is only 500 bytes with ch32v003fun, boots faster, and significantly simpler overall.
-
-As it currently stands it is still designed to use the WCH-Link to do the SDIO programming.  Though I would like to ALSO support an open source programmer.
+The goal of this project is to develop the tooling and environment for efficient use of the CH32V003.  Avoid complicated HALs, and unleash the hardware! The existing EVT is massive, and dev environment weighty.  This project specifically avoids the HAL and makes it so you can just use the [TRM](http://www.wch-ic.com/downloads/CH32V003RM_PDF.html). In contrast, blinky is only 500 bytes with ch32v003fun, boots faster, and significantly simpler overall.
 
 ch32v003fun contains:
 1. Examples using ch32v003fun, but not as many as using the HAL.
 2. "minichlink" which uses the WCH CH-Link with libusb, for cross-platform use.
+  * An STM32F042 Programmer, the NHC-Link042
+  * An ESP32S2 Programmer, the [esp32s2-funprog](https://github.com/cnlohr/esp32s2-cookbook/tree/master/ch32v003programmer)
+  * The official WCH Link-E Programmer.
 3. An extra copy of libgcc so you can use unusual risc-v build chains, located in the `misc/libgcc.a`.
 4. A folder named "ch32v003fun" containing a single self-contained source file and header file for compling apps for the ch32v003.
 5. On some systems ability to "printf" back through
@@ -58,13 +55,15 @@ You can use the pre-compiled minichlink or go to minichlink dir and `make` it.
 
 ```
 cd examples/blink
-make flash
+make
 ```
-Just use `make` if you want to compile but not flash.
 
-In Linux this will "just work"(TM) using `minichlink`.
-In Windows, if you want to use minichlink, you will need to use Zadig to install WinUSB to the WCH-Link interface 0.
-In Windows, you can use this or you can use the WCH-LinkUtility to flash the built hex file.
+In Linux this will "just work"(TM) using `minichlink`.  
+In Windows, if you want to use minichlink, you will need to use Zadig to install WinUSB to the WCH-Link interface 0.  
+The generated .hex file is compatible with the official WCH flash tool.  
+
+text = code, data = constants and initialization values, bss = uninitialized values.  
+dec is the sum of the 3 and reflects the number of bytes in flash that will get taken up by the program.
 
 
 ## ESP32S2 Programming
@@ -77,7 +76,9 @@ It enumerates as 2 interfaces.
 
 If you want to mess with the programming code in Windows, you will have to install WinUSB to the interface 0.  Then you can uninstall it in Device Manager under USB Devices.
 
-On linux you find the serial port with `ls -l /dev/ttyUSB* /dev/ttyACM*` and connect to it with `screen /dev/ttyACM0 115200`
+On linux you find the serial port with `ls -l /dev/ttyUSB* /dev/ttyACM*` and connect to it with `screen /dev/ttyACM0 115200`  
+Disconnect with `CTRL+a` `:quit`.  
+
 Adding your user to these groups will remove the need to `sudo` for access to the serial port:
 debian-based
 	`sudo usermod -a -G dialout $USER`
@@ -108,8 +109,19 @@ To use the WCH-Link in WSL, it is required to "attach" the USB hardware on the W
 6. In powershell, use the command `usbipd wsl attach --busid=<BUSID>` to attach the device at the busid from previous step
 7. You will hear the windows sound for the USB device being removed (and silently attached to WSL instead)
 8. In WSL, you will now be able to run `lsusb` and see that the SCH-Link is attached
-9. For unknown reasons, you must run make under root access in order to connect to the programmer with minichlink.  Recommend running `sudo make flash` when building and programming projects using WSL
-Feel free to solve this issue and figure out a way to give the user hardware access to WCH-Link and modify these instructions.
+9. For unknown reasons, you must run make under root access in order to connect to the programmer with minichlink.  Recommend running `sudo make` when building and programming projects using WSL. This may work too (to be confirmed):
+
+### non-root access on linux
+Unlike serial interfaces, by default, the USB device is owned by root, has group set to root and everyone else may only read.
+1. Get the vendor:device ID of the WCH-Link from `lsusb`.
+2. Create a udev rule with `sudo nano /etc/udev/rules.d/80-USB_WCH-Link.rules`, paste (CTRL+SHIFT+V) `SUBSYSTEM=="usb", ATTR{idVendor}=="1a86", ATTR{idProduct}=="8010", MODE="0666"` and save, replacing the idVendor and idProduct if what you got previously was different.
+3. Reboot or reload the udev rules with `sudo udevadm control --reload-rules && sudo udevadm trigger` 
+4. ???
+5. profit
+Now anyone on your PC has access to the WCH-Link device, so you can stop using sudo for make.  
+I don't think there are any security risks here.
+You may also tie this to the WCH-Link serial number or some other attribute from `udevadm info -a -n /dev/bus/usb/busid/deviceid` with the bus id and device id you got from lsusb earlier.
+
 
 ## minichlink
 
@@ -120,6 +132,8 @@ Currently, it ignores all the respone codes, except when querying the chip.  But
 Anyone who wants to write a good/nice utility should probably look at the code in this folder.
 
 ## VSCode + PlatformIO
+
+Note: This is genearlly used for CI on this repo.  However, note that this is **not** the path that allows for debugging on Windows.
 
 This project can also be built, uploaded and debugged with VSCode and the PlatformIO extension. Simply clone and open this project in VSCode and have the PlatformIO extension installed.
 
@@ -140,4 +154,3 @@ You can open a github ticket or join my Discord in the #ch32v003fun channel. htt
  * http://www.wch-ic.com/downloads/QingKeV2_Processor_Manual_PDF.html Processor Manual
  * http://www.wch-ic.com/downloads/CH32V003RM_PDF.html Technical Reference Manual
  * http://www.wch-ic.com/downloads/CH32V003DS0_PDF.html Datasheet
-

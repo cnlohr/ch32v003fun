@@ -1,0 +1,7 @@
+
+Overvolting notes:
+ * Tests done at 24MHz, no PLL.
+ * If running from flash, browns out at around 8V.
+ * If running from RAM, can go up to around 10V before it blows up.
+ * IN SPITE of PC5/PC6 being listed as FT inputs, Applying about >2.5V higher than VCC will blow up the chip.
+ * Trying to run off LDO - still blows up at 10.5V.

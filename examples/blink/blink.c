@@ -6,7 +6,7 @@
 
 #define APB_CLOCK SYSTEM_CORE_CLOCK
 
-uint32_t count;
+volatile uint32_t count;
 
 int main()
 {
@@ -34,8 +34,9 @@ int main()
 		Delay_Ms( 250 );
 		GPIOD->BSHR = (1<<16) | (1<<(16+4)); // Turn off GPIODs
 		GPIOC->BSHR = (1<<16);
-		Delay_Ms( 250 );
+		Delay_Ms( count );
 		count++;
+		if( count > 250 ) count = 0;
 	}
 }
 

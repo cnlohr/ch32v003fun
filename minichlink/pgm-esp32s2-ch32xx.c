@@ -206,7 +206,7 @@ static int ESPWaitForFlash( void * dev )
 	return 0;
 }
 
-static int ESPWaitForDoneOp( void * dev )
+static int ESPWaitForDoneOp( void * dev, int ignore )
 {
 	struct ESP32ProgrammerStruct * eps = (struct ESP32ProgrammerStruct *)dev;
 	if( SRemain( eps ) < 2 )
@@ -236,6 +236,10 @@ int ESPBlockWrite64( void * dev, uint32_t address_to_write, uint8_t * data )
 	{
 		ESPFlushLLCommands( dev );
 	} while( eps->replylen < 2 );
+	
+	// Not sure why this is needed.
+	ESPWaitForDoneOp( dev, 0 );
+
 	return eps->reply[1];
 }
 
@@ -252,6 +256,7 @@ int ESPVoidHighLevelState( void * dev )
 	struct ESP32ProgrammerStruct * eps = (struct ESP32ProgrammerStruct *)dev;
 	Write2LE( eps, 0x05fe );
 	ESPFlushLLCommands( dev );	
+	DefaultVoidHighLevelState( dev );
 	return 0;
 }
 
@@ -355,7 +360,6 @@ int ESPPollTerminal( void * dev, uint8_t * buffer, int maxlen, uint32_t leavefla
 	if( rlen - 1 >= maxlen ) return -6; 
 
 	memcpy( buffer, eps->reply + 2, rlen - 1 );
-
 
 	return rlen - 1;
 }

@@ -4822,7 +4822,7 @@ extern "C" {
 #define DELAY_US_TIME ((SYSTEM_CORE_CLOCK)/8000000)
 #define DELAY_MS_TIME ((SYSTEM_CORE_CLOCK)/8000)
 
-#if defined(__riscv) || defined(__riscv__)
+#if defined(__riscv) || defined(__riscv__) || defined( CH32V003FUN_BASE )
 
 // Stuff that can only be compiled on device (not for the programmer, or other host programs)
 

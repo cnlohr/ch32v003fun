@@ -1,11 +1,16 @@
 TOOLS:=minichlink minichlink.so
 
-all : $(TOOLS)
-
 CFLAGS:=-O0 -g3 -Wall
+C_S:=minichlink.c pgm-wch-linke.c pgm-esp32s2-ch32xx.c nhc-link042.c minichgdb.c
+
+# General Note: To use with GDB, gdb-multiarch
+# gdb-multilib {file}
+# target remote :2345
 
 ifeq ($(OS),Windows_NT)
-	LDFLAGS:=-lpthread -lusb-1.0 -lsetupapi
+	LDFLAGS:=-L. -lpthread -lusb-1.0 -lsetupapi -lws2_32
+	CFLAGS:=-Os -s -Wall
+	TOOLS:=minichlink.exe
 else
 	OS_NAME := $(shell uname -s | tr A-Z a-z)
 	ifeq ($(OS_NAME),linux)
@@ -20,14 +25,20 @@ else
 	endif
 endif
 
+all : $(TOOLS)
 
+# will need mingw-w64-x86-64-dev gcc-mingw-w64-x86-64
+minichlink.exe : $(C_S)
+	x86_64-w64-mingw32-gcc -o $@ $^ $(LDFLAGS) $(CFLAGS)
 
-
-minichlink : minichlink.c pgm-wch-linke.c pgm-esp32s2-ch32xx.c nhc-link042.c
+minichlink : $(C_S)
 	gcc -o $@ $^ $(LDFLAGS) $(CFLAGS) $(INCS)
 
-minichlink.so : minichlink.c pgm-wch-linke.c pgm-esp32s2-ch32xx.c nhc-link042.c
+minichlink.so : $(C_S)
 	gcc -o $@ $^ $(LDFLAGS) $(CFLAGS) $(INCS) -shared -fPIC
+
+minichlink.dll : $(C_S)
+	x86_64-w64-mingw32-gcc -o $@ $^ $(LDFLAGS) $(CFLAGS) $(INCS) -shared -DMINICHLINK_AS_LIBRARY
 
 install_udev_rules :
 	cp 99-WCH-LinkE.rules /etc/udev/rules.d/
