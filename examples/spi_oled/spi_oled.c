@@ -7,6 +7,11 @@
 #define SYSTEM_CORE_CLOCK 48000000
 #define APB_CLOCK SYSTEM_CORE_CLOCK
 
+// what type of OLED - uncomment just one
+//#define SSD1306_64X32
+//#define SSD1306_128X32
+#define SSD1306_128X64
+
 #include "ch32v003fun.h"
 #include <stdio.h>
 #include "ssd1306_spi.h"

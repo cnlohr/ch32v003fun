@@ -13,12 +13,11 @@
 // comfortable packet size for this OLED
 #define SSD1306_PSZ 32
 
-// what type of OLED - uncomment just one
-//#define SSD1306_64X32
-//#define SSD1306_128X32
-#define SSD1306_128X64
-
 // characteristics of each type
+#if !defined (SSD1306_64X32) && !defined (SSD1306_128X32) && !defined (SSD1306_128X64)
+	#error "Please define the SSD1306_WXH resolution used in your application"
+#endif
+
 #ifdef SSD1306_64X32
 #define SSD1306_W 64
 #define SSD1306_H 32
