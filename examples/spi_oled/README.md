@@ -8,11 +8,11 @@ different graphic screens to test out the various drawing primitives.
 
 ## Build options
 There are two build-time options in the oled.h source:
-* OLED_PSZ - the number of bytes to send per SPI data packet. The default value
+* SSD1306_PSZ - the number of bytes to send per SPI data packet. The default value
 of 32 seems to work well. Smaller values are allowed but may result in slower
 refresh rates.
-* OLED_64X32, OLED_128X32, OLED_128X64 - choose only one of these depending on
-the type of OLED you've got.
+* SSD1306_64X32, SSD1306_128X32, SSD1306_128X64 - choose only one of these
+depending on the type of OLED you've got.
 
 ## Use
 Connect an SSD1306-based OLED in SPI interface mode as follows:
