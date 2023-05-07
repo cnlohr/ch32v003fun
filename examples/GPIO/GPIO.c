@@ -2,8 +2,11 @@
 // Could be defined here, or in the processor defines.
 #define SYSTEM_CORE_CLOCK 48000000
 
-#include "ch32v003fun.h"
-#include "wiring.h"
+#include "../../ch32v003fun/ch32v003fun.h"
+
+#define CH32V003_GPIO_BR_IMPLEMENTATION
+#include "../../extralibs/ch32v003_GPIO_branching.h"
+
 #include <stdio.h>
 
 #define APB_CLOCK SYSTEM_CORE_CLOCK
@@ -14,31 +17,31 @@ int main() {
 	SystemInit48HSI();
 
 	// Enable GPIO ports
-	portEnable(port_C);
-	portEnable(port_D);
+	GPIO_portEnable(GPIO_port_C);
+	GPIO_portEnable(GPIO_port_D);
 
-	for (int i = pin_C0; i <= pin_C7; i++) {
-		pinMode(i, pinMode_O_pushPull);
+	for (int i = GPIO_pin_C0; i <= GPIO_pin_C7; i++) {
+		GPIO_pinMode(i, GPIO_pinMode_O_pushPull);
 	}
 
 	// GPIO D4 Push-Pull
-	pinMode(pin_D4, pinMode_O_pushPull);
+	GPIO_pinMode(GPIO_pin_D4, GPIO_pinMode_O_pushPull);
 
 	while (1) {
 		// Turn on pins
-		digitalWrite(pin_C0, high);
-		digitalWrite(pin_D4, high);
+		GPIO_digitalWrite(GPIO_pin_C0, high);
+		GPIO_digitalWrite(GPIO_pin_D4, high);
 		Delay_Ms(250);
 		// Turn off pins
-		digitalWrite(pin_C0, low);
-		digitalWrite(pin_D4, low);
+		GPIO_digitalWrite(GPIO_pin_C0, low);
+		GPIO_digitalWrite(GPIO_pin_D4, low);
 		Delay_Ms(250);
-		for (int i = pin_C0; i <= pin_C7; i++) {
-			digitalWrite(i, high);
+		for (int i = GPIO_pin_C0; i <= GPIO_pin_C7; i++) {
+			GPIO_digitalWrite(i, high);
 			Delay_Ms(50);
 		}
-		for (int i = pin_C7; i >= pin_C0; i--) {
-			digitalWrite(i, low);
+		for (int i = GPIO_pin_C7; i >= GPIO_pin_C0; i--) {
+			GPIO_digitalWrite(i, low);
 			Delay_Ms(50);
 		}
 		Delay_Ms(250);

@@ -2,8 +2,11 @@
 // Could be defined here, or in the processor defines.
 #define SYSTEM_CORE_CLOCK 48000000
 
-#include "ch32v003fun.h"
-#include "wiring.h"
+#include "../../ch32v003fun/ch32v003fun.h"
+
+#define CH32V003_GPIO_BR_IMPLEMENTATION
+#include "../../extralibs/ch32v003_GPIO_branching.h"
+
 #include <stdio.h>
 
 #define APB_CLOCK SYSTEM_CORE_CLOCK
@@ -14,33 +17,33 @@ int main() {
 	SystemInit48HSI();
 
 	// Enable GPIO ports
-	portEnable(port_C);
-	portEnable(port_D);
+	GPIO_portEnable(GPIO_port_C);
+	GPIO_portEnable(GPIO_port_D);
 
-	for (int i = pin_C0; i <= pin_C7; i++) {
-		pinMode(i, pinMode_O_pushPull);
+	for (int i = GPIO_pin_C0; i <= GPIO_pin_C7; i++) {
+		GPIO_pinMode(i, GPIO_pinMode_O_pushPull);
 	}
 
 	// GPIO D4 Push-Pull
-	pinMode(pin_D4, pinMode_O_pushPull);
+	GPIO_pinMode(GPIO_pin_D4, GPIO_pinMode_O_pushPull);
 
-	pinMode(pin_D6, pinMode_I_analog);
-	ADCinit();
+	GPIO_pinMode(GPIO_pin_D6, GPIO_pinMode_I_analog);
+	GPIO_ADCinit();
 
 	while (1) {
-		digitalWrite(pin_D4, high);
-		uint8_t leds_to_turn_on = (uint8_t)(((float)(analogRead(Ain6_D6)) / 1024.f) * 8.f * 1.2 - 1.f);
+		GPIO_digitalWrite(GPIO_pin_D4, high);
+		uint8_t leds_to_turn_on = (uint8_t)(((float)(GPIO_analogRead(GPIO_Ain6_D6)) / 1024.f) * 8.f * 1.2 - 1.f);
 		uint8_t led_i = 0;
-		for (int i = pin_C0; i <= pin_C7; i++) {
+		for (int i = GPIO_pin_C0; i <= GPIO_pin_C7; i++) {
 			if (led_i < leds_to_turn_on) {
-				digitalWrite(i, high);
+				GPIO_digitalWrite(i, high);
 			}
 			else {
-				digitalWrite(i, low);
+				GPIO_digitalWrite(i, low);
 			}
 			led_i++;
 		}
-		digitalWrite(pin_D4, low);
+		GPIO_digitalWrite(GPIO_pin_D4, low);
 		Delay_Ms(250);
 		count++;
 	}
