@@ -8,7 +8,7 @@
 #define CH32V003_SPI_CLK_MODE_POL0_PHA0			//leading = rising		trailing = falling		sample on leading		default if you're unsure
 #define CH32V003_SPI_NSS_SOFTWARE_ANY_MANUAL	// toggle manually!
 #define CH32V003_SPI_IMPLEMENTATION
-#include "ch32v003_SPI.h"
+#include "../../extralibs/ch32v003_SPI.h"
 #include "nrf24l01.h"
 
 /*start of low level functions, specific to the mcu and compiler*/
