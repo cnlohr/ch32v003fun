@@ -22,5 +22,6 @@ Connect an SSD1306-based OLED in SPI interface mode as follows:
 * PC5 - SCK / D0
 * PC6 - MOSI / D1
 
-Observe the various graphic images that cycle at approximately 2 second intervals.
+Observe Conway's Life starting with random pixels, running for 500 iterations and
+then restarting with new random pixels.
 
