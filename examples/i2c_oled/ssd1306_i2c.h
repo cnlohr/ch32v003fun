@@ -345,9 +345,13 @@ uint8_t ssd1306_i2c_init(void)
 	// load I2C regs
 	ssd1306_i2c_setup();
 	
+#if 0
 	// test if SSD1306 is on the bus by sending display off command
 	uint8_t command = 0xAF;
 	return ssd1306_pkt_send(&command, 1, 1);
+#else
+	return 0;
+#endif
 }
 
 /*
