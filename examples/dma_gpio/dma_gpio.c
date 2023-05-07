@@ -118,6 +118,11 @@ int main()
 	NVIC_EnableIRQ( DMA1_Channel2_IRQn );
 	DMA1_Channel2->CFGR |= DMA_CFGR1_EN;
 
+	// NOTE: You can also hook up DMA1 Channel 3 to T1C2,
+	// if you want to output to multiple IO ports at
+	// at the same time.  Just be aware you have to offset
+	// the time they read at by at least 1/8Mth of a second.
+
 	// Setup Timer1.
 	RCC->APB2PRSTR = RCC_APB2Periph_TIM1;    // Reset Timer
 	RCC->APB2PRSTR = 0;
@@ -131,8 +136,7 @@ int main()
 	TIM1->CH1CVR = 6;                        // Set the Capture Compare Register value to 50% initially
 	TIM1->BDTR = TIM_MOE;                    // Enable TIM1 outputs
 	TIM1->CTLR1 = TIM_CEN;                   // Enable TIM1
-	TIM1->DMAINTENR = TIM_UDE | TIM_CC1DE;   // Trigger DMA on comparator match
-
+	TIM1->DMAINTENR = TIM_UDE | TIM_CC1DE;   // Trigger DMA on TC match 1 (DMA Ch2) and TC match 2 (DMA Ch3)
 
 	// Just debug stuff.
 	printf( "Setup OK\n" );
