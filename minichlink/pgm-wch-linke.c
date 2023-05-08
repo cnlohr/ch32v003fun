@@ -214,9 +214,12 @@ static int LESetupInterface( void * d )
 		case 4:
 			fprintf(stderr, "WCH Programmer is LinkB version %d.%d\n",rbuff[3], rbuff[4]);
 			break;
+		case 18:
+			fprintf(stderr, "WCH Programmer is LinkE version %d.%d\n",rbuff[3], rbuff[4]);
+			break;
 		default:
-			fprintf(stderr, "Unknown WCH Programmer %02x\n", rbuff[5]);
-			return -1;
+			fprintf(stderr, "Unknown WCH Programmer %02x (Ver %d.%d)\n", rbuff[5], rbuff[3], rbuff[4]);
+			break;
 	}
 
 	// TODO: What in the world is this?  It doesn't appear to be needed.
