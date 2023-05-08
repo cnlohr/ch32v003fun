@@ -17,9 +17,11 @@ struct LinkEProgrammerStruct
 };
 
 // For non-ch32v003 chips.
+#if 0
 static int LEReadBinaryBlob( void * d, uint32_t offset, uint32_t amount, uint8_t * readbuff );
 static int InternalLinkEHaltMode( void * d, int mode );
 static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len, uint8_t * blob );
+#endif
 
 #define WCHTIMEOUT 5000
 #define WCHCHECK(x) if( (status = x) ) { fprintf( stderr, "Bad USB Operation on " __FILE__ ":%d (%d)\n", __LINE__, status ); exit( status ); }
@@ -39,8 +41,13 @@ void wch_link_command( libusb_device_handle * devh, const void * command_v, int 
 	{
 		reply = buffer; replymax = sizeof( buffer );
 	}
-	
+
+//	printf("wch_link_command send (%d)", commandlen); for(int i = 0; i< commandlen; printf(" %02x",command[i++])); printf("\n");
+
 	status = libusb_bulk_transfer( devh, 0x81, reply, replymax, transferred, WCHTIMEOUT );
+
+//	printf("wch_link_command reply (%d)", *transferred); for(int i = 0; i< *transferred; printf(" %02x",reply[i++])); printf("\n"); 
+
 	if( status ) goto sendfail;
 	return;
 sendfail:
@@ -223,9 +230,9 @@ static int LESetupInterface( void * d )
 	
 	if( rbuff[2] == 0x05 && rbuff[3] == 0x06 )
 	{
-		fprintf( stderr, "CH32V307 Detected.  Allowing old-flash-mode for operation.\n" );
-		MCF.WriteBinaryBlob = LEWriteBinaryBlob;
-		MCF.ReadBinaryBlob = LEReadBinaryBlob;
+//		fprintf( stderr, "CH32V307 Detected.  Allowing old-flash-mode for operation.\n" );
+//		MCF.WriteBinaryBlob = LEWriteBinaryBlob;
+//		MCF.ReadBinaryBlob = LEReadBinaryBlob;
 	}
 	else
 	{
@@ -316,7 +323,7 @@ void * TryInit_WCHLinkE()
 };
 
 
-
+#if 0
 
 // In case you are using a non-CH32V003 board.
 
@@ -506,3 +513,5 @@ static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len,
 	return 0;
 }
 
+
+#endif

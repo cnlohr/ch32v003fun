@@ -684,14 +684,21 @@ int DefaultSetupInterface( void * dev )
 
 static void StaticUpdatePROGBUFRegs( void * dev )
 {
-	MCF.WriteReg32( dev, DMDATA0, 0xe00000f4 );   // DATA0's location in memory.
-	MCF.WriteReg32( dev, DMCOMMAND, 0x0023100a ); // Copy data to x10
-	MCF.WriteReg32( dev, DMDATA0, 0xe00000f8 );   // DATA1's location in memory.
-	MCF.WriteReg32( dev, DMCOMMAND, 0x0023100b ); // Copy data to x11
-	MCF.WriteReg32( dev, DMDATA0, 0x40022010 ); //FLASH->CTLR
-	MCF.WriteReg32( dev, DMCOMMAND, 0x0023100c ); // Copy data to x12
+	uint32_t rr;
+	if( MCF.ReadReg32( dev, DMHARTINFO, &rr ) )
+	{
+		fprintf( stderr, "Error: Could not get hart info.\n" );
+		return;
+	}
+	uint32_t data0offset = 0xe0000000 | ( rr & 0x7ff );
+	MCF.WriteReg32( dev, DMDATA0, data0offset );       // DATA0's location in memory.
+	MCF.WriteReg32( dev, DMCOMMAND, 0x0023100a );      // Copy data to x10
+	MCF.WriteReg32( dev, DMDATA0, data0offset + 4 );   // DATA1's location in memory.
+	MCF.WriteReg32( dev, DMCOMMAND, 0x0023100b );      // Copy data to x11
+	MCF.WriteReg32( dev, DMDATA0, 0x40022010 );        // FLASH->CTLR
+	MCF.WriteReg32( dev, DMCOMMAND, 0x0023100c );      // Copy data to x12
 	MCF.WriteReg32( dev, DMDATA0, CR_PAGE_PG|CR_BUF_LOAD);
-	MCF.WriteReg32( dev, DMCOMMAND, 0x0023100d ); // Copy data to x13
+	MCF.WriteReg32( dev, DMCOMMAND, 0x0023100d );      // Copy data to x13
 }
 
 static int InternalUnlockBootloader( void * dev )
@@ -742,7 +749,7 @@ static int DefaultWriteHalfWord( void * dev, uint32_t address_to_write, uint16_t
 	ret |= MCF.WaitForDoneOp( dev, 0 );
 	iss->currentstateval = -1;
 
-
+	if( ret ) fprintf( stderr, "Fault on DefaultWriteHalfWord\n" );
 	return ret;
 }
 
@@ -767,6 +774,8 @@ static int DefaultReadHalfWord( void * dev, uint32_t address_to_write, uint16_t 
 
 	ret |= MCF.WaitForDoneOp( dev, 0 );
 	iss->currentstateval = -1;
+
+	if( ret ) fprintf( stderr, "Fault on DefaultReadHalfWord\n" );
 
 	uint32_t rr;
 	ret |= MCF.ReadReg32( dev, DMDATA0, &rr );
@@ -796,6 +805,7 @@ static int DefaultWriteByte( void * dev, uint32_t address_to_write, uint8_t data
 	MCF.WriteReg32( dev, DMCOMMAND, 0x00271008 ); // Copy data to x8, and execute program.
 
 	ret |= MCF.WaitForDoneOp( dev, 0 );
+	if( ret ) fprintf( stderr, "Fault on DefaultWriteByte\n" );
 	iss->currentstateval = -1;
 	return ret;
 }
@@ -820,6 +830,7 @@ static int DefaultReadByte( void * dev, uint32_t address_to_write, uint8_t * dat
 	MCF.WriteReg32( dev, DMCOMMAND, 0x00221008 ); // Read x8 into DATA0.
 
 	ret |= MCF.WaitForDoneOp( dev, 0 );
+	if( ret ) fprintf( stderr, "Fault on DefaultReadByte\n" );
 	iss->currentstateval = -1;
 
 	uint32_t rr;
@@ -892,7 +903,10 @@ static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t dat
 		iss->currentstateval = address_to_write;
 
 		if( is_flash )
+		{
 			ret |= MCF.WaitForDoneOp( dev, 0 );
+			if( ret ) fprintf( stderr, "Fault on DefaultWriteWord Part 1\n" );
+		}
 	}
 	else
 	{
@@ -908,10 +922,12 @@ static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t dat
 			// XXX TODO: This likely can be a very short delay.
 			// XXX POSSIBLE OPTIMIZATION REINVESTIGATE.
 			ret |= MCF.WaitForDoneOp( dev, 0 );
+			if( ret ) fprintf( stderr, "Fault on DefaultWriteWord Part 2\n" );
 		}
 		else
 		{
 			ret |= MCF.WaitForDoneOp( dev, 0 );
+			if( ret ) fprintf( stderr, "Fault on DefaultWriteWord Part 3\n" );
 		}
 	}
 
@@ -1144,6 +1160,7 @@ static int DefaultReadWord( void * dev, uint32_t address_to_read, uint32_t * dat
 		iss->currentstateval = address_to_read;
 
 		r |= MCF.WaitForDoneOp( dev, 0 );
+		if( r ) fprintf( stderr, "Fault on DefaultReadWord Part 1\n" );
 	}
 
 	if( iss->autoincrement )
@@ -1282,8 +1299,9 @@ int DefaultReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t r
 			}
 		}
 	}
-	MCF.WaitForDoneOp( dev, 0 );
-	return 0;
+	int r = MCF.WaitForDoneOp( dev, 0 );
+	if( r ) fprintf( stderr, "Fault on DefaultReadBinaryBlob\n" );
+	return r;
 }
 
 int DefaultReadCPURegister( void * dev, uint32_t regno, uint32_t * regret )
