@@ -190,16 +190,38 @@ static int LESetupInterface( void * d )
 	uint32_t transferred = 0;
 
 	// This puts the processor on hold to allow the debugger to run.
-	wch_link_command( dev, "\x81\x0d\x01\x03", 4, 0, 0, 0 ); // Reply: Ignored, 820d050900300500
+	wch_link_command( dev, "\x81\x0d\x01\x03", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Ignored, 820d050900300500
 
 	// Place part into reset.
 	wch_link_command( dev, "\x81\x0d\x01\x01", 4, (int*)&transferred, rbuff, 1024 );	// Reply is: "\x82\x0d\x04\x02\x08\x02\x00"
+	switch(rbuff[5]) {
+		case 1:
+			fprintf(stderr, "WCH Programmer is CH549 version %d.%d\n",rbuff[3], rbuff[4]);
+			break;
+		case 2:
+			fprintf(stderr, "WCH Programmer is CH32V307 version %d.%d\n",rbuff[3], rbuff[4]);
+			break;
+		case 3:
+			fprintf(stderr, "WCH Programmer is CH32V203 version %d.%d\n",rbuff[3], rbuff[4]);
+			break;
+		case 4:
+			fprintf(stderr, "WCH Programmer is LinkB version %d.%d\n",rbuff[3], rbuff[4]);
+			break;
+		default:
+			fprintf(stderr, "Unknown WCH Programmer %02x\n", rbuff[5]);
+			return -1;
+	}
 
 	// TODO: What in the world is this?  It doesn't appear to be needed.
 	wch_link_command( dev, "\x81\x0c\x02\x09\x01", 5, 0, 0, 0 ); //Reply is: 820c0101
 
 	// This puts the processor on hold to allow the debugger to run.
-	wch_link_command( dev, "\x81\x0d\x01\x02", 4, 0, 0, 0 ); // Reply: Ignored, 820d050900300500
+	wch_link_command( dev, "\x81\x0d\x01\x02", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Ignored, 820d050900300500
+	if (rbuff[0] == 0x81 && rbuff[1] == 0x55 && rbuff[2] == 0x01 && rbuff[3] == 0x01)
+	{
+		fprintf(stderr, "link error, nothing connected to linker\n");
+		return -1;
+	}
 
 	// For some reason, if we don't do this sometimes the programmer starts in a hosey mode.
 	MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // Make the debug module work properly.

@@ -23,22 +23,22 @@ void * MiniCHLinkInitAsDLL( struct MiniChlinkFunctions ** MCFO )
 	void * dev = 0;
 	if( (dev = TryInit_WCHLinkE()) )
 	{
-		fprintf( stderr, "Found WCH LinkE\n" );
+		fprintf( stderr, "Found WCH Link\n" );
 	}
 	else if( (dev = TryInit_ESP32S2CHFUN()) )
 	{
 		fprintf( stderr, "Found ESP32S2 Programmer\n" );
 	}
-    else if ((dev = TryInit_NHCLink042()))
-    {
-        fprintf( stderr, "Found NHC-Link042 Programmer\n" );
-    }
+	else if ((dev = TryInit_NHCLink042()))
+	{
+		fprintf( stderr, "Found NHC-Link042 Programmer\n" );
+	}
 	else
 	{
 		fprintf( stderr, "Error: Could not initialize any supported programmers\n" );
 		return 0;
 	}
-	
+
 	SetupAutomaticHighLevelFunctions( dev );
 	if( MCFO )
 	{
@@ -50,6 +50,10 @@ void * MiniCHLinkInitAsDLL( struct MiniChlinkFunctions ** MCFO )
 #if !defined( MINICHLINK_AS_LIBRARY ) && !defined( MINICHLINK_IMPORT )
 int main( int argc, char ** argv )
 {
+	if (argv[1][0] == '-' && argv[1][1] == 'h')
+	{
+		goto help;
+	}
 	void * dev = MiniCHLinkInitAsDLL( 0 );
 	if( !dev )
 	{
