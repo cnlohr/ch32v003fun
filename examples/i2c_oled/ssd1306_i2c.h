@@ -305,7 +305,7 @@ uint8_t ssd1306_pkt_send(uint8_t *data, uint8_t sz, uint8_t cmd)
 	if(cmd)
 	{
 		pkt[0] = 0;
-		pkt[1] = cmd;
+		pkt[1] = *data;
 	}
 	else
 	{
