@@ -139,6 +139,21 @@ This project can also be built, uploaded and debugged with VSCode and the Platfo
 
 See [here](https://github.com/Community-PIO-CH32V/platform-ch32v) for further details.
 
+## Unbricking
+In case minichlink is reporting
+```
+Found WCH LinkE
+Part Type (A): 0x0000 (This is the capacity code, in KB)
+Part UUID    : 00-00-00-00-00-00-00-00
+PFlags       : 00-00-00-00
+Part Type (B): 00-00-00-00
+Interface Setup
+Image written.
+```
+, `Interface Setup` takes > 2 seconds, and you can't flash anything else you may be able to unbrick your CH32V003 with `minilink -u`, which will erase all flash on the device.  
+known causes:
+ * writing to the wrong address / offset
+
 ## Quick Reference
  * Needed for programming/debugging: `SWIO` is on `PD1`
  * Optional (not needed, can be configured as output if fuse set): `NRST` is on `PD7`
