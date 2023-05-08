@@ -30,12 +30,10 @@ int main() {
 
 	while (1) {
 		// Turn on pins
-		//GPIO_digitalWrite_hi(GPIO_pin_C0);
-		GPIO_digitalWrite_hi(GPIO_pin_D4);
+		GPIO_digitalWrite(GPIO_pin_D4, high);
 		Delay_Ms(1000);
 		// Turn off pins
-		//GPIO_digitalWrite_lo(GPIO_pin_C0);
-		GPIO_digitalWrite_lo(GPIO_pin_D4);
+		GPIO_digitalWrite(GPIO_pin_D4, low);
 		Delay_Ms(250);
 		for (int i = GPIO_pinNumber_C0; i <= GPIO_pinNumber_C7; i++) {
 			GPIO_digitalWrite_hi(GPIO_from_pinNumber(i));
