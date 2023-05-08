@@ -1,5 +1,5 @@
 /*
- * Example for using I2C with 128x32 graphic OLED
+ * Example for using SPI with 128x32 graphic OLED
  * 03-29-2023 E. Brombaugh
  */
 
@@ -9,13 +9,124 @@
 
 // what type of OLED - uncomment just one
 //#define SSD1306_64X32
-#define SSD1306_128X32
-//#define SSD1306_128X64
+//#define SSD1306_128X32
+#define SSD1306_128X64
 
 #include "ch32v003fun.h"
 #include <stdio.h>
-#include "ssd1306_i2c.h"
+#include "ssd1306_spi.h"
 #include "ssd1306.h"
+
+/* White Noise Generator State */
+#define NOISE_BITS 8
+#define NOISE_MASK ((1<<NOISE_BITS)-1)
+#define NOISE_POLY_TAP0 31
+#define NOISE_POLY_TAP1 21
+#define NOISE_POLY_TAP2 1
+#define NOISE_POLY_TAP3 0
+uint32_t lfsr = 1;
+
+/*
+ * random byte generator
+ */
+uint8_t rand8(void)
+{
+	uint8_t bit;
+	uint32_t new_data;
+	
+	for(bit=0;bit<NOISE_BITS;bit++)
+	{
+		new_data = ((lfsr>>NOISE_POLY_TAP0) ^
+					(lfsr>>NOISE_POLY_TAP1) ^
+					(lfsr>>NOISE_POLY_TAP2) ^
+					(lfsr>>NOISE_POLY_TAP3));
+		lfsr = (lfsr<<1) | (new_data&1);
+	}
+	
+	return lfsr&NOISE_MASK;
+}
+
+/*
+ * return pixel value in buffer
+ */
+uint8_t getpix(uint8_t *buf, int16_t x, int16_t y)
+{
+	if((x<0) || (x>=SSD1306_W))
+		return 0;
+	if((y<0) || (y>=SSD1306_H))
+		return 0;
+	return buf[x+SSD1306_W*(y>>3)] & (1<<(y&7)) ? 1 : 0;
+}
+
+/*
+ * conway's life on B/W OLED
+ */
+void conway(uint8_t *buf)
+{
+	uint8_t col[2][(SSD1306_H>>3)];
+	int16_t x, y, B, b, sum, d, colidx = 0;
+	
+	/* iterate over columns */
+	for(x=0;x<SSD1306_W;x++)
+	{
+		/* iterate bytes in column */
+		for(B=0;B<(SSD1306_H>>3);B++)
+		{
+			/* init byte accum */
+			d = 0;
+			
+			/* iterate over bits in byte */
+			for(b=0;b<8;b++)
+			{
+				/* which row */
+				y = B*8+b;
+				
+				/* prep byte accum for this bit */
+				d >>= 1;
+				
+				/* count live neighbors */
+				sum = getpix(buf, x-1, y-1)+getpix(buf, x, y-1)+getpix(buf, x+1, y-1)+
+					getpix(buf, x-1, y)+getpix(buf, x+1, y)+
+					getpix(buf, x-1, y+1)+getpix(buf, x, y+1)+getpix(buf, x+1, y+1);
+				
+				/* check life for next cycle */
+				if(getpix(buf, x, y))
+				{
+					/* live cell */
+					if((sum==2)||(sum==3))
+						d |= 128;
+				}
+				else
+				{
+					/* dead cell */
+					if(sum == 3)
+						d |= 128;
+				}
+				
+				//printf("x=%3d, B=%1d, b=%1d, y=%2d\n\r", x, B, b, y);
+			}
+
+			col[colidx][B] = d;
+		}
+		
+		colidx ^= 1;
+		
+		if(x>0)
+		{
+			/* update previous column */
+			for(y=0;y<(SSD1306_H>>3);y++)
+				buf[(x-1)+SSD1306_W*y] = col[colidx][y];
+		}
+	}
+	
+	colidx ^= 1;
+
+	/* update final column */
+	for(y=0;y<(SSD1306_H>>3);y++)
+		buf[127+SSD1306_W*y] = col[colidx][y];
+}
+
+int count = 0;
 
 int main()
 {
@@ -29,16 +140,17 @@ int main()
 #else
 	SetupDebugPrintf();
 #endif
-	printf("\r\r\n\ni2c_oled example\n\r");
+	printf("\r\r\n\nspi_oled example\n\r");
 
-	// init i2c and oled
+	// init spi and oled
 	Delay_Ms( 100 );	// give OLED some more time
-	printf("initializing i2c oled...");
-	if(!ssd1306_i2c_init())
+	printf("initializing spi oled...");
+	if(!ssd1306_spi_init())
 	{
 		ssd1306_init();
 		printf("done.\n\r");
 		
+#if 0
 		printf("Looping on test modes...");
 		while(1)
 		{
@@ -124,9 +236,38 @@ int main()
 				}
 				ssd1306_refresh();
 			
+				printf("count = %d\n\r", count++);
+				
 				Delay_Ms(2000);
 			}
 		}
+#else
+		printf("Looping...\n\r");
+		while(1)
+		{
+			int i;
+			
+			/* fill with random */
+			for(i=0;i<sizeof(ssd1306_buffer);i++)
+			{
+				ssd1306_buffer[i] = rand8();
+			}
+			ssd1306_refresh();
+
+			/* run conway iterations */
+			for(i=0;i<500;i++)
+			{
+				conway(ssd1306_buffer);
+				
+				/* refresh */
+				ssd1306_refresh();
+			}
+			
+			printf("count = %d\n\r", count++);
+		
+			Delay_Ms(2000);
+		}
+#endif
 	}
 	else
 		printf("failed.\n\r");
