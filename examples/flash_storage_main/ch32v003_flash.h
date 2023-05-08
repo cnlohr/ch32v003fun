@@ -175,19 +175,9 @@ static inline void flash_OB_erase();
 
 extern char FLASH_LENGTH_OVERRIDE[]; // import from .ld, halal by https://sourceware.org/binutils/docs/ld/Source-Code-Reference.html
 
-union float_uint32t {
-	float f;
-	uint32_t u32;
-};
-
 union float_2xuint16t {
 	float f;
 	uint16_t u16[2];
-};
-
-union uint16t_2xuint8t {
-	uint16_t u16;
-	uint8_t u8[2];
 };
 
 //######## preprocessor macros
