@@ -160,10 +160,10 @@ enum GPIO_ports{
 
 static inline void GPIO_portEnable(uint32_t port_EN) __attribute__((used));
 
-static inline void GPIO_pinMode (uint32_t pin, uint8_t pinMode) __attribute__((used));
+static inline void GPIO_pinMode (uint32_t pin, uint8_t pinMode);
 
-static inline void GPIO_digitalWrite_hi(uint32_t pin) __attribute__((used));				// completely branchless -> maximum speed
-static inline void GPIO_digitalWrite_lo(uint32_t pin) __attribute__((used));				// completely branchless -> maximum speed
+static inline void GPIO_digitalWrite_hi(uint32_t pin);				// completely branchless -> maximum speed
+static inline void GPIO_digitalWrite_lo(uint32_t pin);				// completely branchless -> maximum speed
 static inline void GPIO_digitalWrite(uint32_t pin, enum lowhigh direction);
 
 static inline uint8_t GPIO_digitalRead(uint32_t pin);				// completely branchless -> maximum speed
