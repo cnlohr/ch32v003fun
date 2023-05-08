@@ -10,7 +10,7 @@ different graphic screens to test out the various drawing primitives.
 https://user-images.githubusercontent.com/1132011/230734071-dee305de-5aad-4ca0-a422-5fb31d2bb0e0.mp4
 
 ## Build options
-There are a few build-time options in the i2c.h source - 
+There are a few build-time options in the source - 
 
 In i2c_oled.c:
 * SSD1306_64X32, SSD1306_128X32, SSD1306_128X64 - choose only one of these
