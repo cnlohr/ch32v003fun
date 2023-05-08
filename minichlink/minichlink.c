@@ -50,7 +50,7 @@ void * MiniCHLinkInitAsDLL( struct MiniChlinkFunctions ** MCFO )
 #if !defined( MINICHLINK_AS_LIBRARY ) && !defined( MINICHLINK_IMPORT )
 int main( int argc, char ** argv )
 {
-	if (argv[1][0] == '-' && argv[1][1] == 'h')
+	if( argc > 1 && argv[1][0] == '-' && argv[1][1] == 'h' )
 	{
 		goto help;
 	}
