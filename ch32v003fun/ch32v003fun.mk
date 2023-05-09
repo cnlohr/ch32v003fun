@@ -18,6 +18,12 @@ LDFLAGS+=-T $(CH32V003FUN)/ch32v003fun.ld -Wl,--gc-sections -L$(CH32V003FUN)/../
 
 SYSTEM_C:=$(CH32V003FUN)/ch32v003fun.c
 
+ifeq ($(OS),Windows_NT)
+	RM = del /Q /F
+else
+	RM = rm -f
+endif
+
 $(TARGET).elf : $(SYSTEM_C) $(TARGET).c $(ADDITIONAL_C_FILES)
 	$(PREFIX)-gcc -o $@ $^ $(CFLAGS) $(LDFLAGS)
 
@@ -47,5 +53,6 @@ cv_flash : $(TARGET).bin
 	$(MINICHLINK)/minichlink -w $< flash -b
 
 cv_clean :
-	rm -rf $(TARGET).elf $(TARGET).bin $(TARGET).hex $(TARGET).lst $(TARGET).map $(TARGET).hex
+	$(RM) $(TARGET).elf $(TARGET).bin $(TARGET).hex $(TARGET).lst $(TARGET).map $(TARGET).hex
 
+build : $(TARGET).bin
