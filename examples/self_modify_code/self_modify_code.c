@@ -46,6 +46,9 @@ uint32_t ReadCSRSelfModify( uint16_t whichcsr )
 	// The constraints are "ret" is a "write" register, and register a3
 	// is going to be clobbered by the assembly code.
 	asm volatile( 
+#if __GNUC__ > 10
+		".option arch, +zicsr\n"
+#endif
 		".global readCSRLabel   \n"
 		"	fence               \n"
 		"readCSRLabel:          \n"
@@ -63,6 +66,9 @@ uint32_t ReadCSRSelfModifySimple( uint16_t whichcsr )
 	uint32_t ret;
 	uint32_t csrcmd = 0x000026f3 | ( whichcsr << 20);
 	asm volatile( 
+#if __GNUC__ > 10
+		".option arch, +zicsr\n"
+#endif
 		".global readCSRLabel   \n"
 		"   la a3, readCSRLabel \n"
 		"   sw %[csrcmd], 0(a3) \n"

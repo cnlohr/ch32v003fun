@@ -80,7 +80,13 @@ int main()
 	//   https://github.com/cnlohr/ch32v003fun/issues/90
 	//   https://www.reddit.com/r/RISCV/comments/126262j/notes_on_wch_fast_interrupts/
 	//   https://www.eevblog.com/forum/microcontrollers/bizarre-problem-on-ch32v003-with-systick-isr-corrupting-uart-tx-data
-	asm volatile( "addi t1,x0, 3\ncsrrw x0, 0x804, t1\n" : : :  "t1" );
+	asm volatile(
+#if __GNUC__ > 10
+		".option arch, +zicsr\n"
+#endif
+ 		"addi t1, x0, 3\n"
+		"csrrw x0, 0x804, t1\n"
+		 : : :  "t1" );
 
 	// Configure the IO as an interrupt.
 	AFIO->EXTICR = 3<<(3*2); //PORTD.3 (3 out front says PORTD, 3 in back says 3)
@@ -99,4 +105,3 @@ int main()
 		asm volatile( "nop" );
 	}
 }
-
