@@ -1211,6 +1211,7 @@ int DefaultErase( void * dev, uint32_t address, uint32_t length, int type )
 	{
 		if( ( rw = StaticUnlockFlash( dev, iss ) ) )
 			return rw;
+		printf( "Flash unlocked\n" );
 	}
 
 	if( type == 1 )
@@ -1221,8 +1222,12 @@ int DefaultErase( void * dev, uint32_t address, uint32_t length, int type )
 		MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, 0 );
 		MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, FLASH_CTLR_MER  );
 		MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_STRT_Set|FLASH_CTLR_MER );
-		if( MCF.WaitForFlash && MCF.WaitForFlash( dev ) ) return -11;		
+		rw = MCF.WaitForDoneOp( dev, 0 );
+		if( MCF.WaitForFlash && MCF.WaitForFlash( dev ) ) { fprintf( stderr, "Error: Wait for flash error.\n" ); return -11; }
+		rw = MCF.WaitForDoneOp( dev, 0 );
 		MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, 0 );
+		rw = MCF.WaitForDoneOp( dev, 0 );
+		fprintf( stderr, "Whole Chip Erase Code: %d\n", rw );
 	}
 	else
 	{
