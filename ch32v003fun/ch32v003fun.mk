@@ -1,5 +1,5 @@
 
-PREFIX:=riscv64-unknown-elf
+PREFIX?=riscv64-unknown-elf
 
 CH32V003FUN?=../../ch32v003fun
 MINICHLINK?=../../minichlink
