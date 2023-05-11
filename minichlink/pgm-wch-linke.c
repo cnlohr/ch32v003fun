@@ -13,8 +13,15 @@ struct LinkEProgrammerStruct
 {
 	void * internal;
 	libusb_device_handle * devh;
-	int lasthaltmode;
+	int lasthaltmode; // For non-003 chips
 };
+
+// For non-ch32v003 chips.
+#if 0
+static int LEReadBinaryBlob( void * d, uint32_t offset, uint32_t amount, uint8_t * readbuff );
+static int InternalLinkEHaltMode( void * d, int mode );
+static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len, uint8_t * blob );
+#endif
 
 #define WCHTIMEOUT 5000
 #define WCHCHECK(x) if( (status = x) ) { fprintf( stderr, "Bad USB Operation on " __FILE__ ":%d (%d)\n", __LINE__, status ); exit( status ); }
@@ -34,8 +41,13 @@ void wch_link_command( libusb_device_handle * devh, const void * command_v, int 
 	{
 		reply = buffer; replymax = sizeof( buffer );
 	}
-	
+
+//	printf("wch_link_command send (%d)", commandlen); for(int i = 0; i< commandlen; printf(" %02x",command[i++])); printf("\n");
+
 	status = libusb_bulk_transfer( devh, 0x81, reply, replymax, transferred, WCHTIMEOUT );
+
+//	printf("wch_link_command reply (%d)", *transferred); for(int i = 0; i< *transferred; printf(" %02x",reply[i++])); printf("\n"); 
+
 	if( status ) goto sendfail;
 	return;
 sendfail:
@@ -120,7 +132,20 @@ int LEWriteReg32( void * dev, uint8_t reg_7_bit, uint32_t command )
 			(command >> 0) & 0xff,
 			iOP };
 
-	wch_link_command( devh, req, sizeof(req), 0, 0, 0 );
+	uint8_t resp[128];
+	int resplen;
+	wch_link_command( devh, req, sizeof(req), &resplen, resp, sizeof(resp) );
+	if( resplen != 9 || resp[3] != reg_7_bit )
+	{
+		fprintf( stderr, "Error setting write reg. Tell cnlohr. Maybe we should allow retries here?\n" );
+		fprintf( stderr, "RR: %d :", resplen );
+		int i;
+		for( i = 0; i < resplen; i++ )
+		{
+			fprintf( stderr, "%02x ", resp[i] );
+		}
+		fprintf( stderr, "\n" );
+	}
 	return 0;
 }
 
@@ -136,6 +161,27 @@ int LEReadReg32( void * dev, uint8_t reg_7_bit, uint32_t * commandresp )
 			iOP };
 	wch_link_command( devh, req, sizeof( req ), (int*)&transferred, rbuff, sizeof( rbuff ) );
 	*commandresp = ( rbuff[4]<<24 ) | (rbuff[5]<<16) | (rbuff[6]<<8) | (rbuff[7]<<0);
+	if( transferred != 9 || rbuff[3] != reg_7_bit )
+	{
+		fprintf( stderr, "Error setting write reg. Tell cnlohr. Maybe we should allow retries here?\n" );
+		fprintf( stderr, "RR: %d :", transferred );
+		int i;
+		for( i = 0; i < transferred; i++ )
+		{
+			fprintf( stderr, "%02x ", rbuff[i] );
+		}
+		fprintf( stderr, "\n" );
+	}
+	/*
+	printf( "RR: %d :", transferred );
+	int i;
+	for( i = 0; i < transferred; i++ )
+	{
+		printf( "%02x ", rbuff[i] );
+	}
+	printf( "\n" );
+	*/
+
 	return 0;
 }
 
@@ -150,23 +196,50 @@ static int LESetupInterface( void * d )
 	uint8_t rbuff[1024];
 	uint32_t transferred = 0;
 
+	// This puts the processor on hold to allow the debugger to run.
+	wch_link_command( dev, "\x81\x0d\x01\x03", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Ignored, 820d050900300500
+
 	// Place part into reset.
 	wch_link_command( dev, "\x81\x0d\x01\x01", 4, (int*)&transferred, rbuff, 1024 );	// Reply is: "\x82\x0d\x04\x02\x08\x02\x00"
+	switch(rbuff[5]) {
+		case 1:
+			fprintf(stderr, "WCH Programmer is CH549 version %d.%d\n",rbuff[3], rbuff[4]);
+			break;
+		case 2:
+			fprintf(stderr, "WCH Programmer is CH32V307 version %d.%d\n",rbuff[3], rbuff[4]);
+			break;
+		case 3:
+			fprintf(stderr, "WCH Programmer is CH32V203 version %d.%d\n",rbuff[3], rbuff[4]);
+			break;
+		case 4:
+			fprintf(stderr, "WCH Programmer is LinkB version %d.%d\n",rbuff[3], rbuff[4]);
+			break;
+		case 18:
+			fprintf(stderr, "WCH Programmer is LinkE version %d.%d\n",rbuff[3], rbuff[4]);
+			break;
+		default:
+			fprintf(stderr, "Unknown WCH Programmer %02x (Ver %d.%d)\n", rbuff[5], rbuff[3], rbuff[4]);
+			break;
+	}
 
 	// TODO: What in the world is this?  It doesn't appear to be needed.
 	wch_link_command( dev, "\x81\x0c\x02\x09\x01", 5, 0, 0, 0 ); //Reply is: 820c0101
 
 	// This puts the processor on hold to allow the debugger to run.
-	wch_link_command( dev, "\x81\x0d\x01\x02", 4, 0, 0, 0 ); // Reply: Ignored, 820d050900300500
+	wch_link_command( dev, "\x81\x0d\x01\x02", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Ignored, 820d050900300500
+	if (rbuff[0] == 0x81 && rbuff[1] == 0x55 && rbuff[2] == 0x01 && rbuff[3] == 0x01)
+	{
+		fprintf(stderr, "link error, nothing connected to linker\n");
+		return -1;
+	}
 
 	// For some reason, if we don't do this sometimes the programmer starts in a hosey mode.
 	MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
 	MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // Initiate a halt request.
 	MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // No, really make sure.
 	MCF.WriteReg32( d, DMABSTRACTCS, 0x00000700 ); // Ignore any pending errors.
-	MCF.WriteReg32( d, DMPROGBUF0, 0x00100073 );
 	MCF.WriteReg32( d, DMABSTRACTAUTO, 0 );
-	MCF.WriteReg32( d, DMCOMMAND, 0x00261000 ); // Read x0
+	MCF.WriteReg32( d, DMCOMMAND, 0x00261000 ); // Read x0 (Null command)
 
 	// This puts the processor on hold to allow the debugger to run.
 	wch_link_command( dev, "\x81\x11\x01\x09", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Chip ID + Other data (see below)
@@ -179,6 +252,17 @@ static int LESetupInterface( void * d )
 	fprintf( stderr, "Part UUID    : %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n", rbuff[4], rbuff[5], rbuff[6], rbuff[7], rbuff[8], rbuff[9], rbuff[10], rbuff[11] );
 	fprintf( stderr, "PFlags       : %02x-%02x-%02x-%02x\n", rbuff[12], rbuff[13], rbuff[14], rbuff[15] );
 	fprintf( stderr, "Part Type (B): %02x-%02x-%02x-%02x\n", rbuff[16], rbuff[17], rbuff[18], rbuff[19] );
+	
+	if( rbuff[2] == 0x05 && rbuff[3] == 0x06 )
+	{
+//		fprintf( stderr, "CH32V307 Detected.  Allowing old-flash-mode for operation.\n" );
+//		MCF.WriteBinaryBlob = LEWriteBinaryBlob;
+//		MCF.ReadBinaryBlob = LEReadBinaryBlob;
+	}
+	else
+	{
+		// No need to use these and the propreitary blob.
+	}
 	
 	return 0;
 }
@@ -244,7 +328,6 @@ void * TryInit_WCHLinkE()
 	wch_linke_devh = wch_link_base_setup(0);
 	if( !wch_linke_devh ) return 0;
 
-
 	struct LinkEProgrammerStruct * ret = malloc( sizeof( struct LinkEProgrammerStruct ) );
 	memset( ret, 0, sizeof( *ret ) );
 	ret->devh = wch_linke_devh;
@@ -259,22 +342,15 @@ void * TryInit_WCHLinkE()
 	MCF.Control5v = LEControl5v;
 	MCF.Unbrick = LEUnbrick;
 	MCF.ConfigureNRSTAsGPIO = LEConfigureNRSTAsGPIO;
-	//MCF.WriteBinaryBlob = LEWriteBinaryBlob;
-	//MCF.ReadBinaryBlob = LEReadBinaryBlob;
+
 	MCF.Exit = LEExit;
 	return ret;
 };
 
 
-
-
-
-
-
-
-// Graveyard.
-
 #if 0
+
+// In case you are using a non-CH32V003 board.
 
 
 const uint8_t * bootloader = (const uint8_t*)
@@ -461,4 +537,6 @@ static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len,
 	}
 	return 0;
 }
+
+
 #endif

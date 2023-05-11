@@ -14,7 +14,7 @@ CFLAGS+= \
 	-nostdlib \
 	-I. -Wall
 
-LDFLAGS+=-T $(CH32V003FUN)/ch32v003fun.ld -Wl,--gc-sections -L../../misc -lgcc
+LDFLAGS+=-T $(CH32V003FUN)/ch32v003fun.ld -Wl,--gc-sections -L$(CH32V003FUN)/../misc -lgcc
 
 SYSTEM_C:=$(CH32V003FUN)/ch32v003fun.c
 
@@ -23,7 +23,7 @@ $(TARGET).elf : $(SYSTEM_C) $(TARGET).c $(ADDITIONAL_C_FILES)
 
 $(TARGET).bin : $(TARGET).elf
 	$(PREFIX)-size $^
-	$(PREFIX)-objdump -SD $^ > $(TARGET).lst
+	$(PREFIX)-objdump -S $^ > $(TARGET).lst
 	$(PREFIX)-objdump -t $^ > $(TARGET).map
 	$(PREFIX)-objcopy -O binary $< $(TARGET).bin
 	$(PREFIX)-objcopy -O ihex $< $(TARGET).hex

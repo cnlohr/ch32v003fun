@@ -4838,8 +4838,8 @@ void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) 
 
 void DelaySysTick( uint32_t n );
 
-#define Delay_Us(n) DelaySysTick( n * DELAY_US_TIME )
-#define Delay_Ms(n) DelaySysTick( n * DELAY_MS_TIME )
+#define Delay_Us(n) DelaySysTick( (n) * DELAY_US_TIME )
+#define Delay_Ms(n) DelaySysTick( (n) * DELAY_MS_TIME )
 
 // Tricky: We need to make sure main and SystemInit() are preserved.
 int main() __attribute__((used));

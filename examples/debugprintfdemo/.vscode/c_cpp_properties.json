@@ -12,7 +12,8 @@
             "intelliSenseMode": "linux-clang-x64",
             "compilerArgs": [
                 "-DCH32V003FUN_BASE"
-            ]
+            ],
+            "configurationProvider": "ms-vscode.makefile-tools"
         }
     ],
     "version": 4

@@ -1,11 +1,10 @@
 all : flash
 
-TARGET:=i2c_oled
-
-#CFLAGS+=-DSTDOUT_UART
+TARGET:=dma_gpio
 
 include ../../ch32v003fun/ch32v003fun.mk
 
 flash : cv_flash
 clean : cv_clean
+
 

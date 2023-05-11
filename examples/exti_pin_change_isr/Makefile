@@ -1,11 +1,13 @@
 all : flash
 
-TARGET:=i2c_oled
+TARGET:=exti_pin_change_isr
 
-#CFLAGS+=-DSTDOUT_UART
+test : flash
+	../../minichlink/minichlink -X ECLK 1:0:0:1:63
 
 include ../../ch32v003fun/ch32v003fun.mk
 
 flash : cv_flash
 clean : cv_clean
+
 

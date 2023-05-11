@@ -11,35 +11,55 @@
 #include "minichlink.h"
 #include "../ch32v003fun/ch32v003fun.h"
 
-static int64_t StringToMemoryAddress( const char * number );
-static void StaticUpdatePROGBUFRegs( void * dev );
-static int InternalUnlockBootloader( void * dev );
+static int64_t StringToMemoryAddress( const char * number ) __attribute__((used));
+static void StaticUpdatePROGBUFRegs( void * dev ) __attribute__((used));
+static int InternalUnlockBootloader( void * dev ) __attribute__((used));
 
 void TestFunction(void * v );
 struct MiniChlinkFunctions MCF;
 
-int main( int argc, char ** argv )
+void * MiniCHLinkInitAsDLL( struct MiniChlinkFunctions ** MCFO )
 {
 	void * dev = 0;
 	if( (dev = TryInit_WCHLinkE()) )
 	{
-		fprintf( stderr, "Found WCH LinkE\n" );
+		fprintf( stderr, "Found WCH Link\n" );
 	}
 	else if( (dev = TryInit_ESP32S2CHFUN()) )
 	{
 		fprintf( stderr, "Found ESP32S2 Programmer\n" );
 	}
-    else if ((dev = TryInit_NHCLink042()))
-    {
-        fprintf( stderr, "Found NHC-Link042 Programmer\n" );
-    }
+	else if ((dev = TryInit_NHCLink042()))
+	{
+		fprintf( stderr, "Found NHC-Link042 Programmer\n" );
+	}
 	else
+	{
+		fprintf( stderr, "Error: Could not initialize any supported programmers\n" );
+		return 0;
+	}
+
+	SetupAutomaticHighLevelFunctions( dev );
+	if( MCFO )
+	{
+		*MCFO = &MCF;
+	}
+	return dev;
+}
+
+#if !defined( MINICHLINK_AS_LIBRARY ) && !defined( MINICHLINK_IMPORT )
+int main( int argc, char ** argv )
+{
+	if( argc > 1 && argv[1][0] == '-' && argv[1][1] == 'h' )
+	{
+		goto help;
+	}
+	void * dev = MiniCHLinkInitAsDLL( 0 );
+	if( !dev )
 	{
 		fprintf( stderr, "Error: Could not initialize any supported programmers\n" );
 		return -32;
 	}
-	
-	SetupAutomaticHighLevelFunctions( dev );
 
 	int status;
 	int must_be_end = 0;
@@ -174,6 +194,13 @@ keep_going:
 				if( argchar[1] == 'G' )
 				{
 					printf( "GDBServer Running\n" );
+				}
+				else
+				{
+					// In case we aren't running already.
+					MCF.HaltMode( dev, 2 );
+
+					//XXX TODO: Why do some programmers start automatically, and others don't? 
 				}
 
 				do
@@ -344,6 +371,8 @@ keep_going:
 				{
 					goto unimplemented;
 				}
+
+				printf( "Read %d bytes\n", (int)amount );
 
 				if( hex )
 				{
@@ -516,7 +545,7 @@ unimplemented:
 	fprintf( stderr, "Error: Command '%s' unimplemented on this programmer.\n", lastcommand );
 	return -1;
 }
-
+#endif
 
 #if defined(WINDOWS) || defined(WIN32) || defined(_WIN32)
 #define strtoll _strtoi64
@@ -601,7 +630,24 @@ static int DefaultWaitForDoneOp( void * dev, int ignore )
 	while( rrv & (1<<12) );
 	if( (rrv >> 8 ) & 7 )
 	{
-		if( !ignore ) fprintf( stderr, "Fault writing memory (DMABSTRACTS = %08x)\n", rrv );
+		if( !ignore )
+		{
+			const char * errortext = 0;
+			switch( (rrv>>8)&7 )
+			{
+			case 1: errortext = "Command in execution"; break;
+			case 2: errortext = "Abstract Command Unsupported"; break;
+			case 3: errortext = "Execption executing Abstract Command"; break;
+			case 4: errortext = "Processor not halted."; break;
+			case 5: errortext = "Bus Error"; break;
+			case 6: errortext = "Parity Bit"; break;
+			default: errortext = "Other Error"; break;
+			}
+
+			uint32_t temp;
+			MCF.ReadReg32( dev, DMSTATUS, &temp );
+			fprintf( stderr, "Fault writing memory (DMABSTRACTS = %08x) (%s) DMSTATUS: %08x\n", rrv, errortext, temp );
+		}
 		MCF.WriteReg32( dev, DMABSTRACTCS, 0x00000700 );
 		return -9;
 	}
@@ -642,14 +688,21 @@ int DefaultSetupInterface( void * dev )
 
 static void StaticUpdatePROGBUFRegs( void * dev )
 {
-	MCF.WriteReg32( dev, DMDATA0, 0xe00000f4 );   // DATA0's location in memory.
-	MCF.WriteReg32( dev, DMCOMMAND, 0x0023100a ); // Copy data to x10
-	MCF.WriteReg32( dev, DMDATA0, 0xe00000f8 );   // DATA1's location in memory.
-	MCF.WriteReg32( dev, DMCOMMAND, 0x0023100b ); // Copy data to x11
-	MCF.WriteReg32( dev, DMDATA0, 0x40022010 ); //FLASH->CTLR
-	MCF.WriteReg32( dev, DMCOMMAND, 0x0023100c ); // Copy data to x12
+	uint32_t rr;
+	if( MCF.ReadReg32( dev, DMHARTINFO, &rr ) )
+	{
+		fprintf( stderr, "Error: Could not get hart info.\n" );
+		return;
+	}
+	uint32_t data0offset = 0xe0000000 | ( rr & 0x7ff );
+	MCF.WriteReg32( dev, DMDATA0, data0offset );       // DATA0's location in memory.
+	MCF.WriteReg32( dev, DMCOMMAND, 0x0023100a );      // Copy data to x10
+	MCF.WriteReg32( dev, DMDATA0, data0offset + 4 );   // DATA1's location in memory.
+	MCF.WriteReg32( dev, DMCOMMAND, 0x0023100b );      // Copy data to x11
+	MCF.WriteReg32( dev, DMDATA0, 0x40022010 );        // FLASH->CTLR
+	MCF.WriteReg32( dev, DMCOMMAND, 0x0023100c );      // Copy data to x12
 	MCF.WriteReg32( dev, DMDATA0, CR_PAGE_PG|CR_BUF_LOAD);
-	MCF.WriteReg32( dev, DMCOMMAND, 0x0023100d ); // Copy data to x13
+	MCF.WriteReg32( dev, DMCOMMAND, 0x0023100d );      // Copy data to x13
 }
 
 static int InternalUnlockBootloader( void * dev )
@@ -700,7 +753,7 @@ static int DefaultWriteHalfWord( void * dev, uint32_t address_to_write, uint16_t
 	ret |= MCF.WaitForDoneOp( dev, 0 );
 	iss->currentstateval = -1;
 
-
+	if( ret ) fprintf( stderr, "Fault on DefaultWriteHalfWord\n" );
 	return ret;
 }
 
@@ -725,6 +778,8 @@ static int DefaultReadHalfWord( void * dev, uint32_t address_to_write, uint16_t 
 
 	ret |= MCF.WaitForDoneOp( dev, 0 );
 	iss->currentstateval = -1;
+
+	if( ret ) fprintf( stderr, "Fault on DefaultReadHalfWord\n" );
 
 	uint32_t rr;
 	ret |= MCF.ReadReg32( dev, DMDATA0, &rr );
@@ -754,6 +809,7 @@ static int DefaultWriteByte( void * dev, uint32_t address_to_write, uint8_t data
 	MCF.WriteReg32( dev, DMCOMMAND, 0x00271008 ); // Copy data to x8, and execute program.
 
 	ret |= MCF.WaitForDoneOp( dev, 0 );
+	if( ret ) fprintf( stderr, "Fault on DefaultWriteByte\n" );
 	iss->currentstateval = -1;
 	return ret;
 }
@@ -778,6 +834,7 @@ static int DefaultReadByte( void * dev, uint32_t address_to_write, uint8_t * dat
 	MCF.WriteReg32( dev, DMCOMMAND, 0x00221008 ); // Read x8 into DATA0.
 
 	ret |= MCF.WaitForDoneOp( dev, 0 );
+	if( ret ) fprintf( stderr, "Fault on DefaultReadByte\n" );
 	iss->currentstateval = -1;
 
 	uint32_t rr;
@@ -850,7 +907,10 @@ static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t dat
 		iss->currentstateval = address_to_write;
 
 		if( is_flash )
+		{
 			ret |= MCF.WaitForDoneOp( dev, 0 );
+			if( ret ) fprintf( stderr, "Fault on DefaultWriteWord Part 1\n" );
+		}
 	}
 	else
 	{
@@ -866,10 +926,12 @@ static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t dat
 			// XXX TODO: This likely can be a very short delay.
 			// XXX POSSIBLE OPTIMIZATION REINVESTIGATE.
 			ret |= MCF.WaitForDoneOp( dev, 0 );
+			if( ret ) fprintf( stderr, "Fault on DefaultWriteWord Part 2\n" );
 		}
 		else
 		{
 			ret |= MCF.WaitForDoneOp( dev, 0 );
+			if( ret ) fprintf( stderr, "Fault on DefaultWriteWord Part 3\n" );
 		}
 	}
 
@@ -1102,12 +1164,14 @@ static int DefaultReadWord( void * dev, uint32_t address_to_read, uint32_t * dat
 		iss->currentstateval = address_to_read;
 
 		r |= MCF.WaitForDoneOp( dev, 0 );
+		if( r ) fprintf( stderr, "Fault on DefaultReadWord Part 1\n" );
 	}
 
 	if( iss->autoincrement )
 		iss->currentstateval += 4;
 
 	r |= MCF.ReadReg32( dev, DMDATA0, data );
+
 	if( iss->currentstateval == iss->ram_base + iss->ram_size )
 		MCF.WaitForDoneOp( dev, 1 ); // Ignore any post-errors. 
 	return r;
@@ -1147,6 +1211,7 @@ int DefaultErase( void * dev, uint32_t address, uint32_t length, int type )
 	{
 		if( ( rw = StaticUnlockFlash( dev, iss ) ) )
 			return rw;
+		printf( "Flash unlocked\n" );
 	}
 
 	if( type == 1 )
@@ -1157,8 +1222,12 @@ int DefaultErase( void * dev, uint32_t address, uint32_t length, int type )
 		MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, 0 );
 		MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, FLASH_CTLR_MER  );
 		MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_STRT_Set|FLASH_CTLR_MER );
-		if( MCF.WaitForFlash && MCF.WaitForFlash( dev ) ) return -11;		
+		rw = MCF.WaitForDoneOp( dev, 0 );
+		if( MCF.WaitForFlash && MCF.WaitForFlash( dev ) ) { fprintf( stderr, "Error: Wait for flash error.\n" ); return -11; }
+		rw = MCF.WaitForDoneOp( dev, 0 );
 		MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, 0 );
+		rw = MCF.WaitForDoneOp( dev, 0 );
+		fprintf( stderr, "Whole Chip Erase Code: %d\n", rw );
 	}
 	else
 	{
@@ -1197,8 +1266,11 @@ int DefaultReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t r
 		{
 			uint32_t rw;
 			r = MCF.ReadWord( dev, rpos, &rw );
+			//printf( "RW: %d %08x %08x\n", r, rpos, rw );
 			if( r ) return r;
-			memcpy( blob, &rw, remain );
+			int rem = remain;
+			if( rem > 4 ) rem = 4;
+			memcpy( blob, &rw, rem);
 			blob += 4;
 			rpos += 4;
 		}
@@ -1236,8 +1308,9 @@ int DefaultReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t r
 			}
 		}
 	}
-	MCF.WaitForDoneOp( dev, 0 );
-	return 0;
+	int r = MCF.WaitForDoneOp( dev, 0 );
+	if( r ) fprintf( stderr, "Fault on DefaultReadBinaryBlob\n" );
+	return r;
 }
 
 int DefaultReadCPURegister( void * dev, uint32_t regno, uint32_t * regret )
@@ -1346,9 +1419,14 @@ static int DefaultHaltMode( void * dev, int mode )
 	switch ( mode )
 	{
 	case 0:
+		MCF.WriteReg32( dev, DMSHDWCFGR, 0x5aa50000 | (1<<10) ); // Shadow Config Reg
+		MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // CFGR (1<<10 == Allow output from slave)
+		MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // Bug in silicon?  If coming out of cold boot, and we don't do our little "song and dance" this has to be called.
+
 		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
 		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
-		MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
+//		MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.  This is recommended, but not doing it seems more stable.
+		// Sometimes, even if the processor is halted but the MSB is clear, it will spuriously start?
 		MCF.FlushLLCommands( dev );
 		break;
 	case 1:
@@ -1359,6 +1437,10 @@ static int DefaultHaltMode( void * dev, int mode )
 		MCF.FlushLLCommands( dev );
 		break;
 	case 2:
+		MCF.WriteReg32( dev, DMSHDWCFGR, 0x5aa50000 | (1<<10) ); // Shadow Config Reg
+		MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // CFGR (1<<10 == Allow output from slave)
+		MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // Bug in silicon?  If coming out of cold boot, and we don't do our little "song and dance" this has to be called.
+
 		MCF.WriteReg32( dev, DMCONTROL, 0x40000001 ); // resumereq
 		MCF.FlushLLCommands( dev );
 		break;
@@ -1378,6 +1460,17 @@ static int DefaultHaltMode( void * dev, int mode )
 		MCF.FlushLLCommands( dev );
 		break;
 	}
+#if 0
+	int i;
+	for( i = 0; i < 100; i++ )
+	{
+		uint32_t temp = 0;
+		MCF.ReadReg32( dev, DMSTATUS, &temp );
+		fprintf( stderr, "DMSTATUS: %08x\n", temp );
+		usleep( 20000);
+	}
+#endif
+
 	iss->processor_in_mode = mode;
 	return 0;
 }
