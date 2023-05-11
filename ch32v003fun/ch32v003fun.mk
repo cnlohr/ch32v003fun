@@ -3,18 +3,22 @@ PREFIX:=riscv64-unknown-elf
 
 CH32V003FUN?=../../ch32v003fun
 MINICHLINK?=../../minichlink
+OPTFLAG?= -Os -flto
 
 CFLAGS+= \
-	-g -Os -flto -ffunction-sections \
+	-g $(OPTFLAG) -fdata-sections -ffunction-sections \
+	-fno-math-errno -ffast-math -ffinite-math-only \
 	-static-libgcc \
 	-march=rv32ec \
 	-mabi=ilp32e \
-	-I/usr/include/newlib \
 	-I$(CH32V003FUN) \
 	-nostdlib \
 	-I. -Wall
 
-LDFLAGS+=-T $(CH32V003FUN)/ch32v003fun.ld -Wl,--gc-sections -L$(CH32V003FUN)/../misc -lgcc
+LDFLAGS+= \
+    -T $(CH32V003FUN)/ch32v003fun.ld \
+	-Wl,--gc-sections \
+	-L$(CH32V003FUN)/../misc -lgcc -lm -lgcc
 
 SYSTEM_C:=$(CH32V003FUN)/ch32v003fun.c
 
