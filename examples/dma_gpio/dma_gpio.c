@@ -144,10 +144,10 @@ int main()
 	while(1)
 	{
 		GPIOD->BSHR = 1 | (1<<4);	 // Turn on GPIOs
-		printf( "%d\n", GPIOD->OUTDR );
+		printf( "%lu\n", GPIOD->OUTDR );
 		Delay_Ms( 250 );
 		GPIOD->BSHR = (1<<16) | (1<<(16+4)); // Turn off GPIODs
-		printf( "%d\n", GPIOD->OUTDR );
+		printf( "%lu\n", GPIOD->OUTDR );
 		Delay_Ms( 250 );
 		printf( "Step\n" );
 	}
