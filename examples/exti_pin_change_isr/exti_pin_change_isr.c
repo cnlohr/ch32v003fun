@@ -4,6 +4,8 @@
 #include "ch32v003fun.h"
 #include <stdio.h>
 
+uint32_t count;
+
 #define APB_CLOCK SYSTEM_CORE_CLOCK
 
 /*
@@ -93,7 +95,8 @@ int main()
 		//GPIOC->BSHR = 1;
 		//if( ((uint32_t*)count++) )
 		//	GPIOC->BSHR = (1<<16);
-		if( count == 100 ) count = 0;
+		//if( count == 100 ) count = 0;
+		asm volatile( "nop" );
 	}
 }
 
