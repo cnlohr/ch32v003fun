@@ -12,6 +12,7 @@ CFLAGS+= \
 	-march=rv32ec \
 	-mabi=ilp32e \
 	-I$(CH32V003FUN) \
+	-I/usr/include/newlib \
 	-nostdlib \
 	-I. -Wall
 
