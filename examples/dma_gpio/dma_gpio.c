@@ -129,7 +129,7 @@ int main()
 
 	// Timer 1 setup.
 	TIM1->PSC = 0x0000;                      // Prescaler 
-	TIM1->ATRLR = 11;                        // Auto Reload - sets period (4MHz)
+	TIM1->ATRLR = 11;                        // Auto Reload - sets period (48MHz / (11+1) = 4MHz)
 	TIM1->SWEVGR = TIM_UG | TIM_TG;          // Reload immediately + Trigger DMA
 	TIM1->CCER = TIM_CC1E | TIM_CC1P;        // Enable CH1 output, positive pol
 	TIM1->CHCTLR1 = TIM_OC1M_2 | TIM_OC1M_1; // CH1 Mode is output, PWM1 (CC1S = 00, OC1M = 110)
