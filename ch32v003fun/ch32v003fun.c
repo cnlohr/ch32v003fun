@@ -802,7 +802,7 @@ asm volatile(
 	bne a1, a2, 1b\n\
 2:\n" );
 
-	SysTick->CTLR = 1;
+	SETUP_SYSTICK_HCLK
 
 	// set mepc to be main as the root app.
 asm volatile(

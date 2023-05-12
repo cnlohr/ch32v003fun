@@ -4819,8 +4819,19 @@ static inline uint32_t __get_SP(void)
 extern "C" {
 #endif
 
+// You can use SYSTICK_USE_HCLK, if you do, you will have a high-resolution
+// however it will limit your max delay to 44 seconds before it will wrap
+// around.  You must also call SETUP_SYSTICK_HCLK.
+
+#ifdef SYSTICK_USE_HCLK
+#define DELAY_US_TIME ((SYSTEM_CORE_CLOCK)/1000000)
+#define DELAY_MS_TIME ((SYSTEM_CORE_CLOCK)/1000)
+#define SETUP_SYSTICK_HCLK SysTick->CTLR = 5;
+#else // Use systick = hclk/8
 #define DELAY_US_TIME ((SYSTEM_CORE_CLOCK)/8000000)
 #define DELAY_MS_TIME ((SYSTEM_CORE_CLOCK)/8000)
+#define SETUP_SYSTICK_HCLK SysTick->CTLR = 1;
+#endif
 
 #if defined(__riscv) || defined(__riscv__) || defined( CH32V003FUN_BASE )
 
