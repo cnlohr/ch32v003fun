@@ -34,10 +34,10 @@ void systick_init(void)
 	NVIC_EnableIRQ(SysTicK_IRQn);
 	
 	/* Set the tick interval to 1ms for normal op */
-    SysTick->CMP = (SYSTEM_CORE_CLOCK/1000)-1;
+	SysTick->CMP = (SYSTEM_CORE_CLOCK/1000)-1;
 	
 	/* Start at zero */
-    SysTick->CNT = 0;
+	SysTick->CNT = 0;
 	systick_cnt = 0;
 	
 	/* Enable SysTick counter, IRQ, HCLK/1 */
@@ -56,10 +56,10 @@ void SysTick_Handler(void)
 	// as a warning, if more than this length of time
 	// passes before triggering, you may miss your
 	// interrupt.
-    SysTick->CMP += (SYSTEM_CORE_CLOCK/1000);
+	SysTick->CMP += (SYSTEM_CORE_CLOCK/1000);
 
 	/* clear IRQ */
-    SysTick->SR = 0;
+	SysTick->SR = 0;
 
 	/* update counter */
 	systick_cnt++;
@@ -108,6 +108,6 @@ int main()
 		Delay_Ms( 250 );
 		GPIOC->BSHR = (1<<16);
 		Delay_Ms( 250 );
-		printf( "Count: %lu / Milliseconds: %lu\n\r", count++, systick_cnt );
+		printf( "Print #: %lu / Milliseconds: %lu / CNT: %lu\n\r", count++, systick_cnt, SysTick->CNT );
 	}
 }
