@@ -17,11 +17,9 @@ struct LinkEProgrammerStruct
 };
 
 // For non-ch32v003 chips.
-#if 0
 static int LEReadBinaryBlob( void * d, uint32_t offset, uint32_t amount, uint8_t * readbuff );
 static int InternalLinkEHaltMode( void * d, int mode );
-static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len, uint8_t * blob );
-#endif
+//static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len, uint8_t * blob );
 
 #define WCHTIMEOUT 5000
 #define WCHCHECK(x) if( (status = x) ) { fprintf( stderr, "Bad USB Operation on " __FILE__ ":%d (%d)\n", __LINE__, status ); exit( status ); }
@@ -232,6 +230,14 @@ static int LESetupInterface( void * d )
 		fprintf(stderr, "link error, nothing connected to linker\n");
 		return -1;
 	}
+        uint32_t target_chip_type = ( rbuff[4] << 4) + (rbuff[5] >> 4);
+        fprintf(stderr, "Chip Type: %03x\n", target_chip_type);
+        if( target_chip_type == 0x307 )
+        {
+                fprintf( stderr, "CH32V307 Detected.  Allowing old-flash-mode for operation.\n" );
+                //MCF.WriteBinaryBlob = LEWriteBinaryBlob;
+                MCF.ReadBinaryBlob = LEReadBinaryBlob;
+        }
 
 	// For some reason, if we don't do this sometimes the programmer starts in a hosey mode.
 	MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
@@ -252,17 +258,6 @@ static int LESetupInterface( void * d )
 	fprintf( stderr, "Part UUID    : %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n", rbuff[4], rbuff[5], rbuff[6], rbuff[7], rbuff[8], rbuff[9], rbuff[10], rbuff[11] );
 	fprintf( stderr, "PFlags       : %02x-%02x-%02x-%02x\n", rbuff[12], rbuff[13], rbuff[14], rbuff[15] );
 	fprintf( stderr, "Part Type (B): %02x-%02x-%02x-%02x\n", rbuff[16], rbuff[17], rbuff[18], rbuff[19] );
-	
-	if( rbuff[2] == 0x05 && rbuff[3] == 0x06 )
-	{
-//		fprintf( stderr, "CH32V307 Detected.  Allowing old-flash-mode for operation.\n" );
-//		MCF.WriteBinaryBlob = LEWriteBinaryBlob;
-//		MCF.ReadBinaryBlob = LEReadBinaryBlob;
-	}
-	else
-	{
-		// No need to use these and the propreitary blob.
-	}
 	
 	return 0;
 }
@@ -388,6 +383,7 @@ const uint8_t * bootloader = (const uint8_t*)
 "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff";
 
 int bootloader_len = 512;
+#endif
 
 static int InternalLinkEHaltMode( void * d, int mode )
 {
@@ -472,6 +468,7 @@ static int LEReadBinaryBlob( void * d, uint32_t offset, uint32_t amount, uint8_t
 	return 0;
 }
 
+#if 0
 static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len, uint8_t * blob )
 {
 	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
