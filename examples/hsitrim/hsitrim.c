@@ -21,7 +21,6 @@ int main()
 
 	SystemInit48HSI();
         SetupUART( UART_BRR );
-//        SetupDebugPrintf();
 
 	Delay_Ms(50);
 	printf("\r\r\n\nHSITRIM example.\r\n");
@@ -50,7 +49,6 @@ int main()
 	printf("Enabling HSI signal with MCO function on PC4\r\n");
 	regtemp = (RCC->CFGR0 & ~RCC_CFGR0_MCO) | RCC_CFGR0_MCO_HSI;
 	RCC->CFGR0 = regtemp;
-//	Delay_Ms(5000);
 
 	// Setup UART RX pin SetupUART() does most of the work.  ###beware### if you use DebugPrintf, this will break!
 	// Input, GPIO D6, with AutoFunction
@@ -62,7 +60,6 @@ int main()
 	while(1){
 		if(USART1->STATR & USART_STATR_RXNE){
 			key = (uint8_t)USART1->DATAR;
-//			printf("Got key '%c'\r\n", key);
 			if(key == '.'){
 				if(trim < 0x1f) trim++;
 				printf("Setting HSITRIM to: 0x%02lX\r\n", trim);
