@@ -72,10 +72,13 @@ int WSAAPI WSAPoll(struct pollfd * fdArray, ULONG       fds, INT         timeout
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <linux/in.h>
 #include <unistd.h>
 #include <poll.h>
 #endif
+#endif
+
+#ifdef __linux__
+#include <linux/in.h>
 #endif
 
 char gdbbuffer[65536];
