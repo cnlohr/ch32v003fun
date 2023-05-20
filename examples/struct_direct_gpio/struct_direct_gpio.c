@@ -33,12 +33,14 @@ int main()
 	while(1)
 	{
 		// Use low bits of BSHR to SET output
-		GPIOC->BSHR_bits = (const struct BSHR_t) {
+		const struct BSHR_t BS1 = {
 			.BS1 = 1,
 		};
-		GPIOC->BSHR_bits = (const struct BSHR_t) {
+		GPIOC->BSHR_bits = BS1;
+		const struct BSHR_t BS2 = {
 			.BS2 = 1,
 		};
+		GPIOC->BSHR_bits = BS2;
 
 		// Modify the OUTDR register directly to SET output
 		GPIOC->OUTDR_bits.ODR4 = 1;
@@ -46,14 +48,16 @@ int main()
 		Delay_Ms( 950 );
 
 		// Use upper bits of BSHR to RESET output
-		GPIOC->BSHR_bits = (const struct BSHR_t) {
+		const struct BSHR_t BR1 =  {
 			.BR1 = 1,
 		};
+		GPIOC->BSHR_bits = BR1;
 
 		// Use BCR to RESET output
-		GPIOC->BCR_bits = (const struct BCR_t) {
+		const struct BCR_t BR2 = {
 			.BR2 = 1,
 		};
+		GPIOC->BCR_bits = BR2;
 
 		// Modify the OUTDR register directly to CLEAR output
 		GPIOC->OUTDR_bits.ODR4 = 0;
