@@ -51,8 +51,8 @@ int main()
 		GPIOD->BSHR_bits = (struct BSHR_t) {
 			.BS0 = 1,
 			.BR4 = 1,
-		};
-		GPIOC->BSHR_bits.BS0 = 1;
+		}; // one store
+		GPIOC->BSHR_bits.BS0 = 1; // implicit read->modify->write
 		Delay_Ms( 100 );
 
 		// Turn D0 off and D4 on at the same time
@@ -60,7 +60,7 @@ int main()
 			.BR0 = 1,
 			.BS4 = 1,
 		};
-		// or clear in BCR
+		// clear C0 in BCR
 		GPIOC->BCR_bits.BR0 = 1;
 		Delay_Ms( 100 );
 	}
