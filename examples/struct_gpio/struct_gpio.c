@@ -1,5 +1,4 @@
-/* Small example showing how to use the SWIO programming pin to 
-   do printf through the debug interface */
+/* Small example showing how to use the structs for controling GPIO pins */
 
 #define SYSTEM_CORE_CLOCK 48000000
 
