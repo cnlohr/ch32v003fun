@@ -196,15 +196,127 @@ typedef struct
 } OB_TypeDef;
 
 /* General Purpose I/O */
+typedef enum
+{
+    GPIO_CFGLR_MODE_IN,
+    GPIO_CFGLR_MODE_OUT_10MHz,
+    GPIO_CFGLR_MODE_OUT_2MHz,
+    GPIO_CFGLR_MODE_OUT_50MHz
+} GPIO_MODE_TypeDef;
+typedef enum
+{
+    GPIO_CFGLR_CNF_IN_ANALOG = 0,
+    GPIO_CFGLR_CNF_IN_FLOAT = 1,
+    GPIO_CFGLR_CNF_IN_PULL_UP_DOWN = 2,
+    GPIO_CFGLR_CNF_OUT_PP = 0,
+    GPIO_CFGLR_CNF_OUT_OD = 1,
+    GPIO_CFGLR_CNF_OUT_AF_PP = 2,
+    GPIO_CFGLR_CNF_OUT_AF_OD = 3,
+} GPIO_CNF_TypeDef;
 typedef struct
 {
-    __IO uint32_t CFGLR;
+    __IO union {
+      uint32_t CFGLR;
+      struct CFGLR_t {
+        GPIO_MODE_TypeDef MODE0 :2;
+        GPIO_CNF_TypeDef CNF0 :2;
+        GPIO_MODE_TypeDef MODE1 :2;
+        GPIO_CNF_TypeDef CNF1 :2;
+        GPIO_MODE_TypeDef MODE2 :2;
+        GPIO_CNF_TypeDef CNF2 :2;
+        GPIO_MODE_TypeDef MODE3 :2;
+        GPIO_CNF_TypeDef CNF3 :2;
+        GPIO_MODE_TypeDef MODE4 :2;
+        GPIO_CNF_TypeDef CNF4 :2;
+        GPIO_MODE_TypeDef MODE5 :2;
+        GPIO_CNF_TypeDef CNF5 :2;
+        GPIO_MODE_TypeDef MODE6 :2;
+        GPIO_CNF_TypeDef CNF6 :2;
+        GPIO_MODE_TypeDef MODE7 :2;
+        GPIO_CNF_TypeDef CNF7 :2;
+      } CFGLR_bits;
+    };
     __IO uint32_t CFGHR;
-    __IO uint32_t INDR;
-    __IO uint32_t OUTDR;
-    __IO uint32_t BSHR;
-    __IO uint32_t BCR;
-    __IO uint32_t LCKR;
+    __IO union {
+      uint32_t INDR;
+      struct INDR_t {
+        uint32_t IDR0 :1;
+        uint32_t IDR1 :1;
+        uint32_t IDR2 :1;
+        uint32_t IDR3 :1;
+        uint32_t IDR4 :1;
+        uint32_t IDR5 :1;
+        uint32_t IDR6 :1;
+        uint32_t IDR7 :1;
+        uint32_t :24;
+      } INDR_bits;
+    };
+    __IO union {
+      uint32_t OUTDR;
+      struct OUTDR_t {
+        uint32_t ODR0 :1;
+        uint32_t ODR1 :1;
+        uint32_t ODR2 :1;
+        uint32_t ODR3 :1;
+        uint32_t ODR4 :1;
+        uint32_t ODR5 :1;
+        uint32_t ODR6 :1;
+        uint32_t ODR7 :1;
+        uint32_t :24;
+      } OUTDR_bits;
+    };
+    __IO union {
+      uint32_t BSHR;
+      struct BSHR_t {
+        uint32_t BS0 :1;
+        uint32_t BS1 :1;
+        uint32_t BS2 :1;
+        uint32_t BS3 :1;
+        uint32_t BS4 :1;
+        uint32_t BS5 :1;
+        uint32_t BS6 :1;
+        uint32_t BS7 :1;
+        uint32_t :8;
+        uint32_t BR0 :1;
+        uint32_t BR1 :1;
+        uint32_t BR2 :1;
+        uint32_t BR3 :1;
+        uint32_t BR4 :1;
+        uint32_t BR5 :1;
+        uint32_t BR6 :1;
+        uint32_t BR7 :1;
+        uint32_t :8;
+      } BSHR_bits;
+    };
+    __IO union {
+      uint32_t BCR;
+      struct BCR_t {
+        uint32_t BR0 :1;
+        uint32_t BR1 :1;
+        uint32_t BR2 :1;
+        uint32_t BR3 :1;
+        uint32_t BR4 :1;
+        uint32_t BR5 :1;
+        uint32_t BR6 :1;
+        uint32_t BR7 :1;
+        uint32_t :24;
+      } BCR_bits;
+    };
+    __IO union {
+      uint32_t LCKR;
+      struct LCKR_t {
+        uint32_t LCK0 :1;
+        uint32_t LCK1 :1;
+        uint32_t LCK2 :1;
+        uint32_t LCK3 :1;
+        uint32_t LCK4 :1;
+        uint32_t LCK5 :1;
+        uint32_t LCK6 :1;
+        uint32_t LCK7 :1;
+        uint32_t LCKK :1;
+        uint32_t :23;
+      } LCK_bits;
+    };
 } GPIO_TypeDef;
 
 /* Alternate Function I/O */
