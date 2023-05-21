@@ -12,7 +12,7 @@ vtable for 'ExampleClass' @ 0x0 (subobject @ 0x20000004):
 
 In this case, a call to a virtual method will result to an invalid call
 and the program won't work as expected.
-Here, the program will also print out `Begin example`, but does not print any values.
+Here, the program will only print out `Begin example`, but does not print any values.
 It seems like the MCU resets here.
 
 In other environments like with the Arduino Core, the hard fault handler is called
