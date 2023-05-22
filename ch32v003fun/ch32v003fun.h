@@ -227,7 +227,7 @@ typedef union {
 		GPIO_CFGLR_PIN_MODE_Typedef PIN6 :4;
 		GPIO_CFGLR_PIN_MODE_Typedef PIN7 :4;
 	};
-} CFGLR_t;
+} GPIO_CFGLR_t;
 typedef union {
 	uint32_t __FULL;
 	const struct {
@@ -241,7 +241,7 @@ typedef union {
 		uint32_t IDR7 :1;
 		uint32_t :24;
 	};
-} INDR_t;
+} GPIO_INDR_t;
 typedef union {
 	uint32_t __FULL;
 	struct {
@@ -255,7 +255,7 @@ typedef union {
 		uint32_t ODR7 :1;
 		uint32_t :24;
 	};
-} OUTDR_t;
+} GPIO_OUTDR_t;
 typedef union {
 	uint32_t __FULL;
 	struct {
@@ -278,7 +278,7 @@ typedef union {
 		uint32_t BR7 :1;
 		uint32_t :8;
 	};
-} BSHR_t;
+} GPIO_BSHR_t;
 typedef union {
 	uint32_t __FULL;
 	struct {
@@ -292,7 +292,7 @@ typedef union {
 		uint32_t BR7 :1;
 		uint32_t :24;
 	};
-} BCR_t;
+} GPIO_BCR_t;
 typedef union {
 	uint32_t __FULL;
 	struct {
@@ -307,7 +307,7 @@ typedef union {
 		uint32_t LCKK :1;
 		uint32_t :23;
 	};
-} LCKR_t;
+} GPIO_LCKR_t;
 typedef struct
 {
 	__IO uint32_t CFGLR;
@@ -319,40 +319,9 @@ typedef struct
 	__IO uint32_t LCKR;
 } GPIO_TypeDef;
 
-static inline void GPIOset(GPIO_TypeDef *gpio, uint8_t pins) __attribute__((always_inline));
-static inline void GPIOset(GPIO_TypeDef *gpio, uint8_t pins) {gpio->BSHR = pins;}
-static inline void GPIOreset(GPIO_TypeDef *gpio, uint8_t pins) __attribute__((always_inline));
-static inline void GPIOreset(GPIO_TypeDef *gpio, uint8_t pins) {gpio->BCR = pins;}
-static inline void GPIOsetReset(GPIO_TypeDef *gpio, uint8_t set_pins, uint8_t reset_pins) __attribute__((always_inline));
-static inline void GPIOsetReset(GPIO_TypeDef *gpio, uint8_t set_pins, uint8_t reset_pins) {gpio->BSHR = set_pins|(reset_pins<<16);}
-
-static inline void GPIO_CFGLR_set(GPIO_TypeDef *gpio, CFGLR_t val) __attribute__((always_inline));
-static inline void GPIO_CFGLR_set(GPIO_TypeDef *gpio, CFGLR_t val) {gpio->CFGLR = val.__FULL;}
-static inline CFGLR_t GPIO_CFGLR_get(GPIO_TypeDef *gpio)  __attribute__((always_inline));
-static inline CFGLR_t GPIO_CFGLR_get(GPIO_TypeDef *gpio) {CFGLR_t tmp; tmp.__FULL = gpio->CFGLR; return tmp;}
-
-static inline INDR_t GPIO_INDR_get(GPIO_TypeDef *gpio)  __attribute__((always_inline));
-static inline INDR_t GPIO_INDR_get(GPIO_TypeDef *gpio) {INDR_t tmp; tmp.__FULL = gpio->INDR; return tmp;}
-
-static inline void GPIO_OUTDR_set(GPIO_TypeDef *gpio, OUTDR_t val) __attribute__((always_inline));
-static inline void GPIO_OUTDR_set(GPIO_TypeDef *gpio, OUTDR_t val) {gpio->OUTDR = val.__FULL;}
-static inline OUTDR_t GPIO_OUTDR_get(GPIO_TypeDef *gpio)  __attribute__((always_inline));
-static inline OUTDR_t GPIO_OUTDR_get(GPIO_TypeDef *gpio) {OUTDR_t tmp; tmp.__FULL = gpio->OUTDR; return tmp;}
-
-static inline void GPIO_BSHR_set(GPIO_TypeDef *gpio, BSHR_t val) __attribute__((always_inline));
-static inline void GPIO_BSHR_set(GPIO_TypeDef *gpio, BSHR_t val) {gpio->BSHR = val.__FULL;}
-static inline BSHR_t GPIO_BSHR_get(GPIO_TypeDef *gpio)  __attribute__((always_inline));
-static inline BSHR_t GPIO_BSHR_get(GPIO_TypeDef *gpio) {BSHR_t tmp; tmp.__FULL = gpio->BSHR; return tmp;}
-
-static inline void GPIO_BCR_set(GPIO_TypeDef *gpio, BCR_t val) __attribute__((always_inline));
-static inline void GPIO_BCR_set(GPIO_TypeDef *gpio, BCR_t val) {gpio->BCR = val.__FULL;}
-static inline BCR_t GPIO_BCR_get(GPIO_TypeDef *gpio)  __attribute__((always_inline));
-static inline BCR_t GPIO_BCR_get(GPIO_TypeDef *gpio) {BCR_t tmp; tmp.__FULL = gpio->BCR; return tmp;}
-
-static inline void GPIO_LCKR_set(GPIO_TypeDef *gpio, LCKR_t val) __attribute__((always_inline));
-static inline void GPIO_LCKR_set(GPIO_TypeDef *gpio, LCKR_t val) {gpio->LCKR = val.__FULL;}
-static inline LCKR_t GPIO_LCKR_get(GPIO_TypeDef *gpio)  __attribute__((always_inline));
-static inline LCKR_t GPIO_LCKR_get(GPIO_TypeDef *gpio) {LCKR_t tmp; tmp.__FULL = gpio->LCKR; return tmp;}
+#define DYN_GPIO_READ(gpio, field) ((GPIO_##field##_t) { .__FULL = gpio->field })
+#define DYN_GPIO_WRITE(gpio, field, ...) gpio->field = ((const GPIO_##field##_t) __VA_ARGS__).__FULL
+#define DYN_GPIO_MOD(gpio, field, reg, val) {GPIO_##field##_t tmp; tmp.__FULL = gpio->field; tmp.reg = val; gpio->field = tmp.__FULL;}
 
 /* Alternate Function I/O */
 typedef struct

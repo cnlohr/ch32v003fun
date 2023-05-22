@@ -23,7 +23,7 @@ int main()
 	printf("CFGLR: %lX\n", GPIOD->CFGLR); // -> CFGLR: 44444444
 
     // GPIO D0, D4 Push-Pull, D1/SWIO floating, default analog input
-	GPIO_CFGLR_set(GPIOD, (CFGLR_t) {
+	DYN_GPIO_WRITE(GPIOD, CFGLR, (GPIO_CFGLR_t) { // (GPIO_CFGLR_t) is optional but helps vscode with completion
 		.PIN0 = GPIO_CFGLR_OUT_10Mhz_PP,
 		.PIN1 = GPIO_CFGLR_IN_FLOAT,
 		.PIN4 = GPIO_CFGLR_OUT_10Mhz_PP,
@@ -32,38 +32,27 @@ int main()
 	// all unconfigured pins are now 0b0000, aka analog inputs with TTL Schmitttrigger disabled
 	printf("CFGLR: %lX\n", GPIOD->CFGLR); // -> CFGLR: 10041
 
-	// GPIO C0 Push-Pull with 2 volatile writes
-	GPIO_CFGLR_set(GPIOC, (CFGLR_t) {
-		.PIN0 = GPIO_CFGLR_OUT_10Mhz_PP,
-	});
-
+	// GPIO C0 Push-Pull
 	// read modify write
-	CFGLR_t ioc = GPIO_CFGLR_get(GPIOC);
+	GPIO_CFGLR_t ioc = DYN_GPIO_READ(GPIOC, CFGLR);
+	ioc.PIN0 = GPIO_CFGLR_OUT_10Mhz_PP,
 	ioc.PIN1 = GPIO_CFGLR_IN_ANALOG;
-	GPIO_CFGLR_set(GPIOC, ioc);
+	DYN_GPIO_WRITE(GPIOC, CFGLR, ioc);
 
 	while(1)
 	{
 		// Turn D0 on and D4 off at the same time
-		GPIOsetReset(GPIOD, GPIO_Pin_0, GPIO_Pin_4);
-		// could be GPIO_BSHR_set(GPIOD, (BSHR){.BS1=1, .BR4=1});
+		DYN_GPIO_WRITE(GPIOD, BSHR, (GPIO_BSHR_t) {.BS0 = 1, .BR4 = 1});
 
 		// implicit read->modify->write
-		// GPIOC->OUTDR_bits.ODR0 = 1; // no idea how to do this now
+		DYN_GPIO_MOD(GPIOC, OUTDR, ODR0, 1);
 		Delay_Ms( 100 );
 
 		// Turn D0 off and D4 on at the same time
-		GPIOsetReset(GPIOD, GPIO_Pin_4, GPIO_Pin_1);
-		// could be GPIO_BSHR_set(GPIOD, (BSHR){.BR1=1, .BS4=1});
+		DYN_GPIO_WRITE(GPIOD, BSHR, (GPIO_BSHR_t) {.BR0 = 1, .BS4 = 1});
 
 		// implicit read->modify->write
-		//GPIOC->OUTDR_bits.ODR0 = 0; // no idea how to do this now
-		Delay_Ms( 100 );
-
-		// to only set/reset use
-		GPIOset(GPIOD, GPIO_Pin_0);
-		Delay_Ms( 100 );
-		GPIOreset(GPIOD, GPIO_Pin_0);
+		DYN_GPIO_MOD(GPIOC, OUTDR, ODR0, 0);
 		Delay_Ms( 100 );
 	}
 }

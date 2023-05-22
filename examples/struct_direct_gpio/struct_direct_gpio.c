@@ -32,25 +32,21 @@ int main()
 	while(1)
 	{
 		// Use low bits of BSHR to SET output
-		GPIOset(GPIOC, GPIO_Pin_1);
-		GPIOset(GPIOC, GPIO_Pin_2);
+		DYN_GPIO_WRITE(GPIOC, BSHR, (GPIO_BSHR_t) {.BS1 = 1});
+		DYN_GPIO_WRITE(GPIOC, BSHR, (GPIO_BSHR_t) {.BS2 = 1});
 
 		// Modify the OUTDR register directly to SET output
-		OUTDR_t tmp = GPIO_OUTDR_get(GPIOC);
-		tmp.ODR4 = 1;
-		GPIO_OUTDR_set(GPIOC, tmp);
+		DYN_GPIO_MOD(GPIOC, OUTDR, ODR4, 1);
 		Delay_Ms( 950 );
 
 		// Use upper bits of BSHR to RESET output
-		GPIOsetReset(GPIOC, 0, GPIO_Pin_1);
+		DYN_GPIO_WRITE(GPIOC, BSHR, (GPIO_BSHR_t) {.BR1 = 1});
 
 		// Use BCR to RESET output
-		GPIOset(GPIOC, GPIO_Pin_2);
+		DYN_GPIO_WRITE(GPIOC, BCR, (GPIO_BCR_t) {.BR2 = 1});
 
 		// Modify the OUTDR register directly to CLEAR output
-		tmp = GPIO_OUTDR_get(GPIOC);
-		tmp.ODR4 = 0;
-		GPIO_OUTDR_set(GPIOC, tmp);
+		DYN_GPIO_MOD(GPIOC, OUTDR, ODR4, 0);
 
 		Delay_Ms( 50 );
 		count++;
