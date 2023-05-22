@@ -1,4 +1,4 @@
-// This tries to do exactly the same as direct_gpio but with structs
+// This tries to generates exacly the same assambly as direct_gpio but with structs
 
 // Could be defined here, or in the processor defines.
 #define SYSTEM_CORE_CLOCK 48000000
@@ -17,47 +17,34 @@ int main()
 	// Enable GPIOs
 	RCC->APB2PCENR |= RCC_APB2Periph_GPIOC;
 
-    // GPIO D0, D4 Push-Pull, D1/SWIO floating, default analog input
-	GPIOC->CFGLR_bits = (const struct CFGLR_t) {
+	// this code modifies two fields at the same time
+
 	// GPIO C1 Push-Pull
-		.MODE1 = GPIO_CFGLR_MODE_OUT_10MHz,
-		.CNF1 = GPIO_CFGLR_CNF_OUT_PP,
+	GPIOC->CFGLR &= ~(0xf<<(4*1));
+	GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*1);
 	// GPIO C2 Push-Pull
-		.MODE2 = GPIO_CFGLR_MODE_OUT_10MHz,
-		.CNF2 = GPIO_CFGLR_CNF_OUT_PP,
+	GPIOC->CFGLR &= ~(0xf<<(4*2));
+	GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*2);
 	// GPIO C4 Push-Pull
-		.MODE4 = GPIO_CFGLR_MODE_OUT_10MHz,
-		.CNF4 = GPIO_CFGLR_CNF_OUT_PP,
-	};
+	GPIOC->CFGLR &= ~(0xf<<(4*4));
+	GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*4);
+
 
 	while(1)
 	{
 		// Use low bits of BSHR to SET output
-		const struct BSHR_t BS1 = {
-			.BS1 = 1,
-		};
-		GPIOC->BSHR_bits = BS1;
-		const struct BSHR_t BS2 = {
-			.BS2 = 1,
-		};
-		GPIOC->BSHR_bits = BS2;
+		GPIOset(GPIOC, GPIO_Pin_1); //GPIOC->BSHR_bits = (struct BSHR_t) {.BS1 = 1}; would generate more instructions here
+		GPIOset(GPIOC, GPIO_Pin_2);
 
 		// Modify the OUTDR register directly to SET output
 		GPIOC->OUTDR_bits.ODR4 = 1;
-
 		Delay_Ms( 950 );
 
 		// Use upper bits of BSHR to RESET output
-		const struct BSHR_t BR1 =  {
-			.BR1 = 1,
-		};
-		GPIOC->BSHR_bits = BR1;
+		GPIOsetReset(GPIOC, 0, GPIO_Pin_1);
 
 		// Use BCR to RESET output
-		const struct BCR_t BR2 = {
-			.BR2 = 1,
-		};
-		GPIOC->BCR_bits = BR2;
+		GPIOset(GPIOC, GPIO_Pin_2);
 
 		// Modify the OUTDR register directly to CLEAR output
 		GPIOC->OUTDR_bits.ODR4 = 0;
