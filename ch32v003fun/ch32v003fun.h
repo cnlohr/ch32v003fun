@@ -60,7 +60,7 @@ extern "C" {
     #define HSITRIM 0x10
 #endif
 
-#ifndef ASSEMBLER
+#ifndef __ASSEMBLER__
 
 /* Interrupt Number Definition, according to the selected device */
 typedef enum IRQn
@@ -108,7 +108,7 @@ typedef enum IRQn
 #define HSE_Value             HSE_VALUE
 #define HSEStartUp_TimeOut    HSE_STARTUP_TIMEOUT
 
-#ifndef ASSEMBLER
+#ifndef __ASSEMBLER__
 /* Analog to Digital Converter */
 typedef struct
 {
@@ -370,7 +370,7 @@ typedef struct
 #endif
 
 /* Peripheral memory map */
-#ifdef ASSEMBLER
+#ifdef __ASSEMBLER__
 #define FLASH_BASE                              (0x08000000) /* FLASH base address in the alias region */
 #define SRAM_BASE                               (0x20000000) /* SRAM base address in the alias region */
 #define PERIPH_BASE                             (0x40000000) /* Peripheral base address in the alias region */
@@ -2811,7 +2811,7 @@ extern "C" {
 /* BDCTLR register base address */
 #define BDCTLR_ADDRESS             (PERIPH_BASE + BDCTLR_OFFSET)
 
-#ifndef ASSEMBLER
+#ifndef __ASSEMBLER__
 static __I uint8_t APBAHBPrescTable[16] = {1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8};
 static __I uint8_t ADCPrescTable[20] = {2, 4, 6, 8, 4, 8, 12, 16, 8, 16, 24, 32, 16, 32, 48, 64, 32, 64, 96, 128};
 #endif
@@ -3111,7 +3111,7 @@ static __I uint8_t ADCPrescTable[20] = {2, 4, 6, 8, 4, 8, 12, 16, 8, 16, 24, 32,
 
 /* ch32v00x_exti.h -----------------------------------------------------------*/
 
-#ifndef ASSEMBLER
+#ifndef __ASSEMBLER__
 
 /* EXTI mode enumeration */
 typedef enum
@@ -3146,7 +3146,7 @@ typedef enum
 /* ch32v00x_flash.h ----------------------------------------------------------*/
 
 
-#ifndef ASSEMBLER
+#ifndef __ASSEMBLER__
 /* FLASH Status */
 typedef enum
 {
@@ -3224,7 +3224,7 @@ typedef enum
 
 /* ch32v00x_gpio.h ------------------------------------------------------------*/
 
-#ifndef ASSEMBLER
+#ifndef __ASSEMBLER__
 
 /* Output Maximum frequency selection */
 typedef enum
@@ -3261,7 +3261,7 @@ typedef enum
 } GPIOMode_TypeDef;
 */
 
-#ifndef ASSEMBLER
+#ifndef __ASSEMBLER__
 
 /* Bit_SET and Bit_RESET enumeration */
 typedef enum
@@ -3594,7 +3594,7 @@ typedef enum
 /* ch32v00x_opa.h ------------------------------------------------------------*/
 
 /* Editor's note: I don't know if this is actually useful */
-#ifndef ASSEMBLER
+#ifndef __ASSEMBLER__
 
 /* OPA PSEL enumeration */
 typedef enum
@@ -4254,7 +4254,7 @@ typedef struct
  extern "C" {
 #endif
 	
-#ifndef ASSEMBLER
+#ifndef __ASSEMBLER__
 
 /* Standard Peripheral Library old types (maintained for legacy purpose) */
 typedef __I uint32_t vuc32;  /* Read Only */
@@ -4345,7 +4345,7 @@ typedef struct
 
 #define SysTick         ((SysTick_Type *) 0xE000F000)
 
-#ifndef ASSEMBLER
+#ifndef __ASSEMBLER__
 
 /*********************************************************************
  * @fn      __enable_irq
@@ -4860,7 +4860,7 @@ extern "C" {
 
 // Stuff that can only be compiled on device (not for the programmer, or other host programs)
 
-#ifndef ASSEMBLER
+#ifndef __ASSEMBLER__
 void handle_reset()            __attribute__((naked)) __attribute((section(".text.handle_reset"))) __attribute__((used));
 void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) __attribute__((naked)) __attribute__((used));
 #endif
@@ -4874,7 +4874,7 @@ void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) 
 #define Delay_Us(n) DelaySysTick( (n) * DELAY_US_TIME )
 #define Delay_Ms(n) DelaySysTick( (n) * DELAY_MS_TIME )
 
-#ifndef ASSEMBLER
+#ifndef __ASSEMBLER__
 
 void DelaySysTick( uint32_t n );
 
