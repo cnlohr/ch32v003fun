@@ -18,8 +18,9 @@ CFLAGS+= \
 LDFLAGS+=-T $(CH32V003FUN)/ch32v003fun.ld -Wl,--gc-sections -L$(CH32V003FUN)/../misc -lgcc
 
 SYSTEM_C:=$(CH32V003FUN)/ch32v003fun.c
+TARGET_EXT?=c
 
-$(TARGET).elf : $(SYSTEM_C) $(TARGET).c $(ADDITIONAL_C_FILES)
+$(TARGET).elf : $(SYSTEM_C) $(TARGET).$(TARGET_EXT) $(ADDITIONAL_C_FILES)
 	$(PREFIX)-gcc -o $@ $^ $(CFLAGS) $(LDFLAGS)
 
 $(TARGET).bin : $(TARGET).elf
