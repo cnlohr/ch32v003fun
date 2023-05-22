@@ -60,6 +60,8 @@ extern "C" {
     #define HSITRIM 0x10
 #endif
 
+#ifndef ASSEMBLER
+
 /* Interrupt Number Definition, according to the selected device */
 typedef enum IRQn
 {
@@ -96,15 +98,17 @@ typedef enum IRQn
 
 } IRQn_Type;
 
-#define HardFault_IRQn    EXC_IRQn
-
 #include <stdint.h>
+#endif
+
+#define HardFault_IRQn    EXC_IRQn
 
 /* Standard Peripheral Library old definitions (maintained for legacy purpose) */
 #define HSI_Value             HSI_VALUE
 #define HSE_Value             HSE_VALUE
 #define HSEStartUp_TimeOut    HSE_STARTUP_TIMEOUT
 
+#ifndef ASSEMBLER
 /* Analog to Digital Converter */
 typedef struct
 {
@@ -363,10 +367,18 @@ typedef struct
     __IO uint32_t EXTEN_CTR;
 } EXTEN_TypeDef;
 
+#endif
+
 /* Peripheral memory map */
+#ifdef ASSEMBLER
+#define FLASH_BASE                              (0x08000000) /* FLASH base address in the alias region */
+#define SRAM_BASE                               (0x20000000) /* SRAM base address in the alias region */
+#define PERIPH_BASE                             (0x40000000) /* Peripheral base address in the alias region */
+#else
 #define FLASH_BASE                              ((uint32_t)0x08000000) /* FLASH base address in the alias region */
 #define SRAM_BASE                               ((uint32_t)0x20000000) /* SRAM base address in the alias region */
 #define PERIPH_BASE                             ((uint32_t)0x40000000) /* Peripheral base address in the alias region */
+#endif
 
 #define APB1PERIPH_BASE                         (PERIPH_BASE)
 #define APB2PERIPH_BASE                         (PERIPH_BASE + 0x10000)
@@ -2799,9 +2811,10 @@ extern "C" {
 /* BDCTLR register base address */
 #define BDCTLR_ADDRESS             (PERIPH_BASE + BDCTLR_OFFSET)
 
+#ifndef ASSEMBLER
 static __I uint8_t APBAHBPrescTable[16] = {1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8};
 static __I uint8_t ADCPrescTable[20] = {2, 4, 6, 8, 4, 8, 12, 16, 8, 16, 24, 32, 16, 32, 48, 64, 32, 64, 96, 128};
-
+#endif
 
 /* ch32v00x_spi.c ------------------------------------------------------------*/
 
@@ -3098,6 +3111,8 @@ static __I uint8_t ADCPrescTable[20] = {2, 4, 6, 8, 4, 8, 12, 16, 8, 16, 24, 32,
 
 /* ch32v00x_exti.h -----------------------------------------------------------*/
 
+#ifndef ASSEMBLER
+
 /* EXTI mode enumeration */
 typedef enum
 {
@@ -3112,6 +3127,8 @@ typedef enum
     EXTI_Trigger_Falling = 0x0C,
     EXTI_Trigger_Rising_Falling = 0x10
 } EXTITrigger_TypeDef;
+
+#endif
 
 /* EXTI_Lines */
 #define EXTI_Line0     ((uint32_t)0x00001) /* External interrupt line 0 */
@@ -3129,6 +3146,7 @@ typedef enum
 /* ch32v00x_flash.h ----------------------------------------------------------*/
 
 
+#ifndef ASSEMBLER
 /* FLASH Status */
 typedef enum
 {
@@ -3138,7 +3156,7 @@ typedef enum
     FLASH_COMPLETE,
     FLASH_TIMEOUT
 } FLASH_Status;
-
+#endif
 
 /* Flash_Latency */
 #define FLASH_Latency_0                  ((uint32_t)0x00000000) /* FLASH Zero Latency cycle */
@@ -3206,6 +3224,8 @@ typedef enum
 
 /* ch32v00x_gpio.h ------------------------------------------------------------*/
 
+#ifndef ASSEMBLER
+
 /* Output Maximum frequency selection */
 typedef enum
 {
@@ -3213,6 +3233,8 @@ typedef enum
     GPIO_Speed_2MHz,
     GPIO_Speed_50MHz
 } GPIOSpeed_TypeDef;
+
+#endif
 
 #define GPIO_SPEED_IN 0
 
@@ -3239,6 +3261,7 @@ typedef enum
 } GPIOMode_TypeDef;
 */
 
+#ifndef ASSEMBLER
 
 /* Bit_SET and Bit_RESET enumeration */
 typedef enum
@@ -3246,6 +3269,8 @@ typedef enum
     Bit_RESET = 0,
     Bit_SET
 } BitAction;
+
+#endif
 
 /* GPIO_pins_define */
 #define GPIO_Pin_0                     ((uint16_t)0x0001) /* Pin 0 selected */
@@ -3569,6 +3594,7 @@ typedef enum
 /* ch32v00x_opa.h ------------------------------------------------------------*/
 
 /* Editor's note: I don't know if this is actually useful */
+#ifndef ASSEMBLER
 
 /* OPA PSEL enumeration */
 typedef enum
@@ -3595,7 +3621,7 @@ typedef struct
 
 /* ch32v00x_pwr.h ------------------------------------------------------------*/
 
-
+#endif
 /* PVD_detection_level  */
 #define PWR_PVDLevel_2V9          ((uint32_t)0x00000000)
 #define PWR_PVDLevel_3V1          ((uint32_t)0x00000020)
@@ -4205,8 +4231,6 @@ typedef struct
 #ifndef __CORE_RISCV_H__
 #define __CORE_RISCV_H__
 
-#include <stdint.h>
-
 /* define compiler specific symbols */
 #if defined(__CC_ARM)
   #define __ASM       __asm     /*!< asm keyword for ARM Compiler          */
@@ -4230,6 +4254,8 @@ typedef struct
  extern "C" {
 #endif
 	
+#ifndef ASSEMBLER
+
 /* Standard Peripheral Library old types (maintained for legacy purpose) */
 typedef __I uint32_t vuc32;  /* Read Only */
 typedef __I uint16_t vuc16;  /* Read Only */
@@ -4309,6 +4335,7 @@ typedef struct
     uint32_t RESERVED1;
 }SysTick_Type;
 
+#endif
 
 #define PFIC            ((PFIC_Type *) 0xE000E000 )
 #define NVIC            PFIC
@@ -4318,6 +4345,7 @@ typedef struct
 
 #define SysTick         ((SysTick_Type *) 0xE000F000)
 
+#ifndef ASSEMBLER
 
 /*********************************************************************
  * @fn      __enable_irq
@@ -4797,7 +4825,7 @@ static inline uint32_t __get_SP(void)
     return (result);
 }
 
-
+#endif
 
 #ifdef __cplusplus
 }
@@ -4809,11 +4837,6 @@ static inline uint32_t __get_SP(void)
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-#ifndef _CH32V003_MISC
-#define _CH32V003_MISC
 
 #ifdef __cplusplus
 extern "C" {
@@ -4837,9 +4860,10 @@ extern "C" {
 
 // Stuff that can only be compiled on device (not for the programmer, or other host programs)
 
+#ifndef ASSEMBLER
 void handle_reset()            __attribute__((naked)) __attribute((section(".text.handle_reset"))) __attribute__((used));
 void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) __attribute__((naked)) __attribute__((used));
-
+#endif
 
 // For debug writing to the debug interface.
 #define DMDATA0 ((volatile uint32_t*)0xe00000f4)
@@ -4847,10 +4871,12 @@ void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) 
 
 #endif
 
-void DelaySysTick( uint32_t n );
-
 #define Delay_Us(n) DelaySysTick( (n) * DELAY_US_TIME )
 #define Delay_Ms(n) DelaySysTick( (n) * DELAY_MS_TIME )
+
+#ifndef ASSEMBLER
+
+void DelaySysTick( uint32_t n );
 
 // Tricky: We need to make sure main and SystemInit() are preserved.
 int main() __attribute__((used));
@@ -4880,8 +4906,9 @@ void WaitForDebuggerToAttach();
 // Just a definition to the internal _write function.
 int _write(int fd, const char *buf, int size);
 
+#endif
+
 #ifdef __cplusplus
 };
 #endif
 
-#endif

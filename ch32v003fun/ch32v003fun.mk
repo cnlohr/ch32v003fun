@@ -42,7 +42,7 @@ monitor :
 	$(MINICHLINK)/minichlink -T
 
 gdbserver : 
-	-$(MINICHLINK)/minichlink -beG
+	-$(MINICHLINK)/minichlink -baG
 
 cv_flash : $(TARGET).bin
 	make -C $(MINICHLINK) all
