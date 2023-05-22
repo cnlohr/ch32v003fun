@@ -321,7 +321,7 @@ typedef struct
 static inline void GPIOset(GPIO_TypeDef *gpio, uint8_t pins) {gpio->BSHR = pins;}
 static inline void GPIOreset(GPIO_TypeDef *gpio, uint8_t pins) {gpio->BCR = pins;}
 static inline void GPIOsetReset(GPIO_TypeDef *gpio, uint8_t set_pins, uint8_t reset_pins) {gpio->BSHR = set_pins|(reset_pins<<16);}
-#define DYN_GPIO_WRITE(gpio, reg, field, value) { const struct reg##_t tmp = {.##field = value ,}; gpio##->##reg = tmp;}
+#define DYN_REG_WRITE(basereg, reg, field, value) { const struct reg##_t tmp = {.##field = value ,}; basereg##->##reg = tmp;}
 
 /* Alternate Function I/O */
 typedef struct
