@@ -7,19 +7,20 @@
 
 class Print {
 public:
-    void doPrint(int);
-    virtual void doNewLine(void) = 0;
-    virtual void printValue(int) = 0;
+	void doPrint(int);
+	virtual void doNewLine(void) = 0;
+	virtual void printValue(int) = 0;
 };
 
 class ExampleClass : public Print {
 public:
-    void begin();
-    int value();
-    void doNewLine(void) override;
-    void printValue(int) override;
+	void begin();
+	int value();
+	void doNewLine(void) override;
+	void printValue(int) override;
+
 private:
-    int _value;
+	int _value;
 };
 
 extern ExampleClass Example;

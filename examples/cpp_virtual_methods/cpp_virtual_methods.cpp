@@ -12,19 +12,19 @@
 #include <stdio.h>
 
 int main() {
-    SystemInit48HSI();
+	SystemInit48HSI();
 
-    // Setup UART @ 115200 baud
-    SetupUART(UART_BRR);
-    Delay_Ms(100);
+	// Setup UART @ 115200 baud
+	SetupUART(UART_BRR);
+	Delay_Ms(100);
 
-    printf("Begin example\n");
+	printf("Begin example\n");
 
-    // Initialize variable in example class
-    Example.begin();
+	// Initialize variable in example class
+	Example.begin();
 
-    while (true) {
-        Example.doPrint(10);
-        Delay_Ms(1000);
-    }
+	while (true) {
+		Example.doPrint(10);
+		Delay_Ms(1000);
+	}
 }

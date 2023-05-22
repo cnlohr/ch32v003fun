@@ -804,13 +804,13 @@ asm volatile(
 	addi a0, a0, 4\n\
 	addi a1, a1, 4\n\
 	bne a1, a2, 1b\n\
-2:\n" );
-
+2:\n"
 #ifdef CPLUSPLUS
-    asm volatile(
-        "call %0 \n\t"        // Call __libc_init_array function
-        : : "i" (__libc_init_array) : );
+	// Call __libc_init_array function
+"	call %0 \n\t"
+: : "i" (__libc_init_array) :
 #endif
+);
 
 	SETUP_SYSTICK_HCLK
 
@@ -997,15 +997,15 @@ extern void (*__init_array_end[]) (void) __attribute__((weak));
 
 void __libc_init_array(void)
 {
-    size_t count;
-    size_t i;
+	size_t count;
+	size_t i;
 
-    count = __preinit_array_end - __preinit_array_start;
-    for (i = 0; i < count; i++)
-        __preinit_array_start[i]();
+	count = __preinit_array_end - __preinit_array_start;
+	for (i = 0; i < count; i++)
+		__preinit_array_start[i]();
 
-    count = __init_array_end - __init_array_start;
-    for (i = 0; i < count; i++)
-        __init_array_start[i]();
+	count = __init_array_end - __init_array_start;
+	for (i = 0; i < count; i++)
+		__init_array_start[i]();
 }
 #endif
