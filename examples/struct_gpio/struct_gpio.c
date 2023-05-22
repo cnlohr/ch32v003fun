@@ -1,4 +1,4 @@
-/* Small example showing how to use the structs for controling GPIO pins */
+/* Small example showing how to use structs for controling GPIO pins */
 
 #define SYSTEM_CORE_CLOCK 48000000
 
@@ -32,7 +32,7 @@ int main()
 		.CNF4 = GPIO_CFGLR_CNF_OUT_PP,
 	};
 
-	// all unconfigured pins are not 0b0000, aka analog inputs with TTL Schmitttrigger disabled
+	// all unconfigured pins are now 0b0000, aka analog inputs with TTL Schmitttrigger disabled
 	printf("CFGLR: %lX\n", GPIOD->CFGLR); // -> CFGLR: 10041
 
 	// GPIO C0 Push-Pull with 2 volatile writes
@@ -51,8 +51,13 @@ int main()
 		GPIOD->BSHR_bits = (struct BSHR_t) {
 			.BS0 = 1,
 			.BR4 = 1,
-		}; // one store
-		GPIOC->BSHR_bits.BS0 = 1; // implicit read->modify->write
+		};
+		// GCC sometimes wants to be dumb and turns this into: write zero, read back, or your value, write
+		// this is more consistent
+		GPIOsetReset(GPIOD, GPIO_Pin_1, GPIO_Pin_4);
+
+		// implicit read->modify->write
+		GPIOC->OUTDR_bits.ODR0 = 1;
 		Delay_Ms( 100 );
 
 		// Turn D0 off and D4 on at the same time
@@ -60,8 +65,15 @@ int main()
 			.BR0 = 1,
 			.BS4 = 1,
 		};
-		// clear C0 in BCR
-		GPIOC->BCR_bits.BR0 = 1;
+
+		// implicit read->modify->write
+		GPIOC->OUTDR_bits.ODR0 = 0;
+		Delay_Ms( 100 );
+
+		// to only set/reset use
+		GPIOset(GPIOD, GPIO_Pin_0);
+		Delay_Ms( 100 );
+		GPIOreset(GPIOD, GPIO_Pin_0);
 		Delay_Ms( 100 );
 	}
 }
