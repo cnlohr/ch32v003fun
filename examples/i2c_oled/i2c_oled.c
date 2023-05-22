@@ -17,6 +17,8 @@
 #include "ssd1306_i2c.h"
 #include "ssd1306.h"
 
+#include "bomb.h"
+
 int main()
 {
 	// 48MHz internal clock
@@ -42,7 +44,7 @@ int main()
 		printf("Looping on test modes...");
 		while(1)
 		{
-			for(uint8_t mode=0;mode<(SSD1306_H>32?8:7);mode++)
+			for(uint8_t mode=0;mode<(SSD1306_H>32?9:8);mode++)
 			{
 				// clear buffer for next mode
 				ssd1306_setbuf(0);
@@ -85,8 +87,11 @@ int main()
 							else
 								ssd1306_fillCircle(x, SSD1306_H/2, 15, 1);
 						break;
-					
 					case 4:
+						printf("Image\n\r");
+						ssd1306_drawImage(0, 0, bomb_i_stripped, 32, 32, 0);
+						break;
+					case 5:
 						printf("Unscaled Text\n\r");
 						ssd1306_drawstr(0,0, "This is a test", 1);
 						ssd1306_drawstr(0,8, "of the emergency", 1);
@@ -102,19 +107,19 @@ int main()
 						ssd1306_xorrect(SSD1306_W/2, 0, SSD1306_W/2, SSD1306_W);
 						break;
 						
-					case 5:
+					case 6:
 						printf("Scaled Text 1, 2\n\r");
 						ssd1306_drawstr_sz(0,0, "sz 8x8", 1, fontsize_8x8);
 						ssd1306_drawstr_sz(0,16, "16x16", 1, fontsize_16x16);
 						break;
 					
-					case 6:
+					case 7:
 						printf("Scaled Text 4\n\r");
 						ssd1306_drawstr_sz(0,0, "32x32", 1, fontsize_32x32);
 						break;
 					
 					
-					case 7:
+					case 8:
 						printf("Scaled Text 8\n\r");
 						ssd1306_drawstr_sz(0,0, "64", 1, fontsize_64x64);
 						break;
