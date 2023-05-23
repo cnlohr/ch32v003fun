@@ -141,7 +141,7 @@ See [here](https://github.com/Community-PIO-CH32V/platform-ch32v) for further de
 
 ## clangd
 
-If clangd is unable to find ch32v003fun.h, the example will have to be built once with `bear -- make`, which will generate a `compile_commands.json`, which clangd uses to find the include paths specified in the Makefiles.
+If the C/C++ language server clangd is unable to find `ch32v003fun.h`, the example will have to be built once with `bear -- make`, which will generate a `compile_commands.json`, which clangd uses to find the include paths specified in the makefiles.
 
 ## Quick Reference
  * Needed for programming/debugging: `SWIO` is on `PD1`
