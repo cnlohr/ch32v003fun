@@ -196,16 +196,132 @@ typedef struct
 } OB_TypeDef;
 
 /* General Purpose I/O */
+typedef enum
+{
+	GPIO_CFGLR_IN_ANALOG = 0,
+	GPIO_CFGLR_IN_FLOAT = 4,
+	GPIO_CFGLR_IN_PUPD = 8,
+	GPIO_CFGLR_OUT_10Mhz_PP = 1,
+	GPIO_CFGLR_OUT_2Mhz_PP = 2,
+	GPIO_CFGLR_OUT_50Mhz_PP = 3,
+	GPIO_CFGLR_OUT_10Mhz_OD = 5,
+	GPIO_CFGLR_OUT_2Mhz_OD = 6,
+	GPIO_CFGLR_OUT_50Mhz_OD = 7,
+	GPIO_CFGLR_OUT_10Mhz_AF_PP = 9,
+	GPIO_CFGLR_OUT_2Mhz_AF_PP = 10,
+	GPIO_CFGLR_OUT_50Mhz_AF_PP = 11,
+	GPIO_CFGLR_OUT_10Mhz_AF_OD = 13,
+	GPIO_CFGLR_OUT_2Mhz_AF_OD = 14,
+	GPIO_CFGLR_OUT_50Mhz_AF_OD = 15,
+} GPIO_CFGLR_PIN_MODE_Typedef;
+
+typedef union {
+	uint32_t __FULL;
+	struct {
+		GPIO_CFGLR_PIN_MODE_Typedef PIN0 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN1 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN2 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN3 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN4 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN5 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN6 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN7 :4;
+	};
+} GPIO_CFGLR_t;
+typedef union {
+	uint32_t __FULL;
+	const struct {
+		uint32_t IDR0 :1;
+		uint32_t IDR1 :1;
+		uint32_t IDR2 :1;
+		uint32_t IDR3 :1;
+		uint32_t IDR4 :1;
+		uint32_t IDR5 :1;
+		uint32_t IDR6 :1;
+		uint32_t IDR7 :1;
+		uint32_t :24;
+	};
+} GPIO_INDR_t;
+typedef union {
+	uint32_t __FULL;
+	struct {
+		uint32_t ODR0 :1;
+		uint32_t ODR1 :1;
+		uint32_t ODR2 :1;
+		uint32_t ODR3 :1;
+		uint32_t ODR4 :1;
+		uint32_t ODR5 :1;
+		uint32_t ODR6 :1;
+		uint32_t ODR7 :1;
+		uint32_t :24;
+	};
+} GPIO_OUTDR_t;
+typedef union {
+	uint32_t __FULL;
+	struct {
+		uint32_t BS0 :1;
+		uint32_t BS1 :1;
+		uint32_t BS2 :1;
+		uint32_t BS3 :1;
+		uint32_t BS4 :1;
+		uint32_t BS5 :1;
+		uint32_t BS6 :1;
+		uint32_t BS7 :1;
+		uint32_t :8;
+		uint32_t BR0 :1;
+		uint32_t BR1 :1;
+		uint32_t BR2 :1;
+		uint32_t BR3 :1;
+		uint32_t BR4 :1;
+		uint32_t BR5 :1;
+		uint32_t BR6 :1;
+		uint32_t BR7 :1;
+		uint32_t :8;
+	};
+} GPIO_BSHR_t;
+typedef union {
+	uint32_t __FULL;
+	struct {
+		uint32_t BR0 :1;
+		uint32_t BR1 :1;
+		uint32_t BR2 :1;
+		uint32_t BR3 :1;
+		uint32_t BR4 :1;
+		uint32_t BR5 :1;
+		uint32_t BR6 :1;
+		uint32_t BR7 :1;
+		uint32_t :24;
+	};
+} GPIO_BCR_t;
+typedef union {
+	uint32_t __FULL;
+	struct {
+		uint32_t LCK0 :1;
+		uint32_t LCK1 :1;
+		uint32_t LCK2 :1;
+		uint32_t LCK3 :1;
+		uint32_t LCK4 :1;
+		uint32_t LCK5 :1;
+		uint32_t LCK6 :1;
+		uint32_t LCK7 :1;
+		uint32_t LCKK :1;
+		uint32_t :23;
+	};
+} GPIO_LCKR_t;
 typedef struct
 {
-    __IO uint32_t CFGLR;
-    __IO uint32_t CFGHR;
-    __IO uint32_t INDR;
-    __IO uint32_t OUTDR;
-    __IO uint32_t BSHR;
-    __IO uint32_t BCR;
-    __IO uint32_t LCKR;
+	__IO uint32_t CFGLR;
+	__IO uint32_t CFGHR;
+	__I  uint32_t INDR;
+	__IO uint32_t OUTDR;
+	__IO uint32_t BSHR;
+	__IO uint32_t BCR;
+	__IO uint32_t LCKR;
 } GPIO_TypeDef;
+
+#define DYN_GPIO_READ(gpio, field) ((GPIO_##field##_t) { .__FULL = gpio->field })
+#define DYN_GPIO_WRITE(gpio, field, ...) gpio->field = ((const GPIO_##field##_t) __VA_ARGS__).__FULL
+#define DYN_GPIO_MOD(gpio, field, reg, val) {GPIO_##field##_t tmp; tmp.__FULL = gpio->field; tmp.reg = val; gpio->field = tmp.__FULL;}
 
 /* Alternate Function I/O */
 typedef struct
