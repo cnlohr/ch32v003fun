@@ -6,7 +6,7 @@
 #define SYSTEM_CORE_CLOCK 48000000
 #define APB_CLOCK SYSTEM_CORE_CLOCK
 
-#include "../../ch32v003fun/ch32v003fun.h"
+#include "ch32v003fun.h"
 #include <stdio.h>
 #include "nrf24l01.h"
 
