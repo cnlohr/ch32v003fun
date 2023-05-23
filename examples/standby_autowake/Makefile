@@ -1,6 +1,6 @@
 all : flash
 
-TARGET:=standby
+TARGET:=standby_autowake
 
 CFLAGS+=-DSTDOUT_UART
 
