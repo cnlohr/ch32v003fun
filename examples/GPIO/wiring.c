@@ -45,7 +45,7 @@ void pinMode(enum GPIOpins pin, enum GPIOpinMode mode) {
 	
 	if (pin <= pin_A2) {
 		GPIOx = GPIOA;
-		PinOffset *= pin;
+		PinOffset *= (pin + 1);
 	}
 	else if (pin <= pin_C7) {
 		GPIOx = GPIOC;
@@ -112,7 +112,7 @@ void digitalWrite(enum GPIOpins pin, uint8_t value) {
 	
 	if (pin <= pin_A2) {
 		GPIOx = GPIOA;
-		PinOffset = pin;
+		PinOffset = (pin + 1);
 	}
 	else if (pin <= pin_C7) {
 		GPIOx = GPIOC;
@@ -142,7 +142,7 @@ uint8_t digitalRead(uint8_t pin) {
 	
 	if (pin <= pin_A2) {
 		GPIOx = GPIOA;
-		PinOffset = pin;
+		PinOffset = (pin + 1);
 	}
 	else if (pin <= pin_C7) {
 		GPIOx = GPIOC;
