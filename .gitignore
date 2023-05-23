@@ -1,5 +1,6 @@
 .pio
 .vscode
+.idea
 *.elf
 *.hex
 *.lst

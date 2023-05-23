@@ -60,7 +60,7 @@ extern "C" {
     #define HSITRIM 0x10
 #endif
 
-#ifndef ASSEMBLER
+#ifndef __ASSEMBLER__
 
 /* Interrupt Number Definition, according to the selected device */
 typedef enum IRQn
@@ -108,7 +108,7 @@ typedef enum IRQn
 #define HSE_Value             HSE_VALUE
 #define HSEStartUp_TimeOut    HSE_STARTUP_TIMEOUT
 
-#ifndef ASSEMBLER
+#ifndef __ASSEMBLER__
 /* Analog to Digital Converter */
 typedef struct
 {
@@ -198,126 +198,130 @@ typedef struct
 /* General Purpose I/O */
 typedef enum
 {
-    GPIO_CFGLR_MODE_IN,
-    GPIO_CFGLR_MODE_OUT_10MHz,
-    GPIO_CFGLR_MODE_OUT_2MHz,
-    GPIO_CFGLR_MODE_OUT_50MHz
-} GPIO_MODE_TypeDef;
-typedef enum
-{
-    GPIO_CFGLR_CNF_IN_ANALOG = 0,
-    GPIO_CFGLR_CNF_IN_FLOAT = 1,
-    GPIO_CFGLR_CNF_IN_PULL_UP_DOWN = 2,
-    GPIO_CFGLR_CNF_OUT_PP = 0,
-    GPIO_CFGLR_CNF_OUT_OD = 1,
-    GPIO_CFGLR_CNF_OUT_AF_PP = 2,
-    GPIO_CFGLR_CNF_OUT_AF_OD = 3,
-} GPIO_CNF_TypeDef;
+	GPIO_CFGLR_IN_ANALOG = 0,
+	GPIO_CFGLR_IN_FLOAT = 4,
+	GPIO_CFGLR_IN_PUPD = 8,
+	GPIO_CFGLR_OUT_10Mhz_PP = 1,
+	GPIO_CFGLR_OUT_2Mhz_PP = 2,
+	GPIO_CFGLR_OUT_50Mhz_PP = 3,
+	GPIO_CFGLR_OUT_10Mhz_OD = 5,
+	GPIO_CFGLR_OUT_2Mhz_OD = 6,
+	GPIO_CFGLR_OUT_50Mhz_OD = 7,
+	GPIO_CFGLR_OUT_10Mhz_AF_PP = 9,
+	GPIO_CFGLR_OUT_2Mhz_AF_PP = 10,
+	GPIO_CFGLR_OUT_50Mhz_AF_PP = 11,
+	GPIO_CFGLR_OUT_10Mhz_AF_OD = 13,
+	GPIO_CFGLR_OUT_2Mhz_AF_OD = 14,
+	GPIO_CFGLR_OUT_50Mhz_AF_OD = 15,
+} GPIO_CFGLR_PIN_MODE_Typedef;
+
+typedef union {
+	uint32_t __FULL;
+	struct {
+		GPIO_CFGLR_PIN_MODE_Typedef PIN0 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN1 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN2 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN3 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN4 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN5 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN6 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN7 :4;
+	};
+} GPIO_CFGLR_t;
+typedef union {
+	uint32_t __FULL;
+	const struct {
+		uint32_t IDR0 :1;
+		uint32_t IDR1 :1;
+		uint32_t IDR2 :1;
+		uint32_t IDR3 :1;
+		uint32_t IDR4 :1;
+		uint32_t IDR5 :1;
+		uint32_t IDR6 :1;
+		uint32_t IDR7 :1;
+		uint32_t :24;
+	};
+} GPIO_INDR_t;
+typedef union {
+	uint32_t __FULL;
+	struct {
+		uint32_t ODR0 :1;
+		uint32_t ODR1 :1;
+		uint32_t ODR2 :1;
+		uint32_t ODR3 :1;
+		uint32_t ODR4 :1;
+		uint32_t ODR5 :1;
+		uint32_t ODR6 :1;
+		uint32_t ODR7 :1;
+		uint32_t :24;
+	};
+} GPIO_OUTDR_t;
+typedef union {
+	uint32_t __FULL;
+	struct {
+		uint32_t BS0 :1;
+		uint32_t BS1 :1;
+		uint32_t BS2 :1;
+		uint32_t BS3 :1;
+		uint32_t BS4 :1;
+		uint32_t BS5 :1;
+		uint32_t BS6 :1;
+		uint32_t BS7 :1;
+		uint32_t :8;
+		uint32_t BR0 :1;
+		uint32_t BR1 :1;
+		uint32_t BR2 :1;
+		uint32_t BR3 :1;
+		uint32_t BR4 :1;
+		uint32_t BR5 :1;
+		uint32_t BR6 :1;
+		uint32_t BR7 :1;
+		uint32_t :8;
+	};
+} GPIO_BSHR_t;
+typedef union {
+	uint32_t __FULL;
+	struct {
+		uint32_t BR0 :1;
+		uint32_t BR1 :1;
+		uint32_t BR2 :1;
+		uint32_t BR3 :1;
+		uint32_t BR4 :1;
+		uint32_t BR5 :1;
+		uint32_t BR6 :1;
+		uint32_t BR7 :1;
+		uint32_t :24;
+	};
+} GPIO_BCR_t;
+typedef union {
+	uint32_t __FULL;
+	struct {
+		uint32_t LCK0 :1;
+		uint32_t LCK1 :1;
+		uint32_t LCK2 :1;
+		uint32_t LCK3 :1;
+		uint32_t LCK4 :1;
+		uint32_t LCK5 :1;
+		uint32_t LCK6 :1;
+		uint32_t LCK7 :1;
+		uint32_t LCKK :1;
+		uint32_t :23;
+	};
+} GPIO_LCKR_t;
 typedef struct
 {
-    __IO union {
-      uint32_t CFGLR;
-      struct CFGLR_t {
-        GPIO_MODE_TypeDef MODE0 :2;
-        GPIO_CNF_TypeDef CNF0 :2;
-        GPIO_MODE_TypeDef MODE1 :2;
-        GPIO_CNF_TypeDef CNF1 :2;
-        GPIO_MODE_TypeDef MODE2 :2;
-        GPIO_CNF_TypeDef CNF2 :2;
-        GPIO_MODE_TypeDef MODE3 :2;
-        GPIO_CNF_TypeDef CNF3 :2;
-        GPIO_MODE_TypeDef MODE4 :2;
-        GPIO_CNF_TypeDef CNF4 :2;
-        GPIO_MODE_TypeDef MODE5 :2;
-        GPIO_CNF_TypeDef CNF5 :2;
-        GPIO_MODE_TypeDef MODE6 :2;
-        GPIO_CNF_TypeDef CNF6 :2;
-        GPIO_MODE_TypeDef MODE7 :2;
-        GPIO_CNF_TypeDef CNF7 :2;
-      } CFGLR_bits;
-    };
-    __IO uint32_t CFGHR;
-    __IO union {
-      uint32_t INDR;
-      struct INDR_t {
-        uint32_t IDR0 :1;
-        uint32_t IDR1 :1;
-        uint32_t IDR2 :1;
-        uint32_t IDR3 :1;
-        uint32_t IDR4 :1;
-        uint32_t IDR5 :1;
-        uint32_t IDR6 :1;
-        uint32_t IDR7 :1;
-        uint32_t :24;
-      } INDR_bits;
-    };
-    __IO union {
-      uint32_t OUTDR;
-      struct OUTDR_t {
-        uint32_t ODR0 :1;
-        uint32_t ODR1 :1;
-        uint32_t ODR2 :1;
-        uint32_t ODR3 :1;
-        uint32_t ODR4 :1;
-        uint32_t ODR5 :1;
-        uint32_t ODR6 :1;
-        uint32_t ODR7 :1;
-        uint32_t :24;
-      } OUTDR_bits;
-    };
-    __IO union {
-      uint32_t BSHR;
-      struct BSHR_t {
-        uint32_t BS0 :1;
-        uint32_t BS1 :1;
-        uint32_t BS2 :1;
-        uint32_t BS3 :1;
-        uint32_t BS4 :1;
-        uint32_t BS5 :1;
-        uint32_t BS6 :1;
-        uint32_t BS7 :1;
-        uint32_t :8;
-        uint32_t BR0 :1;
-        uint32_t BR1 :1;
-        uint32_t BR2 :1;
-        uint32_t BR3 :1;
-        uint32_t BR4 :1;
-        uint32_t BR5 :1;
-        uint32_t BR6 :1;
-        uint32_t BR7 :1;
-        uint32_t :8;
-      } BSHR_bits;
-    };
-    __IO union {
-      uint32_t BCR;
-      struct BCR_t {
-        uint32_t BR0 :1;
-        uint32_t BR1 :1;
-        uint32_t BR2 :1;
-        uint32_t BR3 :1;
-        uint32_t BR4 :1;
-        uint32_t BR5 :1;
-        uint32_t BR6 :1;
-        uint32_t BR7 :1;
-        uint32_t :24;
-      } BCR_bits;
-    };
-    __IO union {
-      uint32_t LCKR;
-      struct LCKR_t {
-        uint32_t LCK0 :1;
-        uint32_t LCK1 :1;
-        uint32_t LCK2 :1;
-        uint32_t LCK3 :1;
-        uint32_t LCK4 :1;
-        uint32_t LCK5 :1;
-        uint32_t LCK6 :1;
-        uint32_t LCK7 :1;
-        uint32_t LCKK :1;
-        uint32_t :23;
-      } LCK_bits;
-    };
+	__IO uint32_t CFGLR;
+	__IO uint32_t CFGHR;
+	__I  uint32_t INDR;
+	__IO uint32_t OUTDR;
+	__IO uint32_t BSHR;
+	__IO uint32_t BCR;
+	__IO uint32_t LCKR;
 } GPIO_TypeDef;
+
+#define DYN_GPIO_READ(gpio, field) ((GPIO_##field##_t) { .__FULL = gpio->field })
+#define DYN_GPIO_WRITE(gpio, field, ...) gpio->field = ((const GPIO_##field##_t) __VA_ARGS__).__FULL
+#define DYN_GPIO_MOD(gpio, field, reg, val) {GPIO_##field##_t tmp; tmp.__FULL = gpio->field; tmp.reg = val; gpio->field = tmp.__FULL;}
 
 /* Alternate Function I/O */
 typedef struct
@@ -482,7 +486,7 @@ typedef struct
 #endif
 
 /* Peripheral memory map */
-#ifdef ASSEMBLER
+#ifdef __ASSEMBLER__
 #define FLASH_BASE                              (0x08000000) /* FLASH base address in the alias region */
 #define SRAM_BASE                               (0x20000000) /* SRAM base address in the alias region */
 #define PERIPH_BASE                             (0x40000000) /* Peripheral base address in the alias region */
@@ -2923,7 +2927,7 @@ extern "C" {
 /* BDCTLR register base address */
 #define BDCTLR_ADDRESS             (PERIPH_BASE + BDCTLR_OFFSET)
 
-#ifndef ASSEMBLER
+#ifndef __ASSEMBLER__
 static __I uint8_t APBAHBPrescTable[16] = {1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8};
 static __I uint8_t ADCPrescTable[20] = {2, 4, 6, 8, 4, 8, 12, 16, 8, 16, 24, 32, 16, 32, 48, 64, 32, 64, 96, 128};
 #endif
@@ -3223,7 +3227,7 @@ static __I uint8_t ADCPrescTable[20] = {2, 4, 6, 8, 4, 8, 12, 16, 8, 16, 24, 32,
 
 /* ch32v00x_exti.h -----------------------------------------------------------*/
 
-#ifndef ASSEMBLER
+#ifndef __ASSEMBLER__
 
 /* EXTI mode enumeration */
 typedef enum
@@ -3258,7 +3262,7 @@ typedef enum
 /* ch32v00x_flash.h ----------------------------------------------------------*/
 
 
-#ifndef ASSEMBLER
+#ifndef __ASSEMBLER__
 /* FLASH Status */
 typedef enum
 {
@@ -3336,7 +3340,7 @@ typedef enum
 
 /* ch32v00x_gpio.h ------------------------------------------------------------*/
 
-#ifndef ASSEMBLER
+#ifndef __ASSEMBLER__
 
 /* Output Maximum frequency selection */
 typedef enum
@@ -3373,7 +3377,7 @@ typedef enum
 } GPIOMode_TypeDef;
 */
 
-#ifndef ASSEMBLER
+#ifndef __ASSEMBLER__
 
 /* Bit_SET and Bit_RESET enumeration */
 typedef enum
@@ -3706,7 +3710,7 @@ typedef enum
 /* ch32v00x_opa.h ------------------------------------------------------------*/
 
 /* Editor's note: I don't know if this is actually useful */
-#ifndef ASSEMBLER
+#ifndef __ASSEMBLER__
 
 /* OPA PSEL enumeration */
 typedef enum
@@ -4366,7 +4370,7 @@ typedef struct
  extern "C" {
 #endif
 	
-#ifndef ASSEMBLER
+#ifndef __ASSEMBLER__
 
 /* Standard Peripheral Library old types (maintained for legacy purpose) */
 typedef __I uint32_t vuc32;  /* Read Only */
@@ -4457,7 +4461,7 @@ typedef struct
 
 #define SysTick         ((SysTick_Type *) 0xE000F000)
 
-#ifndef ASSEMBLER
+#ifndef __ASSEMBLER__
 
 /*********************************************************************
  * @fn      __enable_irq
@@ -4972,7 +4976,7 @@ extern "C" {
 
 // Stuff that can only be compiled on device (not for the programmer, or other host programs)
 
-#ifndef ASSEMBLER
+#ifndef __ASSEMBLER__
 void handle_reset()            __attribute__((naked)) __attribute((section(".text.handle_reset"))) __attribute__((used));
 void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) __attribute__((naked)) __attribute__((used));
 #endif
@@ -4986,7 +4990,7 @@ void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) 
 #define Delay_Us(n) DelaySysTick( (n) * DELAY_US_TIME )
 #define Delay_Ms(n) DelaySysTick( (n) * DELAY_MS_TIME )
 
-#ifndef ASSEMBLER
+#ifndef __ASSEMBLER__
 
 void DelaySysTick( uint32_t n );
 

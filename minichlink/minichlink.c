@@ -11,6 +11,12 @@
 #include "minichlink.h"
 #include "../ch32v003fun/ch32v003fun.h"
 
+#if defined(WINDOWS) || defined(WIN32) || defined(_WIN32)
+#else
+#include <unistd.h>
+#endif
+
+
 static int64_t StringToMemoryAddress( const char * number ) __attribute__((used));
 static void StaticUpdatePROGBUFRegs( void * dev ) __attribute__((used));
 static int InternalUnlockBootloader( void * dev ) __attribute__((used));
@@ -1564,9 +1570,21 @@ int DefaultUnbrick( void * dev )
 
 //  Many times we would clear the halt request, but in this case, we want to just leave it here, to prevent it from booting.
 //  TODO: Experiment and see if this is needed/wanted in cases.  NOTE: If you don't clear halt request, progarmmers can get stuck.
-	MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
+//	MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
+
+	// After more experimentation, it appaers to work best by not clearing the halt request.
 
 	MCF.FlushLLCommands( dev );
+	if( MCF.DelayUS )
+		MCF.DelayUS( dev, 20000 );
+	else
+	{
+#if defined(WINDOWS) || defined(WIN32) || defined(_WIN32)
+		Sleep(20);
+#else
+		usleep(20000);
+#endif
+	}
 
 	if( timeout == max_timeout ) 
 	{

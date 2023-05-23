@@ -19,8 +19,8 @@ else
 	ifeq ($(OS_NAME),darwin)
 		LDFLAGS:=-lpthread -lusb-1.0 -framework CoreFoundation -framework IOKit
 		CFLAGS:=-O0 -Wall -Wno-asm-operand-widths -Wno-deprecated-declarations -Wno-deprecated-non-prototype -D__MACOSX__
-		INCLUDES:=-I /opt/homebrew/Cellar/libusb/1.0.26/include/libusb-1.0
-		LIBINCLUDES:=-L /opt/homebrew/Cellar/libusb/1.0.26/lib 
+		INCLUDES:=$(shell pkg-config --cflags-only-I libusb-1.0)
+		LIBINCLUDES:=$(shell pkg-config --libs-only-L libusb-1.0)
 		INCS:=$(INCLUDES) $(LIBINCLUDES)
 	endif
 endif
