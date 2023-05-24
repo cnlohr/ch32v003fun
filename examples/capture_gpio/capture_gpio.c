@@ -42,11 +42,12 @@ int main()
 									 // (GPIO_CFGLR_t) is optional but helps vscode with completion
 									 .PIN0 = GPIO_CFGLR_OUT_10Mhz_PP,
 									 .PIN1 = GPIO_CFGLR_IN_FLOAT,
+									 .PIN2 = GPIO_CFGLR_IN_FLOAT,
 									 .PIN4 = GPIO_CFGLR_OUT_10Mhz_PP,
-									 .PIN6 = GPIO_CFGLR_IN_FLOAT,
 								 });
 
 	TIM1->ATRLR = 0xffff;
+	TIM1->PSC = 63000;
 
 	DYN_TIM_WRITE(TIM1, CHCTLR1, (TIM_CHCTLR1_t){.chctlr1_input_bits = {
 													 .IC1F = 0000, .IC2PSC = 0,
@@ -60,27 +61,28 @@ int main()
 								   .CEN = 1,
 							   });
 
-	// capture
-	DYN_TIM_READ(TIM1, INTFR).CC1IF;
-	// clear
-	// read ctr?
-
-	// overflow
-	DYN_TIM_READ(TIM1, INTFR).CC1OF;
-	// clear
-	DYN_TIM_WRITE(TIM1, INTFR, (TIM_INTFR_t){.CC1OF = 1});
-
 	while (1)
 	{
-		// get capture
-		printf("%lu, %lu\n", TIM1->CNT, TIM1->CH1CVR); // count, capture valur
+		// capture
+		if (DYN_TIM_READ(TIM1, INTFR).CC1IF)
+		{
+			// get capture
+			printf("%lu, %lu\n", TIM1->CNT, TIM1->CH1CVR); // count, capture valur
+														   // overflow
+			if (DYN_TIM_READ(TIM1, INTFR).CC1OF)
+			{
+				// clear
+				DYN_TIM_WRITE(TIM1, INTFR, (TIM_INTFR_t){.CC1OF = 1});
+				printf("OF\n");
+			}
+		}
 
 		// Turn D0 on and D4 off at the same time
 		DYN_GPIO_WRITE(GPIOD, BSHR, (GPIO_BSHR_t){.BS0 = 1, .BR4 = 1});
-		//Delay_Ms(100);
+		// Delay_Ms(100);
 
 		// Turn D0 off and D4 on at the same time
 		DYN_GPIO_WRITE(GPIOD, BSHR, (GPIO_BSHR_t){.BR0 = 1, .BS4 = 1});
-		//Delay_Ms(100);
+		// Delay_Ms(100);
 	}
 }
