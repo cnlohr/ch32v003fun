@@ -824,7 +824,7 @@ void SystemInit48HSI( void )
 {
 	// Values lifted from the EVT.  There is little to no documentation on what this does.
 	RCC->CFGR0 = RCC_HPRE_DIV1 | RCC_PLLSRC_HSI_Mul2;      // PLLCLK = HSI * 2 = 48 MHz; HCLK = SYSCLK = APB1
-	RCC->CTLR  = RCC_HSION | RCC_PLLON | ((HSITRIM) << 3); // Use HSI, but enable PLL.
+	RCC->CTLR  = RCC_HSION | RCC_PLLON | ((HSITRIM_DEFAULT) << 3); // Use HSI, but enable PLL.
 	FLASH->ACTLR = FLASH_ACTLR_LATENCY_1;                  // 1 Cycle Latency
 	RCC->INTR  = 0x009F0000;                               // Clear PLL, CSSC, HSE, HSI and LSI ready flags.
 
@@ -838,7 +838,7 @@ void SystemInit24HSI( void )
 {
 	// Values lifted from the EVT.  There is little to no documentation on what this does.
 	RCC->CFGR0 = RCC_HPRE_DIV1;                // PLLCLK = HCLK = SYSCLK = APB1
-	RCC->CTLR  = RCC_HSION | ((HSITRIM) << 3); // Use HSI, Only.
+	RCC->CTLR  = RCC_HSION | ((HSITRIM_DEFAULT) << 3); // Use HSI, Only.
 	FLASH->ACTLR = FLASH_ACTLR_LATENCY_0;      // 1 Cycle Latency
 	RCC->INTR  = 0x009F0000;                   // Clear PLL, CSSC, HSE, HSI and LSI ready flags.
 }
