@@ -14,14 +14,29 @@ enum lowhigh {
 
 enum GPIOports{
 	port_A,
+	port_B,
 	port_C,
 	port_D,
 	port_none,
 };
 
 enum GPIOpins{
+	pin_A0,
 	pin_A1,
 	pin_A2,
+	pin_A3,
+	pin_A4,
+	pin_A5,
+	pin_A6,
+	pin_A7,
+	pin_B0,
+	pin_B1,
+	pin_B2,
+	pin_B3,
+	pin_B4,
+	pin_B5,
+	pin_B6,
+	pin_B7,
 	pin_C0,
 	pin_C1,
 	pin_C2,

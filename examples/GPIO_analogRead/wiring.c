@@ -6,8 +6,11 @@
 
 
 enum GPIOports getPort (enum GPIOpins pin) {
-	if (pin <= pin_A2) {
+	if (pin <= pin_A7) {
 		return port_A;
+	}
+	else if (pin <= pin_B7) {
+		return port_B;
 	}
 	else if (pin <= pin_C7) {
 		return port_C;
@@ -26,6 +29,8 @@ void portEnable(enum GPIOports port) {
 		case port_A:
 			RCC->APB2PCENR |= RCC_APB2Periph_GPIOA;
 			break;
+		case port_B:
+			break;
 		case port_C:
 			RCC->APB2PCENR |= RCC_APB2Periph_GPIOC;
 			break;
@@ -41,19 +46,23 @@ void portEnable(enum GPIOports port) {
 
 void pinMode(enum GPIOpins pin, enum GPIOpinMode mode) {
 	GPIO_TypeDef * GPIOx;
-	uint16_t PinOffset = 4;
-	
-	if (pin <= pin_A2) {
+	uint16_t PinOffset = 0;
+
+	if (pin <= pin_A7) {
 		GPIOx = GPIOA;
-		PinOffset *= pin;
+		PinOffset = pin << 2;
+	}
+	else if (pin <= pin_B7) { /* GPIOB doesn't actually exist (yet?)
+		GPIOx = GPIOB;
+		PinOffset = (pin-8) << 2; */
 	}
 	else if (pin <= pin_C7) {
 		GPIOx = GPIOC;
-		PinOffset *= (pin - 2);
+		PinOffset = (pin - 16) << 2;
 	}
 	else if (pin <= pin_D7) {
 		GPIOx = GPIOD;
-		PinOffset *= (pin - 10);
+		PinOffset = (pin - 24) << 2;
 	}
 	else {
 		return;
@@ -114,13 +123,17 @@ void digitalWrite(enum GPIOpins pin, uint8_t value) {
 		GPIOx = GPIOA;
 		PinOffset = pin;
 	}
+	else if (pin <= pin_B7) { /* GPIOB doesn't exist (yet?)
+		GPIOx = GPIOB;
+		PinOffset = (pin - 8); */
+	}
 	else if (pin <= pin_C7) {
 		GPIOx = GPIOC;
-		PinOffset = (pin - 2);
+		PinOffset = (pin - 16);
 	}
 	else if (pin <= pin_D7) {
 		GPIOx = GPIOD;
-		PinOffset = (pin - 10);
+		PinOffset = (pin - 24);
 	}
 	else {
 		return;
@@ -144,13 +157,17 @@ uint8_t digitalRead(uint8_t pin) {
 		GPIOx = GPIOA;
 		PinOffset = pin;
 	}
+	else if (pin <= pin_B7) { /* GPIOB doesn't exist (yet?)
+		GPIOx = GPIOB;
+		PinOffset = (pin - 8); */
+	}
 	else if (pin <= pin_C7) {
 		GPIOx = GPIOC;
-		PinOffset = (pin - 2);
+		PinOffset = (pin - 16);
 	}
 	else if (pin <= pin_D7) {
 		GPIOx = GPIOD;
-		PinOffset = (pin - 10);
+		PinOffset = (pin - 24);
 	}
 	else {
 		return 0;
