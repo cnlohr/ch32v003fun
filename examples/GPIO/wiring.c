@@ -6,11 +6,8 @@
 
 
 enum GPIOports getPort (enum GPIOpins pin) {
-	if (pin <= pin_A7) {
+	if (pin <= pin_A2) {
 		return port_A;
-	}
-	else if (pin <= pin_B7) {
-		return port_B;
 	}
 	else if (pin <= pin_C7) {
 		return port_C;
@@ -28,8 +25,6 @@ void portEnable(enum GPIOports port) {
 	switch (port) {
 		case port_A:
 			RCC->APB2PCENR |= RCC_APB2Periph_GPIOA;
-			break;
-		case port_B:
 			break;
 		case port_C:
 			RCC->APB2PCENR |= RCC_APB2Periph_GPIOC;
@@ -106,10 +101,6 @@ void digitalWrite(enum GPIOpins pin, uint8_t value) {
 		GPIOx = GPIOA;
 		PinOffset = pin;
 	}
-	else if (pin <= pin_B7) { /* GPIOB doesn't exist (yet?)
-		GPIOx = GPIOB;
-		PinOffset = (pin - 8); */
-	}
 	else if (pin <= pin_C7) {
 		GPIOx = GPIOC;
 		PinOffset = (pin - 16);
@@ -139,10 +130,6 @@ uint8_t digitalRead(uint8_t pin) {
 	if (pin <= pin_A2) {
 		GPIOx = GPIOA;
 		PinOffset = pin;
-	}
-	else if (pin <= pin_B7) { /* GPIOB doesn't exist (yet?)
-		GPIOx = GPIOB;
-		PinOffset = (pin - 8); */
 	}
 	else if (pin <= pin_C7) {
 		GPIOx = GPIOC;
