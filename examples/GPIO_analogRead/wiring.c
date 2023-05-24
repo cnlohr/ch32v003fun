@@ -43,36 +43,18 @@ void portEnable(enum GPIOports port) {
 }
 
 
-
 void pinMode(enum GPIOpins pin, enum GPIOpinMode mode) {
 	GPIO_TypeDef * GPIOx;
-	uint16_t PinOffset = 0;
+	uint16_t PinOffset;
 
-	if (pin <= pin_A7) {
-		GPIOx = GPIOA;
-		PinOffset = pin << 2;
-	}
-	else if (pin <= pin_B7) { /* GPIOB doesn't actually exist (yet?)
-		GPIOx = GPIOB;
-		PinOffset = (pin-8) << 2; */
-	}
-	else if (pin <= pin_C7) {
-		GPIOx = GPIOC;
-		PinOffset = (pin - 16) << 2;
-	}
-	else if (pin <= pin_D7) {
-		GPIOx = GPIOD;
-		PinOffset = (pin - 24) << 2;
-	}
-	else {
-		return;
-	}
+	GPIOx = GPIOA+(pin>>3);
+	PinOffset = (pin & 0x7)<<2;
 
 	GPIOx->CFGLR &= ~(0b1111<<PinOffset);							// zero the 4 configuration bits
 	
 	uint8_t target_pin_state = pinState_nochange;					// by default, pin shall retain its state
 
-	uint8_t modeMask = 0;												// configuration mask
+	uint8_t modeMask = 0;												// configuration mask										// configuration mask
 
 	switch (mode) {
 		case pinMode_I_floating:
