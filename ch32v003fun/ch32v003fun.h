@@ -4989,8 +4989,6 @@ extern "C" {
 
 
 
-#ifndef __ASSEMBLER__
-
 #if defined(__riscv) || defined(__riscv__) || defined( CH32V003FUN_BASE )
 
 // Stuff that can only be compiled on device (not for the programmer, or other host programs)
@@ -5007,6 +5005,8 @@ void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) 
 #endif
 
 
+
+#ifndef __ASSEMBLER__
 
 void DelaySysTick( uint32_t n );
 
