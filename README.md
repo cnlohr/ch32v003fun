@@ -139,6 +139,12 @@ This project can also be built, uploaded and debugged with VSCode and the Platfo
 
 See [here](https://github.com/Community-PIO-CH32V/platform-ch32v) for further details.
 
+## clangd
+
+If the C/C++ language server clangd is unable to find `ch32v003fun.h`, the example will have to be wiped `make clean` and built once with `bear -- make build`, which will generate a `compile_commands.json`, which clangd uses to find the include paths specified in the makefiles.  
+`make clangd` does this in one step.
+`build_all_clangd.sh` does in `build scripts` does this for all examples.
+
 ## Quick Reference
  * Needed for programming/debugging: `SWIO` is on `PD1`
  * Optional (not needed, can be configured as output if fuse set): `NRST` is on `PD7`

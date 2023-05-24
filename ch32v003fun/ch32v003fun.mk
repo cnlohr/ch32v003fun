@@ -46,6 +46,13 @@ monitor :
 gdbserver : 
 	-$(MINICHLINK)/minichlink -baG
 
+clangd :
+	make clean
+	bear -- make build
+
+clangd_clean :
+	rm -f compile_commands.json
+
 cv_flash : $(TARGET).bin
 	make -C $(MINICHLINK) all
 	$(MINICHLINK)/minichlink -w $< flash -b
