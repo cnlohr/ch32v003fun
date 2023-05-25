@@ -93,7 +93,7 @@ int main()
 								 });
 
 	TIM1->ATRLR = 0xffff;
-	TIM1->PSC = 63; // 64MHz/(63+1) -> 1µs resolution
+	TIM1->PSC = 47; // 48MHz/(47+1) -> 1µs resolution
 
 	DYN_TIM_WRITE(TIM1, CHCTLR1, (TIM_CHCTLR1_t){.chctlr1_input_bits = {
 													 .IC1F = 0000, .IC1PSC = 0,
