@@ -1,4 +1,4 @@
-/* Small example showing how to use structs for controling GPIO pins */
+/* Small example showing how to capture timer values on gpio edges */
 
 #define SYSTEM_CORE_CLOCK 48000000
 
