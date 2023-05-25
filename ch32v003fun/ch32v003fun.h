@@ -747,7 +747,7 @@ typedef struct
     uint16_t      RESERVED2;
     __IO uint16_t DMAINTENR;
     uint16_t      RESERVED3;
-    __O  uint16_t INTFR;
+    __IO uint16_t INTFR;
     uint16_t      RESERVED4;
     __O  uint16_t SWEVGR;
     uint16_t      RESERVED5;
