@@ -67,7 +67,7 @@ int main()
 	DYN_RCC_WRITE(APB2PRSTR, (RCC_APB2PRSTR_t){.TIM1RST = 1});
 	DYN_RCC_WRITE(APB2PRSTR, (RCC_APB2PRSTR_t){.TIM1RST = 0});
 
-	// GPIO D0, D4 Push-Pull LEDs, D1/SWIO floating, D6 Capture Input, default analog input
+	// GPIO D0, D4 Push-Pull LEDs, D1/SWIO floating, D2 Capture Input(T1CH1), default analog input
 	DYN_GPIO_WRITE(GPIOD, CFGLR, (GPIO_CFGLR_t){
 									 // (GPIO_CFGLR_t) is optional but helps vscode with completion
 									 .PIN0 = GPIO_CFGLR_OUT_10Mhz_PP,
@@ -77,7 +77,7 @@ int main()
 								 });
 
 	TIM1->ATRLR = 0xffff;
-	TIM1->PSC = 63; // 1µs
+	TIM1->PSC = 63; // 64MHz/(63+1) -> 1µs resolution
 
 	DYN_TIM_WRITE(TIM1, CHCTLR1, (TIM_CHCTLR1_t){.chctlr1_input_bits = {
 													 .IC1F = 0000, .IC2PSC = 0,
@@ -85,7 +85,7 @@ int main()
 												 }});
 	DYN_TIM_WRITE(TIM1, CCER, (TIM_CCER_t){
 								  .CC1E = 1,
-								  .CC1P = 0, // CCxP polarity, 0 -> rising edge
+								  .CC1P = 1, // CCxP polarity, 0 -> rising edge
 							  });
 	DYN_TIM_WRITE(TIM1, CTLR1, (TIM_CTLR1_t){
 								   .CEN = 1,
