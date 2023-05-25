@@ -7,7 +7,37 @@
 
 #define APB_CLOCK SYSTEM_CORE_CLOCK
 
-uint32_t count;
+// static const size_t queuelen = 16;
+#define queuelen 16
+volatile uint16_t captureVals[queuelen];
+volatile size_t read = 0;
+volatile size_t write = 0;
+
+void TIM1_CC_IRQHandler(void) __attribute__((interrupt));
+void TIM1_CC_IRQHandler(void)
+{
+	// capture
+	if (DYN_TIM_READ(TIM1, INTFR).CC1IF)
+	{
+		// get capture
+		captureVals[write++] = TIM1->CH1CVR; // capture valur
+		if (write == queuelen)
+		{
+			write = 0;
+		}
+		// overflow
+		if (DYN_TIM_READ(TIM1, INTFR).CC1OF)
+		{
+			// clear
+			DYN_TIM_WRITE(TIM1, INTFR, (TIM_INTFR_t){.CC1OF = 1});
+			printf("OF\n");
+		}
+	}
+	else
+	{
+		printf("badtrigger\n");
+	}
+}
 
 int main()
 {
@@ -47,7 +77,7 @@ int main()
 								 });
 
 	TIM1->ATRLR = 0xffff;
-	TIM1->PSC = 63000;
+	TIM1->PSC = 63; // 1µs
 
 	DYN_TIM_WRITE(TIM1, CHCTLR1, (TIM_CHCTLR1_t){.chctlr1_input_bits = {
 													 .IC1F = 0000, .IC2PSC = 0,
@@ -61,25 +91,31 @@ int main()
 								   .CEN = 1,
 							   });
 
+	NVIC_EnableIRQ(TIM1_CC_IRQn);
+	DYN_TIM_WRITE(TIM1, DMAINTENR, (TIM_DMAINTENR_t){.CC1IE = 1});
+	//__enable_irq();
+
 	while (1)
 	{
-		// capture
-		if (DYN_TIM_READ(TIM1, INTFR).CC1IF)
+		if (read < write)
 		{
-			// get capture
-			printf("%lu, %lu\n", TIM1->CNT, TIM1->CH1CVR); // count, capture valur
-														   // overflow
-			if (DYN_TIM_READ(TIM1, INTFR).CC1OF)
+			printf("capture %u\n", captureVals[read++]);
+			if (read == queuelen)
 			{
-				// clear
-				DYN_TIM_WRITE(TIM1, INTFR, (TIM_INTFR_t){.CC1OF = 1});
-				printf("OF\n");
+				read = 0;
 			}
 		}
 
 		// Turn D0 on and D4 off at the same time
 		DYN_GPIO_WRITE(GPIOD, BSHR, (GPIO_BSHR_t){.BS0 = 1, .BR4 = 1});
 		// Delay_Ms(100);
+
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
 
 		// Turn D0 off and D4 on at the same time
 		DYN_GPIO_WRITE(GPIOD, BSHR, (GPIO_BSHR_t){.BR0 = 1, .BS4 = 1});
