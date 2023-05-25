@@ -56,8 +56,8 @@ extern "C" {
 
 #define HSI_VALUE                 ((uint32_t)24000000) /* Value of the Internal oscillator in Hz */
 
-#ifndef HSITRIM
-    #define HSITRIM 0x10
+#ifndef HSITRIM_DEFAULT
+    #define HSITRIM_DEFAULT 0x10
 #endif
 
 #ifndef __ASSEMBLER__
@@ -372,6 +372,153 @@ typedef struct
 } PWR_TypeDef;
 
 /* Reset and Clock Control */
+typedef union {
+	uint16_t __FULL;
+	struct {
+		uint32_t HSION :1;
+		uint32_t HSIRDY :1;
+		uint32_t :1;
+		uint32_t HSITRIM :5;
+		uint32_t HSICAL :8;
+		uint32_t HSEON :1;
+		uint32_t HSERDY :1;
+		uint32_t HSEBYP :1;
+		uint32_t CSSON :1;
+		uint32_t :4;
+		uint32_t PLLON :1;
+		uint32_t PLLRDY :1;
+		uint32_t :6;
+	};
+} RCC_CTLR_t;
+typedef union {
+	uint16_t __FULL;
+	struct {
+		uint32_t SW :2;
+		uint32_t SWS :2;
+		uint32_t HPRE :4;
+		uint32_t PPRE1 :3;
+		uint32_t PPRE2 :3;
+		uint32_t ADCPRE :2;
+		uint32_t PLLSRC :1;
+		uint32_t :7;
+		uint32_t MCO :3;
+		uint32_t :5;
+	};
+} RCC_CFGR0_t;
+typedef union {
+	uint16_t __FULL;
+	struct {
+		uint32_t LSIRDYF :1;
+		uint32_t :1;
+		uint32_t HSIRDYF :1;
+		uint32_t HSERDYF :1;
+		uint32_t PLLRDYF :1;
+		uint32_t :2;
+		uint32_t CSSF :1;
+		uint32_t LSIRDYIE :1;
+		uint32_t :1;
+		uint32_t HSIRDYIE :1;
+		uint32_t HSERDYIE :1;
+		uint32_t PLLRDYIE :1;
+		uint32_t :3;
+		uint32_t LSIRDYC :1;
+		uint32_t :1;
+		uint32_t HSIRDYC :1;
+		uint32_t HSERDYC :1;
+		uint32_t PLLRDYC :1;
+		uint32_t :2;
+		uint32_t CSSC :1;
+		uint32_t :8;
+	};
+} RCC_INTR_t;
+typedef union {
+	uint16_t __FULL;
+	struct {
+		uint32_t AFIORST :1;
+		uint32_t :1;
+		uint32_t IOPARST :1;
+		uint32_t :1;
+		uint32_t IOPCRST :1;
+		uint32_t IOPDRST :1;
+		uint32_t :3;
+		uint32_t ADC1RST :1;
+		uint32_t :1;
+		uint32_t TIM1RST :1;
+		uint32_t SPI1RST :1;
+		uint32_t :1;
+		uint32_t USART1RST :1;
+		uint32_t :17;
+	};
+} RCC_APB2PRSTR_t;
+typedef union {
+	uint16_t __FULL;
+	struct {
+		uint32_t :11;
+		uint32_t WWDGRST :1;
+		uint32_t :9;
+		uint32_t I2C1RST :1;
+		uint32_t :6;
+		uint32_t PWRRST :1;
+		uint32_t :3;
+	};
+} RCC_APB1PRSTR_t;
+typedef union {
+	uint16_t __FULL;
+	struct {
+		uint32_t DMA1EN :1;
+		uint32_t :1;
+		uint32_t SRAMEN :1;
+		uint32_t :29;
+	};
+} RCC_AHBPCENR_t;
+typedef union {
+	uint16_t __FULL;
+	struct {
+		uint32_t AFIOEN :1;
+		uint32_t :1;
+		uint32_t IOPAEN :1;
+		uint32_t :1;
+		uint32_t IOPCEN :1;
+		uint32_t IOPDEN :1;
+		uint32_t :3;
+		uint32_t ADC1EN :1;
+		uint32_t :1;
+		uint32_t TIM1EN :1;
+		uint32_t SPI1EN :1;
+		uint32_t :1;
+		uint32_t USART1EN :1;
+		uint32_t :17;
+	};
+} RCC_APB2PCENR_t;
+typedef union {
+	uint16_t __FULL;
+	struct {
+		uint32_t TIM2EN :1;
+		uint32_t :10;
+		uint32_t WWDGEN :1;
+		uint32_t :9;
+		uint32_t I2C1EN :1;
+		uint32_t :6;
+		uint32_t PWREN :1;
+		uint32_t :3;
+	};
+} RCC_APB1PCENR_t;
+typedef union {
+	uint16_t __FULL;
+	struct {
+		uint32_t LSION :1;
+		uint32_t LSIRDY :1;
+		uint32_t :22;
+		uint32_t RMVF :1;
+		uint32_t :1;
+		uint32_t PINRSTF :1;
+		uint32_t PORRSTF :1;
+		uint32_t SFTRSTF :1;
+		uint32_t IWDGRSTF :1;
+		uint32_t WWDGRSTF :1;
+		uint32_t LPWRRSTF :1;
+	};
+} RCC_RSTSCKR_t;
 typedef struct
 {
     __IO uint32_t CTLR;
@@ -385,6 +532,9 @@ typedef struct
     __IO uint32_t RESERVED0;
     __IO uint32_t RSTSCKR;
 } RCC_TypeDef;
+#define DYN_RCC_READ(field) ((RCC_##field##_t) { .__FULL = RCC->field })
+#define DYN_RCC_WRITE(field, ...) RCC->field = ((const RCC_##field##_t) __VA_ARGS__).__FULL
+#define DYN_RCC_MOD(field, reg, val) {RCC_##field##_t tmp; tmp.__FULL = RCC->field; tmp.reg = val; RCC->field = tmp.__FULL;}
 
 /* Serial Peripheral Interface */
 typedef struct
@@ -410,6 +560,183 @@ typedef struct
 } SPI_TypeDef;
 
 /* TIM */
+typedef union {
+	uint16_t __FULL;
+	struct {
+		uint32_t CEN :1;
+		uint32_t UDIS :1;
+		uint32_t URS :1;
+		uint32_t OPM :1;
+		uint32_t DIR :1;
+		uint32_t CMS :2;
+		uint32_t ARPE :1;
+		uint32_t CKD :2;
+		uint32_t :4;
+		uint32_t TMR_CAP_OV_EN :1;
+		uint32_t TMR_CAP_LVL_EN :1;
+	};
+} TIM_CTLR1_t;
+
+typedef union {
+	uint16_t __FULL;
+	struct {
+		uint32_t :3;
+		uint32_t CCDS :1;
+		uint32_t MMS :3;
+		uint32_t TI1S :1;
+		uint32_t :8;
+	};
+} TIM_CTLR2_t;
+
+typedef union {
+	uint16_t __FULL;
+	struct {
+		uint32_t SMS :3;
+		uint32_t :1;
+		uint32_t TS :3;
+		uint32_t MSM :1;
+		uint32_t ETF :4;
+		uint32_t ETPS :2;
+		uint32_t ECE :1;
+		uint32_t ETP :1;
+	};
+} TIM_SMCFGR_t;
+
+typedef union {
+	uint16_t __FULL;
+	struct {
+		uint32_t UIE :1;
+		uint32_t CC1IE :1;
+		uint32_t CC2IE :1;
+		uint32_t CC3IE :1;
+		uint32_t CC4IE :1;
+		uint32_t :1;
+		uint32_t TIE :1;
+		uint32_t :1;
+		uint32_t UDE :1;
+		uint32_t CC1DE :1;
+		uint32_t CC2DE :1;
+		uint32_t CC3DE :1;
+		uint32_t CC4DE :1;
+		uint32_t :1;
+		uint32_t TDE :1;
+		uint32_t :1;
+	};
+} TIM_DMAINTENR_t;
+
+typedef union {
+	uint16_t __FULL;
+	struct {
+		uint32_t UIF :1;
+		uint32_t CC1IF :1;
+		uint32_t CC2IF :1;
+		uint32_t CC3IF :1;
+		uint32_t CC4IF :1;
+		uint32_t :1;
+		uint32_t TIF :1;
+		uint32_t :2;
+		uint32_t CC1OF :1;
+		uint32_t CC2OF :1;
+		uint32_t CC3OF :1;
+		uint32_t CC4OF :1;
+		uint32_t :3;
+	};
+} TIM_INTFR_t;
+
+typedef union {
+	uint16_t __FULL;
+	struct {
+		uint32_t UG :1;
+		uint32_t CC1G :1;
+		uint32_t CC2G :1;
+		uint32_t CC3G :1;
+		uint32_t CC4G :1;
+		uint32_t :1;
+		uint32_t TG :1;
+		uint32_t :9;
+	};
+} TIM_SWEVGR_t;
+
+typedef union {
+	uint16_t __FULL;
+	struct {
+		uint32_t CC1S :2;
+		uint32_t OC1FE :1;
+		uint32_t OC1PE :1;
+		uint32_t OC1M :3;
+		uint32_t OC1CE :1;
+		uint32_t CC2S :2;
+		uint32_t OC2FE :1;
+		uint32_t OC2PE :1;
+		uint32_t OC2M :3;
+		uint32_t OC2CE :1;
+	} chctlr1_output_bits;
+	struct {
+		uint32_t CC1S :2;
+		uint32_t IC1PSC :2;
+		uint32_t IC1F :4;
+		uint32_t CC2S :2;
+		uint32_t IC2PSC :2;
+		uint32_t IC2F :4;
+	} chctlr1_input_bits;
+} TIM_CHCTLR1_t;
+
+typedef union {
+	uint16_t __FULL;
+	struct {
+		uint32_t CC3S :2;
+		uint32_t OC3FE :1;
+		uint32_t OC3PE :1;
+		uint32_t OC3M :3;
+		uint32_t OC3CE :1;
+		uint32_t CC4S :2;
+		uint32_t OC4FE :1;
+		uint32_t OC4PE :1;
+		uint32_t OC4M :3;
+		uint32_t OC4CE :1;
+	} chctlr2_output_bits;
+	struct {
+		uint32_t CC3S :2;
+		uint32_t IC3PSC :2;
+		uint32_t IC3F :4;
+		uint32_t CC4S :2;
+		uint32_t IC4PSC :2;
+		uint32_t IC4F :4;
+	} chctlr2_input_bits;
+} TIM_CHCTLR2_t;
+
+typedef union {
+	uint16_t __FULL;
+	struct {
+		uint32_t CC1E  :1;
+		uint32_t CC1P  :1;
+		uint32_t CC1NE :1;
+    uint32_t CC1NP :1;
+		uint32_t CC2E  :1;
+		uint32_t CC2P  :1;
+		uint32_t CC2NE :1;
+    uint32_t CC2NP :1;
+		uint32_t CC3E  :1;
+		uint32_t CC3P  :1;
+		uint32_t CC3NE :1;
+    uint32_t CC3NP :1;
+		uint32_t CC4E  :1;
+		uint32_t CC4P  :1;
+		uint32_t CC4NE :1;
+    uint32_t CC4NP :1;
+	};
+} TIM_CCER_t;
+
+typedef union {
+	uint16_t __FULL;
+	struct {
+		uint32_t DBA :5;
+		uint32_t :3;
+		uint32_t DBL :5;
+		uint32_t :3;
+	};
+} TIM_DMACFGR_t;
+
 typedef struct
 {
     __IO uint16_t CTLR1;
@@ -422,7 +749,7 @@ typedef struct
     uint16_t      RESERVED3;
     __IO uint16_t INTFR;
     uint16_t      RESERVED4;
-    __IO uint16_t SWEVGR;
+    __O  uint16_t SWEVGR;
     uint16_t      RESERVED5;
     __IO uint16_t CHCTLR1;
     uint16_t      RESERVED6;
@@ -449,6 +776,11 @@ typedef struct
     __IO uint16_t DMAADR;
     uint16_t      RESERVED15;
 } TIM_TypeDef;
+
+#define DYN_TIM_READ(tim, field) ((TIM_##field##_t) { .__FULL = tim->field })
+#define DYN_TIM_WRITE(tim, field, ...) tim->field = ((const TIM_##field##_t) __VA_ARGS__).__FULL
+#define DYN_TIM_MOD(tim, field, reg, val) {TIM_##field##_t tmp; tmp.__FULL = tim->field; tmp.reg = val; tim->field = tmp.__FULL;}
+
 
 /* Universal Synchronous Asynchronous Receiver Transmitter */
 typedef struct
