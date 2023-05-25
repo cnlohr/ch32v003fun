@@ -41,23 +41,10 @@ void portEnable(enum GPIOports port) {
 
 void pinMode(enum GPIOpins pin, enum GPIOpinMode mode) {
 	GPIO_TypeDef * GPIOx;
-	uint16_t PinOffset = 4;
-	
-	if (pin <= pin_A2) {
-		GPIOx = GPIOA;
-		PinOffset *= pin;
-	}
-	else if (pin <= pin_C7) {
-		GPIOx = GPIOC;
-		PinOffset *= (pin - 2);
-	}
-	else if (pin <= pin_D7) {
-		GPIOx = GPIOD;
-		PinOffset *= (pin - 10);
-	}
-	else {
-		return;
-	}
+	uint16_t PinOffset;
+
+	GPIOx = GPIOA+(pin>>3);
+	PinOffset = (pin & 0x7)<<2;
 
 	GPIOx->CFGLR &= ~(0b1111<<PinOffset);							// zero the 4 configuration bits
 	
@@ -116,11 +103,11 @@ void digitalWrite(enum GPIOpins pin, uint8_t value) {
 	}
 	else if (pin <= pin_C7) {
 		GPIOx = GPIOC;
-		PinOffset = (pin - 2);
+		PinOffset = (pin - 16);
 	}
 	else if (pin <= pin_D7) {
 		GPIOx = GPIOD;
-		PinOffset = (pin - 10);
+		PinOffset = (pin - 24);
 	}
 	else {
 		return;
@@ -146,11 +133,11 @@ uint8_t digitalRead(uint8_t pin) {
 	}
 	else if (pin <= pin_C7) {
 		GPIOx = GPIOC;
-		PinOffset = (pin - 2);
+		PinOffset = (pin - 16);
 	}
 	else if (pin <= pin_D7) {
 		GPIOx = GPIOD;
-		PinOffset = (pin - 10);
+		PinOffset = (pin - 24);
 	}
 	else {
 		return 0;
