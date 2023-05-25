@@ -33,7 +33,7 @@ void TIM1_CC_IRQHandler(void)
 			printf("OF\n");
 		}
 	}
-	if (DYN_TIM_READ(TIM1, INTFR).CC2IF)
+	else if (DYN_TIM_READ(TIM1, INTFR).CC2IF)
 	{
 		// get capture
 		captureVals[write++] = TIM1->CH2CVR; // capture valur
@@ -112,7 +112,7 @@ int main()
 							   });
 
 	NVIC_EnableIRQ(TIM1_CC_IRQn);
-	DYN_TIM_WRITE(TIM1, DMAINTENR, (TIM_DMAINTENR_t){.CC1IE = 1});
+	DYN_TIM_WRITE(TIM1, DMAINTENR, (TIM_DMAINTENR_t){.CC1IE = 1, .CC2IE = 1});
 	//__enable_irq();
 
 	while (1)
