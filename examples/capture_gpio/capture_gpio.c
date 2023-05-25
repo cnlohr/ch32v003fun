@@ -9,7 +9,7 @@
 
 // static const size_t queuelen = 16;
 #define queuelen 16
-volatile uint16_t captureVals[queuelen];
+volatile uint32_t captureVals[queuelen];
 volatile size_t read = 0;
 volatile size_t write = 0;
 
@@ -20,7 +20,7 @@ void TIM1_CC_IRQHandler(void)
 	if (DYN_TIM_READ(TIM1, INTFR).CC1IF)
 	{
 		// get capture
-		captureVals[write++] = TIM1->CH1CVR; // capture valur
+		captureVals[write++] = 0x00010000 | TIM1->CH1CVR; // capture valur
 		if (write == queuelen)
 		{
 			write = 0;
@@ -30,6 +30,22 @@ void TIM1_CC_IRQHandler(void)
 		{
 			// clear
 			DYN_TIM_WRITE(TIM1, INTFR, (TIM_INTFR_t){.CC1OF = 1});
+			printf("OF\n");
+		}
+	}
+	if (DYN_TIM_READ(TIM1, INTFR).CC2IF)
+	{
+		// get capture
+		captureVals[write++] = TIM1->CH2CVR; // capture valur
+		if (write == queuelen)
+		{
+			write = 0;
+		}
+		// overflow
+		if (DYN_TIM_READ(TIM1, INTFR).CC2OF)
+		{
+			// clear
+			DYN_TIM_WRITE(TIM1, INTFR, (TIM_INTFR_t){.CC2OF = 1});
 			printf("OF\n");
 		}
 	}
@@ -80,12 +96,16 @@ int main()
 	TIM1->PSC = 63; // 64MHz/(63+1) -> 1µs resolution
 
 	DYN_TIM_WRITE(TIM1, CHCTLR1, (TIM_CHCTLR1_t){.chctlr1_input_bits = {
-													 .IC1F = 0000, .IC2PSC = 0,
+													 .IC1F = 0000, .IC1PSC = 0,
 													 .CC1S = 0b01, // input from PD2(T1CH1)
+													 .IC2F = 0000, .IC2PSC = 0,
+													 .CC2S = 0b10, // input from PD2(T1CH1)
 												 }});
 	DYN_TIM_WRITE(TIM1, CCER, (TIM_CCER_t){
 								  .CC1E = 1,
-								  .CC1P = 1, // CCxP polarity, 0 -> rising edge
+								  .CC1P = 0, // CCxP polarity, 0 -> rising edge, 1 -> falling edge, ??? -> both edges
+								  .CC2E = 1,
+								  .CC2P = 1, // falling
 							  });
 	DYN_TIM_WRITE(TIM1, CTLR1, (TIM_CTLR1_t){
 								   .CEN = 1,
@@ -99,7 +119,8 @@ int main()
 	{
 		if (read != write)
 		{
-			printf("capture %u\n", captureVals[read++]);
+			uint32_t val = captureVals[read++];
+			printf("capture %d %u\n", val>>16, val&0xFFFF);
 			if (read == queuelen)
 			{
 				read = 0;
