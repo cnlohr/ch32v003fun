@@ -97,7 +97,7 @@ int main()
 
 	while (1)
 	{
-		if (read < write)
+		if (read != write)
 		{
 			printf("capture %u\n", captureVals[read++]);
 			if (read == queuelen)
@@ -108,17 +108,10 @@ int main()
 
 		// Turn D0 on and D4 off at the same time
 		DYN_GPIO_WRITE(GPIOD, BSHR, (GPIO_BSHR_t){.BS0 = 1, .BR4 = 1});
-		// Delay_Ms(100);
-
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
+		Delay_Ms(1);
 
 		// Turn D0 off and D4 on at the same time
 		DYN_GPIO_WRITE(GPIOD, BSHR, (GPIO_BSHR_t){.BR0 = 1, .BS4 = 1});
-		// Delay_Ms(100);
+		Delay_Ms(1);
 	}
 }
