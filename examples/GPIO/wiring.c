@@ -43,7 +43,18 @@ void pinMode(enum GPIOpins pin, enum GPIOpinMode mode) {
 	GPIO_TypeDef * GPIOx;
 	uint16_t PinOffset;
 
-	GPIOx = GPIOA+(pin>>3);
+	if (pin <= pin_A2) {
+		GPIOx = GPIOA;
+	}
+	else if (pin <= pin_C7) {
+		GPIOx = GPIOC;
+	}
+	else if (pin <= pin_D7) {
+		GPIOx = GPIOD;
+	}
+	else {
+		return;
+	}
 	PinOffset = (pin & 0x7)<<2;
 
 	GPIOx->CFGLR &= ~(0b1111<<PinOffset);							// zero the 4 configuration bits
