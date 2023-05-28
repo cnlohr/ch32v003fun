@@ -4961,6 +4961,7 @@ extern "C" {
 /* SYSTICK info
  * time on the ch32v003 is kept by the SysTick counter (32bit)
  * by default, it will operate at (SYSTEM_CORE_CLOCK / 8) = 6MHz
+ * you may want to keep all your time values in ticks
  * to unlock 48MHz:
  * 	#define SYSTICK_USE_HCLK
  * 	call the SETUP_SYSTICK_HCLK macro once
@@ -4983,9 +4984,8 @@ extern "C" {
 #define Delay_Us(n) DelaySysTick( (n) * DELAY_US_TIME )
 #define Delay_Ms(n) DelaySysTick( (n) * DELAY_MS_TIME )
 
-#define Time_RAW	(SysTick->CNT)
-#define Time_Us		((SysTick->CNT) / DELAY_US_TIME)
-#define Time_Ms		((SysTick->CNT) / DELAY_MS_TIME)
+#define Tick_from_Us(n)	(n * DELAY_US_TIME)
+#define Tick_from_Ms(n)	(n * DELAY_MS_TIME)
 
 
 
