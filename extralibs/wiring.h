@@ -1,7 +1,7 @@
 #ifndef WIRING_H
 #define WIRING_H
 
-#include "../../ch32v003fun/ch32v003fun.h"
+#include "ch32v003fun.h"
 
 
 
@@ -20,9 +20,9 @@ enum GPIOports{
 };
 
 enum GPIOpins{
-	pin_A1,
+	pin_A1 = 1,
 	pin_A2,
-	pin_C0,
+	pin_C0 = 16,
 	pin_C1,
 	pin_C2,
 	pin_C3,
@@ -30,7 +30,7 @@ enum GPIOpins{
 	pin_C5,
 	pin_C6,
 	pin_C7,
-	pin_D0,
+	pin_D0 = 24,
 	pin_D1,
 	pin_D2,
 	pin_D3,

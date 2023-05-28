@@ -130,7 +130,21 @@ struct InternalState
 #define DMCFGR       0x7D
 #define DMSHDWCFGR   0x7E
 
+#if defined( WIN32 ) || defined( _WIN32 )
+#if defined( MINICHLINK_AS_LIBRARY )
+	#define DLLDECORATE __declspec(dllexport)
+#elif defined( MINICHLINK_IMPORT )
+	#define DLLDECORATE __declspec(dllimport)
+#else
+	#define DLLDECORATE
+#endif
+#else
+	#define DLLDECORATE
+#endif
+
+void * MiniCHLinkInitAsDLL(struct MiniChlinkFunctions ** MCFO) DLLDECORATE;
 extern struct MiniChlinkFunctions MCF;
+
 
 // Returns 'dev' on success, else 0.
 void * TryInit_WCHLinkE();

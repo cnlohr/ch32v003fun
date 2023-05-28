@@ -12,7 +12,7 @@ uint32_t count;
 //
 // Well, no worries!  You can just stick it in the .data segment!
 
-void RamFunction() __attribute__((section(".data"))) __attribute__((used));
+void RamFunction() __attribute__((section(".srodata"))) __attribute__((used));
 void RamFunction()
 {
 	// GPIO D0 Push-Pull

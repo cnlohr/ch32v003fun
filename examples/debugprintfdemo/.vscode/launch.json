@@ -10,14 +10,20 @@
 			"cwd": "${workspaceFolder}",
 			"environment": [],
 			"externalConsole": false,
-			"preLaunchTask": "run_flash_and_gdbserver",
 			"MIMode": "gdb",
+			"deploySteps": [
+				{
+					"type": "shell",
+					"continueOn": "GDBServer",
+					"command": "make --directory=${workspaceFolder} closechlink flash gdbserver"
+				},
+			],
 			"setupCommands": [
-			{
-				"description": "Enable pretty-printing for gdb",
-				"text": "-enable-pretty-printing",
-				"ignoreFailures": true
-			}
+				{
+					"description": "Enable pretty-printing for gdb",
+					"text": "-enable-pretty-printing",
+					"ignoreFailures": true
+				}
 			],
 			"miDebuggerPath": "gdb-multiarch",
 			"miDebuggerServerAddress": "127.0.0.1:2000"

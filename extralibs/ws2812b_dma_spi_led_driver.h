@@ -106,6 +106,13 @@ static void WS2812FillBuffSec( uint16_t * ptr, int numhalfwords, int tce )
 		ptr[3] = bitquartets[(ledval24bit>>16)&0xf];
 		ptr[4] = bitquartets[(ledval24bit>>4)&0xf];
 		ptr[5] = bitquartets[(ledval24bit>>0)&0xf];
+#elif defined( WSGRB )
+		ptr[0] = bitquartets[(ledval24bit>>12)&0xf];
+		ptr[1] = bitquartets[(ledval24bit>>8)&0xf];
+		ptr[2] = bitquartets[(ledval24bit>>4)&0xf];
+		ptr[3] = bitquartets[(ledval24bit>>0)&0xf];
+		ptr[4] = bitquartets[(ledval24bit>>20)&0xf];
+		ptr[5] = bitquartets[(ledval24bit>>16)&0xf];
 #else
 		ptr[0] = bitquartets[(ledval24bit>>20)&0xf];
 		ptr[1] = bitquartets[(ledval24bit>>16)&0xf];

@@ -660,6 +660,10 @@ mini_pprintf(int (*puts)(char*s, int len, void* buf), void* buf, const char *fmt
 	Copyright 2023 Charles Lohr, under the MIT-x11 or NewBSD licenses, you choose.
 */
 
+#ifdef CPLUSPLUS
+// Method to call the C++ constructors
+void __libc_init_array(void);
+#endif
 
 int main() __attribute__((used));
 void SystemInit( void ) __attribute__((used));
@@ -716,6 +720,7 @@ void InterruptVectorDefault()
 {
 	asm volatile( "\n\
 	.align  2\n\
+	.option   push;\n\
 	.option   norvc;\n\
 	j handle_reset\n\
 	.word   0\n\
@@ -756,7 +761,8 @@ void InterruptVectorDefault()
 	.word   TIM1_UP_IRQHandler        /* TIM1 Update */                    \n\
 	.word   TIM1_TRG_COM_IRQHandler   /* TIM1 Trigger and Commutation */   \n\
 	.word   TIM1_CC_IRQHandler        /* TIM1 Capture Compare */           \n\
-	.word   TIM2_IRQHandler           /* TIM2 */                           \n");
+	.word   TIM2_IRQHandler           /* TIM2 */                           \n\
+	.option   pop;\n");
 }
 
 void handle_reset()
@@ -800,9 +806,15 @@ asm volatile(
 	addi a0, a0, 4\n\
 	addi a1, a1, 4\n\
 	bne a1, a2, 1b\n\
-2:\n" );
+2:\n"
+#ifdef CPLUSPLUS
+	// Call __libc_init_array function
+"	call %0 \n\t"
+: : "i" (__libc_init_array) :
+#endif
+);
 
-	SysTick->CTLR = 1;
+	SETUP_SYSTICK_HCLK
 
 	// set mepc to be main as the root app.
 asm volatile(
@@ -973,3 +985,29 @@ void DelaySysTick( uint32_t n )
 	while( ((int32_t)( SysTick->CNT - targend )) < 0 );
 }
 
+// C++ Support
+
+#ifdef CPLUSPLUS
+// This is required to allow pure virtual functions to be defined.
+extern void __cxa_pure_virtual() { while (1); }
+
+// These magic symbols are provided by the linker.
+extern void (*__preinit_array_start[]) (void) __attribute__((weak));
+extern void (*__preinit_array_end[]) (void) __attribute__((weak));
+extern void (*__init_array_start[]) (void) __attribute__((weak));
+extern void (*__init_array_end[]) (void) __attribute__((weak));
+
+void __libc_init_array(void)
+{
+	size_t count;
+	size_t i;
+
+	count = __preinit_array_end - __preinit_array_start;
+	for (i = 0; i < count; i++)
+		__preinit_array_start[i]();
+
+	count = __init_array_end - __init_array_start;
+	for (i = 0; i < count; i++)
+		__init_array_start[i]();
+}
+#endif

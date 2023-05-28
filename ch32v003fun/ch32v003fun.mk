@@ -1,5 +1,5 @@
 
-PREFIX:=riscv64-unknown-elf
+PREFIX?=riscv64-unknown-elf
 
 CH32V003FUN?=../../ch32v003fun
 MINICHLINK?=../../minichlink
@@ -10,20 +10,22 @@ CFLAGS+= \
 	-march=rv32ec \
 	-mabi=ilp32e \
 	-I/usr/include/newlib \
+	-I$(CH32V003FUN)/../extralibs \
 	-I$(CH32V003FUN) \
 	-nostdlib \
 	-I. -Wall
 
-LDFLAGS+=-T $(CH32V003FUN)/ch32v003fun.ld -Wl,--gc-sections -L../../misc -lgcc
+LDFLAGS+=-T $(CH32V003FUN)/ch32v003fun.ld -Wl,--gc-sections -L$(CH32V003FUN)/../misc -lgcc
 
 SYSTEM_C:=$(CH32V003FUN)/ch32v003fun.c
+TARGET_EXT?=c
 
-$(TARGET).elf : $(SYSTEM_C) $(TARGET).c $(ADDITIONAL_C_FILES)
+$(TARGET).elf : $(SYSTEM_C) $(TARGET).$(TARGET_EXT) $(ADDITIONAL_C_FILES)
 	$(PREFIX)-gcc -o $@ $^ $(CFLAGS) $(LDFLAGS)
 
 $(TARGET).bin : $(TARGET).elf
 	$(PREFIX)-size $^
-	$(PREFIX)-objdump -SD $^ > $(TARGET).lst
+	$(PREFIX)-objdump -S $^ > $(TARGET).lst
 	$(PREFIX)-objdump -t $^ > $(TARGET).map
 	$(PREFIX)-objcopy -O binary $< $(TARGET).bin
 	$(PREFIX)-objcopy -O ihex $< $(TARGET).hex
@@ -36,16 +38,26 @@ closechlink :
 	-killall minichlink
 endif
 
-monitor : 
+terminal : monitor
+
+monitor :
 	$(MINICHLINK)/minichlink -T
 
 gdbserver : 
-	-$(MINICHLINK)/minichlink -beG
+	-$(MINICHLINK)/minichlink -baG
+
+clangd :
+	make clean
+	bear -- make build
+
+clangd_clean :
+	rm -f compile_commands.json
 
 cv_flash : $(TARGET).bin
 	make -C $(MINICHLINK) all
 	$(MINICHLINK)/minichlink -w $< flash -b
 
 cv_clean :
-	rm -rf $(TARGET).elf $(TARGET).bin $(TARGET).hex $(TARGET).lst $(TARGET).map $(TARGET).hex
+	rm -rf $(TARGET).elf $(TARGET).bin $(TARGET).hex $(TARGET).lst $(TARGET).map $(TARGET).hex || true
 
+build : $(TARGET).bin

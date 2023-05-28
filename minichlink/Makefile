@@ -10,7 +10,7 @@ C_S:=minichlink.c pgm-wch-linke.c pgm-esp32s2-ch32xx.c nhc-link042.c minichgdb.c
 ifeq ($(OS),Windows_NT)
 	LDFLAGS:=-L. -lpthread -lusb-1.0 -lsetupapi -lws2_32
 	CFLAGS:=-Os -s -Wall
-	TOOLS:=minichlink.exe minichlink.dll
+	TOOLS:=minichlink.exe
 else
 	OS_NAME := $(shell uname -s | tr A-Z a-z)
 	ifeq ($(OS_NAME),linux)
@@ -19,8 +19,8 @@ else
 	ifeq ($(OS_NAME),darwin)
 		LDFLAGS:=-lpthread -lusb-1.0 -framework CoreFoundation -framework IOKit
 		CFLAGS:=-O0 -Wall -Wno-asm-operand-widths -Wno-deprecated-declarations -Wno-deprecated-non-prototype -D__MACOSX__
-		INCLUDES:=-I /opt/homebrew/Cellar/libusb/1.0.26/include/libusb-1.0
-		LIBINCLUDES:=-L /opt/homebrew/Cellar/libusb/1.0.26/lib 
+		INCLUDES:=$(shell pkg-config --cflags-only-I libusb-1.0)
+		LIBINCLUDES:=$(shell pkg-config --libs-only-L libusb-1.0)
 		INCS:=$(INCLUDES) $(LIBINCLUDES)
 	endif
 endif
@@ -38,7 +38,7 @@ minichlink.so : $(C_S)
 	gcc -o $@ $^ $(LDFLAGS) $(CFLAGS) $(INCS) -shared -fPIC
 
 minichlink.dll : $(C_S)
-	x86_64-w64-mingw32-gcc -o $@ $^ $(LDFLAGS) $(CFLAGS) $(INCS) -shared
+	x86_64-w64-mingw32-gcc -o $@ $^ $(LDFLAGS) $(CFLAGS) $(INCS) -shared -DMINICHLINK_AS_LIBRARY
 
 install_udev_rules :
 	cp 99-WCH-LinkE.rules /etc/udev/rules.d/

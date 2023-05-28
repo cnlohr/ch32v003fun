@@ -69,12 +69,16 @@ int WSAAPI WSAPoll(struct pollfd * fdArray, ULONG       fds, INT         timeout
 #define MSG_NOSIGNAL 0
 #else
 #define closesocket close
+#include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <linux/in.h>
 #include <unistd.h>
 #include <poll.h>
 #endif
+#endif
+
+#ifdef __linux__
+#include <linux/in.h>
 #endif
 
 char gdbbuffer[65536];
@@ -525,7 +529,7 @@ int MicroGDBPollServer( void * dev )
 			struct   sockaddr_in tin;
 			socklen_t addrlen  = sizeof(tin);
 			memset( &tin, 0, addrlen );
-			int tsocket = accept( serverSocket, (struct sockaddr *)&tin, (int*)&addrlen );
+			int tsocket = accept( serverSocket, (struct sockaddr *)&tin, (void*)&addrlen );
 			closesocket( serverSocket );
 			serverSocket = tsocket;
 			listenMode = 2;

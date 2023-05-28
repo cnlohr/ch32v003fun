@@ -60,6 +60,8 @@ extern "C" {
     #define HSITRIM 0x10
 #endif
 
+#ifndef __ASSEMBLER__
+
 /* Interrupt Number Definition, according to the selected device */
 typedef enum IRQn
 {
@@ -96,15 +98,17 @@ typedef enum IRQn
 
 } IRQn_Type;
 
-#define HardFault_IRQn    EXC_IRQn
-
 #include <stdint.h>
+#endif
+
+#define HardFault_IRQn    EXC_IRQn
 
 /* Standard Peripheral Library old definitions (maintained for legacy purpose) */
 #define HSI_Value             HSI_VALUE
 #define HSE_Value             HSE_VALUE
 #define HSEStartUp_TimeOut    HSE_STARTUP_TIMEOUT
 
+#ifndef __ASSEMBLER__
 /* Analog to Digital Converter */
 typedef struct
 {
@@ -192,16 +196,132 @@ typedef struct
 } OB_TypeDef;
 
 /* General Purpose I/O */
+typedef enum
+{
+	GPIO_CFGLR_IN_ANALOG = 0,
+	GPIO_CFGLR_IN_FLOAT = 4,
+	GPIO_CFGLR_IN_PUPD = 8,
+	GPIO_CFGLR_OUT_10Mhz_PP = 1,
+	GPIO_CFGLR_OUT_2Mhz_PP = 2,
+	GPIO_CFGLR_OUT_50Mhz_PP = 3,
+	GPIO_CFGLR_OUT_10Mhz_OD = 5,
+	GPIO_CFGLR_OUT_2Mhz_OD = 6,
+	GPIO_CFGLR_OUT_50Mhz_OD = 7,
+	GPIO_CFGLR_OUT_10Mhz_AF_PP = 9,
+	GPIO_CFGLR_OUT_2Mhz_AF_PP = 10,
+	GPIO_CFGLR_OUT_50Mhz_AF_PP = 11,
+	GPIO_CFGLR_OUT_10Mhz_AF_OD = 13,
+	GPIO_CFGLR_OUT_2Mhz_AF_OD = 14,
+	GPIO_CFGLR_OUT_50Mhz_AF_OD = 15,
+} GPIO_CFGLR_PIN_MODE_Typedef;
+
+typedef union {
+	uint32_t __FULL;
+	struct {
+		GPIO_CFGLR_PIN_MODE_Typedef PIN0 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN1 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN2 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN3 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN4 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN5 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN6 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN7 :4;
+	};
+} GPIO_CFGLR_t;
+typedef union {
+	uint32_t __FULL;
+	const struct {
+		uint32_t IDR0 :1;
+		uint32_t IDR1 :1;
+		uint32_t IDR2 :1;
+		uint32_t IDR3 :1;
+		uint32_t IDR4 :1;
+		uint32_t IDR5 :1;
+		uint32_t IDR6 :1;
+		uint32_t IDR7 :1;
+		uint32_t :24;
+	};
+} GPIO_INDR_t;
+typedef union {
+	uint32_t __FULL;
+	struct {
+		uint32_t ODR0 :1;
+		uint32_t ODR1 :1;
+		uint32_t ODR2 :1;
+		uint32_t ODR3 :1;
+		uint32_t ODR4 :1;
+		uint32_t ODR5 :1;
+		uint32_t ODR6 :1;
+		uint32_t ODR7 :1;
+		uint32_t :24;
+	};
+} GPIO_OUTDR_t;
+typedef union {
+	uint32_t __FULL;
+	struct {
+		uint32_t BS0 :1;
+		uint32_t BS1 :1;
+		uint32_t BS2 :1;
+		uint32_t BS3 :1;
+		uint32_t BS4 :1;
+		uint32_t BS5 :1;
+		uint32_t BS6 :1;
+		uint32_t BS7 :1;
+		uint32_t :8;
+		uint32_t BR0 :1;
+		uint32_t BR1 :1;
+		uint32_t BR2 :1;
+		uint32_t BR3 :1;
+		uint32_t BR4 :1;
+		uint32_t BR5 :1;
+		uint32_t BR6 :1;
+		uint32_t BR7 :1;
+		uint32_t :8;
+	};
+} GPIO_BSHR_t;
+typedef union {
+	uint32_t __FULL;
+	struct {
+		uint32_t BR0 :1;
+		uint32_t BR1 :1;
+		uint32_t BR2 :1;
+		uint32_t BR3 :1;
+		uint32_t BR4 :1;
+		uint32_t BR5 :1;
+		uint32_t BR6 :1;
+		uint32_t BR7 :1;
+		uint32_t :24;
+	};
+} GPIO_BCR_t;
+typedef union {
+	uint32_t __FULL;
+	struct {
+		uint32_t LCK0 :1;
+		uint32_t LCK1 :1;
+		uint32_t LCK2 :1;
+		uint32_t LCK3 :1;
+		uint32_t LCK4 :1;
+		uint32_t LCK5 :1;
+		uint32_t LCK6 :1;
+		uint32_t LCK7 :1;
+		uint32_t LCKK :1;
+		uint32_t :23;
+	};
+} GPIO_LCKR_t;
 typedef struct
 {
-    __IO uint32_t CFGLR;
-    __IO uint32_t CFGHR;
-    __IO uint32_t INDR;
-    __IO uint32_t OUTDR;
-    __IO uint32_t BSHR;
-    __IO uint32_t BCR;
-    __IO uint32_t LCKR;
+	__IO uint32_t CFGLR;
+	__IO uint32_t CFGHR;
+	__I  uint32_t INDR;
+	__IO uint32_t OUTDR;
+	__IO uint32_t BSHR;
+	__IO uint32_t BCR;
+	__IO uint32_t LCKR;
 } GPIO_TypeDef;
+
+#define DYN_GPIO_READ(gpio, field) ((GPIO_##field##_t) { .__FULL = gpio->field })
+#define DYN_GPIO_WRITE(gpio, field, ...) gpio->field = ((const GPIO_##field##_t) __VA_ARGS__).__FULL
+#define DYN_GPIO_MOD(gpio, field, reg, val) {GPIO_##field##_t tmp; tmp.__FULL = gpio->field; tmp.reg = val; gpio->field = tmp.__FULL;}
 
 /* Alternate Function I/O */
 typedef struct
@@ -363,10 +483,18 @@ typedef struct
     __IO uint32_t EXTEN_CTR;
 } EXTEN_TypeDef;
 
+#endif
+
 /* Peripheral memory map */
+#ifdef __ASSEMBLER__
+#define FLASH_BASE                              (0x08000000) /* FLASH base address in the alias region */
+#define SRAM_BASE                               (0x20000000) /* SRAM base address in the alias region */
+#define PERIPH_BASE                             (0x40000000) /* Peripheral base address in the alias region */
+#else
 #define FLASH_BASE                              ((uint32_t)0x08000000) /* FLASH base address in the alias region */
 #define SRAM_BASE                               ((uint32_t)0x20000000) /* SRAM base address in the alias region */
 #define PERIPH_BASE                             ((uint32_t)0x40000000) /* Peripheral base address in the alias region */
+#endif
 
 #define APB1PERIPH_BASE                         (PERIPH_BASE)
 #define APB2PERIPH_BASE                         (PERIPH_BASE + 0x10000)
@@ -2799,9 +2927,10 @@ extern "C" {
 /* BDCTLR register base address */
 #define BDCTLR_ADDRESS             (PERIPH_BASE + BDCTLR_OFFSET)
 
+#ifndef __ASSEMBLER__
 static __I uint8_t APBAHBPrescTable[16] = {1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8};
 static __I uint8_t ADCPrescTable[20] = {2, 4, 6, 8, 4, 8, 12, 16, 8, 16, 24, 32, 16, 32, 48, 64, 32, 64, 96, 128};
-
+#endif
 
 /* ch32v00x_spi.c ------------------------------------------------------------*/
 
@@ -3098,6 +3227,8 @@ static __I uint8_t ADCPrescTable[20] = {2, 4, 6, 8, 4, 8, 12, 16, 8, 16, 24, 32,
 
 /* ch32v00x_exti.h -----------------------------------------------------------*/
 
+#ifndef __ASSEMBLER__
+
 /* EXTI mode enumeration */
 typedef enum
 {
@@ -3112,6 +3243,8 @@ typedef enum
     EXTI_Trigger_Falling = 0x0C,
     EXTI_Trigger_Rising_Falling = 0x10
 } EXTITrigger_TypeDef;
+
+#endif
 
 /* EXTI_Lines */
 #define EXTI_Line0     ((uint32_t)0x00001) /* External interrupt line 0 */
@@ -3129,6 +3262,7 @@ typedef enum
 /* ch32v00x_flash.h ----------------------------------------------------------*/
 
 
+#ifndef __ASSEMBLER__
 /* FLASH Status */
 typedef enum
 {
@@ -3138,7 +3272,7 @@ typedef enum
     FLASH_COMPLETE,
     FLASH_TIMEOUT
 } FLASH_Status;
-
+#endif
 
 /* Flash_Latency */
 #define FLASH_Latency_0                  ((uint32_t)0x00000000) /* FLASH Zero Latency cycle */
@@ -3206,6 +3340,8 @@ typedef enum
 
 /* ch32v00x_gpio.h ------------------------------------------------------------*/
 
+#ifndef __ASSEMBLER__
+
 /* Output Maximum frequency selection */
 typedef enum
 {
@@ -3213,6 +3349,8 @@ typedef enum
     GPIO_Speed_2MHz,
     GPIO_Speed_50MHz
 } GPIOSpeed_TypeDef;
+
+#endif
 
 #define GPIO_SPEED_IN 0
 
@@ -3239,6 +3377,7 @@ typedef enum
 } GPIOMode_TypeDef;
 */
 
+#ifndef __ASSEMBLER__
 
 /* Bit_SET and Bit_RESET enumeration */
 typedef enum
@@ -3246,6 +3385,8 @@ typedef enum
     Bit_RESET = 0,
     Bit_SET
 } BitAction;
+
+#endif
 
 /* GPIO_pins_define */
 #define GPIO_Pin_0                     ((uint16_t)0x0001) /* Pin 0 selected */
@@ -3569,6 +3710,7 @@ typedef enum
 /* ch32v00x_opa.h ------------------------------------------------------------*/
 
 /* Editor's note: I don't know if this is actually useful */
+#ifndef __ASSEMBLER__
 
 /* OPA PSEL enumeration */
 typedef enum
@@ -3595,7 +3737,7 @@ typedef struct
 
 /* ch32v00x_pwr.h ------------------------------------------------------------*/
 
-
+#endif
 /* PVD_detection_level  */
 #define PWR_PVDLevel_2V9          ((uint32_t)0x00000000)
 #define PWR_PVDLevel_3V1          ((uint32_t)0x00000020)
@@ -4205,8 +4347,6 @@ typedef struct
 #ifndef __CORE_RISCV_H__
 #define __CORE_RISCV_H__
 
-#include <stdint.h>
-
 /* define compiler specific symbols */
 #if defined(__CC_ARM)
   #define __ASM       __asm     /*!< asm keyword for ARM Compiler          */
@@ -4230,6 +4370,8 @@ typedef struct
  extern "C" {
 #endif
 	
+#ifndef __ASSEMBLER__
+
 /* Standard Peripheral Library old types (maintained for legacy purpose) */
 typedef __I uint32_t vuc32;  /* Read Only */
 typedef __I uint16_t vuc16;  /* Read Only */
@@ -4309,6 +4451,7 @@ typedef struct
     uint32_t RESERVED1;
 }SysTick_Type;
 
+#endif
 
 #define PFIC            ((PFIC_Type *) 0xE000E000 )
 #define NVIC            PFIC
@@ -4318,6 +4461,7 @@ typedef struct
 
 #define SysTick         ((SysTick_Type *) 0xE000F000)
 
+#ifndef __ASSEMBLER__
 
 /*********************************************************************
  * @fn      __enable_irq
@@ -4797,7 +4941,7 @@ static inline uint32_t __get_SP(void)
     return (result);
 }
 
-
+#endif
 
 #ifdef __cplusplus
 }
@@ -4810,25 +4954,32 @@ static inline uint32_t __get_SP(void)
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-
-
-#ifndef _CH32V003_MISC
-#define _CH32V003_MISC
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+// You can use SYSTICK_USE_HCLK, if you do, you will have a high-resolution
+// however it will limit your max delay to 44 seconds before it will wrap
+// around.  You must also call SETUP_SYSTICK_HCLK.
+
+#ifdef SYSTICK_USE_HCLK
+#define DELAY_US_TIME ((SYSTEM_CORE_CLOCK)/1000000)
+#define DELAY_MS_TIME ((SYSTEM_CORE_CLOCK)/1000)
+#define SETUP_SYSTICK_HCLK SysTick->CTLR = 5;
+#else // Use systick = hclk/8
 #define DELAY_US_TIME ((SYSTEM_CORE_CLOCK)/8000000)
 #define DELAY_MS_TIME ((SYSTEM_CORE_CLOCK)/8000)
+#define SETUP_SYSTICK_HCLK SysTick->CTLR = 1;
+#endif
 
 #if defined(__riscv) || defined(__riscv__) || defined( CH32V003FUN_BASE )
 
 // Stuff that can only be compiled on device (not for the programmer, or other host programs)
 
+#ifndef __ASSEMBLER__
 void handle_reset()            __attribute__((naked)) __attribute((section(".text.handle_reset"))) __attribute__((used));
 void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) __attribute__((naked)) __attribute__((used));
-
+#endif
 
 // For debug writing to the debug interface.
 #define DMDATA0 ((volatile uint32_t*)0xe00000f4)
@@ -4836,10 +4987,12 @@ void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) 
 
 #endif
 
-void DelaySysTick( uint32_t n );
+#define Delay_Us(n) DelaySysTick( (n) * DELAY_US_TIME )
+#define Delay_Ms(n) DelaySysTick( (n) * DELAY_MS_TIME )
 
-#define Delay_Us(n) DelaySysTick( n * DELAY_US_TIME )
-#define Delay_Ms(n) DelaySysTick( n * DELAY_MS_TIME )
+#ifndef __ASSEMBLER__
+
+void DelaySysTick( uint32_t n );
 
 // Tricky: We need to make sure main and SystemInit() are preserved.
 int main() __attribute__((used));
@@ -4869,8 +5022,9 @@ void WaitForDebuggerToAttach();
 // Just a definition to the internal _write function.
 int _write(int fd, const char *buf, int size);
 
+#endif
+
 #ifdef __cplusplus
 };
 #endif
 
-#endif
