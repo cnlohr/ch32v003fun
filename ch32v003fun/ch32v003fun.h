@@ -4961,14 +4961,7 @@ extern "C" {
 /* SYSTICK info
  * time on the ch32v003 is kept by the SysTick counter (32bit)
  * by default, it will operate at (SYSTEM_CORE_CLOCK / 8) = 6MHz
- * you may want to keep all your time values in ticks
- * to unlock 48MHz:
- * 	#define SYSTICK_USE_HCLK
- * 	call the SETUP_SYSTICK_HCLK macro once
- *
- * 				formula			6MHz		48MHz
- * rollover			((2^32)-1)/f		715s		89.5s
- * time resolution		1/f			167ns		20ns
+ * more info at https://github.com/cnlohr/ch32v003fun/wiki/Time
 */
 
 #ifdef SYSTICK_USE_HCLK
