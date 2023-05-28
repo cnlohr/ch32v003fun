@@ -720,6 +720,7 @@ void InterruptVectorDefault()
 {
 	asm volatile( "\n\
 	.align  2\n\
+	.option   push;\n\
 	.option   norvc;\n\
 	j handle_reset\n\
 	.word   0\n\
@@ -760,7 +761,8 @@ void InterruptVectorDefault()
 	.word   TIM1_UP_IRQHandler        /* TIM1 Update */                    \n\
 	.word   TIM1_TRG_COM_IRQHandler   /* TIM1 Trigger and Commutation */   \n\
 	.word   TIM1_CC_IRQHandler        /* TIM1 Capture Compare */           \n\
-	.word   TIM2_IRQHandler           /* TIM2 */                           \n");
+	.word   TIM2_IRQHandler           /* TIM2 */                           \n\
+	.option   pop;\n");
 }
 
 void handle_reset()
