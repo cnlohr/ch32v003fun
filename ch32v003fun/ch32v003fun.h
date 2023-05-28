@@ -4984,8 +4984,8 @@ extern "C" {
 #define Delay_Us(n) DelaySysTick( (n) * DELAY_US_TIME )
 #define Delay_Ms(n) DelaySysTick( (n) * DELAY_MS_TIME )
 
-#define Tick_from_Us(n)	(n * DELAY_US_TIME)
-#define Tick_from_Ms(n)	(n * DELAY_MS_TIME)
+#define Ticks_from_Us(n)	(n * DELAY_US_TIME)
+#define Ticks_from_Ms(n)	(n * DELAY_MS_TIME)
 
 
 
