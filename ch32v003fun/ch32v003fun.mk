@@ -15,8 +15,11 @@ CFLAGS+= \
 	-nostdlib \
 	-I. -Wall
 
-LDFLAGS+=-T $(CH32V003FUN)/ch32v003fun.ld -Wl,--gc-sections -L$(CH32V003FUN)/../misc -lgcc
+LINKER_SCRIPT?=$(CH32V003FUN)/ch32v003fun.ld
 
+LDFLAGS+=-T $(LINKER_SCRIPT) -Wl,--gc-sections -L$(CH32V003FUN)/../misc -lgcc
+
+WRITE_SECTION?=flash
 SYSTEM_C?=$(CH32V003FUN)/ch32v003fun.c
 TARGET_EXT?=c
 
@@ -53,9 +56,11 @@ clangd :
 clangd_clean :
 	rm -f compile_commands.json
 
+FLASH_COMMAND?=$(MINICHLINK)/minichlink -w $< $(WRITE_SECTION) -b
+
 cv_flash : $(TARGET).bin
 	make -C $(MINICHLINK) all
-	$(MINICHLINK)/minichlink -w $< flash -b
+	$(FLASH_COMMAND)
 
 cv_clean :
 	rm -rf $(TARGET).elf $(TARGET).bin $(TARGET).hex $(TARGET).lst $(TARGET).map $(TARGET).hex || true

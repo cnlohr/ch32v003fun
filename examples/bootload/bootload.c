@@ -14,8 +14,10 @@ void InterruptVector()
 {
 	asm volatile( "\n\
 	.align  2\n\
+	.option   push;\n\
 	.option   norvc;\n\
-	j handle_reset");
+	j handle_reset\n\
+	.option pop");
 }
 
 uint32_t count;
@@ -40,7 +42,7 @@ int main()
 
 	// GPIO C0 Push-Pull, 10MHz Output
 	GPIOC->CFGLR &= ~(0xf<<(4*0));
-	GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*4);
+	GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*0);
 
 	static const uint32_t marker[] = { 0xaaaaaaaa };
 	count = marker[0];
