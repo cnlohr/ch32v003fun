@@ -17,7 +17,7 @@ CFLAGS+= \
 
 LDFLAGS+=-T $(CH32V003FUN)/ch32v003fun.ld -Wl,--gc-sections -L$(CH32V003FUN)/../misc -lgcc
 
-SYSTEM_C:=$(CH32V003FUN)/ch32v003fun.c
+SYSTEM_C?=$(CH32V003FUN)/ch32v003fun.c
 TARGET_EXT?=c
 
 $(TARGET).elf : $(SYSTEM_C) $(TARGET).$(TARGET_EXT) $(ADDITIONAL_C_FILES)
