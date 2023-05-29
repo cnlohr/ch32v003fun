@@ -112,15 +112,20 @@ To use the WCH-Link in WSL, it is required to "attach" the USB hardware on the W
 9. For unknown reasons, you must run make under root access in order to connect to the programmer with minichlink.  Recommend running `sudo make` when building and programming projects using WSL. This may work too (to be confirmed):
 
 ### non-root access on linux
-Unlike serial interfaces, by default, the USB device is owned by root, has group set to root and everyone else may only read.
-1. Get the vendor:device ID of the WCH-Link from `lsusb`.
-2. Create a udev rule with `sudo nano /etc/udev/rules.d/80-USB_WCH-Link.rules`, paste (CTRL+SHIFT+V) `SUBSYSTEM=="usb", ATTR{idVendor}=="1a86", ATTR{idProduct}=="8010", MODE="0666"` and save, replacing the idVendor and idProduct if what you got previously was different.
-3. Reboot or reload the udev rules with `sudo udevadm control --reload-rules && sudo udevadm trigger` 
-4. ???
-5. profit
-Now anyone on your PC has access to the WCH-Link device, so you can stop using sudo for make.  
-I don't think there are any security risks here.
-You may also tie this to the WCH-Link serial number or some other attribute from `udevadm info -a -n /dev/bus/usb/busid/deviceid` with the bus id and device id you got from lsusb earlier.
+Unlike serial interfaces, by default, the USB device is owned by root, has group set to root and everyone else may only read by default.
+The way to allow non-root users/groups to be able to access devices is via udev rules.
+
+minichlink provides a list of udev rules that allows any user in the plugdev group to be able to interact with the programmers it supports.
+
+You can install and load the required udev rules for minichlink by executing the following commands in the root of this Git repository:
+```
+sudo cp minichlink/99-minichlink.rules /etc/udev/rules.d/
+sudo udevadm control --reload-rules && sudo udevadm trigger
+```
+
+If you add support for another programmer in minichlink, you will need to add more rules here.
+
+**Note:** This readme used to recommend manually making these rules under `80-USB_WCH-Link.rules`. If you wish to use the new rules file shipped in this repo, you may want to remove the old rules file.
 
 
 ## minichlink
