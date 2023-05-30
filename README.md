@@ -26,9 +26,11 @@ In Progress:
 
 And by fast I mean very fast. Typically around 36kBytes/sec.
 
+```
 ./minichlink -T | pv > /dev/null
 Found ESP32S2 Programmer
  536KiB 0:00:15 [36.7KiB/s] [        <=>                     ]
+```
 
 You can just try out the debugprintf project, or call SetupDebugPrintf(); and printf() away.
 
