@@ -10,44 +10,37 @@ ch32v003fun contains:
   * An STM32F042 Programmer, the NHC-Link042
   * An ESP32S2 Programmer, the [esp32s2-funprog](https://github.com/cnlohr/esp32s2-cookbook/tree/master/ch32v003programmer)
   * The official WCH Link-E Programmer.
+  * Supports gdbserver-style-debugging for use with Visual Studio.
+  * Supports printf-over-single-wire. (At about 400kBaud)
 3. An extra copy of libgcc so you can use unusual risc-v build chains, located in the `misc/libgcc.a`.
 4. A folder named "ch32v003fun" containing a single self-contained source file and header file for compling apps for the ch32v003.
 5. On some systems ability to "printf" back through
 6. A demo bootloader.
 
 In Progress:
-1. Other programmer support (ESP32-S2 works, currently)
-2. OpenOCD-compatible build for `minichlink`.
-3. Full-chip-write for faster flash.
-4. Support for `NHC-Link042`
-5. Write more demos.
+1. Write more demos.
 
-## Features
+## Features!
 
-### A fast "printf" debug over the programming interface.
+###  A fast "printf" debug over the programming interface.
 
-And by fast I mean very fast. Typically around 36kBytes/sec. 
+And by fast I mean very fast. Typically around 36kBytes/sec.
 
-```
 ./minichlink -T | pv > /dev/null
 Found ESP32S2 Programmer
  536KiB 0:00:15 [36.7KiB/s] [        <=>                     ]
-```
 
-You can just try out the `debugprintf` project, or call `SetupDebugPrintf();` and `printf()` away.
+You can just try out the debugprintf project, or call SetupDebugPrintf(); and printf() away.
 
-### todo;;
+### Debugging support!
 
+Via gdbserver built into minichlink!  It works with `gdb-multiarch` as well as in Visual Studio Code 
+
+### TODO
 
 ## System Prep
 
-On WSL or Debian based OSes `apt-get install build-essential libnewlib-dev gcc-riscv64-unknown-elf libusb-1.0-0-dev libudev-dev`
-
-On Arch/Manjaro, `sudo pacman -S base-devel libusb`, then from AUR install `riscv64-unknown-elf-gcc, riscv64-unknown-elf-binutils, riscv64-unknown-elf-newlib` (will compile for a long time).
-
-On Windows, download and install (to system) this copy of GCC10. https://gnutoolchains.com/risc-v/
-
-On macOS install the RISC-V toolchain with homebrew following the instructions at https://github.com/riscv-software-src/homebrew-riscv
+For installation instructions, see the [https://github.com/cnlohr/ch32v003fun/wiki/Installation](wiki page here)
 
 You can use the pre-compiled minichlink or go to minichlink dir and `make` it.
 
