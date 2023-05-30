@@ -13,7 +13,7 @@ CFLAGS+= \
 	-I$(CH32V003FUN)/../extralibs \
 	-I$(CH32V003FUN) \
 	-nostdlib \
-	-I. -Wall
+	-I. -Wall $(EXTRA_CFLAGS)
 
 LINKER_SCRIPT?=$(CH32V003FUN)/ch32v003fun.ld
 
