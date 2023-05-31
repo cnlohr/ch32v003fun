@@ -4474,7 +4474,11 @@ RV_STATIC_INLINE void __enable_irq()
 {
   uint32_t result;
 
-  __asm volatile("csrr %0," "mstatus": "=r"(result));
+    __asm volatile(
+#if __GNUC__ > 10
+		".option arch, +zicsr\n"
+#endif
+		"csrr %0," "mstatus": "=r"(result));
   result |= 0x88;
   __asm volatile ("csrw mstatus, %0" : : "r" (result) );
 }
@@ -4490,7 +4494,11 @@ RV_STATIC_INLINE void __disable_irq()
 {
   uint32_t result;
 
-  __asm volatile("csrr %0," "mstatus": "=r"(result));
+    __asm volatile(
+#if __GNUC__ > 10
+		".option arch, +zicsr\n"
+#endif
+		"csrr %0," "mstatus": "=r"(result));
   result &= ~0x88;
   __asm volatile ("csrw mstatus, %0" : : "r" (result) );
 }
