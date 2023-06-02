@@ -4474,7 +4474,11 @@ RV_STATIC_INLINE void __enable_irq()
 {
   uint32_t result;
 
-  __asm volatile("csrr %0," "mstatus": "=r"(result));
+    __asm volatile(
+#if __GNUC__ > 10
+		".option arch, +zicsr\n"
+#endif
+		"csrr %0," "mstatus": "=r"(result));
   result |= 0x88;
   __asm volatile ("csrw mstatus, %0" : : "r" (result) );
 }
@@ -4490,7 +4494,11 @@ RV_STATIC_INLINE void __disable_irq()
 {
   uint32_t result;
 
-  __asm volatile("csrr %0," "mstatus": "=r"(result));
+    __asm volatile(
+#if __GNUC__ > 10
+		".option arch, +zicsr\n"
+#endif
+		"csrr %0," "mstatus": "=r"(result));
   result &= ~0x88;
   __asm volatile ("csrw mstatus, %0" : : "r" (result) );
 }
@@ -4958,9 +4966,11 @@ static inline uint32_t __get_SP(void)
 extern "C" {
 #endif
 
-// You can use SYSTICK_USE_HCLK, if you do, you will have a high-resolution
-// however it will limit your max delay to 44 seconds before it will wrap
-// around.  You must also call SETUP_SYSTICK_HCLK.
+/* SYSTICK info
+ * time on the ch32v003 is kept by the SysTick counter (32bit)
+ * by default, it will operate at (SYSTEM_CORE_CLOCK / 8) = 6MHz
+ * more info at https://github.com/cnlohr/ch32v003fun/wiki/Time
+*/
 
 #ifdef SYSTICK_USE_HCLK
 #define DELAY_US_TIME ((SYSTEM_CORE_CLOCK)/1000000)
@@ -4971,6 +4981,14 @@ extern "C" {
 #define DELAY_MS_TIME ((SYSTEM_CORE_CLOCK)/8000)
 #define SETUP_SYSTICK_HCLK SysTick->CTLR = 1;
 #endif
+
+#define Delay_Us(n) DelaySysTick( (n) * DELAY_US_TIME )
+#define Delay_Ms(n) DelaySysTick( (n) * DELAY_MS_TIME )
+
+#define Ticks_from_Us(n)	(n * DELAY_US_TIME)
+#define Ticks_from_Ms(n)	(n * DELAY_MS_TIME)
+
+
 
 #if defined(__riscv) || defined(__riscv__) || defined( CH32V003FUN_BASE )
 
@@ -4987,8 +5005,7 @@ void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) 
 
 #endif
 
-#define Delay_Us(n) DelaySysTick( (n) * DELAY_US_TIME )
-#define Delay_Ms(n) DelaySysTick( (n) * DELAY_MS_TIME )
+
 
 #ifndef __ASSEMBLER__
 

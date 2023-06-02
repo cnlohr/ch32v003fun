@@ -10,23 +10,21 @@ ch32v003fun contains:
   * An STM32F042 Programmer, the NHC-Link042
   * An ESP32S2 Programmer, the [esp32s2-funprog](https://github.com/cnlohr/esp32s2-cookbook/tree/master/ch32v003programmer)
   * The official WCH Link-E Programmer.
+  * Supports gdbserver-style-debugging for use with Visual Studio.
+  * Supports printf-over-single-wire. (At about 400kBaud)
 3. An extra copy of libgcc so you can use unusual risc-v build chains, located in the `misc/libgcc.a`.
 4. A folder named "ch32v003fun" containing a single self-contained source file and header file for compling apps for the ch32v003.
 5. On some systems ability to "printf" back through
 6. A demo bootloader.
 
 In Progress:
-1. Other programmer support (ESP32-S2 works, currently)
-2. OpenOCD-compatible build for `minichlink`.
-3. Full-chip-write for faster flash.
-4. Support for `NHC-Link042`
-5. Write more demos.
+1. Write more demos.
 
-## Features
+## Features!
 
-### A fast "printf" debug over the programming interface.
+###  A fast "printf" debug over the programming interface.
 
-And by fast I mean very fast. Typically around 36kBytes/sec. 
+And by fast I mean very fast. Typically around 36kBytes/sec.
 
 ```
 ./minichlink -T | pv > /dev/null
@@ -34,20 +32,17 @@ Found ESP32S2 Programmer
  536KiB 0:00:15 [36.7KiB/s] [        <=>                     ]
 ```
 
-You can just try out the `debugprintf` project, or call `SetupDebugPrintf();` and `printf()` away.
+You can just try out the debugprintf project, or call SetupDebugPrintf(); and printf() away.
 
-### todo;;
+### Debugging support!
 
+Via gdbserver built into minichlink!  It works with `gdb-multiarch` as well as in Visual Studio Code 
+
+### TODO
 
 ## System Prep
 
-On WSL or Debian based OSes `apt-get install build-essential libnewlib-dev gcc-riscv64-unknown-elf libusb-1.0-0-dev libudev-dev`
-
-On Arch/Manjaro, `sudo pacman -S base-devel libusb`, then from AUR install `riscv64-unknown-elf-gcc, riscv64-unknown-elf-binutils, riscv64-unknown-elf-newlib` (will compile for a long time).
-
-On Windows, download and install (to system) this copy of GCC10. https://gnutoolchains.com/risc-v/
-
-On macOS install the RISC-V toolchain with homebrew following the instructions at https://github.com/riscv-software-src/homebrew-riscv
+For installation instructions, see the [https://github.com/cnlohr/ch32v003fun/wiki/Installation](wiki page here)
 
 You can use the pre-compiled minichlink or go to minichlink dir and `make` it.
 
@@ -112,15 +107,20 @@ To use the WCH-Link in WSL, it is required to "attach" the USB hardware on the W
 9. For unknown reasons, you must run make under root access in order to connect to the programmer with minichlink.  Recommend running `sudo make` when building and programming projects using WSL. This may work too (to be confirmed):
 
 ### non-root access on linux
-Unlike serial interfaces, by default, the USB device is owned by root, has group set to root and everyone else may only read.
-1. Get the vendor:device ID of the WCH-Link from `lsusb`.
-2. Create a udev rule with `sudo nano /etc/udev/rules.d/80-USB_WCH-Link.rules`, paste (CTRL+SHIFT+V) `SUBSYSTEM=="usb", ATTR{idVendor}=="1a86", ATTR{idProduct}=="8010", MODE="0666"` and save, replacing the idVendor and idProduct if what you got previously was different.
-3. Reboot or reload the udev rules with `sudo udevadm control --reload-rules && sudo udevadm trigger` 
-4. ???
-5. profit
-Now anyone on your PC has access to the WCH-Link device, so you can stop using sudo for make.  
-I don't think there are any security risks here.
-You may also tie this to the WCH-Link serial number or some other attribute from `udevadm info -a -n /dev/bus/usb/busid/deviceid` with the bus id and device id you got from lsusb earlier.
+Unlike serial interfaces, by default, the USB device is owned by root, has group set to root and everyone else may only read by default.
+The way to allow non-root users/groups to be able to access devices is via udev rules.
+
+minichlink provides a list of udev rules that allows any user in the plugdev group to be able to interact with the programmers it supports.
+
+You can install and load the required udev rules for minichlink by executing the following commands in the root of this Git repository:
+```
+sudo cp minichlink/99-minichlink.rules /etc/udev/rules.d/
+sudo udevadm control --reload-rules && sudo udevadm trigger
+```
+
+If you add support for another programmer in minichlink, you will need to add more rules here.
+
+**Note:** This readme used to recommend manually making these rules under `80-USB_WCH-Link.rules`. If you wish to use the new rules file shipped in this repo, you may want to remove the old rules file.
 
 
 ## minichlink
@@ -160,3 +160,4 @@ You can open a github ticket or join my Discord in the #ch32v003fun channel. htt
  * http://www.wch-ic.com/downloads/QingKeV2_Processor_Manual_PDF.html Processor Manual
  * http://www.wch-ic.com/downloads/CH32V003RM_PDF.html Technical Reference Manual
  * http://www.wch-ic.com/downloads/CH32V003DS0_PDF.html Datasheet
+ * https://github.com/CaiB/CH32V003-Architecture-Exploration/blob/main/InstructionTypes.md Details for the compressed ISA on this chip.
