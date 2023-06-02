@@ -19,27 +19,28 @@ jobs:
     - name: Install Dependencies (Linux)
       if: ${{ matrix.os == 'ubuntu-latest' }}
       run: sudo apt-get update && sudo apt-get install -y build-essential make libusb-1.0-0-dev libudev-dev mingw-w64-x86-64-dev gcc-mingw-w64-x86-64
-    - name: Install Dependencies (Mac)
-      if: ${{ matrix.os == 'ubuntu-latest' }}
-      run: brew install libusb-1.0
+    # we don't need to brew install libusb on Mac, actually preinstalled on the runner! :)
     - name: Build (Linux, Mac)
       run: |
        cd minichlink
        make clean
        make V=1 -j3
-    # we cross-compiel the Windows binaries from Linux 
+    # we cross-compile the Windows binaries from Linux 
     - name: Build (for Windows)
       if: ${{ matrix.os == 'ubuntu-latest' }}
       run: |
         cd minichlink
         OS=Windows_NT make clean
         OS=Windows_NT make V=1 -j3 minichlink.exe
+
     - name: "Pack (Linux)"
       if: ${{ matrix.os == 'ubuntu-latest' }}
       run: tar czf minichlink.tar.gz minichlink/minichlink* minichlink/*.rules
     - name: "Pack (Mac)"
       if: ${{ matrix.os == 'macos-12' }}
       run: tar czf minichlink.tar.gz minichlink/minichlink
+    # no packing needed for Windows as it's .exe only
+
     - name: "Upload minichlink (Linux)"
       if: ${{ matrix.os == 'ubuntu-latest' }}
       uses: actions/upload-artifact@v3
