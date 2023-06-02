@@ -1,0 +1,36 @@
+name: Build minichlink
+
+on: [push, pull_request]
+#    push:
+#        paths:
+#            - minichlink/**
+#    pull_request:
+#        paths:
+#            - minichlink/**
+jobs:
+  build-minichlink:
+    strategy:
+        fail-fast: false
+        matrix:
+            os: [ubuntu-latest] #, windows-latest, macos-12]
+    runs-on: ${{matrix.os}}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install Dependencies (Linux)
+      if: ${{ matrix.os == 'ubunut-latest' }}
+      run: sudo apt-get update && sudo apt-get install -y build-essential make libusb-1.0-0-dev libudev-dev
+    - name: Build
+      run: |
+       cd minichlink
+       make V=1 -j3
+    - name: "Pack: Linux"
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: |
+        cd output
+        tar czf minichlink.tar.gz minichlink/minichlink* minichlink/*.rules
+    - name: "Upload minichlink (Linux)"
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      uses: actions/upload-artifact@v3
+      with:
+         name: minichlink.tar.gz
+         path: minichlink.tar.gz
