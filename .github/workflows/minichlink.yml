@@ -25,9 +25,7 @@ jobs:
        make V=1 -j3
     - name: "Pack: Linux"
       if: ${{ matrix.os == 'ubuntu-latest' }}
-      run: |
-        cd output
-        tar czf minichlink.tar.gz minichlink/minichlink* minichlink/*.rules
+      run: tar czf minichlink.tar.gz minichlink/minichlink* minichlink/*.rules
     - name: "Upload minichlink (Linux)"
       if: ${{ matrix.os == 'ubuntu-latest' }}
       uses: actions/upload-artifact@v3
