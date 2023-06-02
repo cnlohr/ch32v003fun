@@ -1,6 +1,6 @@
 all : flash
 
-TARGET:=tim2_pwm
+TARGET:=remap_pins_tim2
 
 CFLAGS+=-DSTDOUT_UART
 
