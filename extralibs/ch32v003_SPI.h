@@ -333,7 +333,13 @@ static inline uint8_t SPI_is_RX_empty() {
 static inline void SPI_wait_RX_available() {
 	while(!(SPI1->STATR & SPI_STATR_RXNE)) {}
 }
-
+static inline void SPI_wait_not_busy() {
+	while((SPI1->STATR & SPI_STATR_BSY) != 0) {}
+}
+static inline void SPI_wait_transmit_finished() {
+	SPI_wait_TX_complete();
+	SPI_wait_not_busy();
+}
 
 
 //######## implementation block
