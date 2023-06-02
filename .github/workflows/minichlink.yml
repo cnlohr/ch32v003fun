@@ -18,17 +18,28 @@ jobs:
     - uses: actions/checkout@v3
     - name: Install Dependencies (Linux)
       if: ${{ matrix.os == 'ubuntu-latest' }}
-      run: sudo apt-get update && sudo apt-get install -y build-essential make libusb-1.0-0-dev libudev-dev
-    - name: Build
+      run: sudo apt-get update && sudo apt-get install -y build-essential make libusb-1.0-0-dev libudev-dev mingw-w64-x86-64-dev gcc-mingw-w64-x86-64
+    - name: Build (Linux, Mac)
       run: |
        cd minichlink
        make V=1 -j3
-    - name: "Pack: Linux"
+    # we cross-compiel the Windows binaries from Linux 
+    - name: Build (for Windows)
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: |
+        cd minichlink
+        OS=Windows_NT make V=1 -j3 minichlink.exe
+    - name: "Pack (Linux)"
       if: ${{ matrix.os == 'ubuntu-latest' }}
       run: tar czf minichlink.tar.gz minichlink/minichlink* minichlink/*.rules
     - name: "Upload minichlink (Linux)"
       if: ${{ matrix.os == 'ubuntu-latest' }}
       uses: actions/upload-artifact@v3
       with:
-         name: minichlink.tar.gz
          path: minichlink.tar.gz
+    - name: "Upload minichlink (Windows)"
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: minichlink.exe
+        path: minichlink/minichlink.exe
