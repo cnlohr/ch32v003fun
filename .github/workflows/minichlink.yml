@@ -35,10 +35,10 @@ jobs:
 
     - name: "Pack (Linux)"
       if: ${{ matrix.os == 'ubuntu-latest' }}
-      run: tar czf minichlink.tar.gz --strip-components=1 minichlink/minichlink minichlink/minichlink.so minichlink/*.rules
+      run: tar czf minichlink.tar.gz -C minichlink minichlink minichlink.so 99-minichlink.rules
     - name: "Pack (Mac)"
       if: ${{ matrix.os == 'macos-12' }}
-      run: tar czf minichlink.tar.gz --strip-components=1 minichlink/minichlink
+      run: tar czf minichlink.tar.gz -C minichlink minichlink
     # no packing needed for Windows as it's .exe only
 
     - name: "Upload minichlink (Linux)"
