@@ -35,27 +35,27 @@ jobs:
 
     - name: "Pack (Linux)"
       if: ${{ matrix.os == 'ubuntu-latest' }}
-      run: tar czf minichlink.tar.gz minichlink/minichlink* minichlink/*.rules
+      run: tar czf minichlink.tar.gz --strip-components=1 minichlink/minichlink minichlink/minichlink.so minichlink/*.rules
     - name: "Pack (Mac)"
       if: ${{ matrix.os == 'macos-12' }}
-      run: tar czf minichlink.tar.gz minichlink/minichlink
+      run: tar czf minichlink.tar.gz --strip-components=1 minichlink/minichlink
     # no packing needed for Windows as it's .exe only
 
     - name: "Upload minichlink (Linux)"
       if: ${{ matrix.os == 'ubuntu-latest' }}
       uses: actions/upload-artifact@v3
       with:
-        name: Linux minichlink.tar.gz
+        name: minichlink (Linux)
         path: minichlink.tar.gz
     - name: "Upload minichlink (Mac)"
       if: ${{ matrix.os == 'macos-12' }}
       uses: actions/upload-artifact@v3
       with:
-        name: MacOS 12 minichlink.tar.gz
+        name: minichlink (MacOS 12)
         path: minichlink.tar.gz  
     - name: "Upload minichlink (Windows)"
       if: ${{ matrix.os == 'ubuntu-latest' }}
       uses: actions/upload-artifact@v3
       with:
-        name: Windows minichlink.exe
+        name: minichlink (Windows)
         path: minichlink/minichlink.exe
