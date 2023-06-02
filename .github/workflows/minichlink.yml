@@ -29,7 +29,7 @@ jobs:
       if: ${{ matrix.os == 'ubuntu-latest' }}
       run: |
         cd minichlink
-        make clean
+        OS=Windows_NT make clean
         OS=Windows_NT make V=1 -j3 minichlink.exe
     - name: "Pack (Linux)"
       if: ${{ matrix.os == 'ubuntu-latest' }}
