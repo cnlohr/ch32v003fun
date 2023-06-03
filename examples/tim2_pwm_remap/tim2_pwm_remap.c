@@ -1,6 +1,6 @@
 /*
  * Example for using AFIO to remap peripheral outputs to alternate configuration
- * 06-01-2023 B. Roy, based partially on previous work by:
+ * 06-01-2023 B. Roy, based on previous work by:
  * 03-28-2023 E. Brombaugh
  * 05-29-2023 recallmenot adapted from Timer1 to Timer2
  *
