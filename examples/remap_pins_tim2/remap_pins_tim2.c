@@ -150,7 +150,7 @@ int main()
 	SystemInit48HSI();
 
 	// start serial @ default 115200bps
-	SetupUART( UART_BRR );
+	SetupDebugPrintf();
 
 	Delay_Ms( 100 );
 	printf("\r\r\n\ntim2_pwm example, with remap\n\r");

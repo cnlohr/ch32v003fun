@@ -2,7 +2,6 @@ all : flash
 
 TARGET:=remap_pins_tim2
 
-CFLAGS+=-DSTDOUT_UART
 
 include ../../ch32v003fun/ch32v003fun.mk
 
