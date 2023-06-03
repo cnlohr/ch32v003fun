@@ -783,7 +783,8 @@ void handle_reset()
 	csrw 0x804, a3\n\
 	la a0, InterruptVector\n\
 	or a0, a0, a3\n\
-	csrw mtvec, a0\n" );
+	csrw mtvec, a0\n" 
+	: : : "a0", "a3", "memory");
 
 	// Careful: Use registers to prevent overwriting of self-data.
 	// This clears out BSS.
