@@ -765,6 +765,51 @@ void InterruptVectorDefault()
 	.option   pop;\n");
 }
 
+
+
+/*
+SUSPEND ALL INTERRUPTS EXCEPT
+The following 3 functions serve to suspend all interrupts, except for the one you momentarily need.
+The purpose of this is to not disturb the one interrupt of interest and let it run unimpeded.
+procedure:
+1. save the enabled IRQs: uint32_t IRQ_backup = NVIC_get_enabled_IRQs();
+2. disable all IRQs: NVIC_clear_all_IRQs_except(IRQ_of_interest);
+3. restore the previously enabled IRQs: NVIC_restore_IRQs(IRQ_backup);
+
+bit layout of the IRQ backup
+bit		0 | 1 | 2  |  3  | 4  |  5  | 6  .. 22 | 23 .. 28
+IRQn		2 | 3 | 12 | res | 14 | res | 16 .. 31 | 32 .. 38
+IRQn 2 and 3 aren't actually user-settable (see RM).
+
+Specifying an invalid IRQn_to_keep like 0 will disable all interrupts.
+*/
+
+RV_STATIC_INLINE uint32_t NVIC_get_enabled_IRQs()
+{
+	return ( ((NVIC->ISR[0] >> 2) & 0b11) | ((NVIC->ISR[0] >> 12) << 2) | ((NVIC->ISR[1] & 0b1111111) << 23) );
+}
+
+RV_STATIC_INLINE void NVIC_clear_all_IRQs_except(uint8_t IRQn_to_keep)
+{
+	if (!(IRQn_to_keep >> 5)) {		// IRQn_to_keep < 32
+		NVIC->IRER[0] = (~0) & (~(1 << IRQn_to_keep));
+		NVIC->IRER[1] = (~0);
+	}
+	else {
+		IRQn_to_keep = IRQn_to_keep >> 5;
+		NVIC->IRER[0] = (~0);
+		NVIC->IRER[1] = (~0) & (~(1 << IRQn_to_keep));
+	}
+}
+
+RV_STATIC_INLINE void NVIC_restore_IRQs(uint32_t old_state)
+{
+	NVIC->IENR[0] = (old_state >> 2) << 12;
+	NVIC->IENR[1] = old_state >> 23;
+}
+
+
+
 void handle_reset()
 {
 	asm volatile( "\n\

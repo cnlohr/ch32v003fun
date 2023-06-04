@@ -5024,6 +5024,11 @@ void SystemInit24HSI( void );  // No PLL, just raw internal RC oscillator.
 void SystemInitHSE( int HSEBYP );
 void SystemInitHSEPLL( int HSEBYP );
 
+// SUSPEND ALL INTERRUPTS EXCEPT
+RV_STATIC_INLINE uint32_t NVIC_get_enabled_IRQs();
+RV_STATIC_INLINE void NVIC_clear_all_IRQs_except(uint8_t IRQn_to_keep);
+RV_STATIC_INLINE void NVIC_restore_IRQs(uint32_t old_state);
+
 #define UART_BAUD_RATE 115200
 #define OVER8DIV 4
 #define INTEGER_DIVIDER (((25 * (APB_CLOCK)) / ((OVER8DIV) * (UART_BAUD_RATE))))
