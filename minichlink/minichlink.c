@@ -39,6 +39,10 @@ void * MiniCHLinkInitAsDLL( struct MiniChlinkFunctions ** MCFO )
 	{
 		fprintf( stderr, "Found NHC-Link042 Programmer\n" );
 	}
+	else if ((dev = TryInit_B003Fun()))
+	{
+		fprintf( stderr, "Found B003Fun Bootloader\n" );
+	}
 	else
 	{
 		fprintf( stderr, "Error: Could not initialize any supported programmers\n" );

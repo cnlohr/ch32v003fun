@@ -1,7 +1,7 @@
 TOOLS:=minichlink minichlink.so
 
 CFLAGS:=-O0 -g3 -Wall
-C_S:=minichlink.c pgm-wch-linke.c pgm-esp32s2-ch32xx.c nhc-link042.c minichgdb.c
+C_S:=minichlink.c pgm-wch-linke.c pgm-esp32s2-ch32xx.c nhc-link042.c minichgdb.c pgm-b003fun.c
 
 # General Note: To use with GDB, gdb-multiarch
 # gdb-multilib {file}
