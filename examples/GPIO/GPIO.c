@@ -15,7 +15,7 @@
 
 #include "../../ch32v003fun/ch32v003fun.h"
 
-#include "../../lib/ch32v003_GPIO_branchless.h"
+#include "../../extralibs/ch32v003_GPIO_branchless.h"
 
 #include <stdio.h>
 
