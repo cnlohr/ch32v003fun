@@ -18,4 +18,6 @@ Connect a 10k pot between GND and VCC, wiper to D6.
 The desired demo may be selected in GPIO.c by setting it to 1 and the others to 0.
 Marvel at the colorful glory.  
 
-[[[VIDEO]]]
+
+
+https://github.com/recallmenot/ch32v003fun/assets/104343143/afb4027d-a609-467a-96c5-0cc3283366a4
