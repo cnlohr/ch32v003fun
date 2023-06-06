@@ -5,8 +5,7 @@ This Arduino-like GPIO library offers
  * analog-to-digital
  * digital-to-analog (PWM)
 
-Great care has been taken to make the resulting code as fast and tiny as possible.  
-Let the compiler suffer!  
+Great care has been taken to make the resulting code as fast and tiny as possible. Let the compiler suffer!  
 Hand-written blink compiles to 500 bytes, blink using this library compiles to 504 bytes!  
 
 # GPIO Example
