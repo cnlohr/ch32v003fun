@@ -1,14 +1,22 @@
-# GPIO Libaray
-On the shoulders of the Blink example, this Arduino-like GPIO library stands.
+# one GPIO libaray to rule them all
 
-All pins are adressable as outputs, inputs, with pull-up, etc.
-The pins are in an enum, so you can call them by their name and iterate over them.
+This Arduino-like GPIO library offers
+ * digital IO
+ * analog-to-digital
+ * digital-to-analog (PWM)
 
-It's your responsibility to not blow up a pin.
-Only use one pin for one thing and you should be fine.
+Great care has been taken to make the resulting code as fast and tiny as possible. Let the compiler suffer!  
+Hand-written blink compiles to 500 bytes, blink using this library compiles to 504 bytes!  
 
 # GPIO Example
-Connect LED + 1k resistor to each pin (C0 to C7 and D4) and GND.
-Marvel at the colorful glory.
 
-https://user-images.githubusercontent.com/104343143/231585338-725f1197-dfa0-484d-8707-f0824af80b7e.mp4
+Connect LED + 1k resistor to each LED pin (C0 to C7 and D4) and GND.  
+Connect a button to GND and D3.  
+Connect a 10k pot between GND and VCC, wiper to D6.  
+
+The desired demo may be selected in GPIO.c by setting it to 1 and the others to 0.  
+Marvel at the colorful glory.  
+
+
+
+https://github.com/recallmenot/ch32v003fun/assets/104343143/afb4027d-a609-467a-96c5-0cc3283366a4
