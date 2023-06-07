@@ -158,7 +158,10 @@ enum GPIO_tim2_output_sets {
 #define GPIO_pinMode(GPIO_port_n, pin, pinMode, GPIO_Speed)
 
 // digital
+#define GPIO_digitalWrite_hi(GPIO_port_n, pin)
+#define GPIO_digitalWrite_lo(GPIO_port_n, pin)
 #define GPIO_digitalWrite(GPIO_port_n, pin, lowhigh)
+#define GPIO_digitalWrite_branching(GPIO_port_n, pin, lowhigh)
 #define GPIO_digitalRead(GPIO_port_n, pin)
 
 // analog to digital
@@ -275,7 +278,9 @@ static inline void GPIO_tim2_init();
 	GPIO_pinMode_set_PUPD(pinMode, GPIO_port_n, pin);							\
 })
 
+#undef GPIO_digitalWrite_hi
 #define GPIO_digitalWrite_hi(GPIO_port_n, pin)		GPIO_port_n_to_GPIOx(GPIO_port_n)->BSHR = (1 << pin)
+#undef GPIO_digitalWrite_lo
 #define GPIO_digitalWrite_lo(GPIO_port_n, pin)		GPIO_port_n_to_GPIOx(GPIO_port_n)->BSHR = (1 << (pin + 16))
 
 #undef GPIO_digitalWrite
@@ -285,6 +290,9 @@ static inline void GPIO_tim2_init();
 #define GPIO_digitalWrite_0(GPIO_port_n, pin)		GPIO_digitalWrite_lo(GPIO_port_n, pin)
 #define GPIO_digitalWrite_high(GPIO_port_n, pin)	GPIO_digitalWrite_hi(GPIO_port_n, pin)
 #define GPIO_digitalWrite_1(GPIO_port_n, pin)		GPIO_digitalWrite_hi(GPIO_port_n, pin)
+
+#undef GPIO_digitalWrite_branching
+#define GPIO_digitalWrite_branching(GPIO_port_n, pin, lowhigh)		(lowhigh ? GPIO_digitalWrite_hi(GPIO_port_n, pin) : GPIO_digitalWrite_lo(GPIO_port_n, pin))
 
 #undef GPIO_digitalRead
 #define GPIO_digitalRead(GPIO_port_n, pin)	 	((GPIO_port_n_to_GPIOx(GPIO_port_n)->INDR >> pin) & 0b1)
