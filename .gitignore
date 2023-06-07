@@ -4,6 +4,7 @@
 *.elf
 *.hex
 *.lst
+*.bin
 *.map
 minichlink/minichlink
 minichlink/minichlink.so
