@@ -1,3 +1,5 @@
+// 2023-06-07 recallmenot
+
 //######## necessities
 
 // include guards
@@ -148,7 +150,7 @@ enum GPIO_tim2_output_sets {
 
 
 
-//######## function overview: use these!
+//######## interface function overview: use these!
 // most functions have been reduced to function-like macros, actual definitions downstairs
 
 // setup
@@ -461,17 +463,4 @@ static inline void GPIO_tim2_init() {
 	TIM2->SWEVGR |= TIM_UG;							\
 })
 
-
-
-//######## small internal function definitions, static inline
-
-
-
-//######## implementation block
-//#define CH32V003_GPIO_ITER_IMPLEMENTATION //enable so LSP can give you text colors while working on the implementation block, disable for normal use of the library
-#if defined(CH32V003_GPIO_ITER_IMPLEMENTATION)
-
-
-
-#endif // CH32V003_GPIO_ITER_IMPLEMENTATION
 #endif // CH32V003_GPIO_BR_H
