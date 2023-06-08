@@ -52,7 +52,8 @@ gdbserver :
 clangd :
 	make clean
 	bear -- make build
-	echo "CompileFlags:\n  Remove: [-march=*, -mabi=*]" > .clangd
+	@echo "CompileFlags:" > .clangd
+	@echo "  Remove: [-march=*, -mabi=*]" >> .clangd
 
 clangd_clean :
 	rm -f compile_commands.json .clangd
