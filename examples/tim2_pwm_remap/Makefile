@@ -1,9 +1,7 @@
 all : flash
 
-TARGET:=GPIO_analogRead
+TARGET:=tim2_pwm_remap
 
-CFLAGS+=-DTINYVECTOR
-ADDITIONAL_C_FILES+=../../extralibs/wiring.c
 
 include ../../ch32v003fun/ch32v003fun.mk
 

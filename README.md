@@ -42,7 +42,8 @@ Via gdbserver built into minichlink!  It works with `gdb-multiarch` as well as i
 
 ## System Prep
 
-For installation instructions, see the [https://github.com/cnlohr/ch32v003fun/wiki/Installation](wiki page here)
+For installation instructions, see the [wiki page here](https://github.com/cnlohr/ch32v003fun/wiki/Installation)
+
 
 You can use the pre-compiled minichlink or go to minichlink dir and `make` it.
 
