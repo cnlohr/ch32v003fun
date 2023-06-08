@@ -53,6 +53,7 @@ clangd :
 
 clangd_clean :
 	rm -f compile_commands.json .clangd
+	rm -rf .cache
 
 cv_flash : $(TARGET).bin
 	make -C $(MINICHLINK) all
