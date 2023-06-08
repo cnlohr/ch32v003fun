@@ -49,9 +49,10 @@ gdbserver :
 clangd :
 	make clean
 	bear -- make build
+	echo "CompileFlags:\n  Remove: [-march=*, -mabi=*]" > .clangd
 
 clangd_clean :
-	rm -f compile_commands.json
+	rm -f compile_commands.json .clangd
 
 cv_flash : $(TARGET).bin
 	make -C $(MINICHLINK) all
