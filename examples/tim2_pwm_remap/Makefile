@@ -1,9 +1,7 @@
 all : flash
 
-TARGET:=GPIO
+TARGET:=tim2_pwm_remap
 
-CFLAGS+=-DTINYVECTOR
-CFLAGS+=-DSTDOUT_UART
 
 include ../../ch32v003fun/ch32v003fun.mk
 

@@ -720,6 +720,7 @@ void InterruptVectorDefault()
 {
 	asm volatile( "\n\
 	.align  2\n\
+	.option   push;\n\
 	.option   norvc;\n\
 	j handle_reset\n\
 	.word   0\n\
@@ -760,7 +761,8 @@ void InterruptVectorDefault()
 	.word   TIM1_UP_IRQHandler        /* TIM1 Update */                    \n\
 	.word   TIM1_TRG_COM_IRQHandler   /* TIM1 Trigger and Commutation */   \n\
 	.word   TIM1_CC_IRQHandler        /* TIM1 Capture Compare */           \n\
-	.word   TIM2_IRQHandler           /* TIM2 */                           \n");
+	.word   TIM2_IRQHandler           /* TIM2 */                           \n\
+	.option   pop;\n");
 }
 
 void handle_reset()
@@ -781,7 +783,8 @@ void handle_reset()
 	csrw 0x804, a3\n\
 	la a0, InterruptVector\n\
 	or a0, a0, a3\n\
-	csrw mtvec, a0\n" );
+	csrw mtvec, a0\n" 
+	: : : "a0", "a3", "memory");
 
 	// Careful: Use registers to prevent overwriting of self-data.
 	// This clears out BSS.
@@ -808,8 +811,11 @@ asm volatile(
 #ifdef CPLUSPLUS
 	// Call __libc_init_array function
 "	call %0 \n\t"
-: : "i" (__libc_init_array) :
+: : "i" (__libc_init_array)
+#else
+: :
 #endif
+: "a0", "a1", "a2", "a3", "memory"
 );
 
 	SETUP_SYSTICK_HCLK

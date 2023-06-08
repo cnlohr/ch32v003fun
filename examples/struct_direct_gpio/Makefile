@@ -1,9 +1,6 @@
 all : flash
 
-TARGET:=GPIO
-
-CFLAGS+=-DTINYVECTOR
-CFLAGS+=-DSTDOUT_UART
+TARGET:=struct_direct_gpio
 
 include ../../ch32v003fun/ch32v003fun.mk
 

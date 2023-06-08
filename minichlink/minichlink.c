@@ -462,6 +462,11 @@ keep_going:
 				else
 				{
 					FILE * f = fopen( fname, "rb" );
+					if( !f )
+					{
+						fprintf( stderr, "Error: Could not open %s\n", fname );
+						return -55;
+					}
 					fseek( f, 0, SEEK_END );
 					len = ftell( f );
 					fseek( f, 0, SEEK_SET );
