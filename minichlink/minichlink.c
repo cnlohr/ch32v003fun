@@ -539,7 +539,8 @@ help:
 	fprintf( stderr, " -u Clear all code flash - by power off (also can unbrick)\n" );
 	fprintf( stderr, " -b Reboot out of Halt\n" );
 	fprintf( stderr, " -e Resume from halt\n" );
-	fprintf( stderr, " -a Place into Halt\n" );
+	fprintf( stderr, " -a Reboot into Halt\n" );
+	fprintf( stderr, " -A Go into Halt without reboot\n" );
 	fprintf( stderr, " -D Configure NRST as GPIO\n" );
 	fprintf( stderr, " -d Configure NRST as NRST\n" );
 	fprintf( stderr, " -s [debug register] [value]\n" );
