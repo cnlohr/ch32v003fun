@@ -80,6 +80,10 @@ This puts the defaults at an inaudible 23.4kHz.
 The higher the frequency, the greater the EMI radiation will be.
 With low frequencies, say below 1000Hz, LEDs may exhibit perceivable flicker.
 
+Since this library enables compare capture preload (OCxPE of CHCTLRy), writing a value into the compare register using analogWrite will automatically apply it (=load into shadow register) when the timer starts its next cycle.
+This avoids a bug whereby writing a compare value lower than the current counter value, the output will glitch high for the next cycle, resulting in flickery updates.
+Writing `TIMx->SWEVGR |= TIM_UG` will immediately update the shadow register and cause the same issue.
+
 */
 
 
@@ -463,12 +467,10 @@ static inline void GPIO_tim2_init() {
 #undef GPIO_tim1_analogWrite
 #define GPIO_tim1_analogWrite(channel, value) ({				\
 	TIM1->GPIO_timer_CVR(channel) = value;					\
-	TIM1->SWEVGR |= TIM_UG;							\
 })
 #undef GPIO_tim2_analogWrite
 #define GPIO_tim2_analogWrite(channel, value) ({				\
 	TIM2->GPIO_timer_CVR(channel) = value;					\
-	TIM2->SWEVGR |= TIM_UG;							\
 })
 
 #endif // CH32V003_GPIO_BR_H
