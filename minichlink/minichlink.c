@@ -1052,23 +1052,31 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 			{
 				MCF.ReadBinaryBlob( dev, base, 64, tempblock );
 
-				MCF.Erase( dev, base, 64, 0 );
-				MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG ); // THIS IS REQUIRED, (intptr_t)&FLASH->CTLR = 0x40022010
-				MCF.WriteWord( dev, 0x40022010, CR_BUF_RST | CR_PAGE_PG );  // (intptr_t)&FLASH->CTLR = 0x40022010
-
 				// Permute tempblock
 				int tocopy = end_o_plus_one_in_block - offset_in_block;
 				memcpy( tempblock + offset_in_block, blob + rsofar, tocopy );
 				rsofar += tocopy;
 
-				int j;
-				for( j = 0; j < 16; j++ )
+				if( MCF.BlockWrite64 ) 
 				{
-					MCF.WriteWord( dev, j*4+base, *(uint32_t*)(tempblock + j * 4) );
-					rsofar += 4;
+					int r = MCF.BlockWrite64( dev, base, tempblock );
+					if( r ) return r;
 				}
-				MCF.WriteWord( dev, 0x40022014, base );  //0x40022014 -> FLASH->ADDR
-				MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG|CR_STRT_Set ); // 0x40022010 -> FLASH->CTLR
+				else
+				{
+					MCF.Erase( dev, base, 64, 0 );
+					MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG ); // THIS IS REQUIRED, (intptr_t)&FLASH->CTLR = 0x40022010
+					MCF.WriteWord( dev, 0x40022010, CR_BUF_RST | CR_PAGE_PG );  // (intptr_t)&FLASH->CTLR = 0x40022010
+
+					int j;
+					for( j = 0; j < 16; j++ )
+					{
+						MCF.WriteWord( dev, j*4+base, *(uint32_t*)(tempblock + j * 4) );
+						rsofar += 4;
+					}
+					MCF.WriteWord( dev, 0x40022014, base );  //0x40022014 -> FLASH->ADDR
+					MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG|CR_STRT_Set ); // 0x40022010 -> FLASH->CTLR
+				}
 				if( MCF.WaitForFlash && MCF.WaitForFlash( dev ) ) goto timedout;
 			}
 			else

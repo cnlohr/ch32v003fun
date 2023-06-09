@@ -100,6 +100,17 @@ int ESPFlushLLCommands( void * dev )
 
 	eps->commandbuffer[0] = 0xad; // Key report ID
 	eps->commandbuffer[eps->commandplace] = 0xff;
+
+#if 0
+	int i;
+	for( i = 0; i < eps->commandplace; i++ )
+	{
+		if( ( i & 0xff ) == 0 ) printf( "\n" );
+		printf( "%02x ", eps->commandbuffer[i] );
+	}
+	printf("\n" );
+#endif
+
 	r = hid_send_feature_report( eps->hd, eps->commandbuffer, 255 );
 	eps->commandplace = 1;
 	if( r < 0 )
@@ -228,17 +239,29 @@ int ESPBlockWrite64( void * dev, uint32_t address_to_write, uint8_t * data )
 {
 	struct ESP32ProgrammerStruct * eps = (struct ESP32ProgrammerStruct *)dev;
 	ESPFlushLLCommands( dev );
+
 	Write2LE( eps, 0x0bfe );
 	Write4LE( eps, address_to_write );
 	int i;
+	int timeout = 0;
 	for( i = 0; i < 64; i++ ) Write1( eps, data[i] );
+
+	// Not sure why this is needed.
+	ESPWaitForDoneOp( dev, 0 );
+
 	do
 	{
 		ESPFlushLLCommands( dev );
+		timeout++;
+		if( timeout > 1000 )
+		{
+			fprintf( stderr, "Error: Timed out block-writing 64\n" );
+			return -49;
+		}
 	} while( eps->replylen < 2 );
-	
-	// Not sure why this is needed.
-	ESPWaitForDoneOp( dev, 0 );
+
+	//printf( "Reply %d: %02x %02x %02x %02x %08x\n", timeout, eps->reply[0], eps->reply[1], eps->reply[2], eps->reply[3], address_to_write );
+
 
 	return eps->reply[1];
 }
@@ -342,7 +365,8 @@ int ESPPollTerminal( void * dev, uint8_t * buffer, int maxlen, uint32_t leavefla
 	int rlen = eps->reply[0];
 	if( rlen < 1 ) return -8;
 
-/*
+
+#if 0
 	int i;
 
 	printf( "RESP (ML %d): %d\n", maxlen,eps->reply[0] );
@@ -353,7 +377,8 @@ int ESPPollTerminal( void * dev, uint8_t * buffer, int maxlen, uint32_t leavefla
 		if( (i % 16) == 15 ) printf( "\n" );
 	}
 	printf( "\n" );
-*/
+#endif
+
 	int errc = eps->reply[1];
 	if( errc > 7 ) return -7;
 

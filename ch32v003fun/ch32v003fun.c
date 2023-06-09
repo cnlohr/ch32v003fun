@@ -780,7 +780,6 @@ void handle_reset()
 "	li a0, 0x80\n\
 	csrw mstatus, a0\n\
 	li a3, 0x3\n\
-	csrw 0x804, a3\n\
 	la a0, InterruptVector\n\
 	or a0, a0, a3\n\
 	csrw mtvec, a0\n" 
