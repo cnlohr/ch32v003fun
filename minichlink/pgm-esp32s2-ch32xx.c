@@ -256,6 +256,7 @@ int ESPBlockWrite64( void * dev, uint32_t address_to_write, uint8_t * data )
 		if( timeout > 1000 )
 		{
 			fprintf( stderr, "Error: Timed out block-writing 64\n" );
+			return -49;
 		}
 	} while( eps->replylen < 2 );
 
@@ -364,7 +365,8 @@ int ESPPollTerminal( void * dev, uint8_t * buffer, int maxlen, uint32_t leavefla
 	int rlen = eps->reply[0];
 	if( rlen < 1 ) return -8;
 
-/*
+
+#if 0
 	int i;
 
 	printf( "RESP (ML %d): %d\n", maxlen,eps->reply[0] );
@@ -375,7 +377,8 @@ int ESPPollTerminal( void * dev, uint8_t * buffer, int maxlen, uint32_t leavefla
 		if( (i % 16) == 15 ) printf( "\n" );
 	}
 	printf( "\n" );
-*/
+#endif
+
 	int errc = eps->reply[1];
 	if( errc > 7 ) return -7;
 
