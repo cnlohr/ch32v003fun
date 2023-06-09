@@ -237,17 +237,17 @@ int ESPExit( void * dev )
 
 int ESPBlockWrite64( void * dev, uint32_t address_to_write, uint8_t * data )
 {
+	int writeretry = 0;
 	struct ESP32ProgrammerStruct * eps = (struct ESP32ProgrammerStruct *)dev;
 	ESPFlushLLCommands( dev );
+
+retry:
 
 	Write2LE( eps, 0x0bfe );
 	Write4LE( eps, address_to_write );
 	int i;
 	int timeout = 0;
 	for( i = 0; i < 64; i++ ) Write1( eps, data[i] );
-
-	// Not sure why this is needed.
-	ESPWaitForDoneOp( dev, 0 );
 
 	do
 	{
@@ -260,10 +260,17 @@ int ESPBlockWrite64( void * dev, uint32_t address_to_write, uint8_t * data )
 		}
 	} while( eps->replylen < 2 );
 
-	//printf( "Reply %d: %02x %02x %02x %02x %08x\n", timeout, eps->reply[0], eps->reply[1], eps->reply[2], eps->reply[3], address_to_write );
+	if( eps->reply[1] )
+	{
+		fprintf( stderr, "Error: Got code %d from ESP write algo. %d [%02x %02x %02x]\n", (char)eps->reply[1], eps->replylen, eps->reply[0], eps->reply[1], eps->reply[2] );
+		if( writeretry < 10 )
+		{
+			writeretry++;
+			goto retry;
+		}
+	}
 
-
-	return eps->reply[1];
+	return (char)eps->reply[1];
 }
 
 int ESPPerformSongAndDance( void * dev )

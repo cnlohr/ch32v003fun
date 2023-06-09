@@ -20,6 +20,7 @@
 static int64_t StringToMemoryAddress( const char * number ) __attribute__((used));
 static void StaticUpdatePROGBUFRegs( void * dev ) __attribute__((used));
 static int InternalUnlockBootloader( void * dev ) __attribute__((used));
+int DefaultReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t read_size, uint8_t * blob );
 
 void TestFunction(void * v );
 struct MiniChlinkFunctions MCF;
@@ -170,6 +171,10 @@ keep_going:
 				if( !MCF.HaltMode || MCF.HaltMode( dev, 0 ) )
 					goto unimplemented;
 				break;
+			case 'A':  // Halt without reboot
+				if( !MCF.HaltMode || MCF.HaltMode( dev, 5 ) )
+					goto unimplemented;
+				break;
 
 			// disable NRST pin (turn it into a GPIO)
 			case 'd':  // see "RSTMODE" in datasheet
@@ -204,8 +209,7 @@ keep_going:
 				else
 				{
 					// In case we aren't running already.
-					MCF.HaltMode( dev, 2 );
-
+					//MCF.HaltMode( dev, 2 );
 					//XXX TODO: Why do some programmers start automatically, and others don't? 
 				}
 
@@ -324,7 +328,7 @@ keep_going:
 			}
 			case 'r':
 			{
-				if( MCF.HaltMode ) MCF.HaltMode( dev, 0 );
+				if( MCF.HaltMode ) MCF.HaltMode( dev, 5 ); //No need to reboot.
 
 				if( argchar[2] != 0 )
 				{
@@ -404,8 +408,6 @@ keep_going:
 			}
 			case 'w':
 			{
-				if( MCF.HaltMode ) MCF.HaltMode( dev, 0 );
-
 				if( argchar[2] != 0 ) goto help;
 				iarg++;
 				argchar = 0; // Stop advancing
@@ -492,6 +494,8 @@ keep_going:
 					exit( -9 );
 				}
 
+				int is_flash = ( offset & 0xff000000 ) == 0x08000000 || ( offset & 0x1FFFF800 ) == 0x1FFFF000;
+				if( MCF.HaltMode ) MCF.HaltMode( dev, is_flash?0:5 );
 
 				if( MCF.WriteBinaryBlob )
 				{
@@ -952,7 +956,6 @@ static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t dat
 	return ret;
 }
 
-
 int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob_size, uint8_t * blob )
 {
 	// NOTE IF YOU FIX SOMETHING IN THIS FUNCTION PLEASE ALSO UPDATE THE PROGRAMMERS.
@@ -979,7 +982,7 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 			int r = MCF.BlockWrite64( dev, address_to_write + i, blob + i );
 			if( r )
 			{
-				fprintf( stderr, "Error writing block at memory %08x\n", address_to_write );
+				fprintf( stderr, "Error writing block at memory %08x / Error: %d\n", address_to_write, r );
 				return r;
 			}
 		}
@@ -1015,7 +1018,7 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 				rsofar += 64;
 				if( r )
 				{
-					fprintf( stderr, "Error writing block at memory %08x\n", base );
+					fprintf( stderr, "Error writing block at memory %08x (error = %d)\n", base, r );
 					return r;
 				}
 			}
@@ -1125,7 +1128,25 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 	}
 
 	MCF.FlushLLCommands( dev );
-	if(MCF.DelayUS) MCF.DelayUS( dev, 100 ); // Why do we need this?
+
+#if 0
+	{
+		uint8_t scratch[blob_size];
+		int rrr = DefaultReadBinaryBlob( dev, address_to_write, blob_size, scratch );
+		int i;
+		printf( "Read op: %d\n", rrr );
+		for( i = 0; i < blob_size; i++ )
+		{
+			if( scratch[i] != blob[i] )
+			{
+				printf( "DISAGREE: %04x\n", i );
+				i = (i & ~0x3f) + 0x40-1;
+			}
+		}
+	}
+#endif
+
+	if(MCF.DelayUS) MCF.DelayUS( dev, 100 ); // Why do we need this? (We seem to need this on the WCH programmers?)
 	return 0;
 timedout:
 	fprintf( stderr, "Timed out\n" );
@@ -1437,13 +1458,16 @@ static int DefaultHaltMode( void * dev, int mode )
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
 	switch ( mode )
 	{
+	case 5: // Don't reboot.
 	case 0:
 		MCF.WriteReg32( dev, DMSHDWCFGR, 0x5aa50000 | (1<<10) ); // Shadow Config Reg
 		MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // CFGR (1<<10 == Allow output from slave)
 		MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // Bug in silicon?  If coming out of cold boot, and we don't do our little "song and dance" this has to be called.
 
 		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
-		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
+		if( mode == 0 ) MCF.WriteReg32( dev, DMCONTROL, 0x80000003 ); // Reboot.
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Re-initiate a halt request.
+
 //		MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.  This is recommended, but not doing it seems more stable.
 		// Sometimes, even if the processor is halted but the MSB is clear, it will spuriously start?
 		MCF.FlushLLCommands( dev );
@@ -1478,6 +1502,8 @@ static int DefaultHaltMode( void * dev, int mode )
 		MCF.WriteReg32( dev, DMCONTROL, 0x40000001 ); // resumereq
 		MCF.FlushLLCommands( dev );
 		break;
+	default:
+		fprintf( stderr, "Error: Unknown halt mode %d\n", mode );
 	}
 #if 0
 	int i;
@@ -1750,7 +1776,7 @@ int DefaultConfigureNRSTAsGPIO( void * dev, int one_if_yes_gpio  )
 int DefaultPrintChipInfo( void * dev )
 {
 	uint32_t reg;
-	MCF.HaltMode( dev, 0 );
+	MCF.HaltMode( dev, 5 );
 
 	if( MCF.ReadWord( dev, 0x1FFFF800, &reg ) ) goto fail;	
 	printf( "USER/RDPR: %08x\n", reg );
