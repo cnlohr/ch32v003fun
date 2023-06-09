@@ -64,4 +64,6 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: minichlink (Windows)
-        path: minichlink/minichlink.exe
+        path: | 
+          minichlink/minichlink.exe
+          minichlink/libusb-1.0.dll

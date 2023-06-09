@@ -9,7 +9,7 @@ C_S:=minichlink.c pgm-wch-linke.c pgm-esp32s2-ch32xx.c nhc-link042.c minichgdb.c
 
 ifeq ($(OS),Windows_NT)
 	LDFLAGS:=-L. -lpthread -lusb-1.0 -lsetupapi -lws2_32
-	CFLAGS:=-Os -s -Wall
+	CFLAGS:=-Os -s -Wall -D_WIN32_WINNT=0x0600
 	TOOLS:=minichlink.exe
 else
 	OS_NAME := $(shell uname -s | tr A-Z a-z)
