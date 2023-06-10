@@ -3875,7 +3875,7 @@ typedef struct
 
 /* SPI_data_direction */
 #define SPI_Direction_2Lines_FullDuplex    ((uint16_t)0x0000)
-#define SPI_Direction_2Lines_RxOnly        ((uint16_t)0x0400)
+#define SPI_Direction_2Lines_RxOnly        ((uint16_t)0x4000)
 #define SPI_Direction_1Line_Rx             ((uint16_t)0x8000)
 #define SPI_Direction_1Line_Tx             ((uint16_t)0xC000)
 
