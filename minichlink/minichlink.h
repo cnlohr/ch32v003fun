@@ -77,6 +77,8 @@ struct MiniChlinkFunctions
 
 	int (*WriteByte)( void * dev, uint32_t address_to_write, uint8_t data );
 	int (*ReadByte)( void * dev, uint32_t address_to_read, uint8_t * data );
+
+	int (*TargetReset)( void * dev, int reset );
 };
 
 /** If you are writing a driver, the minimal number of functions you can implement are:
@@ -150,6 +152,7 @@ extern struct MiniChlinkFunctions MCF;
 void * TryInit_WCHLinkE();
 void * TryInit_ESP32S2CHFUN();
 void * TryInit_NHCLink042(void);
+void * TryInit_Ardulink();
 
 // Returns 0 if ok, populated, 1 if not populated.
 int SetupAutomaticHighLevelFunctions( void * dev );
