@@ -309,6 +309,21 @@ static int LEConfigureNRSTAsGPIO( void * d, int one_if_yes_gpio )
 	return 0;
 }
 
+static int LEConfigureReadProtection( void * d, int one_if_yes_protect )
+{
+	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
+
+	if( one_if_yes_protect )
+	{
+		wch_link_multicommands( (libusb_device_handle *)dev, 2, 11, "\x81\x06\x08\x03\xf7\xff\xff\xff\xff\xff\xff", 4, "\x81\x0b\x01\x01" );
+	}
+	else
+	{
+		wch_link_multicommands( (libusb_device_handle *)dev, 2, 11, "\x81\x06\x08\x02\xf7\xff\xff\xff\xff\xff\xff", 4, "\x81\x0b\x01\x01" );
+	}
+	return 0;
+}
+
 int LEExit( void * d )
 {
 	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
@@ -337,6 +352,7 @@ void * TryInit_WCHLinkE()
 	MCF.Control5v = LEControl5v;
 	MCF.Unbrick = LEUnbrick;
 	MCF.ConfigureNRSTAsGPIO = LEConfigureNRSTAsGPIO;
+	MCF.ConfigureReadProtection = LEConfigureReadProtection;
 
 	MCF.Exit = LEExit;
 	return ret;

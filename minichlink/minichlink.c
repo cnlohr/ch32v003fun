@@ -191,6 +191,20 @@ keep_going:
 				else
 					goto unimplemented;
 				break;
+			case 'p': 
+				if( MCF.HaltMode ) MCF.HaltMode( dev, 0 );
+				if( MCF.ConfigureReadProtection )
+					MCF.ConfigureReadProtection( dev, 0 );
+				else
+					goto unimplemented;
+				break;
+			case 'P':
+				if( MCF.HaltMode ) MCF.HaltMode( dev, 0 );
+				if( MCF.ConfigureReadProtection )
+					MCF.ConfigureReadProtection( dev, 1 );
+				else
+					goto unimplemented;
+				break;
 			case 'G':
 			case 'T':
 			{
@@ -305,7 +319,7 @@ keep_going:
 					goto unimplemented;
 				break;
 			}
-			case 'p':
+			case 'i':
 			{
 				if( MCF.PrintChipInfo )
 					MCF.PrintChipInfo( dev ); 
@@ -547,8 +561,8 @@ help:
 	fprintf( stderr, " -m [debug register]\n" );
 	fprintf( stderr, " -T Terminal Only\n" );
 	fprintf( stderr, " -G Terminal + GDB\n" );
-//	fprintf( stderr, " -P Enable Read Protection (UNTESTED)\n" );
-//	fprintf( stderr, " -p Disable Read Protection (UNTESTED)\n" );
+	fprintf( stderr, " -P Enable Read Protection\n" );
+	fprintf( stderr, " -p Disable Read Protection\n" );
 	fprintf( stderr, " -w [binary image to write] [address, decimal or 0x, try0x08000000]\n" );
 	fprintf( stderr, " -r [output binary image] [memory address, decimal or 0x, try 0x08000000] [size, decimal or 0x, try 16384]\n" );
 	fprintf( stderr, "   Note: for memory addresses, you can use 'flash' 'launcher' 'bootloader' 'option' 'ram' and say \"ram+0x10\" for instance\n" );
@@ -1772,6 +1786,12 @@ int DefaultConfigureNRSTAsGPIO( void * dev, int one_if_yes_gpio  )
 	printf( "RET: %d\n", ret );
 	return 0;
 #endif
+}
+
+int DefaultConfigureReadProtection( void * dev, int one_if_yes_protect  )
+{
+	fprintf( stderr, "Error: DefaultConfigureReadProtection does not work via the programmer here.  Please see the demo \"optionbytes\"\n" );
+	return -5;
 }
 
 int DefaultPrintChipInfo( void * dev )
