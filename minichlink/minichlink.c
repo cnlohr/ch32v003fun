@@ -558,6 +558,7 @@ help:
 	fprintf( stderr, " -A Go into Halt without reboot\n" );
 	fprintf( stderr, " -D Configure NRST as GPIO\n" );
 	fprintf( stderr, " -d Configure NRST as NRST\n" );
+	fprintf( stderr, " -i Show chip info\n" );
 	fprintf( stderr, " -s [debug register] [value]\n" );
 	fprintf( stderr, " -m [debug register]\n" );
 	fprintf( stderr, " -T Terminal Only\n" );
@@ -1801,13 +1802,13 @@ int DefaultPrintChipInfo( void * dev )
 	MCF.HaltMode( dev, 5 );
 
 	if( MCF.ReadWord( dev, 0x1FFFF800, &reg ) ) goto fail;	
-	printf( "USER/RDPR: %08x\n", reg );
-/*	if( MCF.ReadWord( dev, 0x1FFFF804, &reg ) ) goto fail;	
-	printf( "NDATA: %08x\n", reg );
+	printf( "USER/RDPR  : %04x/%04x\n", reg>>16, reg&0xFFFF );
+	if( MCF.ReadWord( dev, 0x1FFFF804, &reg ) ) goto fail;	
+	printf( "DATA1/DATA0: %04x/%04x\n", reg>>16, reg&0xFFFF );
 	if( MCF.ReadWord( dev, 0x1FFFF808, &reg ) ) goto fail;	
-	printf( "WRPR01: %08x\n", reg );
+	printf( "WRPR1/WRPR0: %04x/%04x\n", reg>>16, reg&0xFFFF );
 	if( MCF.ReadWord( dev, 0x1FFFF80c, &reg ) ) goto fail;	
-	printf( "WRPR23: %08x\n", reg );*/
+	printf( "WRPR3/WRPR2: %04x/%04x\n", reg>>16, reg&0xFFFF );
 	if( MCF.ReadWord( dev, 0x1FFFF7E0, &reg ) ) goto fail;
 	printf( "Flash Size: %d kB\n", (reg&0xffff) );
 	if( MCF.ReadWord( dev, 0x1FFFF7E8, &reg ) ) goto fail;	
