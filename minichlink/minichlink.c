@@ -1307,30 +1307,26 @@ static int DefaultReadWord( void * dev, uint32_t address_to_read, uint32_t * dat
 		{
 			MCF.WriteReg32( dev, DMABSTRACTAUTO, 0 ); // Disable Autoexec.
 
-			// lw x8,0(x11) // Pull the address from DATA1
-			// lw x9,0(x8)  // Read the data at that location.
-			MCF.WriteReg32( dev, DMPROGBUF0, 0x0005a403 );
-			MCF.WriteReg32( dev, DMPROGBUF1, 0x00042483 );
+			// c.lw x8,0(x11) // Pull the address from DATA1
+			// c.lw x9,0(x8)  // Read the data at that location.
+			MCF.WriteReg32( dev, DMPROGBUF0, 0x40044180 );
 			if( autoincrement )
 			{
-				// addi x8, x8, 4
-				// sw x9, 0(x10) // Write back to DATA0
+				// c.addi x8, 4
+				// c.sw x9, 0(x10) // Write back to DATA0
 
-				MCF.WriteReg32( dev, DMPROGBUF2, 0x00440413 );
-				MCF.WriteReg32( dev, DMPROGBUF3, 0x00952023 );
+				MCF.WriteReg32( dev, DMPROGBUF1, 0xc1040411 );
 			}
 			else
 			{
-				// nop // ADDI x0, x0, 0
-				// sw x9, 0(x10) // Write back to DATA0
+				// c.nop
+				// c.sw x9, 0(x10) // Write back to DATA0
 
-				MCF.WriteReg32( dev, DMPROGBUF2, 0x00000013 );
-				MCF.WriteReg32( dev, DMPROGBUF3, 0x00952023 );
+				MCF.WriteReg32( dev, DMPROGBUF1, 0xc1040001 );
 			}
-			// sw x8, 0(x11) // Write addy to DATA1
-			// ebreak
-			MCF.WriteReg32( dev, DMPROGBUF4, 0x0085a023 );
-			MCF.WriteReg32( dev, DMPROGBUF5, 0x00100073 );
+			// c.sw x8, 0(x11) // Write addy to DATA1
+			// c.ebreak
+			MCF.WriteReg32( dev, DMPROGBUF2, 0x9002c180 );
 
 			if( iss->statetag != STTAG( "WRSQ" ) )
 			{
