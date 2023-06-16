@@ -654,12 +654,135 @@ static int DefaultWaitForDoneOp( void * dev, int ignore )
 {
 	int r;
 	uint32_t rrv;
+	uint32_t temp;
+
+	//Debug regdump pre-command
+	#if 0
+	MCF.ReadReg32(dev, DMDATA0, &temp);
+	fprintf(stderr, "Pr-DMDATA0: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMDATA1, &temp);
+	fprintf(stderr, "Pr-DMDATA1: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMCONTROL, &temp);
+	fprintf(stderr, "Pr-DMCONTROL: %08x\n", temp);
+	
+	MCF.ReadReg32(dev, DMSTATUS, &temp);
+	fprintf(stderr, "Pr-DMSTATUS: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMHARTINFO, &temp);
+	fprintf(stderr, "Pr-DMHARTINFO: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMABSTRACTCS, &temp);
+	fprintf(stderr, "Pr-DMABSTRACTCS: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMCOMMAND, &temp);
+	fprintf(stderr, "Pr-DMCOMMAND: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMABSTRACTAUTO, &temp);
+	fprintf(stderr, "Pr-DMABSTRACTAUTO: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMPROGBUF0, &temp);
+	fprintf(stderr, "Pr-DMPROGBUF0: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMPROGBUF1, &temp);
+	fprintf(stderr, "Pr-DMPROGBUF1: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMPROGBUF2, &temp);
+	fprintf(stderr, "Pr-DMPROGBUF2: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMPROGBUF3, &temp);
+	fprintf(stderr, "Pr-DMPROGBUF3: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMPROGBUF4, &temp);
+	fprintf(stderr, "Pr-DMPROGBUF4: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMPROGBUF5, &temp);
+	fprintf(stderr, "Pr-DMPROGBUF5: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMPROGBUF6, &temp);
+	fprintf(stderr, "Pr-DMPROGBUF6: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMPROGBUF7, &temp);
+	fprintf(stderr, "Pr-DMPROGBUF7: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMCPBR, &temp);
+	fprintf(stderr, "Pr-DMCPBR: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMCFGR, &temp);
+	fprintf(stderr, "Pr-DMCFGR: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMSHDWCFGR, &temp);
+	fprintf(stderr, "Pr-DMSHDWCFGR: %08x\n", temp);
+	#endif
+
 	do
 	{
 		r = MCF.ReadReg32( dev, DMABSTRACTCS, &rrv );
 		if( r ) return r;
 	}
 	while( rrv & (1<<12) );
+
+	//Debug regdump post-command
+	#if 0
+	MCF.ReadReg32(dev, DMDATA0, &temp);
+	fprintf(stderr, "Po-DMDATA0: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMDATA1, &temp);
+	fprintf(stderr, "Po-DMDATA1: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMCONTROL, &temp);
+	fprintf(stderr, "Po-DMCONTROL: %08x\n", temp);
+	
+	MCF.ReadReg32(dev, DMSTATUS, &temp);
+	fprintf(stderr, "Po-DMSTATUS: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMHARTINFO, &temp);
+	fprintf(stderr, "Po-DMHARTINFO: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMABSTRACTCS, &temp);
+	fprintf(stderr, "Po-DMABSTRACTCS: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMCOMMAND, &temp);
+	fprintf(stderr, "Po-DMCOMMAND: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMABSTRACTAUTO, &temp);
+	fprintf(stderr, "Po-DMABSTRACTAUTO: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMPROGBUF0, &temp);
+	fprintf(stderr, "Po-DMPROGBUF0: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMPROGBUF1, &temp);
+	fprintf(stderr, "Po-DMPROGBUF1: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMPROGBUF2, &temp);
+	fprintf(stderr, "Po-DMPROGBUF2: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMPROGBUF3, &temp);
+	fprintf(stderr, "Po-DMPROGBUF3: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMPROGBUF4, &temp);
+	fprintf(stderr, "Po-DMPROGBUF4: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMPROGBUF5, &temp);
+	fprintf(stderr, "Po-DMPROGBUF5: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMPROGBUF6, &temp);
+	fprintf(stderr, "Po-DMPROGBUF6: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMPROGBUF7, &temp);
+	fprintf(stderr, "Po-DMPROGBUF7: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMCPBR, &temp);
+	fprintf(stderr, "Po-MCPBR: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMCFGR, &temp);
+	fprintf(stderr, "Po-DMCFGR: %08x\n", temp);
+
+	MCF.ReadReg32(dev, DMSHDWCFGR, &temp);
+	fprintf(stderr, "Po-DMSHDWCFGR: %08x\n", temp);
+	#endif
+
 	if( (rrv >> 8 ) & 7 )
 	{
 		if( !ignore )
@@ -676,7 +799,6 @@ static int DefaultWaitForDoneOp( void * dev, int ignore )
 			default: errortext = "Other Error"; break;
 			}
 
-			uint32_t temp;
 			MCF.ReadReg32( dev, DMSTATUS, &temp );
 			fprintf( stderr, "Fault writing memory (DMABSTRACTS = %08x) (%s) DMSTATUS: %08x\n", rrv, errortext, temp );
 		}
@@ -1185,26 +1307,30 @@ static int DefaultReadWord( void * dev, uint32_t address_to_read, uint32_t * dat
 		{
 			MCF.WriteReg32( dev, DMABSTRACTAUTO, 0 ); // Disable Autoexec.
 
-			// c.lw x8,0(x11) // Pull the address from DATA1
-			// c.lw x9,0(x8)  // Read the data at that location.
-			MCF.WriteReg32( dev, DMPROGBUF0, 0x40044180 );
+			// lw x8,0(x11) // Pull the address from DATA1
+			// lw x9,0(x8)  // Read the data at that location.
+			MCF.WriteReg32( dev, DMPROGBUF0, 0x0005a403 );
+			MCF.WriteReg32( dev, DMPROGBUF1, 0x00042483 );
 			if( autoincrement )
 			{
-				// c.addi x8, 4
-				// c.sw x9, 0(x10) // Write back to DATA0
+				// addi x8, x8, 4
+				// sw x9, 0(x10) // Write back to DATA0
 
-				MCF.WriteReg32( dev, DMPROGBUF1, 0xc1040411 );
+				MCF.WriteReg32( dev, DMPROGBUF2, 0x00440413 );
+				MCF.WriteReg32( dev, DMPROGBUF3, 0x00952023 );
 			}
 			else
 			{
-				// c.nop
-				// c.sw x9, 0(x10) // Write back to DATA0
+				// nop // ADDI x0, x0, 0
+				// sw x9, 0(x10) // Write back to DATA0
 
-				MCF.WriteReg32( dev, DMPROGBUF1, 0xc1040001 );
+				MCF.WriteReg32( dev, DMPROGBUF2, 0x00000013 );
+				MCF.WriteReg32( dev, DMPROGBUF3, 0x00952023 );
 			}
-			// c.sw x8, 0(x11) // Write addy to DATA1
-			// c.ebreak
-			MCF.WriteReg32( dev, DMPROGBUF2, 0x9002c180 );
+			// sw x8, 0(x11) // Write addy to DATA1
+			// ebreak
+			MCF.WriteReg32( dev, DMPROGBUF4, 0x0085a023 );
+			MCF.WriteReg32( dev, DMPROGBUF5, 0x00100073 );
 
 			if( iss->statetag != STTAG( "WRSQ" ) )
 			{
@@ -1215,7 +1341,8 @@ static int DefaultReadWord( void * dev, uint32_t address_to_read, uint32_t * dat
 		}
 
 		MCF.WriteReg32( dev, DMDATA1, address_to_read );
-		MCF.WriteReg32( dev, DMCOMMAND, 0x00241000 ); // Only execute.
+		//MCF.WriteReg32( dev, DMCOMMAND, 0x00241000 ); // Only execute. //AH removed as part of CH32V307 discussion
+		MCF.WriteReg32( dev, DMCOMMAND, 0x00261000 ); //AH replacement based on that discussion
 
 		iss->statetag = STTAG( "RDSQ" );
 		iss->currentstateval = address_to_read;
@@ -1800,7 +1927,7 @@ int DefaultPrintChipInfo( void * dev )
 {
 	uint32_t reg;
 	MCF.HaltMode( dev, 5 );
-
+	
 	if( MCF.ReadWord( dev, 0x1FFFF800, &reg ) ) goto fail;	
 	printf( "USER/RDPR  : %04x/%04x\n", reg>>16, reg&0xFFFF );
 	if( MCF.ReadWord( dev, 0x1FFFF804, &reg ) ) goto fail;	

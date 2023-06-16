@@ -245,7 +245,20 @@ static int LESetupInterface( void * d )
 	MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // No, really make sure.
 	MCF.WriteReg32( d, DMABSTRACTCS, 0x00000700 ); // Ignore any pending errors.
 	MCF.WriteReg32( d, DMABSTRACTAUTO, 0 );
-	MCF.WriteReg32( d, DMCOMMAND, 0x00261000 ); // Read x0 (Null command)
+	//MCF.WriteReg32( d, DMCOMMAND, 0x00261000 ); // Read x0 (Null command) //AH changed as part of CH32V307 discussion
+	MCF.WriteReg32( d, DMCOMMAND, 0x00221000 ); // Read x0 (Null command) //AH replacement based on that discussion
+
+	int r = 0;
+
+	r |= MCF.WaitForDoneOp( d, 0 );
+	if( r )
+	{
+		fprintf( stderr, "Fault on setup\n" );
+	}
+	else
+	{
+		fprintf( stderr, "Setup success\n" );
+	}
 
 	// This puts the processor on hold to allow the debugger to run.
 	wch_link_command( dev, "\x81\x11\x01\x09", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Chip ID + Other data (see below)
