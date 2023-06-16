@@ -13,6 +13,7 @@
 
 #if defined(WINDOWS) || defined(WIN32) || defined(_WIN32)
 #define DISABLE_ARDULINK
+void Sleep(uint32_t dwMilliseconds);
 #else
 #include <unistd.h>
 #endif
@@ -201,6 +202,20 @@ keep_going:
 				else
 					goto unimplemented;
 				break;
+			case 'p': 
+				if( MCF.HaltMode ) MCF.HaltMode( dev, 0 );
+				if( MCF.ConfigureReadProtection )
+					MCF.ConfigureReadProtection( dev, 0 );
+				else
+					goto unimplemented;
+				break;
+			case 'P':
+				if( MCF.HaltMode ) MCF.HaltMode( dev, 0 );
+				if( MCF.ConfigureReadProtection )
+					MCF.ConfigureReadProtection( dev, 1 );
+				else
+					goto unimplemented;
+				break;
 			case 'G':
 			case 'T':
 			{
@@ -315,7 +330,7 @@ keep_going:
 					goto unimplemented;
 				break;
 			}
-			case 'p':
+			case 'i':
 			{
 				if( MCF.PrintChipInfo )
 					MCF.PrintChipInfo( dev ); 
@@ -553,12 +568,13 @@ help:
 	fprintf( stderr, " -A Go into Halt without reboot\n" );
 	fprintf( stderr, " -D Configure NRST as GPIO\n" );
 	fprintf( stderr, " -d Configure NRST as NRST\n" );
+	fprintf( stderr, " -i Show chip info\n" );
 	fprintf( stderr, " -s [debug register] [value]\n" );
 	fprintf( stderr, " -m [debug register]\n" );
 	fprintf( stderr, " -T Terminal Only\n" );
 	fprintf( stderr, " -G Terminal + GDB\n" );
-//	fprintf( stderr, " -P Enable Read Protection (UNTESTED)\n" );
-//	fprintf( stderr, " -p Disable Read Protection (UNTESTED)\n" );
+	fprintf( stderr, " -P Enable Read Protection\n" );
+	fprintf( stderr, " -p Disable Read Protection\n" );
 	fprintf( stderr, " -w [binary image to write] [address, decimal or 0x, try0x08000000]\n" );
 	fprintf( stderr, " -r [output binary image] [memory address, decimal or 0x, try 0x08000000] [size, decimal or 0x, try 16384]\n" );
 	fprintf( stderr, "   Note: for memory addresses, you can use 'flash' 'launcher' 'bootloader' 'option' 'ram' and say \"ram+0x10\" for instance\n" );
@@ -1786,19 +1802,25 @@ int DefaultConfigureNRSTAsGPIO( void * dev, int one_if_yes_gpio  )
 #endif
 }
 
+int DefaultConfigureReadProtection( void * dev, int one_if_yes_protect  )
+{
+	fprintf( stderr, "Error: DefaultConfigureReadProtection does not work via the programmer here.  Please see the demo \"optionbytes\"\n" );
+	return -5;
+}
+
 int DefaultPrintChipInfo( void * dev )
 {
 	uint32_t reg;
 	MCF.HaltMode( dev, 5 );
 
 	if( MCF.ReadWord( dev, 0x1FFFF800, &reg ) ) goto fail;	
-	printf( "USER/RDPR: %08x\n", reg );
-/*	if( MCF.ReadWord( dev, 0x1FFFF804, &reg ) ) goto fail;	
-	printf( "NDATA: %08x\n", reg );
+	printf( "USER/RDPR  : %04x/%04x\n", reg>>16, reg&0xFFFF );
+	if( MCF.ReadWord( dev, 0x1FFFF804, &reg ) ) goto fail;	
+	printf( "DATA1/DATA0: %04x/%04x\n", reg>>16, reg&0xFFFF );
 	if( MCF.ReadWord( dev, 0x1FFFF808, &reg ) ) goto fail;	
-	printf( "WRPR01: %08x\n", reg );
+	printf( "WRPR1/WRPR0: %04x/%04x\n", reg>>16, reg&0xFFFF );
 	if( MCF.ReadWord( dev, 0x1FFFF80c, &reg ) ) goto fail;	
-	printf( "WRPR23: %08x\n", reg );*/
+	printf( "WRPR3/WRPR2: %04x/%04x\n", reg>>16, reg&0xFFFF );
 	if( MCF.ReadWord( dev, 0x1FFFF7E0, &reg ) ) goto fail;
 	printf( "Flash Size: %d kB\n", (reg&0xffff) );
 	if( MCF.ReadWord( dev, 0x1FFFF7E8, &reg ) ) goto fail;	

@@ -162,3 +162,4 @@ You can open a github ticket or join my Discord in the #ch32v003fun channel. htt
  * http://www.wch-ic.com/downloads/CH32V003RM_PDF.html Technical Reference Manual
  * http://www.wch-ic.com/downloads/CH32V003DS0_PDF.html Datasheet
  * https://github.com/CaiB/CH32V003-Architecture-Exploration/blob/main/InstructionTypes.md Details for the compressed ISA on this chip.
+ * The CH32V003 has xv extensions, you can use this customized version of rvcodec.js to work with its opcodes: https://xw.macyler.moe/
