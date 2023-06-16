@@ -9,7 +9,7 @@ C_S:=minichlink.c pgm-wch-linke.c pgm-esp32s2-ch32xx.c nhc-link042.c minichgdb.c
 
 ifeq ($(OS),Windows_NT)
 	LDFLAGS:=-L. -lpthread -lusb-1.0 -lsetupapi -lws2_32
-	CFLAGS:=-Os -s -Wall
+	CFLAGS:=-Os -s -Wall -D_WIN32_WINNT=0x0600
 	TOOLS:=minichlink.exe
 else
 	OS_NAME := $(shell uname -s | tr A-Z a-z)
@@ -19,8 +19,8 @@ else
 	ifeq ($(OS_NAME),darwin)
 		LDFLAGS:=-lpthread -lusb-1.0 -framework CoreFoundation -framework IOKit
 		CFLAGS:=-O0 -Wall -Wno-asm-operand-widths -Wno-deprecated-declarations -Wno-deprecated-non-prototype -D__MACOSX__
-		INCLUDES:=-I /opt/homebrew/Cellar/libusb/1.0.26/include/libusb-1.0
-		LIBINCLUDES:=-L /opt/homebrew/Cellar/libusb/1.0.26/lib 
+		INCLUDES:=$(shell pkg-config --cflags-only-I libusb-1.0)
+		LIBINCLUDES:=$(shell pkg-config --libs-only-L libusb-1.0)
 		INCS:=$(INCLUDES) $(LIBINCLUDES)
 	endif
 endif

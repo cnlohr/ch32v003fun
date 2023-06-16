@@ -2,12 +2,15 @@
 #define SYSTEM_CORE_CLOCK 48000000
 #define APB_CLOCK SYSTEM_CORE_CLOCK
 
+// NOTE: CONNECT WS2812's to PC6
+
 #include "ch32v003fun.h"
 #include <stdio.h>
 #include <string.h>
 
 #define WS2812DMA_IMPLEMENTATION
-#define WSRBG //For WS2816C's.
+//#define WSRBG //For WS2816C's.
+#define WSGRB // For SK6805-EC15
 #define NR_LEDS 191
 
 #include "ws2812b_dma_spi_led_driver.h"

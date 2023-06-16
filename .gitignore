@@ -1,5 +1,6 @@
 .pio
 .vscode
+.idea
 *.elf
 *.hex
 *.lst
@@ -7,3 +8,6 @@
 *.map
 minichlink/minichlink
 minichlink/minichlink.so
+compile_commands.json
+.clangd
+.cache

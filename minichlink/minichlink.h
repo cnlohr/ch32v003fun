@@ -23,6 +23,7 @@ struct MiniChlinkFunctions
 
 	int (*HaltMode)( void * dev, int mode ); //0 for halt, 1 for reset, 2 for resume
 	int (*ConfigureNRSTAsGPIO)( void * dev, int one_if_yes_gpio );
+	int (*ConfigureReadProtection)( void * dev, int one_if_yes_protect );
 
 	// No boundary or limit rules.  Must support any combination of alignment and size.
 	int (*WriteBinaryBlob)( void * dev, uint32_t address_to_write, uint32_t blob_size, uint8_t * blob );
