@@ -12,6 +12,7 @@
 #include "../ch32v003fun/ch32v003fun.h"
 
 #if defined(WINDOWS) || defined(WIN32) || defined(_WIN32)
+#define DISABLE_ARDULINK
 #else
 #include <unistd.h>
 #endif
@@ -40,10 +41,15 @@ void * MiniCHLinkInitAsDLL( struct MiniChlinkFunctions ** MCFO )
 	{
 		fprintf( stderr, "Found NHC-Link042 Programmer\n" );
 	}
+
+#ifndef DISABLE_ARDULINK
 	else if ((dev = TryInit_Ardulink()))
 	{
 		fprintf( stderr, "Found Ardulink Programmer\n" );
 	}
+#else
+    #warning Ardulink not yet supported on Windows.
+#endif
 	else
 	{
 		fprintf( stderr, "Error: Could not initialize any supported programmers\n" );
