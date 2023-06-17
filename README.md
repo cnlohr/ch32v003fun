@@ -19,6 +19,11 @@ ch32v003fun contains:
 
 In Progress:
 1. Write more demos.
+2. Improve/integrate [rv003usb](https://github.com/cnlohr/rv003usb/)
+
+## Getting Started
+
+For installation instructions, see the [wiki page here](https://github.com/cnlohr/ch32v003fun/wiki/Installation)
 
 ## Features!
 
@@ -37,10 +42,6 @@ You can just try out the debugprintf project, or call SetupDebugPrintf(); and pr
 ### Debugging support!
 
 Via gdbserver built into minichlink!  It works with `gdb-multiarch` as well as in Visual Studio Code 
-
-## System Prep
-
-For installation instructions, see the [wiki page here](https://github.com/cnlohr/ch32v003fun/wiki/Installation)
 
 ## Building and Flashing
 
