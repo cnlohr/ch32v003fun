@@ -23,6 +23,9 @@ else
 		LIBINCLUDES:=$(shell pkg-config --libs-only-L libusb-1.0)
 		INCS:=$(INCLUDES) $(LIBINCLUDES)
 	endif
+
+    # Until it's supported on Windows, add the Ardulink file here.
+    C_S:=$(C_S) ardulink.c
 endif
 
 all : $(TOOLS)

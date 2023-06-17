@@ -12,6 +12,7 @@
 #include "../ch32v003fun/ch32v003fun.h"
 
 #if defined(WINDOWS) || defined(WIN32) || defined(_WIN32)
+#define DISABLE_ARDULINK
 void Sleep(uint32_t dwMilliseconds);
 #else
 #include <unistd.h>
@@ -41,6 +42,15 @@ void * MiniCHLinkInitAsDLL( struct MiniChlinkFunctions ** MCFO )
 	{
 		fprintf( stderr, "Found NHC-Link042 Programmer\n" );
 	}
+
+#ifndef DISABLE_ARDULINK
+	else if ((dev = TryInit_Ardulink()))
+	{
+		fprintf( stderr, "Found Ardulink Programmer\n" );
+	}
+#else
+    #warning Ardulink not yet supported on Windows.
+#endif
 	else
 	{
 		fprintf( stderr, "Error: Could not initialize any supported programmers\n" );
@@ -1655,6 +1665,8 @@ static int DefaultHaltMode( void * dev, int mode )
 		usleep( 20000);
 	}
 #endif
+
+    MCF.TargetReset(dev, 0);
 
 	iss->processor_in_mode = mode;
 	return 0;
