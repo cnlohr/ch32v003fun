@@ -1,14 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#include <termios.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
-
-#include <errno.h>
-
+#include "serial_dev.h"
 #include "minichlink.h"
 
 void * TryInit_Ardulink(void);
@@ -19,10 +12,9 @@ static int ArdulinkFlushLLCommands(void * dev);
 static int ArdulinkExit(void * dev);
 static int ArdulinkTargetReset(void * dev, int reset);
 
-
 typedef struct {
     struct ProgrammerStructBase psb;
-    int fd;
+    serial_dev_t serial;
 } ardulink_ctx_t;
 
 int ArdulinkWriteReg32(void * dev, uint8_t reg_7_bit, uint32_t command)
@@ -38,10 +30,10 @@ int ArdulinkWriteReg32(void * dev, uint8_t reg_7_bit, uint32_t command)
     buf[4] = (command >> 16) & 0xff;
     buf[5] = (command >> 24) & 0xff;
 
-    if (write(((ardulink_ctx_t*)dev)->fd, buf, 6) == -1)
+    if (serial_dev_write(&((ardulink_ctx_t*)dev)->serial, buf, 6) == -1)
         return -errno;
 
-    if (read(((ardulink_ctx_t*)dev)->fd, buf, 1) == -1)
+    if (serial_dev_read(&((ardulink_ctx_t*)dev)->serial, buf, 1) == -1)
         return -errno;
 
     return buf[0] == '+' ? 0 : -EPROTO;
@@ -53,10 +45,10 @@ int ArdulinkReadReg32(void * dev, uint8_t reg_7_bit, uint32_t * commandresp)
     buf[0] = 'r';
     buf[1] = reg_7_bit;
 
-    if (write(((ardulink_ctx_t*)dev)->fd, buf, 2) == -1)
+    if (serial_dev_write(&((ardulink_ctx_t*)dev)->serial, buf, 2) == -1)
         return -errno;
 
-    if (read(((ardulink_ctx_t*)dev)->fd, buf, 4) == -1)
+    if (serial_dev_read(&((ardulink_ctx_t*)dev)->serial, buf, 4) == -1)
         return -errno;
 
     *commandresp = (uint32_t)buf[0] | (uint32_t)buf[1] << 8 | \
@@ -74,7 +66,7 @@ int ArdulinkFlushLLCommands(void * dev)
 
 int ArdulinkExit(void * dev)
 {
-    close(((ardulink_ctx_t*)dev)->fd);
+    serial_dev_close(&((ardulink_ctx_t*)dev)->serial);
     free(dev);
     return 0;
 }
@@ -86,10 +78,10 @@ int ArdulinkTargetReset(void * dev, int reset) {
 
     // Assert reset.
     c = reset ? 'a' : 'A';
-    if (write(((ardulink_ctx_t*)dev)->fd, &c, 1) == -1)
+    if (serial_dev_write(&((ardulink_ctx_t*)dev)->serial, &c, 1) == -1)
         return -errno;
 
-    if (read(((ardulink_ctx_t*)dev)->fd, &c, 1) == -1)
+    if (serial_dev_read(&((ardulink_ctx_t*)dev)->serial, &c, 1) == -1)
         return -errno;
 
     if (c != '+')
@@ -102,64 +94,39 @@ int ArdulinkTargetReset(void * dev, int reset) {
 void * TryInit_Ardulink(void)
 {
     ardulink_ctx_t *ctx;
-    struct termios attr;
     char first;
-    int argp = TIOCM_DTR;
 
     if (!(ctx = calloc(sizeof(ardulink_ctx_t), 1))) {
         perror("calloc");
         return NULL;
     }
 
-    if ((ctx->fd = open("/dev/ttyACM0", O_RDWR | O_NOCTTY)) == -1) {
+    if (serial_dev_create(&ctx->serial, DEFAULT_SERIAL_NAME, 115200) == -1) {
+        perror("create");
+        return NULL;
+    }
+
+    if (serial_dev_open(&ctx->serial) == -1) {
         perror("open");
         return NULL;
     }
 
-    if (tcgetattr(ctx->fd, &attr) == -1) {
-        perror("tcgetattr");
-        return NULL;
-    }
-
-    cfmakeraw(&attr);
-    cfsetspeed(&attr, 115200);
-
-    if (tcsetattr(ctx->fd, TCSANOW, &attr) == -1) {
-        perror("tcsetattr");
-        return NULL;
-    }
-
     // Arduino DTR reset.
-    if (ioctl(ctx->fd, TIOCMBIC, &argp) == -1) {
-        perror("ioctl");
-        return NULL;
-    }
-
-    if (tcdrain(ctx->fd) == -1) {
-        perror("tcdrain");
-        return NULL;
-    }
-
-    if (ioctl(ctx->fd, TIOCMBIS, &argp) == -1) {
-        perror("ioctl");
-        return NULL;
-    }
-
-    if (tcdrain(ctx->fd) == -1) {
-        perror("tcdrain");
+    if (serial_dev_do_dtr_reset(&ctx->serial) == -1) {
+        perror("dtr reset");
         return NULL;
     }
 
     // Flush anything that might be in the RX buffer, we need the sync char.
-    if (tcflush(ctx->fd, TCIFLUSH) == -1) {
-        perror("tcflush");
+    if (serial_dev_flush_rx(&ctx->serial) == -1) {
+        perror("flush rx");
         return NULL;
     }
 
     // Let the bootloader do its thing.
-    sleep(3);
+    usleep(3UL*1000UL*1000UL);
 
-    if (read(ctx->fd, &first, 1) == -1) {
+    if (serial_dev_read(&ctx->serial, &first, 1) == -1) {
         perror("read");
         return NULL;
     }

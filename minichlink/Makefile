@@ -1,7 +1,7 @@
 TOOLS:=minichlink minichlink.so
 
 CFLAGS:=-O0 -g3 -Wall
-C_S:=minichlink.c pgm-wch-linke.c pgm-esp32s2-ch32xx.c nhc-link042.c minichgdb.c
+C_S:=minichlink.c pgm-wch-linke.c pgm-esp32s2-ch32xx.c nhc-link042.c ardulink.c serial_dev.c minichgdb.c
 
 # General Note: To use with GDB, gdb-multiarch
 # gdb-multilib {file}
@@ -23,9 +23,6 @@ else
 		LIBINCLUDES:=$(shell pkg-config --libs-only-L libusb-1.0)
 		INCS:=$(INCLUDES) $(LIBINCLUDES)
 	endif
-
-    # Until it's supported on Windows, add the Ardulink file here.
-    C_S:=$(C_S) ardulink.c
 endif
 
 all : $(TOOLS)
