@@ -58,7 +58,7 @@ int serial_dev_open(serial_dev_t *dev) {
         return -1;
     }
 
-    if (tcgetattr(ctx->fd, &attr) == -1) {
+    if (tcgetattr(dev->fd, &attr) == -1) {
         perror("tcgetattr");
         return -2;
     }
@@ -66,7 +66,7 @@ int serial_dev_open(serial_dev_t *dev) {
     cfmakeraw(&attr);
     cfsetspeed(&attr, dev->baud);
 
-    if (tcsetattr(ctx->fd, TCSANOW, &attr) == -1) {
+    if (tcsetattr(dev->fd, TCSANOW, &attr) == -1) {
         perror("tcsetattr");
         return -3;
     }
