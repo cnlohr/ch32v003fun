@@ -12,6 +12,8 @@
 * microcontroller manufactured by Nanjing Qinheng Microelectronics.
 *******************************************************************************/
 
+#include <stdint.h>
+
 /* IO definitions */
 #ifdef __cplusplus
 #define     __I     volatile                /*!< defines 'read only' permissions      */
@@ -6691,7 +6693,9 @@ typedef enum
 
 #ifdef __cplusplus
 };
-#endif /* __CH32V00x_CONF_H */
+#endif
+
+#endif  /* __CH32V00x_CONF_H */
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -7355,7 +7359,7 @@ void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) 
 #define Delay_Us(n) DelaySysTick( (n) * DELAY_US_TIME )
 #define Delay_Ms(n) DelaySysTick( (n) * DELAY_MS_TIME )
 
-#ifndef ASSEMBLER
+#ifndef __ASSEMBLER__
 
 void DelaySysTick( uint32_t n );
 
@@ -7363,7 +7367,8 @@ void DelaySysTick( uint32_t n );
 int main() __attribute__((used));
 void SystemInit(void) __attribute__((used));
 
-// TODO: Initialization functions
+// Initialization functions
+void SystemInit48HSI( void );
 
 // TODO: Debug and UART
 
