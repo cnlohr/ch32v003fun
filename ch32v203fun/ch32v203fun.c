@@ -733,16 +733,39 @@ void OSCWakeUp_IRQHandler( void ) __attribute__((section(".text.vector_handler")
 void UART4_IRQHandler( void ) __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void DMA1_Channel8_IRQHandler( void ) __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 
-void InterruptVector()         __attribute__((naked)) __attribute((section(".init"))) __attribute((weak,alias("InterruptVectorDefault")));
-void InterruptVectorDefault()  __attribute__((naked)) __attribute((section(".init")));
+void Init() __attribute((section(".init")));
+void InterruptVector()         __attribute__((naked)) __attribute((section(".vector"))) __attribute((weak,alias("InterruptVectorDefault")));
+void InterruptVectorDefault()  __attribute__((naked)) __attribute((section(".vector")));
+
+void handle_reset( void ) __attribute__((section(".text.handle_reset")));
+
+void Init()
+{
+	asm volatile( "\n\
+	.align	1 \n\
+_start: \n\
+	j handle_reset \n\
+	.word 0x00000013 \n\
+	.word 0x00000013 \n\
+	.word 0x00000013 \n\
+	.word 0x00000013 \n\
+	.word 0x00000013 \n\
+	.word 0x00000013 \n\
+	.word 0x00000013 \n\
+	.word 0x00000013 \n\
+	.word 0x00000013 \n\
+	.word 0x00000013 \n\
+	.word 0x00000013 \n\
+	.word 0x00000013 \n\
+	.word 0x00100073 \n" );
+}
 
 void InterruptVectorDefault()
 {
 	asm volatile( "\n\
-	.align	1\n\
-	.option   push;\n\
-	.option norvc;\n\
-	j handle_reset\n\
+	.align	1 \n\
+	.option norvc; \n\
+	.word   Init \n\
 	.word   0 \n\
 	.word   NMI_Handler                /* NMI */ \n\
 	.word   HardFault_Handler          /* Hard Fault */ \n\
@@ -813,11 +836,11 @@ void InterruptVectorDefault()
 	.word   DMA1_Channel8_IRQHandler   /* DMA1 Channel8 */ \n\
 	.word   OSC32KCal_IRQHandler       /* OSC32KCal */ \n\
 	.word   OSCWakeUp_IRQHandler       /* OSC Wake Up */ \n\
-	.option pop;\n");
+	.option rvc; \n");
 
 }
 
-void handle_reset()
+void handle_reset( void )
 {
 	asm volatile( "\n\
 .option push\n\
@@ -828,39 +851,31 @@ void handle_reset()
 #if __GNUC__ > 10
   ".option arch, +zicsr\n"
 #endif
-  // Setup the interrupt vector, processor status and INTSYSCR.
-  "	li a0, 0x80\n\
-	csrw mstatus, a0\n\
-	li a3, 0x3\n\
-	la a0, InterruptVector\n\
-	or a0, a0, a3\n\
-	csrw mtvec, a0\n"
-	: : : "a0", "a3", "memory");
+			);
 
 	// Careful: Use registers to prevent overwriting of self-data.
 	// This clears out BSS.
 	asm volatile(
 "	la a0, _sbss\n\
 	la a1, _ebss\n\
-	li a2, 0\n\
-	bge a0, a1, 2f\n\
-1:	sw a2, 0(a0)\n\
+	bgeu a0, a1, 2f\n\
+1:	sw zero, 0(a0)\n\
 	addi a0, a0, 4\n\
-	blt a0, a1, 1b\n\
+	bltu a0, a1, 1b\n\
 2:"
-			// This loads DATA from FLASH to RAM.
+	// This loads DATA from FLASH to RAM.
 "	la a0, _data_lma\n\
 	la a1, _data_vma\n\
 	la a2, _edata\n\
-1:	beq a1, a2, 2f\n\
-	lw a3, 0(a0)\n\
-	sw a3, 0(a1)\n\
+	beq a1, a2, 2f\n\
+1:	lw t0, 0(a0)\n\
+	sw t0, 0(a1)\n\
 	addi a0, a0, 4\n\
 	addi a1, a1, 4\n\
-	bne a1, a2, 1b\n\
+	bltu a1, a2, 1b\n\
 2:\n"
 #ifdef CPLUSPLUS
-		// Call __libc_init_array function
+	// Call __libc_init_array function
 "	call %0 \n\t"
 : : "i" (__libc_init_array)
 #else
@@ -868,6 +883,19 @@ void handle_reset()
 #endif
 : "a0", "a1", "a2", "a3", "memory"
 );
+
+	// Setup the interrupt vector, processor status and INTSYSCR.
+	asm volatile(
+"	li t0, 0x1f\n\
+	csrw 0xbc0, t0\n"
+	// Enabled nested and hardware stack
+"	li t0, 0x88\n\
+	csrs mstatus, t0\n\
+	la t0, InterruptVector\n\
+	ori t0, t0, 3\n\
+	csrw mtvec, t0\n"
+	: : "InterruptVector" (InterruptVector) : "t0", "memory"
+	);
 
 	SETUP_SYSTICK_HCLK
 
@@ -898,4 +926,10 @@ void SystemInit48HSI( void )
 
 	/* Wait till PLL is used as system clock source */
 	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x08) {}
+}
+
+void DelaySysTick( uint32_t n )
+{
+	uint32_t targend = SysTick->CNT + n;
+	while( ((int32_t)( SysTick->CNT - targend )) < 0 );
 }

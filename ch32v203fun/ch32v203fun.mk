@@ -5,10 +5,14 @@ CH32V203FUN?=../../ch32v203fun
 MINICHLINK?=../../minichlink
 
 CFLAGS+= \
-	-g -Os -flto -ffunction-sections \
+	-g -Os -flto -ffunction-sections -fdata-sections \
 	-static-libgcc \
 	-march=rv32imafc \
 	-mabi=ilp32f \
+	-msmall-data-limit=8 \
+	-mno-save-restore \
+	-fmessage-length=0 \
+	-fsigned-char \
 	-I/usr/include/newlib \
 	-I$(CH32V203FUN) \
 	-nostdlib \
