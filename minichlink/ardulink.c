@@ -101,7 +101,20 @@ void * TryInit_Ardulink(void)
         return NULL;
     }
 
-    if (serial_dev_create(&ctx->serial, DEFAULT_SERIAL_NAME, 115200) == -1) {
+    const char* serial_to_open = NULL;
+    // This is extremely crude. We receive no parameters, yet we have
+    // to find the correct serial port for the programmer.
+    // since the init is executed before the command line parameters are parsed,
+    // we don't get the value of any "--serial-port=..." switch at all.
+    // We at least to make it usable by using an environment variable.
+    // Optimally, we would restructure the init function to include init hints
+    // or try to enumerate all existing serial ports for our Ardulink programmer.
+    if ((serial_to_open = getenv("MINICHLINK_SERIAL")) == NULL) {
+        // fallback
+        serial_to_open = DEFAULT_SERIAL_NAME;
+    }
+
+    if (serial_dev_create(&ctx->serial, serial_to_open, 115200) == -1) {
         perror("create");
         return NULL;
     }
