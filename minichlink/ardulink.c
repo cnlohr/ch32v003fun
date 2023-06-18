@@ -4,7 +4,7 @@
 #include "serial_dev.h"
 #include "minichlink.h"
 
-void * TryInit_Ardulink(void);
+void * TryInit_Ardulink(const init_hints_t*);
 
 static int ArdulinkWriteReg32(void * dev, uint8_t reg_7_bit, uint32_t command);
 static int ArdulinkReadReg32(void * dev, uint8_t reg_7_bit, uint32_t * commandresp);
@@ -91,7 +91,7 @@ int ArdulinkTargetReset(void * dev, int reset) {
     return 0;
 }
 
-void * TryInit_Ardulink(void)
+void * TryInit_Ardulink(const init_hints_t* hints)
 {
     ardulink_ctx_t *ctx;
     char first;
@@ -102,14 +102,14 @@ void * TryInit_Ardulink(void)
     }
 
     const char* serial_to_open = NULL;
-    // This is extremely crude. We receive no parameters, yet we have
-    // to find the correct serial port for the programmer.
-    // since the init is executed before the command line parameters are parsed,
-    // we don't get the value of any "--serial-port=..." switch at all.
-    // We at least to make it usable by using an environment variable.
-    // Optimally, we would restructure the init function to include init hints
-    // or try to enumerate all existing serial ports for our Ardulink programmer.
-    if ((serial_to_open = getenv("MINICHLINK_SERIAL")) == NULL) {
+    // Get the serial port that shall be opened.
+    // First, if we have a directly set serial port hint, use that.
+    // Otherwise, use the environment variable MINICHLINK_SERIAL.
+    // If that also doesn't exist, fall back to the default serial.
+    if (hints && hints->serial_port != NULL) {
+        serial_to_open = hints->serial_port;
+    }
+    else if ((serial_to_open = getenv("MINICHLINK_SERIAL")) == NULL) {
         // fallback
         serial_to_open = DEFAULT_SERIAL_NAME;
     }
