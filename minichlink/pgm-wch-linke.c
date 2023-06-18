@@ -17,8 +17,8 @@ struct LinkEProgrammerStruct
 };
 
 // For non-ch32v003 chips.
-static int LEReadBinaryBlob( void * d, uint32_t offset, uint32_t amount, uint8_t * readbuff );
-static int InternalLinkEHaltMode( void * d, int mode );
+//static int LEReadBinaryBlob( void * d, uint32_t offset, uint32_t amount, uint8_t * readbuff );
+//static int InternalLinkEHaltMode( void * d, int mode );
 //static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len, uint8_t * blob );
 
 #define WCHTIMEOUT 5000
@@ -232,12 +232,6 @@ static int LESetupInterface( void * d )
 	}
         uint32_t target_chip_type = ( rbuff[4] << 4) + (rbuff[5] >> 4);
         fprintf(stderr, "Chip Type: %03x\n", target_chip_type);
-        if( target_chip_type == 0x307 )
-        {
-                fprintf( stderr, "CH32V307 Detected.  Allowing old-flash-mode for operation.\n" );
-                //MCF.WriteBinaryBlob = LEWriteBinaryBlob;
-                MCF.ReadBinaryBlob = LEReadBinaryBlob;
-        }
 
 	// For some reason, if we don't do this sometimes the programmer starts in a hosey mode.
 	MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
@@ -245,7 +239,19 @@ static int LESetupInterface( void * d )
 	MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // No, really make sure.
 	MCF.WriteReg32( d, DMABSTRACTCS, 0x00000700 ); // Ignore any pending errors.
 	MCF.WriteReg32( d, DMABSTRACTAUTO, 0 );
-	MCF.WriteReg32( d, DMCOMMAND, 0x00261000 ); // Read x0 (Null command)
+	MCF.WriteReg32( d, DMCOMMAND, 0x00221000 ); // Read x0 (Null command) with nopostexec (to fix v307 read issues)
+
+	int r = 0;
+
+	r |= MCF.WaitForDoneOp( d, 0 );
+	if( r )
+	{
+		fprintf( stderr, "Fault on setup\n" );
+	}
+	else
+	{
+		fprintf( stderr, "Setup success\n" );
+	}
 
 	// This puts the processor on hold to allow the debugger to run.
 	wch_link_command( dev, "\x81\x11\x01\x09", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Chip ID + Other data (see below)
@@ -309,6 +315,21 @@ static int LEConfigureNRSTAsGPIO( void * d, int one_if_yes_gpio )
 	return 0;
 }
 
+static int LEConfigureReadProtection( void * d, int one_if_yes_protect )
+{
+	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
+
+	if( one_if_yes_protect )
+	{
+		wch_link_multicommands( (libusb_device_handle *)dev, 2, 11, "\x81\x06\x08\x03\xf7\xff\xff\xff\xff\xff\xff", 4, "\x81\x0b\x01\x01" );
+	}
+	else
+	{
+		wch_link_multicommands( (libusb_device_handle *)dev, 2, 11, "\x81\x06\x08\x02\xf7\xff\xff\xff\xff\xff\xff", 4, "\x81\x0b\x01\x01" );
+	}
+	return 0;
+}
+
 int LEExit( void * d )
 {
 	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
@@ -337,6 +358,7 @@ void * TryInit_WCHLinkE()
 	MCF.Control5v = LEControl5v;
 	MCF.Unbrick = LEUnbrick;
 	MCF.ConfigureNRSTAsGPIO = LEConfigureNRSTAsGPIO;
+	MCF.ConfigureReadProtection = LEConfigureReadProtection;
 
 	MCF.Exit = LEExit;
 	return ret;
@@ -385,6 +407,7 @@ const uint8_t * bootloader = (const uint8_t*)
 int bootloader_len = 512;
 #endif
 
+#if 0
 static int InternalLinkEHaltMode( void * d, int mode )
 {
 	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
@@ -409,7 +432,9 @@ static int InternalLinkEHaltMode( void * d, int mode )
 	}
 	return 0;
 }
+#endif
 
+#if 0
 static int LEReadBinaryBlob( void * d, uint32_t offset, uint32_t amount, uint8_t * readbuff )
 {
 	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
@@ -467,6 +492,7 @@ static int LEReadBinaryBlob( void * d, uint32_t offset, uint32_t amount, uint8_t
 
 	return 0;
 }
+#endif
 
 #if 0
 static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len, uint8_t * blob )

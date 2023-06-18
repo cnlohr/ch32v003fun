@@ -4474,7 +4474,11 @@ RV_STATIC_INLINE void __enable_irq()
 {
   uint32_t result;
 
-  __asm volatile("csrr %0," "mstatus": "=r"(result));
+    __asm volatile(
+#if __GNUC__ > 10
+		".option arch, +zicsr\n"
+#endif
+		"csrr %0," "mstatus": "=r"(result));
   result |= 0x88;
   __asm volatile ("csrw mstatus, %0" : : "r" (result) );
 }
@@ -4490,7 +4494,11 @@ RV_STATIC_INLINE void __disable_irq()
 {
   uint32_t result;
 
-  __asm volatile("csrr %0," "mstatus": "=r"(result));
+    __asm volatile(
+#if __GNUC__ > 10
+		".option arch, +zicsr\n"
+#endif
+		"csrr %0," "mstatus": "=r"(result));
   result &= ~0x88;
   __asm volatile ("csrw mstatus, %0" : : "r" (result) );
 }
@@ -4623,6 +4631,47 @@ RV_STATIC_INLINE uint32_t NVIC_GetActive(IRQn_Type IRQn)
 RV_STATIC_INLINE void NVIC_SetPriority(IRQn_Type IRQn, uint8_t priority)
 {
   NVIC->IPRIOR[(uint32_t)(IRQn)] = priority;
+}
+
+/*********************************************************************
+ * SUSPEND ALL INTERRUPTS EXCEPT
+ * The following 3 functions serve to suspend all interrupts, except for the one you momentarily need.
+ * The purpose of this is to not disturb the one interrupt of interest and let it run unimpeded.
+ * procedure:
+ * 1. save the enabled IRQs: uint32_t IRQ_backup = NVIC_get_enabled_IRQs();
+ * 2. disable all IRQs: NVIC_clear_all_IRQs_except(IRQ_of_interest);
+ * 3. restore the previously enabled IRQs: NVIC_restore_IRQs(IRQ_backup);
+ * 
+ * bit layout of the IRQ backup
+ * bit		0 | 1 | 2  |  3  | 4  |  5  | 6  .. 22 | 23 .. 28
+ * IRQn		2 | 3 | 12 | res | 14 | res | 16 .. 31 | 32 .. 38
+ * IRQn 2 and 3 aren't actually user-settable (see RM).
+ * 
+ * Specifying an invalid IRQn_to_keep like 0 will disable all interrupts.
+ */
+
+RV_STATIC_INLINE uint32_t NVIC_get_enabled_IRQs()
+{
+	return ( ((NVIC->ISR[0] >> 2) & 0b11) | ((NVIC->ISR[0] >> 12) << 2) | ((NVIC->ISR[1] & 0b1111111) << 23) );
+}
+
+RV_STATIC_INLINE void NVIC_clear_all_IRQs_except(uint8_t IRQn_to_keep)
+{
+	if (!(IRQn_to_keep >> 5)) {		// IRQn_to_keep < 32
+		NVIC->IRER[0] = (~0) & (~(1 << IRQn_to_keep));
+		NVIC->IRER[1] = (~0);
+	}
+	else {
+		IRQn_to_keep = IRQn_to_keep >> 5;
+		NVIC->IRER[0] = (~0);
+		NVIC->IRER[1] = (~0) & (~(1 << IRQn_to_keep));
+	}
+}
+
+RV_STATIC_INLINE void NVIC_restore_IRQs(uint32_t old_state)
+{
+	NVIC->IENR[0] = (old_state >> 2) << 12;
+	NVIC->IENR[1] = old_state >> 23;
 }
 
 /*********************************************************************
@@ -4958,9 +5007,11 @@ static inline uint32_t __get_SP(void)
 extern "C" {
 #endif
 
-// You can use SYSTICK_USE_HCLK, if you do, you will have a high-resolution
-// however it will limit your max delay to 44 seconds before it will wrap
-// around.  You must also call SETUP_SYSTICK_HCLK.
+/* SYSTICK info
+ * time on the ch32v003 is kept by the SysTick counter (32bit)
+ * by default, it will operate at (SYSTEM_CORE_CLOCK / 8) = 6MHz
+ * more info at https://github.com/cnlohr/ch32v003fun/wiki/Time
+*/
 
 #ifdef SYSTICK_USE_HCLK
 #define DELAY_US_TIME ((SYSTEM_CORE_CLOCK)/1000000)
@@ -4971,6 +5022,14 @@ extern "C" {
 #define DELAY_MS_TIME ((SYSTEM_CORE_CLOCK)/8000)
 #define SETUP_SYSTICK_HCLK SysTick->CTLR = 1;
 #endif
+
+#define Delay_Us(n) DelaySysTick( (n) * DELAY_US_TIME )
+#define Delay_Ms(n) DelaySysTick( (n) * DELAY_MS_TIME )
+
+#define Ticks_from_Us(n)	(n * DELAY_US_TIME)
+#define Ticks_from_Ms(n)	(n * DELAY_MS_TIME)
+
+
 
 #if defined(__riscv) || defined(__riscv__) || defined( CH32V003FUN_BASE )
 
@@ -4987,8 +5046,7 @@ void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) 
 
 #endif
 
-#define Delay_Us(n) DelaySysTick( (n) * DELAY_US_TIME )
-#define Delay_Ms(n) DelaySysTick( (n) * DELAY_MS_TIME )
+
 
 #ifndef __ASSEMBLER__
 

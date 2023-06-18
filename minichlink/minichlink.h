@@ -23,6 +23,7 @@ struct MiniChlinkFunctions
 
 	int (*HaltMode)( void * dev, int mode ); //0 for halt, 1 for reset, 2 for resume
 	int (*ConfigureNRSTAsGPIO)( void * dev, int one_if_yes_gpio );
+	int (*ConfigureReadProtection)( void * dev, int one_if_yes_protect );
 
 	// No boundary or limit rules.  Must support any combination of alignment and size.
 	int (*WriteBinaryBlob)( void * dev, uint32_t address_to_write, uint32_t blob_size, uint8_t * blob );
@@ -77,6 +78,8 @@ struct MiniChlinkFunctions
 
 	int (*WriteByte)( void * dev, uint32_t address_to_write, uint8_t data );
 	int (*ReadByte)( void * dev, uint32_t address_to_read, uint8_t * data );
+
+	int (*TargetReset)( void * dev, int reset );
 };
 
 /** If you are writing a driver, the minimal number of functions you can implement are:
@@ -151,6 +154,7 @@ void * TryInit_WCHLinkE(void);
 void * TryInit_ESP32S2CHFUN(void);
 void * TryInit_NHCLink042(void);
 void * TryInit_B003Fun(void);
+void * TryInit_Ardulink();
 
 // Returns 0 if ok, populated, 1 if not populated.
 int SetupAutomaticHighLevelFunctions( void * dev );

@@ -780,10 +780,10 @@ void handle_reset()
 "	li a0, 0x80\n\
 	csrw mstatus, a0\n\
 	li a3, 0x3\n\
-	csrw 0x804, a3\n\
 	la a0, InterruptVector\n\
 	or a0, a0, a3\n\
-	csrw mtvec, a0\n" );
+	csrw mtvec, a0\n" 
+	: : : "a0", "a3", "memory");
 
 	// Careful: Use registers to prevent overwriting of self-data.
 	// This clears out BSS.
@@ -810,8 +810,11 @@ asm volatile(
 #ifdef CPLUSPLUS
 	// Call __libc_init_array function
 "	call %0 \n\t"
-: : "i" (__libc_init_array) :
+: : "i" (__libc_init_array)
+#else
+: :
 #endif
+: "a0", "a1", "a2", "a3", "memory"
 );
 
 	SETUP_SYSTICK_HCLK

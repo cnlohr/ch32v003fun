@@ -58,7 +58,7 @@ int main()
 		GPIOC->BSHR = 1<<16;                     // Turn off GPIOC0
 	}
 
-	for( i = 0; i < 5; i++ )
+	for( i = 0; i < 3; i++ )
 	{
 		GPIOD->BSHR = 1 | (1<<4);
 		GPIOC->BSHR = 1;
