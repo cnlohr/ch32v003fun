@@ -1,3 +1,4 @@
+#if 0
 #include <stdint.h>
 #include "hidapi.h"
 #include "minichlink.h"
@@ -103,7 +104,7 @@ static void CommitOp( struct B003FunProgrammerStruct * eps )
 
 
 
-void * TryInit_ESP32S2CHFUN()
+void * TryInit_B003Fun()
 {
 	#define VID 0x1209
 	#define PID 0xb003
@@ -144,4 +145,6 @@ void * TryInit_ESP32S2CHFUN()
 
 	return eps;
 }
-
+#else
+void * TryInit_B003Fun() { return 0; }
+#endif
