@@ -70,7 +70,8 @@ void parse_possible_init_hints(int argc, char **argv, init_hints_t *hints)
 	int c;
 	opterr = 0;
 	/* we're only interested in the value for the COM port, given in a -c parameter */
-	while ((c = getopt(argc, argv, "c:")) != -1)
+	/* the '-' is really important so that getopt does not permutate the argv array and messes up parsing later */
+	while ((c = getopt(argc, argv, "-c:")) != -1)
 	{
 		switch (c)
 		{
