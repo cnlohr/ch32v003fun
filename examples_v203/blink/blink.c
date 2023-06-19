@@ -9,7 +9,8 @@ int main()
 	SystemInit48HSI();
 
 	// Enable GPIOs
-	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOC;
+	//RCC->APB2PCENR |= RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOC;
+	RCC->APB2PCENR |= RCC_APB2Periph_GPIOA;
 
 	// GPIO A15 Push-Pull
 	GPIOA->CFGHR &= ~((uint32_t)0x0F<<(4*7));
