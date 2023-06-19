@@ -145,16 +145,22 @@ struct InternalState
 	#define DLLDECORATE
 #endif
 
-void * MiniCHLinkInitAsDLL(struct MiniChlinkFunctions ** MCFO) DLLDECORATE;
-extern struct MiniChlinkFunctions MCF;
+/* initialization hints for init functions */
+/* could be expanded with more in the future (e.g., PID/VID hints, priorities, ...)*/
+/* not all init functions currently need these hints. */
+typedef struct {
+	const char* serial_port;
+} init_hints_t;
 
+void * MiniCHLinkInitAsDLL(struct MiniChlinkFunctions ** MCFO, const init_hints_t* init_hints) DLLDECORATE;
+extern struct MiniChlinkFunctions MCF;
 
 // Returns 'dev' on success, else 0.
 void * TryInit_WCHLinkE(void);
 void * TryInit_ESP32S2CHFUN(void);
 void * TryInit_NHCLink042(void);
 void * TryInit_B003Fun(void);
-void * TryInit_Ardulink();
+void * TryInit_Ardulink(const init_hints_t*);
 
 // Returns 0 if ok, populated, 1 if not populated.
 int SetupAutomaticHighLevelFunctions( void * dev );

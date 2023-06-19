@@ -8,16 +8,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <getopt.h>
 #include "minichlink.h"
 #include "../ch32v003fun/ch32v003fun.h"
 
 #if defined(WINDOWS) || defined(WIN32) || defined(_WIN32)
-#define DISABLE_ARDULINK
 void Sleep(uint32_t dwMilliseconds);
 #else
 #include <unistd.h>
 #endif
-
 
 static int64_t StringToMemoryAddress( const char * number ) __attribute__((used));
 static void StaticUpdatePROGBUFRegs( void * dev ) __attribute__((used));
@@ -27,7 +26,7 @@ int DefaultReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t r
 void TestFunction(void * v );
 struct MiniChlinkFunctions MCF;
 
-void * MiniCHLinkInitAsDLL( struct MiniChlinkFunctions ** MCFO )
+void * MiniCHLinkInitAsDLL( struct MiniChlinkFunctions ** MCFO, const init_hints_t* init_hints )
 {
 	void * dev = 0;
 	if( (dev = TryInit_WCHLinkE()) )
@@ -46,12 +45,10 @@ void * MiniCHLinkInitAsDLL( struct MiniChlinkFunctions ** MCFO )
 	{
 		fprintf( stderr, "Found B003Fun Bootloader\n" );
 	}
-#ifndef DISABLE_ARDULINK
-	else if ((dev = TryInit_Ardulink()))
+	else if ((dev = TryInit_Ardulink(init_hints)))
 	{
 		fprintf( stderr, "Found Ardulink Programmer\n" );
 	}
-#endif
 	else
 	{
 		fprintf( stderr, "Error: Could not initialize any supported programmers\n" );
@@ -66,6 +63,27 @@ void * MiniCHLinkInitAsDLL( struct MiniChlinkFunctions ** MCFO )
 	return dev;
 }
 
+void parse_possible_init_hints(int argc, char **argv, init_hints_t *hints)
+{
+	if (!hints)
+		return;
+	int c;
+	opterr = 0;
+	/* we're only interested in the value for the COM port, given in a -c parameter */
+	/* the '-' is really important so that getopt does not permutate the argv array and messes up parsing later */
+	while ((c = getopt(argc, argv, "-c:")) != -1)
+	{
+		switch (c)
+		{
+		case 'c':
+			// we can use the pointer as-is because it points in our 
+			// argv array and that is stable.
+			hints->serial_port = optarg;
+			break;
+		}
+	}
+}
+
 #if !defined( MINICHLINK_AS_LIBRARY ) && !defined( MINICHLINK_IMPORT )
 int main( int argc, char ** argv )
 {
@@ -73,7 +91,10 @@ int main( int argc, char ** argv )
 	{
 		goto help;
 	}
-	void * dev = MiniCHLinkInitAsDLL( 0 );
+	init_hints_t hints;
+	memset(&hints, 0, sizeof(hints));
+	parse_possible_init_hints(argc, argv, &hints);
+	void * dev = MiniCHLinkInitAsDLL( 0, &hints );
 	if( !dev )
 	{
 		fprintf( stderr, "Error: Could not initialize any supported programmers\n" );
@@ -150,6 +171,16 @@ keep_going:
 					MCF.Control5v( dev, 0 );
 				else
 					goto unimplemented;
+				break;
+			case 'c':
+				// COM port argument already parsed previously
+				// we still need to skip the next argument
+				iarg+=1;
+				if( iarg >= argc )
+				{
+					fprintf( stderr, "-c argument (COM port) required 2 arguments\n" );
+					goto unimplemented;
+				}
 				break;
 			case 'u':
 				if( MCF.Unbrick )
@@ -560,6 +591,7 @@ help:
 	fprintf( stderr, " -5 Enable 5V\n" );
 	fprintf( stderr, " -t Disable 3.3V\n" );
 	fprintf( stderr, " -f Disable 5V\n" );
+	fprintf( stderr, " -c [serial port for Ardulink, try /dev/ttyACM0 or COM11 etc]\n" );
 	fprintf( stderr, " -u Clear all code flash - by power off (also can unbrick)\n" );
 	fprintf( stderr, " -b Reboot out of Halt\n" );
 	fprintf( stderr, " -e Resume from halt\n" );
@@ -1542,6 +1574,11 @@ static int DefaultHaltMode( void * dev, int mode )
 		usleep( 20000);
 	}
 #endif
+
+	// pull reset line back to 0 again (NO RESET)
+	if (MCF.TargetReset) {
+		MCF.TargetReset(dev, 0);
+	}
 
 	iss->processor_in_mode = mode;
 	return 0;
