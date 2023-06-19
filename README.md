@@ -70,9 +70,9 @@ If the C/C++ language server clangd is unable to find `ch32v003fun.h`, the examp
 `build_all_clangd.sh` does in `build scripts` does this for all examples.
 
 ## Quick Reference
- * Needed for programming/debugging: `SWIO` is on `PD1`
- * Optional (not needed, can be configured as output if fuse set): `NRST` is on `PD7`
- * UART TX (optional) is on: `PD5`
+ * **REQUIRED** for programming/debugging: `SWIO` is on `PD1`. Do not re-use PD1 for multiple functions.
+ * Optional (not needed, can be configured as output if fuse set): `NRST` is on `PD7`.  By default from factor, is GPIO.
+ * UART TX (optional) is on: `PD5`. We recommend using SWIO for `printf` debugging.
 
 ![ch32v003a4m6](https://raw.githubusercontent.com/Tengo10/pinout-overview/main/pinouts/CH32v003/ch32v003a4m6.svg)
 ![ch32v003f4p6](https://raw.githubusercontent.com/Tengo10/pinout-overview/main/pinouts/CH32v003/ch32v003f4p6.svg)
