@@ -61,6 +61,14 @@ static const unsigned char word_wise_write_blob[] = { // size and address must b
 	0x14, 0xc1, 0x82, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 */
 };
 
+static const unsigned char write64_flash[] = { // size and address must be aligned by 4.
+  0x13, 0x07, 0x45, 0x03, 0x0c, 0x43, 0x13, 0x86, 0x05, 0x04, 0x5c, 0x43,
+  0xb7, 0x02, 0x05, 0x00, 0x14, 0x47, 0x94, 0xc1, 0x23, 0xa0, 0x57, 0x00,
+  0x91, 0x05, 0x11, 0x07, 0xe3, 0xca, 0xc5, 0xfe, 0xc1, 0x65, 0x93, 0x85,
+  0x05, 0x04, 0xcc, 0xc3, 0x8c, 0xc3, 0xfd, 0x56, 0x14, 0xc1, 0x82, 0x80
+
+};
+
 static const unsigned char half_wise_write_blob[] = { // size and address must be aligned by 2
 	0x23, 0xa0, 0x05, 0x00, 0x13, 0x07, 0x45, 0x03, 0x0c, 0x43, 0x50, 0x43,
 	0x2e, 0x96, 0x21, 0x07, 0x16, 0x23, 0x96, 0xa1, 0x96, 0x21, 0x16, 0xa3,
@@ -433,19 +441,35 @@ static int B003FunBlockWrite64( void * dev, uint32_t address_to_write, uint8_t *
 				return -9;
 			}
 		}
-		MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG ); // THIS IS REQUIRED, (intptr_t)&FLASH->CTLR = 0x40022010
-		MCF.WriteWord( dev, 0x40022010, CR_BUF_RST | CR_PAGE_PG );  // (intptr_t)&FLASH->CTLR = 0x40022010
-	}
-	int ret = InternalB003FunWriteBinaryBlob( dev, address_to_write, 64, data );
-	if( IsAddressFlash( address_to_write ) )
-	{
-		MCF.WriteWord( dev, 0x40022014, address_to_write );  //0x40022014 -> FLASH->ADDR
+		printf( "Preppinggg %08x\n", address_to_write );
+
+		// Not actually needed.
+		MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG ); // (intptr_t)&FLASH->CTLR = 0x40022010
+		MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG | CR_BUF_RST); // (intptr_t)&FLASH->CTLR = 0x40022010
+
+		uint32_t word1, word2;
+		int r = B003FunReadWord( dev, 0x40022010, &word1 );
+		r |= B003FunReadWord( dev, 0x4002200c, &word2 );
+		printf( "IN: WORD: %d %08x %08x\n", r, word1, word2 );
+
+		ResetOp( eps );
+		WriteOpArb( eps, write64_flash, sizeof(write64_flash) );
+		WriteOp4( eps, address_to_write ); // Base address to write. @52
+		WriteOp4( eps, 0x40022010 ); // FLASH base address. @ 56
+		memcpy( &eps->commandbuffer[60], data, 64 ); // @60
 		if( MCF.PrepForLongOp ) MCF.PrepForLongOp( dev );  // Give the programmer a headsup this next operation could take a while.
-		MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG|CR_STRT_Set ); // 0x40022010 -> FLASH->CTLR
-		InternalMarkMemoryNotErased( iss, address_to_write );
+		if( CommitOp( eps ) ) return -5;
+
+		r = B003FunReadWord( dev, 0x40022010, &word1 );
+		r |= B003FunReadWord( dev, 0x4002200c, &word2 );
+		printf( "WORD: %d %08x %08x\n", r, word1, word2 );
+	}
+	else
+	{
+		return InternalB003FunWriteBinaryBlob( dev, address_to_write, 64, data );
 	}
 
-	return ret;
+	return 0;
 }
 
 static int B003FunWriteHalfWord( void * dev, uint32_t address_to_write, uint16_t data )
@@ -698,8 +722,6 @@ void * TryInit_B003Fun()
 
 
 /* Run app blob
-
-
 				FLASH->BOOT_MODEKEYR = FLASH_KEY1;
 				FLASH->BOOT_MODEKEYR = FLASH_KEY2;
 				FLASH->STATR = 0; // 1<<14 is zero, so, boot user code.
