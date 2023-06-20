@@ -57,7 +57,7 @@ The generated .bin is used by minichlink and the .hex file is compatible with th
 
 ## VSCode +/- PlatformIO
 
-Note: With PlatformIO is genearlly used for CI on this repo.  However, note that this is **not** the path that allows for debugging on Windows.
+Note: With PlatformIO is genearlly used for CI on this repo.  However, note that this is **not** the path that allows for debugging on Windows (For that see [debugprintfdemo](https://github.com/cnlohr/ch32v003fun/tree/master/examples/debugprintfdemo/.vscode))
 
 This project can also be built, uploaded and debugged with VSCode and the PlatformIO extension. Simply clone and open this project in VSCode and have the PlatformIO extension installed.
 
