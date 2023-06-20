@@ -1,14 +1,19 @@
 // DOES NOT WORK HALP!!!!!!!!!!!!!!
 
 #define SYSTEM_CORE_CLOCK 48000000
+#define SYSTICK_USE_HCLK
 
 #include "ch32v003fun.h"
 #include <stdio.h>
 
-uint32_t count;
 
 int main()
 {
+	int start;
+	int stop;
+
+	SETUP_SYSTICK_HCLK
+
 	SystemInit48HSI();
 	SetupDebugPrintf();
 
@@ -34,45 +39,57 @@ int main()
 		while(1);
 	}
 
-	volatile uint32_t * ptr = (uint32_t*)0x08003700;
-	printf( "Memory at: %08lx: %08lx %08lx\n", ptr, ptr[0], ptr[1] );
+	uint32_t * ptr = (uint32_t*)0x08003700;
+	printf( "Memory at: %p: %08lx %08lx\n", ptr, ptr[0], ptr[1] );
 
 
 	printf( "FLASH->CTLR = %08lx\n", FLASH->CTLR );
+
 	//Erase Page
 	FLASH->CTLR = CR_PAGE_ER;
 	FLASH->ADDR = (intptr_t)ptr;
 	FLASH->CTLR = CR_STRT_Set | CR_PAGE_ER;
-	printf( "FLASH->STATR = %08lx %08x\n", FLASH->STATR, FLASH_STATR_BSY );
-	while( FLASH->STATR & FLASH_STATR_BSY );
+	start = SysTick->CNT;
+	while( FLASH->STATR & FLASH_STATR_BSY );  // Takes about 3ms.
+	stop = SysTick->CNT;
+
+	printf( "FLASH->STATR = %08lx %08x -> %d cycles for page erase\n", FLASH->STATR, FLASH_STATR_BSY, stop - start );
 	printf( "Erase complete\n" );
 
 
 	// Clear buffer and prep for flashing.
 	FLASH->CTLR = CR_PAGE_PG;  // synonym of FTPG.
 	FLASH->CTLR = CR_BUF_RST | CR_PAGE_PG;
-	// Note: It takes about 8 clock cycles for this to finish.
-	while( FLASH->STATR & FLASH_STATR_BSY );
+	FLASH->ADDR = (intptr_t)ptr;  // This can actually happen about anywhere toward the end here.
 
-	printf( "Memory at: %08lx: %08lx %08lx\n", ptr, ptr[0], ptr[1] );
+
+	// Note: It takes about 6 clock cycles for this to finish.
+	start = SysTick->CNT;
+	while( FLASH->STATR & FLASH_STATR_BSY );  // No real need for this.
+	stop = SysTick->CNT;
+	printf( "FLASH->STATR = %08lx -> %d cycles for buffer reset\n", FLASH->STATR, stop - start );
+
 
 	int i;
 	for( i = 0; i < 16; i++ )
 	{
-		ptr[i] = 0xabcd1234; //Write to the memory
+		ptr[i] = 0xabcd1234 + i; //Write to the memory
 		FLASH->CTLR = CR_PAGE_PG | FLASH_CTLR_BUF_LOAD; // Load the buffer.
-		printf( "(loop) FLASH->STATR = %08lx\n", FLASH->STATR );
-		while( FLASH->STATR & FLASH_STATR_BSY );
+		//while( FLASH->STATR & FLASH_STATR_BSY );  // Not needed.
 	}
 
-	FLASH->ADDR = (intptr_t)ptr;
 	FLASH->CTLR = CR_PAGE_PG|CR_STRT_Set;
-	printf( "FLASH->STATR = %08lx\n", FLASH->STATR );
-	while( FLASH->STATR & FLASH_STATR_BSY );
+	start = SysTick->CNT;
+	while( FLASH->STATR & FLASH_STATR_BSY ); // Takes about 3ms.
+	stop = SysTick->CNT;
+	printf( "FLASH->STATR = %08lx -> %d cycles for page write\n", FLASH->STATR, stop - start );
 
 	printf( "FLASH->STATR = %08lx\n", FLASH->STATR );
-	printf( "Memory at: %08lx: %08lx %08lx\n", ptr, ptr[0], ptr[1] );
 
+	printf( "Memory at: %08lx: %08lx %08lx\n", (uint32_t)ptr, ptr[0], ptr[1] );
+
+	for( i = 0; i < 16; i++ )
+		printf( "%08lx\n", ptr[i] );
 	while(1);
 }
 
