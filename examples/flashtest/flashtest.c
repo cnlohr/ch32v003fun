@@ -34,9 +34,11 @@ int main()
 		while(1);
 	}
 
-	uint32_t * ptr = (uint32_t*)0x08002700;
+	volatile uint32_t * ptr = (uint32_t*)0x08003700;
 	printf( "Memory at: 0x08002710: %08lx %08lx\n", ptr[0], ptr[1] );
 
+
+	printf( "FLASH->CTLR = %08lx\n", FLASH->CTLR );
 	//Erase Page
 	FLASH->CTLR = CR_PAGE_ER;
 	FLASH->ADDR = (intptr_t)ptr;
@@ -47,7 +49,7 @@ int main()
 
 
 	// Clear buffer and prep for flashing.
-	FLASH->CTLR = CR_PAGE_PG;
+	FLASH->CTLR = CR_PAGE_PG;  // synonym of FTPG.
 	FLASH->CTLR = CR_BUF_RST | CR_PAGE_PG;
 	// Note: It takes about 8 clock cycles for this to finish.
 	while( FLASH->STATR & FLASH_STATR_BSY );
@@ -68,6 +70,7 @@ int main()
 	printf( "FLASH->STATR = %08lx\n", FLASH->STATR );
 	while( FLASH->STATR & FLASH_STATR_BSY );
 
+	printf( "FLASH->STATR = %08lx\n", FLASH->STATR );
 	printf( "Memory at: 0x08002710: %08lx %08lx\n", ptr[0], ptr[1] );
 
 	while(1);
