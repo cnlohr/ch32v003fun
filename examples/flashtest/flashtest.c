@@ -35,7 +35,7 @@ int main()
 	}
 
 	volatile uint32_t * ptr = (uint32_t*)0x08003700;
-	printf( "Memory at: 0x08002710: %08lx %08lx\n", ptr[0], ptr[1] );
+	printf( "Memory at: %08lx: %08lx %08lx\n", ptr, ptr[0], ptr[1] );
 
 
 	printf( "FLASH->CTLR = %08lx\n", FLASH->CTLR );
@@ -54,7 +54,7 @@ int main()
 	// Note: It takes about 8 clock cycles for this to finish.
 	while( FLASH->STATR & FLASH_STATR_BSY );
 
-	printf( "Memory at: 0x08002710: %08lx %08lx\n", ptr[0], ptr[1] );
+	printf( "Memory at: %08lx: %08lx %08lx\n", ptr, ptr[0], ptr[1] );
 
 	int i;
 	for( i = 0; i < 16; i++ )
@@ -71,7 +71,7 @@ int main()
 	while( FLASH->STATR & FLASH_STATR_BSY );
 
 	printf( "FLASH->STATR = %08lx\n", FLASH->STATR );
-	printf( "Memory at: 0x08002710: %08lx %08lx\n", ptr[0], ptr[1] );
+	printf( "Memory at: %08lx: %08lx %08lx\n", ptr, ptr[0], ptr[1] );
 
 	while(1);
 }
