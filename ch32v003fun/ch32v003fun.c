@@ -810,11 +810,11 @@ asm volatile(
 #ifdef CPLUSPLUS
 	// Call __libc_init_array function
 "	call %0 \n\t"
-: : "i" (__libc_init_array)
+: : "i" (__libc_init_array) 
+: "a0", "a1", "a2", "a3", "a4", "a5", "t0", "t1", "t2", "memory"
 #else
-: :
+: : : "a0", "a1", "a2", "a3", "memory"
 #endif
-: "a0", "a1", "a2", "a3", "memory"
 );
 
 	SETUP_SYSTICK_HCLK
