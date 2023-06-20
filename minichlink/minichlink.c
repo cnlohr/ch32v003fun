@@ -1575,11 +1575,6 @@ static int DefaultHaltMode( void * dev, int mode )
 	}
 #endif
 
-	// pull reset line back to 0 again (NO RESET)
-	if (MCF.TargetReset) {
-		MCF.TargetReset(dev, 0);
-	}
-
 	iss->processor_in_mode = mode;
 	return 0;
 }

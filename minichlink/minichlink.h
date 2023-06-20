@@ -78,8 +78,6 @@ struct MiniChlinkFunctions
 
 	int (*WriteByte)( void * dev, uint32_t address_to_write, uint8_t data );
 	int (*ReadByte)( void * dev, uint32_t address_to_read, uint8_t * data );
-
-	int (*TargetReset)( void * dev, int reset );
 };
 
 /** If you are writing a driver, the minimal number of functions you can implement are:

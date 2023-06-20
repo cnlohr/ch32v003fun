@@ -10,6 +10,7 @@ ch32v003fun contains:
   * An STM32F042 Programmer, the NHC-Link042
   * An ESP32S2 Programmer, the [esp32s2-funprog](https://github.com/cnlohr/esp32s2-cookbook/tree/master/ch32v003programmer)
   * The official WCH Link-E Programmer.
+  * An Arduino-based interface, [Ardulink](https://gitlab.com/BlueSyncLine/arduino-ch32v003-swio).
   * Supports gdbserver-style-debugging for use with Visual Studio.
   * Supports printf-over-single-wire. (At about 400kBaud)
 3. An extra copy of libgcc so you can use unusual risc-v build chains, located in the `misc/libgcc.a`.
