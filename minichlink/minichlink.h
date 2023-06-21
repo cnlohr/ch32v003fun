@@ -116,6 +116,7 @@ struct InternalState
 	uint32_t ram_size;
 	int sector_size;
 	int flash_size;
+	int target_chip_type; // 0 for unknown (or 003), otherwise a part number.
 	uint8_t flash_sector_status[MAX_FLASH_SECTORS];  // 0 means unerased/unknown. 1 means erased.
 };
 

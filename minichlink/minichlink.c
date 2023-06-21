@@ -18,11 +18,6 @@ void Sleep(uint32_t dwMilliseconds);
 #include <unistd.h>
 #endif
 
-
-#if defined(WINDOWS) || defined(WIN32) || defined(_WIN32)
-	#define usleep(x) Sleep((x)/1000);
-#endif
-
 static int64_t StringToMemoryAddress( const char * number ) __attribute__((used));
 static void StaticUpdatePROGBUFRegs( void * dev ) __attribute__((used));
 int DefaultReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t read_size, uint8_t * blob );
@@ -58,6 +53,14 @@ void * MiniCHLinkInitAsDLL( struct MiniChlinkFunctions ** MCFO, const init_hints
 		fprintf( stderr, "Error: Could not initialize any supported programmers\n" );
 		return 0;
 	}
+
+	struct InternalState * iss = calloc( 1, sizeof( struct InternalState ) );
+	((struct ProgrammerStructBase*)dev)->internal = iss;
+	iss->ram_base = 0x20000000;
+	iss->ram_size = 2048;
+	iss->sector_size = 64;
+	iss->flash_size = 16384;
+	iss->target_chip_type = 0;
 
 	SetupAutomaticHighLevelFunctions( dev );
 
@@ -468,6 +471,7 @@ keep_going:
 			}
 			case 'w':
 			{
+				struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
 				if( argchar[2] != 0 ) goto help;
 				iarg++;
 				argchar = 0; // Stop advancing
@@ -684,7 +688,7 @@ static int DefaultWaitForFlash( void * dev )
 		rw = 0;
 		MCF.ReadWord( dev, (intptr_t)&FLASH->STATR, &rw ); // FLASH_STATR => 0x4002200C
 		if( timeout++ > 100 ) return -1;
-	} while(rw & 1);  // BSY flag.
+	} while(rw & 2);  // BSY flag for 003, or WRBSY for other processors.
 
 	if( rw & FLASH_STATR_WRPRTERR )
 	{
@@ -1715,10 +1719,7 @@ int DefaultUnbrick( void * dev )
 	// After more experimentation, it appaers to work best by not clearing the halt request.
 
 	MCF.FlushLLCommands( dev );
-	if( MCF.DelayUS )
-		MCF.DelayUS( dev, 20000 );
-	else
-		usleep(20000);
+	MCF.DelayUS( dev, 20000 );
 
 	if( timeout == max_timeout ) 
 	{
@@ -1778,7 +1779,11 @@ int DefaultVoidHighLevelState( void * dev )
 
 int DefaultDelayUS( void * dev, int us )
 {
+#if defined(WINDOWS) || defined(WIN32) || defined(_WIN32)
+	Sleep( (us+9999) / 1000 );
+#else
 	usleep( us );
+#endif
 	return 0;
 }
 
@@ -1839,13 +1844,6 @@ int SetupAutomaticHighLevelFunctions( void * dev )
 	if( !MCF.DelayUS )
 		MCF.DelayUS = DefaultDelayUS;
 
-	struct InternalState * iss = calloc( 1, sizeof( struct InternalState ) );
-	iss->ram_base = 0x20000000;
-	iss->ram_size = 2048;
-	iss->sector_size = 64;
-	iss->flash_size = 16384;
-
-	((struct ProgrammerStructBase*)dev)->internal = iss;
 	return 0;
 }
 
