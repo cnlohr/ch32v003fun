@@ -236,11 +236,13 @@ static int LESetupInterface( void * d )
 		return -1;
 	}
 
-    uint32_t target_chip_type = ( rbuff[4] << 4) + (rbuff[5] >> 4);
-    fprintf(stderr, "Chip Type: %03x\n", target_chip_type);
-	if( target_chip_type == 0x307 || target_chip_type == 0x203 )
+	uint32_t mcu_series = rbuff[4] << 4;
+    uint32_t target_chip_type = mcu_series + (rbuff[5] >> 4);
+	fprintf(stderr, "Chip Type: %03x\n", target_chip_type);
+
+	if( mcu_series == 0x300 || mcu_series == 0x200 )
 	{
-		fprintf( stderr, "CH32V307 or CH32V203 Detected.  Allowing old-flash-mode for operation.\n" );
+		fprintf( stderr, "CH32V30x or CH32V20x MCU detected. Using binary blob write for operation.\n" );
 		MCF.WriteBinaryBlob = LEWriteBinaryBlob;
 
 		iss->sector_size = 256;
@@ -401,7 +403,7 @@ void * TryInit_WCHLinkE()
 
 #if 1
 
-// In case you are using a non-CH32V003 board.
+// Flash Bootloader for V20x and V30x series MCUs
 
 const uint8_t * bootloader = (const uint8_t*)
 "\x93\x77\x15\x00\x41\x11\x99\xcf\xb7\x06\x67\x45\xb7\x27\x02\x40" \
