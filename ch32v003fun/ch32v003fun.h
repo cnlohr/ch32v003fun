@@ -5080,6 +5080,12 @@ void WaitForDebuggerToAttach();
 // Just a definition to the internal _write function.
 int _write(int fd, const char *buf, int size);
 
+// Call this to busy-wait the polling of input.
+void poll_input();
+
+// Receiving bytes from host.  Override if you wish.
+void handle_debug_input( int numbytes, uint8_t * data );
+
 #endif
 
 // xw_ext.inc, thanks to @macyler, @jnk0le, @duk for this reverse engineering.
