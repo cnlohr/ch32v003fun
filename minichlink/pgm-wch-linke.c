@@ -528,7 +528,7 @@ static int LEReadBinaryBlob( void * d, uint32_t offset, uint32_t amount, uint8_t
 static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len, uint8_t * blob )
 {
 	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
-	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
+	struct InternalState * iss = (struct InternalState*)(((struct LinkEProgrammerStruct*)d)->internal);
 
 	InternalLinkEHaltMode( d, 0 );
 
@@ -567,7 +567,7 @@ static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len,
 	} 
 	if( i == 10 )
 	{
-		fprintf( stderr, "Error, confusing respones to 02/01/07\n" );
+		fprintf( stderr, "Error, confusing responses to 02/01/07\n" );
 		exit( -109 );
 	}
 	
