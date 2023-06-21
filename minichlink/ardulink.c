@@ -9,8 +9,9 @@ void * TryInit_Ardulink(const init_hints_t*);
 static int ArdulinkWriteReg32(void * dev, uint8_t reg_7_bit, uint32_t command);
 static int ArdulinkReadReg32(void * dev, uint8_t reg_7_bit, uint32_t * commandresp);
 static int ArdulinkFlushLLCommands(void * dev);
+static int ArdulinkDelayUS(void * dev, int microseconds);
+static int ArdulinkControl3v3(void * dev, int power_on);
 static int ArdulinkExit(void * dev);
-static int ArdulinkTargetReset(void * dev, int reset);
 
 typedef struct {
     struct ProgrammerStructBase psb;
@@ -64,20 +65,12 @@ int ArdulinkFlushLLCommands(void * dev)
     return 0;
 }
 
-int ArdulinkExit(void * dev)
-{
-    serial_dev_close(&((ardulink_ctx_t*)dev)->serial);
-    free(dev);
-    return 0;
-}
-
-int ArdulinkTargetReset(void * dev, int reset) {
+int ArdulinkControl3v3(void * dev, int power_on) {
     char c;
 
-    fprintf(stderr, "Ardulink: target reset %d\n", reset);
+    fprintf(stderr, "Ardulink: target power %d\n", power_on);
 
-    // Assert reset.
-    c = reset ? 'a' : 'A';
+    c = power_on ? 'p' : 'P';
     if (serial_dev_write(&((ardulink_ctx_t*)dev)->serial, &c, 1) == -1)
         return -errno;
 
@@ -90,6 +83,20 @@ int ArdulinkTargetReset(void * dev, int reset) {
     usleep(20000);
     return 0;
 }
+
+int ArdulinkDelayUS(void * dev, int microseconds) {
+    //fprintf(stderr, "Ardulink: faking delay %d\n", microseconds);
+    //usleep(microseconds);
+    return 0;
+}
+
+int ArdulinkExit(void * dev)
+{
+    serial_dev_close(&((ardulink_ctx_t*)dev)->serial);
+    free(dev);
+    return 0;
+}
+
 
 void * TryInit_Ardulink(const init_hints_t* hints)
 {
@@ -149,18 +156,14 @@ void * TryInit_Ardulink(const init_hints_t* hints)
         return NULL;
     }
 
-    if (ArdulinkTargetReset(ctx, 1) != 0) {
-        fprintf(stderr, "Ardulink: target reset failed.\n");
-        return NULL;
-    }
-
     fprintf(stderr, "Ardulink: synced.\n");
 
     MCF.WriteReg32 = ArdulinkWriteReg32;
 	MCF.ReadReg32 = ArdulinkReadReg32;
     MCF.FlushLLCommands = ArdulinkFlushLLCommands;
+    MCF.Control3v3 = ArdulinkControl3v3;
+    MCF.DelayUS = ArdulinkDelayUS;
 	MCF.Exit = ArdulinkExit;
-    MCF.TargetReset = ArdulinkTargetReset;
 
 	return ctx;
 }

@@ -1598,13 +1598,7 @@ static int DefaultHaltMode( void * dev, int mode )
 		fprintf( stderr, "Error: Unknown halt mode %d\n", mode );
 	}
 
-	// pull reset line back to 0 again (NO RESET)  ((XXX TODO: Move this to unbrick))
-	if (MCF.TargetReset) {
-		MCF.TargetReset(dev, 0);
-	}
-
 	iss->flash_unlocked = 0;
-
 	iss->processor_in_mode = mode;
 	return 0;
 }
@@ -1664,6 +1658,7 @@ int DefaultUnbrick( void * dev )
 {
 	printf( "Entering Unbrick Mode\n" );
 	MCF.Control3v3( dev, 0 );
+
 	MCF.DelayUS( dev, 60000 );
 	MCF.DelayUS( dev, 60000 );
 	MCF.DelayUS( dev, 60000 );

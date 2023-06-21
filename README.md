@@ -10,6 +10,7 @@ ch32v003fun contains:
   * An STM32F042 Programmer, the NHC-Link042
   * An ESP32S2 Programmer, the [esp32s2-funprog](https://github.com/cnlohr/esp32s2-cookbook/tree/master/ch32v003programmer)
   * The official WCH Link-E Programmer.
+  * An Arduino-based interface, [Ardulink](https://gitlab.com/BlueSyncLine/arduino-ch32v003-swio).
   * Supports gdbserver-style-debugging for use with Visual Studio.
   * Supports printf-over-single-wire. (At about 400kBaud)
 3. An extra copy of libgcc so you can use unusual risc-v build chains, located in the `misc/libgcc.a`.
@@ -57,7 +58,7 @@ The generated .bin is used by minichlink and the .hex file is compatible with th
 
 ## VSCode +/- PlatformIO
 
-Note: With PlatformIO is genearlly used for CI on this repo.  However, note that this is **not** the path that allows for debugging on Windows.
+Note: With PlatformIO is genearlly used for CI on this repo.  However, note that this is **not** the path that allows for debugging on Windows (For that see [debugprintfdemo](https://github.com/cnlohr/ch32v003fun/tree/master/examples/debugprintfdemo/.vscode))
 
 This project can also be built, uploaded and debugged with VSCode and the PlatformIO extension. Simply clone and open this project in VSCode and have the PlatformIO extension installed.
 
@@ -70,9 +71,9 @@ If the C/C++ language server clangd is unable to find `ch32v003fun.h`, the examp
 `build_all_clangd.sh` does in `build scripts` does this for all examples.
 
 ## Quick Reference
- * Needed for programming/debugging: `SWIO` is on `PD1`
- * Optional (not needed, can be configured as output if fuse set): `NRST` is on `PD7`
- * UART TX (optional) is on: `PD5`
+ * **REQUIRED** for programming/debugging: `SWIO` is on `PD1`. Do not re-use PD1 for multiple functions.
+ * **OPTIONAL** `NRST` is on `PD7`. Not needed, defaults as GPIO in some configurations.
+ * **OPTIONAL** UART `TX` is on: `PD5`. We recommend using SWIO for `printf` debugging.
 
 ![ch32v003a4m6](https://raw.githubusercontent.com/Tengo10/pinout-overview/main/pinouts/CH32v003/ch32v003a4m6.svg)
 ![ch32v003f4p6](https://raw.githubusercontent.com/Tengo10/pinout-overview/main/pinouts/CH32v003/ch32v003f4p6.svg)
