@@ -1,0 +1,39 @@
+{
+	"configurations": [
+		{
+			"name": "GDB Debug Target",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "template.elf",
+			"args": [],
+			"stopAtEntry": true,
+			"cwd": "${workspaceFolder}",
+			"environment": [],
+			"externalConsole": false,
+			"MIMode": "gdb",
+			"deploySteps": [
+				{
+					"type": "shell",
+					"continueOn": "GDBServer",
+					"command": "make --directory=${workspaceFolder} closechlink flash gdbserver"
+				},
+			],
+			"setupCommands": [
+				{
+					"description": "Enable pretty-printing for gdb",
+					"text": "-enable-pretty-printing",
+					"ignoreFailures": true
+				}
+			],
+			"miDebuggerPath": "gdb-multiarch",
+			"miDebuggerServerAddress": "127.0.0.1:2000"
+		},
+		{
+			"name": "Run Only (In Terminal)",
+			"type": "node",
+			"request": "launch",
+			"program": "",
+			"preLaunchTask": "run_flash_and_gdbserver",
+		}	
+		]
+}

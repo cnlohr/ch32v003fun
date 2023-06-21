@@ -1,0 +1,15 @@
+{
+    "cmake.configureOnOpen": false,
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "",
+            "sbinaryPath": "blink.elf",
+            "binaryArgs": []
+        }
+    ],
+    "editor.insertSpaces": false,
+    "editor.tabSize": 4,
+    "files.associations": {
+        "ch32v003fun.h": "c"
+    }
+}

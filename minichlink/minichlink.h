@@ -158,7 +158,8 @@ struct InternalState
 /* could be expanded with more in the future (e.g., PID/VID hints, priorities, ...)*/
 /* not all init functions currently need these hints. */
 typedef struct {
-	const char* serial_port;
+	const char * serial_port;
+	const char * specific_programmer;
 } init_hints_t;
 
 void * MiniCHLinkInitAsDLL(struct MiniChlinkFunctions ** MCFO, const init_hints_t* init_hints) DLLDECORATE;
