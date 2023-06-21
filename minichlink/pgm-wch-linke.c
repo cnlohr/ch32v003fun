@@ -236,11 +236,13 @@ static int LESetupInterface( void * d )
 		return -1;
 	}
 
-    uint32_t target_chip_type = ( rbuff[4] << 4) + (rbuff[5] >> 4);
-    fprintf(stderr, "Chip Type: %03x\n", target_chip_type);
-	if( target_chip_type == 0x307 || target_chip_type == 0x203 )
+	uint32_t mcu_series = rbuff[4] << 4;
+    uint32_t target_chip_type = mcu_series + (rbuff[5] >> 4);
+	fprintf(stderr, "Chip Type: %03x\n", target_chip_type);
+
+	if( mcu_series == 0x300 || mcu_series == 0x200 )
 	{
-		fprintf( stderr, "CH32V307 or CH32V203 Detected.  Allowing old-flash-mode for operation.\n" );
+		fprintf( stderr, "CH32V30x or CH32V20x MCU detected. Using binary blob write for operation.\n" );
 		MCF.WriteBinaryBlob = LEWriteBinaryBlob;
 
 		iss->sector_size = 256;
@@ -401,7 +403,7 @@ void * TryInit_WCHLinkE()
 
 #if 1
 
-// In case you are using a non-CH32V003 board.
+// Flash Bootloader for V20x and V30x series MCUs
 
 const uint8_t * bootloader = (const uint8_t*)
 "\x93\x77\x15\x00\x41\x11\x99\xcf\xb7\x06\x67\x45\xb7\x27\x02\x40" \
@@ -528,7 +530,7 @@ static int LEReadBinaryBlob( void * d, uint32_t offset, uint32_t amount, uint8_t
 static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len, uint8_t * blob )
 {
 	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
-	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
+	struct InternalState * iss = (struct InternalState*)(((struct LinkEProgrammerStruct*)d)->internal);
 
 	InternalLinkEHaltMode( d, 0 );
 
@@ -544,9 +546,13 @@ static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len,
 
 	// This contains the write data quantity, in bytes.  (The last 2 octets)
 	// Then it just rollllls on in.
-	char rksbuff[11] = { 0x81, 0x01, 0x08, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-	rksbuff[9] = len >> 8;
-	rksbuff[10] = len & 0xff;
+	char rksbuff[11] = { 0x81, 0x01, 0x08,
+						 // Address to write
+						 (uint8_t)(address_to_write >> 24), (uint8_t)(address_to_write >> 16),
+						 (uint8_t)(address_to_write >> 8), (uint8_t)(address_to_write & 0xff),
+						 // Length to write
+						 (uint8_t)(len >> 24), (uint8_t)(len >> 16),
+						 (uint8_t)(len >> 8), (uint8_t)(len & 0xff) };
 	wch_link_command( (libusb_device_handle *)dev, rksbuff, 11, 0, 0, 0 );
 	
 	wch_link_command( (libusb_device_handle *)dev, "\x81\x02\x01\x05", 4, 0, 0, 0 );
@@ -567,7 +573,7 @@ static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len,
 	} 
 	if( i == 10 )
 	{
-		fprintf( stderr, "Error, confusing respones to 02/01/07\n" );
+		fprintf( stderr, "Error, confusing responses to 02/01/07\n" );
 		exit( -109 );
 	}
 	
