@@ -9,15 +9,17 @@
 #define MICROGDBSTUB_SOCKETS
 #define MICROGDBSTUB_PORT 2000
 
-
 const char* MICROGDBSTUB_MEMORY_MAP = "l<?xml version=\"1.0\"?>"
 "<!DOCTYPE memory-map PUBLIC \"+//IDN gnu.org//DTD GDB Memory Map V1.0//EN\" \"http://sourceware.org/gdb/gdb-memory-map.dtd\">"
 "<memory-map>"
-"  <memory type=\"flash\" start=\"0x00000000\" length=\"0x4000\">"
-"    <property name=\"blocksize\">64</property>"
+"  <memory type=\"flash\" start=\"0x00000000\" length=\"0x%x\">"
+"    <property name=\"blocksize\">%d</property>"
 "  </memory>"
-"  <memory type=\"ram\" start=\"0x20000000\" length=\"0x800\">"
+"  <memory type=\"ram\" start=\"0x20000000\" length=\"0x%x\">"
 "    <property name=\"blocksize\">1</property>"
+"  </memory>"
+"  <memory type=\"ram\" start=\"0x40000000\" length=\"0x10000000\">"
+"    <property name=\"blocksize\">4</property>"
 "  </memory>"
 "</memory-map>";
 
@@ -72,7 +74,7 @@ void RVCommandEpilogue( void * dev )
 void RVNetConnect( void * dev )
 {
 	// ??? Should we actually halt?
-	MCF.HaltMode( dev, 0 );
+	MCF.HaltMode( dev, 5 );
 	MCF.SetEnableBreakpoints( dev, 1, 0 );
 	RVCommandPrologue( dev );
 	shadow_running_state = 0;
@@ -125,7 +127,7 @@ int RVReadCPURegister( void * dev, int regno, uint32_t * regret )
 {
 	if( shadow_running_state )
 	{
-		MCF.HaltMode( dev, 0 );
+		MCF.HaltMode( dev, 5 );
 		RVCommandPrologue( dev );
 		shadow_running_state = 0;
 	}
@@ -349,7 +351,7 @@ int RVWriteRAM(void * dev, uint32_t memaddy, uint32_t length, uint8_t * payload 
 
 void RVHandleDisconnect( void * dev )
 {
-	MCF.HaltMode( dev, 0 );
+	MCF.HaltMode( dev, 5 );
 	MCF.SetEnableBreakpoints( dev, 0, 0 );
 
 	int i;
@@ -373,7 +375,7 @@ void RVHandleGDBBreakRequest( void * dev )
 {
 	if( shadow_running_state )
 	{
-		MCF.HaltMode( dev, 0 );
+		MCF.HaltMode( dev, 5 );
 	}
 }
 

@@ -35,13 +35,13 @@ void * MiniCHLinkInitAsDLL( struct MiniChlinkFunctions ** MCFO, const init_hints
 		if( strcmp( specpgm, "linke" ) == 0 )
 			dev = TryInit_WCHLinkE();
 		else if( strcmp( specpgm, "esp32s2chfun" ) == 0 )
-			dev = dev = TryInit_ESP32S2CHFUN();
+			dev = TryInit_ESP32S2CHFUN();
 		else if( strcmp( specpgm, "nchlink" ) == 0 )
-			dev = dev = TryInit_NHCLink042();
+			dev = TryInit_NHCLink042();
 		else if( strcmp( specpgm, "b003boot" ) == 0 )
-			dev = dev = TryInit_B003Fun();
+			dev = TryInit_B003Fun();
 		else if( strcmp( specpgm, "ardulink" ) == 0 )
-			dev = dev = TryInit_B003Fun();
+			dev = TryInit_B003Fun();
 	}
 	else
 	{

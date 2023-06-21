@@ -112,6 +112,8 @@ int ArdulinkSetupInterface( void * dev )
 		fprintf(stderr, "Ardulink: not the sync character.\n");
 		return -1;
 	}
+
+	return 0;
 }
 
 void * TryInit_Ardulink(const init_hints_t* hints)

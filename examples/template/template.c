@@ -1,4 +1,5 @@
 /* Template app on which you can build your own. */
+#define SYSTEM_CORE_CLOCK 48000000
 
 #include "ch32v003fun.h"
 #include <stdio.h>
@@ -30,9 +31,11 @@ int main()
 		GPIOD->BSHR = 1 | (1<<4);	 // Turn on GPIOs
 		GPIOC->BSHR = 1;
 		printf( "+%lu\n", count++ );
+		Delay_Ms(250);
 		GPIOD->BSHR = (1<<16) | (1<<(16+4)); // Turn off GPIODs
 		GPIOC->BSHR = (1<<16);
 		printf( "-%lu\n", count++ );
+		Delay_Ms(250);
 	}
 }
 
