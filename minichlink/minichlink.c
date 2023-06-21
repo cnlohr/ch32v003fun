@@ -271,11 +271,10 @@ keep_going:
 				{
 					printf( "GDBServer Running\n" );
 				}
-				else
+				else if( argchar[1] == 'T' )
 				{
 					// In case we aren't running already.
-					//MCF.HaltMode( dev, 2 );
-					//XXX TODO: Why do some programmers start automatically, and others don't? 
+					MCF.HaltMode( dev, 2 );
 				}
 
 				do
@@ -688,7 +687,7 @@ static int DefaultWaitForFlash( void * dev )
 		rw = 0;
 		MCF.ReadWord( dev, (intptr_t)&FLASH->STATR, &rw ); // FLASH_STATR => 0x4002200C
 		if( timeout++ > 100 ) return -1;
-	} while(rw & 2);  // BSY flag for 003, or WRBSY for other processors.
+	} while(rw & 3);  // BSY flag for 003, or WRBSY for other processors.
 
 	if( rw & FLASH_STATR_WRPRTERR )
 	{
@@ -1643,7 +1642,6 @@ int DefaultPollTerminal( void * dev, uint8_t * buffer, int maxlen, uint32_t leav
 	}
 	r = MCF.ReadReg32( dev, DMDATA0, &rr );
 	if( r < 0 ) return r;
-
 	if( maxlen < 8 ) return -9;
 
 	// DMDATA1:

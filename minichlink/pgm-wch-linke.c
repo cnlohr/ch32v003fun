@@ -191,8 +191,7 @@ int LEFlushLLCommands( void * dev )
 static int LESetupInterface( void * d )
 {
 	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
-	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
-
+	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)d)->internal);
 	uint8_t rbuff[1024];
 	uint32_t transferred = 0;
 
@@ -279,7 +278,7 @@ static int LESetupInterface( void * d )
 		fprintf( stderr, "Error: could not get part status\n" );
 		return -1;
 	}
-	fprintf( stderr, "Part Type (A): 0x%02x%02x (This is the capacity code, in KB)\n", rbuff[2], rbuff[3] );  // Is this Flash size?
+	fprintf( stderr, "Flash Storage: %d kB\n", (rbuff[2]<<8) | rbuff[3] );  // Is this Flash size?
 	fprintf( stderr, "Part UUID    : %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n", rbuff[4], rbuff[5], rbuff[6], rbuff[7], rbuff[8], rbuff[9], rbuff[10], rbuff[11] );
 	fprintf( stderr, "PFlags       : %02x-%02x-%02x-%02x\n", rbuff[12], rbuff[13], rbuff[14], rbuff[15] );
 	fprintf( stderr, "Part Type (B): %02x-%02x-%02x-%02x\n", rbuff[16], rbuff[17], rbuff[18], rbuff[19] );
@@ -297,8 +296,7 @@ static int LESetupInterface( void * d )
 		fprintf(stderr, "Read protection: disabled\n");
 	}
 
-
-	iss->flash_size = (rbuff[2]<<8) | rbuff[3];
+	iss->flash_size = ((rbuff[2]<<8) | rbuff[3])*1024;
 	iss->target_chip_type = target_chip_type;
 
 	return 0;
@@ -539,7 +537,7 @@ static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len,
 	uint8_t rbuff[1024];
 	int transferred;
 
-	int padlen = ((len-1) & (~(iss->sector_size-1)) + iss->sector_size;
+	int padlen = ((len-1) & (~(iss->sector_size-1))) + iss->sector_size;
 
 	wch_link_command( (libusb_device_handle *)dev, "\x81\x06\x01\x01", 4, 0, 0, 0 );
 	wch_link_command( (libusb_device_handle *)dev, "\x81\x06\x01\x01", 4, 0, 0, 0 ); // Not sure why but it seems to work better when we request twice.
