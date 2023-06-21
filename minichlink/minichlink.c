@@ -1034,6 +1034,7 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 
 	uint32_t rw;
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
+	int sectorsize = iss->sector_size;
 
 	// We can't write into flash when mapped to 0x00000000
 	if( address_to_write < 0x01000000 )
@@ -1050,6 +1051,7 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 			return rw;
 	}
 
+	// Regardless of sector size, allow block write to do its thing if it can.
 	if( is_flash && MCF.BlockWrite64 && ( address_to_write & 0x3f ) == 0 && ( blob_size & 0x3f ) == 0 )
 	{
 		int i;
@@ -1065,30 +1067,34 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 		return 0;
 	}
 
-	uint8_t tempblock[64];
-	int sblock =  address_to_write >> 6;
-	int eblock = ( address_to_write + blob_size + 0x3f) >> 6;
+	uint8_t tempblock[sectorsize];
+	int sblock =  address_to_write / sectorsize;
+	int eblock = ( address_to_write + blob_size + (sectorsize-1) ) / sectorsize;
 	int b;
 	int rsofar = 0;
 
 	for( b = sblock; b < eblock; b++ )
 	{
-		int offset_in_block = address_to_write - (b * 64);
+		int offset_in_block = address_to_write - (b * sectorsize);
 		if( offset_in_block < 0 ) offset_in_block = 0;
-		int end_o_plus_one_in_block = ( address_to_write + blob_size ) - (b*64);
-		if( end_o_plus_one_in_block > 64 ) end_o_plus_one_in_block = 64;
-		int	base = b * 64;
+		int end_o_plus_one_in_block = ( address_to_write + blob_size ) - (b*sectorsize);
+		if( end_o_plus_one_in_block > sectorsize ) end_o_plus_one_in_block = sectorsize;
+		int	base = b * sectorsize;
 
-		if( offset_in_block == 0 && end_o_plus_one_in_block == 64 )
+		if( offset_in_block == 0 && end_o_plus_one_in_block == sectorsize )
 		{
 			if( MCF.BlockWrite64 )
 			{
-				int r = MCF.BlockWrite64( dev, base, blob + rsofar );
-				rsofar += 64;
-				if( r )
+				int i;
+				for( i = 0; i < sectorsize/64; i++ )
 				{
-					fprintf( stderr, "Error writing block at memory %08x (error = %d)\n", base, r );
-					return r;
+					int r = MCF.BlockWrite64( dev, base + i*64, blob + rsofar+i*64 );
+					rsofar += 64;
+					if( r )
+					{
+						fprintf( stderr, "Error writing block at memory %08x (error = %d)\n", base, r );
+						return r;
+					}
 				}
 			}
 			else 					// Block Write not avaialble
@@ -1096,13 +1102,13 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 				if( is_flash )
 				{
 					if( !InternalIsMemoryErased( iss, base ) )
-						MCF.Erase( dev, base, 64, 0 );
+						MCF.Erase( dev, base, sectorsize, 0 );
 					MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG ); // THIS IS REQUIRED, (intptr_t)&FLASH->CTLR = 0x40022010
 					MCF.WriteWord( dev, 0x40022010, CR_BUF_RST | CR_PAGE_PG );  // (intptr_t)&FLASH->CTLR = 0x40022010
 				}
 
 				int j;
-				for( j = 0; j < 16; j++ )
+				for( j = 0; j < sectorsize/4; j++ )
 				{
 					uint32_t writeword;
 					memcpy( &writeword, blob + rsofar, 4 );
@@ -1125,7 +1131,7 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 			//Ok, we have to do something wacky.
 			if( is_flash )
 			{
-				MCF.ReadBinaryBlob( dev, base, 64, tempblock );
+				MCF.ReadBinaryBlob( dev, base, sectorsize, tempblock );
 
 				// Permute tempblock
 				int tocopy = end_o_plus_one_in_block - offset_in_block;
@@ -1134,18 +1140,22 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 
 				if( MCF.BlockWrite64 ) 
 				{
-					int r = MCF.BlockWrite64( dev, base, tempblock );
-					if( r ) return r;
+					int i;
+					for( i = 0; i < sectorsize/64; i++ )
+					{
+						int r = MCF.BlockWrite64( dev, base+i*64, tempblock+i*64 );
+						if( r ) return r;
+					}
 				}
 				else
 				{
 					if( !InternalIsMemoryErased( iss, base ) )
-						MCF.Erase( dev, base, 64, 0 );
+						MCF.Erase( dev, base, sectorsize, 0 );
 					MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG ); // THIS IS REQUIRED, (intptr_t)&FLASH->CTLR = 0x40022010
 					MCF.WriteWord( dev, 0x40022010, CR_BUF_RST | CR_PAGE_PG );  // (intptr_t)&FLASH->CTLR = 0x40022010
 
 					int j;
-					for( j = 0; j < 16; j++ )
+					for( j = 0; j < sectorsize/4; j++ )
 					{
 						MCF.WriteWord( dev, j*4+base, *(uint32_t*)(tempblock + j * 4) );
 						rsofar += 4;
@@ -1160,7 +1170,7 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 			{
 				// Accessing RAM.  Be careful to only do the needed operations.
 				int j;
-				for( j = 0; j < 16; j++ )
+				for( j = 0; j < sectorsize; j++ )
 				{
 					uint32_t taddy = j*4;
 					if( offset_in_block <= taddy && end_o_plus_one_in_block >= taddy + 4 )
@@ -1376,7 +1386,7 @@ int DefaultErase( void * dev, uint32_t address, uint32_t length, int type )
 			if( MCF.PrepForLongOp ) MCF.PrepForLongOp( dev );  // Give the programmer a headsup this next operation could take a while.
 			if( MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_STRT_Set | CR_PAGE_ER ) ) goto flashoperr;
 			if( MCF.WaitForFlash && MCF.WaitForFlash( dev ) ) return -99;
-			chunk_to_erase+=64;
+			chunk_to_erase+=iss->sector_size;
 		}
 	}
 
