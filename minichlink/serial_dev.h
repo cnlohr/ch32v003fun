@@ -9,6 +9,7 @@
 #define IS_WINDOWS
 #define DEFAULT_SERIAL_NAME "\\\\.\\COM3"
 #else
+#include <unistd.h>
 #include <termios.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
@@ -17,7 +18,6 @@
 #endif
 /* these are available on all platforms */
 #include <errno.h>
-#include <unistd.h>
 #include <stdio.h>
 
 typedef struct {

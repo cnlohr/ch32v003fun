@@ -71,37 +71,30 @@ void * MiniCHLinkInitAsDLL( struct MiniChlinkFunctions ** MCFO, const init_hints
 	return dev;
 }
 
-void parse_possible_init_hints(int argc, char **argv, init_hints_t *hints)
-{
-	if (!hints)
-		return;
-	int c;
-	opterr = 0;
-	/* we're only interested in the value for the COM port, given in a -c parameter */
-	/* the '-' is really important so that getopt does not permutate the argv array and messes up parsing later */
-	while ((c = getopt(argc, argv, "-c:")) != -1)
-	{
-		switch (c)
-		{
-		case 'c':
-			// we can use the pointer as-is because it points in our 
-			// argv array and that is stable.
-			hints->serial_port = optarg;
-			break;
-		}
-	}
-}
-
 #if !defined( MINICHLINK_AS_LIBRARY ) && !defined( MINICHLINK_IMPORT )
 int main( int argc, char ** argv )
 {
+	int i;
+
 	if( argc > 1 && argv[1][0] == '-' && argv[1][1] == 'h' )
 	{
 		goto help;
 	}
 	init_hints_t hints;
 	memset(&hints, 0, sizeof(hints));
-	parse_possible_init_hints(argc, argv, &hints);
+
+	// Scan for possible hints.
+	for( i = 0; i < argc; i++ )
+	{
+		char * v = argv[i];
+		if( strncmp( v, "-c", 2 ) == 0 )
+		{
+			i++;
+			if( i < argc )
+				hints.serial_port = argv[i];
+		}
+	}
+
 	void * dev = MiniCHLinkInitAsDLL( 0, &hints );
 	if( !dev )
 	{

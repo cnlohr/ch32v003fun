@@ -37,7 +37,7 @@ int ArdulinkWriteReg32(void * dev, uint8_t reg_7_bit, uint32_t command)
     if (serial_dev_read(&((ardulink_ctx_t*)dev)->serial, buf, 1) == -1)
         return -errno;
 
-    return buf[0] == '+' ? 0 : -EPROTO;
+    return buf[0] == '+' ? 0 : -71; // EPROTO
 }
 
 int ArdulinkReadReg32(void * dev, uint8_t reg_7_bit, uint32_t * commandresp)
@@ -78,9 +78,9 @@ int ArdulinkControl3v3(void * dev, int power_on) {
         return -errno;
 
     if (c != '+')
-        return -EPROTO;
+        return -71; // EPROTO
 
-    usleep(20000);
+    MCF.DelayUS(dev, 20000);
     return 0;
 }
 
@@ -97,11 +97,26 @@ int ArdulinkExit(void * dev)
     return 0;
 }
 
+int ArdulinkSetupInterface( void * dev )
+{
+    char first;
+    // Let the bootloader do its thing.
+    MCF.DelayUS(dev, 3UL*1000UL*1000UL);
+
+    if (serial_dev_read(&((ardulink_ctx_t*)dev)->serial, &first, 1) == -1) {
+        perror("read");
+        return -1;
+    }
+
+    if (first != '!') {
+        fprintf(stderr, "Ardulink: not the sync character.\n");
+        return -1;
+    }
+}
 
 void * TryInit_Ardulink(const init_hints_t* hints)
 {
     ardulink_ctx_t *ctx;
-    char first;
 
     if (!(ctx = calloc(sizeof(ardulink_ctx_t), 1))) {
         perror("calloc");
@@ -143,19 +158,6 @@ void * TryInit_Ardulink(const init_hints_t* hints)
         return NULL;
     }
 
-    // Let the bootloader do its thing.
-    usleep(3UL*1000UL*1000UL);
-
-    if (serial_dev_read(&ctx->serial, &first, 1) == -1) {
-        perror("read");
-        return NULL;
-    }
-
-    if (first != '!') {
-        fprintf(stderr, "Ardulink: not the sync character.\n");
-        return NULL;
-    }
-
     fprintf(stderr, "Ardulink: synced.\n");
 
     MCF.WriteReg32 = ArdulinkWriteReg32;
@@ -164,6 +166,7 @@ void * TryInit_Ardulink(const init_hints_t* hints)
     MCF.Control3v3 = ArdulinkControl3v3;
     MCF.DelayUS = ArdulinkDelayUS;
 	MCF.Exit = ArdulinkExit;
+	MCF.SetupInterface = ArdulinkSetupInterface;
 
 	return ctx;
 }
