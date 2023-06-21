@@ -71,6 +71,12 @@ void RVCommandEpilogue( void * dev )
 	MCF.WriteReg32( dev, DMDATA0, 0 );
 }
 
+void RVCommandResetPart( void * dev )
+{
+	MCF.HaltMode( dev, HALT_MODE_HALT_AND_RESET );
+	RVCommandPrologue( dev );
+}
+
 void RVNetConnect( void * dev )
 {
 	// ??? Should we actually halt?
