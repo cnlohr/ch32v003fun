@@ -115,6 +115,7 @@ struct InternalState
 	uint32_t ram_base;
 	uint32_t ram_size;
 	int sector_size;
+	int flash_size;
 	uint8_t flash_sector_status[MAX_FLASH_SECTORS];  // 0 means unerased/unknown. 1 means erased.
 };
 

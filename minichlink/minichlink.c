@@ -18,6 +18,11 @@ void Sleep(uint32_t dwMilliseconds);
 #include <unistd.h>
 #endif
 
+
+#if defined(WINDOWS) || defined(WIN32) || defined(_WIN32)
+	#define usleep(x) Sleep((x)/1000);
+#endif
+
 static int64_t StringToMemoryAddress( const char * number ) __attribute__((used));
 static void StaticUpdatePROGBUFRegs( void * dev ) __attribute__((used));
 int DefaultReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t read_size, uint8_t * blob );
@@ -543,7 +548,7 @@ keep_going:
 					fprintf( stderr, "Error: File I/O Fault.\n" );
 					exit( -10 );
 				}
-				if( len > 16384 )
+				if( len > iss->flash_size )
 				{
 					fprintf( stderr, "Error: Image for CH32V003 too large (%d)\n", len );
 					exit( -9 );
@@ -733,7 +738,7 @@ int DefaultSetupInterface( void * dev )
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
 
 	if( MCF.Control3v3 ) MCF.Control3v3( dev, 1 );
-	if( MCF.DelayUS ) MCF.DelayUS( dev, 16000 );
+	MCF.DelayUS( dev, 16000 );
 	MCF.WriteReg32( dev, DMSHDWCFGR, 0x5aa50000 | (1<<10) ); // Shadow Config Reg
 	MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // CFGR (1<<10 == Allow output from slave)
 	MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // Bug in silicon?  If coming out of cold boot, and we don't do our little "song and dance" this has to be called.
@@ -1230,7 +1235,7 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 	}
 #endif
 
-	if(MCF.DelayUS) MCF.DelayUS( dev, 100 ); // Why do we need this? (We seem to need this on the WCH programmers?)
+	MCF.DelayUS( dev, 100 ); // Why do we need this? (We seem to need this on the WCH programmers?)
 	return 0;
 timedout:
 	fprintf( stderr, "Timed out\n" );
@@ -1610,6 +1615,10 @@ static int DefaultHaltMode( void * dev, int mode )
 
 	iss->flash_unlocked = 0;
 	iss->processor_in_mode = mode;
+
+	// In case processor halt process needs to complete, i.e. if it was in the middle of a flash op.
+	MCF.DelayUS( dev, 3000 );
+
 	return 0;
 }
 
@@ -1709,13 +1718,7 @@ int DefaultUnbrick( void * dev )
 	if( MCF.DelayUS )
 		MCF.DelayUS( dev, 20000 );
 	else
-	{
-#if defined(WINDOWS) || defined(WIN32) || defined(_WIN32)
-		Sleep(20);
-#else
 		usleep(20000);
-#endif
-	}
 
 	if( timeout == max_timeout ) 
 	{
@@ -1773,6 +1776,12 @@ int DefaultVoidHighLevelState( void * dev )
 	return 0;
 }
 
+int DefaultDelayUS( void * dev, int us )
+{
+	usleep( us );
+	return 0;
+}
+
 int SetupAutomaticHighLevelFunctions( void * dev )
 {
 	// Will populate high-level functions from low-level functions.
@@ -1827,11 +1836,14 @@ int SetupAutomaticHighLevelFunctions( void * dev )
 		MCF.ConfigureNRSTAsGPIO = DefaultConfigureNRSTAsGPIO;
 	if( !MCF.VoidHighLevelState )
 		MCF.VoidHighLevelState = DefaultVoidHighLevelState;
+	if( !MCF.DelayUS )
+		MCF.DelayUS = DefaultDelayUS;
 
 	struct InternalState * iss = calloc( 1, sizeof( struct InternalState ) );
 	iss->ram_base = 0x20000000;
 	iss->ram_size = 2048;
 	iss->sector_size = 64;
+	iss->flash_size = 16384;
 
 	((struct ProgrammerStructBase*)dev)->internal = iss;
 	return 0;
