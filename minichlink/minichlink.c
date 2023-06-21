@@ -28,27 +28,46 @@ struct MiniChlinkFunctions MCF;
 void * MiniCHLinkInitAsDLL( struct MiniChlinkFunctions ** MCFO, const init_hints_t* init_hints )
 {
 	void * dev = 0;
-	if( (dev = TryInit_WCHLinkE()) )
+	
+	const char * specpgm = init_hints->specific_programmer;
+	if( specpgm )
 	{
-		fprintf( stderr, "Found WCH Link\n" );
-	}
-	else if( (dev = TryInit_ESP32S2CHFUN()) )
-	{
-		fprintf( stderr, "Found ESP32S2 Programmer\n" );
-	}
-	else if ((dev = TryInit_NHCLink042()))
-	{
-		fprintf( stderr, "Found NHC-Link042 Programmer\n" );
-	}
-	else if ((dev = TryInit_B003Fun()))
-	{
-		fprintf( stderr, "Found B003Fun Bootloader\n" );
-	}
-	else if ((dev = TryInit_Ardulink(init_hints)))
-	{
-		fprintf( stderr, "Found Ardulink Programmer\n" );
+		if( strcmp( specpgm, "linke" ) == 0 )
+			dev = TryInit_WCHLinkE();
+		else if( strcmp( specpgm, "esp32s2chfun" ) == 0 )
+			dev = dev = TryInit_ESP32S2CHFUN();
+		else if( strcmp( specpgm, "nchlink" ) == 0 )
+			dev = dev = TryInit_NHCLink042();
+		else if( strcmp( specpgm, "b003boot" ) == 0 )
+			dev = dev = TryInit_B003Fun();
+		else if( strcmp( specpgm, "ardulink" ) == 0 )
+			dev = dev = TryInit_B003Fun();
 	}
 	else
+	{
+		if( (dev = TryInit_WCHLinkE()) )
+		{
+			fprintf( stderr, "Found WCH Link\n" );
+		}
+		else if( (dev = TryInit_ESP32S2CHFUN()) )
+		{
+			fprintf( stderr, "Found ESP32S2 Programmer\n" );
+		}
+		else if ((dev = TryInit_NHCLink042()))
+		{
+			fprintf( stderr, "Found NHC-Link042 Programmer\n" );
+		}
+		else if ((dev = TryInit_B003Fun()))
+		{
+			fprintf( stderr, "Found B003Fun Bootloader\n" );
+		}
+		else if ( init_hints->serial_port && (dev = TryInit_Ardulink(init_hints)))
+		{
+			fprintf( stderr, "Found Ardulink Programmer\n" );
+		}
+	}
+
+	if( !dev )
 	{
 		fprintf( stderr, "Error: Could not initialize any supported programmers\n" );
 		return 0;
@@ -92,6 +111,12 @@ int main( int argc, char ** argv )
 			i++;
 			if( i < argc )
 				hints.serial_port = argv[i];
+		}
+		else if( strncmp( v, "-c", 2 ) == 0 )
+		{
+			i++;
+			if( i < argc )
+				hints.specific_programmer = argv[i];
 		}
 	}
 
@@ -173,13 +198,14 @@ keep_going:
 				else
 					goto unimplemented;
 				break;
+			case 'C': // For specifying programmer
 			case 'c':
-				// COM port argument already parsed previously
+				// COM port or programmer argument already parsed previously
 				// we still need to skip the next argument
 				iarg+=1;
 				if( iarg >= argc )
 				{
-					fprintf( stderr, "-c argument (COM port) required 2 arguments\n" );
+					fprintf( stderr, "-c/C argument required 2 arguments\n" );
 					goto unimplemented;
 				}
 				break;
