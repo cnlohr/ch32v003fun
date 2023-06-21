@@ -1302,20 +1302,20 @@ typedef struct
 #define FLASH_STATR_EOP                         ((uint8_t)0x20) /* End of operation */
 
 /*******************  Bit definition for FLASH_CTLR register  *******************/
-#define FLASH_CTLR_PG                           ((uint16_t)0x0001)     /* Programming */
-#define FLASH_CTLR_PER                          ((uint16_t)0x0002)     /* Page Erase 1KByte*/
-#define FLASH_CTLR_MER                          ((uint16_t)0x0004)     /* Mass Erase */
-#define FLASH_CTLR_OPTPG                        ((uint16_t)0x0010)     /* Option Byte Programming */
-#define FLASH_CTLR_OPTER                        ((uint16_t)0x0020)     /* Option Byte Erase */
-#define FLASH_CTLR_STRT                         ((uint16_t)0x0040)     /* Start */
-#define FLASH_CTLR_LOCK                         ((uint16_t)0x0080)     /* Lock */
-#define FLASH_CTLR_OPTWRE                       ((uint16_t)0x0200)     /* Option Bytes Write Enable */
-#define FLASH_CTLR_ERRIE                        ((uint16_t)0x0400)     /* Error Interrupt Enable */
-#define FLASH_CTLR_EOPIE                        ((uint16_t)0x1000)     /* End of operation interrupt enable */
-#define FLASH_CTLR_PAGE_PG                      ((uint16_t)0x00010000) /* Page Programming 64Byte */
-#define FLASH_CTLR_PAGE_ER                      ((uint16_t)0x00020000) /* Page Erase 64Byte */
-#define FLASH_CTLR_BUF_LOAD                     ((uint16_t)0x00040000) /* Buffer Load */
-#define FLASH_CTLR_BUF_RST                      ((uint16_t)0x00080000) /* Buffer Reset */
+#define FLASH_CTLR_PG                           (0x0001)     /* Programming */
+#define FLASH_CTLR_PER                          (0x0002)     /* Page Erase 1KByte*/
+#define FLASH_CTLR_MER                          (0x0004)     /* Mass Erase */
+#define FLASH_CTLR_OPTPG                        (0x0010)     /* Option Byte Programming */
+#define FLASH_CTLR_OPTER                        (0x0020)     /* Option Byte Erase */
+#define FLASH_CTLR_STRT                         (0x0040)     /* Start */
+#define FLASH_CTLR_LOCK                         (0x0080)     /* Lock */
+#define FLASH_CTLR_OPTWRE                       (0x0200)     /* Option Bytes Write Enable */
+#define FLASH_CTLR_ERRIE                        (0x0400)     /* Error Interrupt Enable */
+#define FLASH_CTLR_EOPIE                        (0x1000)     /* End of operation interrupt enable */
+#define FLASH_CTLR_PAGE_PG                      (0x00010000) /* Page Programming 64Byte */
+#define FLASH_CTLR_PAGE_ER                      (0x00020000) /* Page Erase 64Byte */
+#define FLASH_CTLR_BUF_LOAD                     (0x00040000) /* Buffer Load */
+#define FLASH_CTLR_BUF_RST                      (0x00080000) /* Buffer Reset */
 
 /*******************  Bit definition for FLASH_ADDR register  *******************/
 #define FLASH_ADDR_FAR                          ((uint32_t)0xFFFFFFFF) /* Flash Address */
