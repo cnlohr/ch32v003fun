@@ -462,15 +462,11 @@ static inline void GPIO_tim2_init() {
 	TIM2->CCER |= (TIM_OutputState_Enable ) << (4 * (channel - 1));		\
 })
 
-#define GPIO_timer_CVR(channel)		CONCAT_INDIRECT(CH, CONCAT_INDIRECT(channel, CVR))
+#define GPIO_timer_CVR(channel)				CONCAT_INDIRECT(CH, CONCAT_INDIRECT(channel, CVR))
 
 #undef GPIO_tim1_analogWrite
-#define GPIO_tim1_analogWrite(channel, value) ({				\
-	TIM1->GPIO_timer_CVR(channel) = value;					\
-})
+#define GPIO_tim1_analogWrite(channel, value) 		TIM1->GPIO_timer_CVR(channel) = value;
 #undef GPIO_tim2_analogWrite
-#define GPIO_tim2_analogWrite(channel, value) ({				\
-	TIM2->GPIO_timer_CVR(channel) = value;					\
-})
+#define GPIO_tim2_analogWrite(channel, value)		TIM2->GPIO_timer_CVR(channel) = value;
 
 #endif // CH32V003_GPIO_BR_H
