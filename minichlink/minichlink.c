@@ -9,6 +9,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <getopt.h>
+#include "terminalhelp.h"
 #include "minichlink.h"
 #include "../ch32v003fun/ch32v003fun.h"
 
@@ -296,20 +297,42 @@ keep_going:
 					MCF.HaltMode( dev, 2 );
 				}
 
+				CaptureKeyboardInput();
+
+				uint32_t appendword = 0;
 				do
 				{
 					uint8_t buffer[256];
 					if( !IsGDBServerInShadowHaltState( dev ) )
 					{
-						int r = MCF.PollTerminal( dev, buffer, sizeof( buffer ), 0, 0 );
-						if( r < 0 )
+						// Handle keyboard input.
+						if( appendword == 0 )
+						{
+							int i;
+							for( i = 0; i < 3; i++ )
+							{
+								if( !IsKBHit() ) break;
+								appendword |= ReadKBByte() << (i*8+8);
+							}
+							appendword |= i+4; // Will go into DATA0.
+						}
+						int r = MCF.PollTerminal( dev, buffer, sizeof( buffer ), appendword, 0 );
+						if( r == -1 )
+						{
+							// Other end ack'd without printf.
+							appendword = 0;
+						}
+						else if( r < 0 )
 						{
 							fprintf( stderr, "Terminal dead.  code %d\n", r );
 							return -32;
 						}
-						if( r > 0 )
+						else if( r > 0 )
 						{
-							fwrite( buffer, r, 1, stdout ); 
+							fwrite( buffer, r, 1, stdout );
+							fflush( stdout );
+							// Otherwise it's basically just an ack for appendword.
+							appendword = 0;
 						}
 					}
 
@@ -1644,14 +1667,14 @@ static int DefaultHaltMode( void * dev, int mode )
 	return 0;
 }
 
-// Returns positive if received text.
+// Returns positive if received text, or request for input.
+// Returns -1 if nothing was printed but received data.
 // Returns negative if error.
 // Returns 0 if no text waiting.
 // maxlen MUST be at least 8 characters.  We null terminate.
 int DefaultPollTerminal( void * dev, uint8_t * buffer, int maxlen, uint32_t leaveflagA, int leaveflagB )
 {
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
-
 	int r;
 	uint32_t rr;
 	if( iss->statetag != STTAG( "TERM" ) )
@@ -1667,9 +1690,7 @@ int DefaultPollTerminal( void * dev, uint8_t * buffer, int maxlen, uint32_t leav
 	//  bit  7 = host-acknowledge.
 	if( rr & 0x80 )
 	{
-		int ret = 0;
 		int num_printf_chars = (rr & 0xf)-4;
-
 		if( num_printf_chars > 0 && num_printf_chars <= 7)
 		{
 			if( num_printf_chars > 3 )
@@ -1682,11 +1703,12 @@ int DefaultPollTerminal( void * dev, uint8_t * buffer, int maxlen, uint32_t leav
 			if( firstrem > 3 ) firstrem = 3;
 			memcpy( buffer, ((uint8_t*)&rr)+1, firstrem );
 			buffer[num_printf_chars] = 0;
-			ret = num_printf_chars;
 		}
 		if( leaveflagA ) MCF.WriteReg32( dev, DMDATA1, leaveflagB );
 		MCF.WriteReg32( dev, DMDATA0, leaveflagA ); // Write that we acknowledge the data.
-		return ret;
+		if( num_printf_chars == 0 ) return -1;      // was acked?
+		if( num_printf_chars < 0 ) num_printf_chars = 0;
+		return num_printf_chars;
 	}
 	else
 	{
