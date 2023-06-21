@@ -544,9 +544,13 @@ static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len,
 
 	// This contains the write data quantity, in bytes.  (The last 2 octets)
 	// Then it just rollllls on in.
-	char rksbuff[11] = { 0x81, 0x01, 0x08, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-	rksbuff[9] = len >> 8;
-	rksbuff[10] = len & 0xff;
+	char rksbuff[11] = { 0x81, 0x01, 0x08,
+						 // Address to write
+						 (uint8_t)(address_to_write >> 24), (uint8_t)(address_to_write >> 16),
+						 (uint8_t)(address_to_write >> 8), (uint8_t)(address_to_write & 0xff),
+						 // Length to write
+						 (uint8_t)(len >> 24), (uint8_t)(len >> 16),
+						 (uint8_t)(len >> 8), (uint8_t)(len & 0xff) };
 	wch_link_command( (libusb_device_handle *)dev, rksbuff, 11, 0, 0, 0 );
 	
 	wch_link_command( (libusb_device_handle *)dev, "\x81\x02\x01\x05", 4, 0, 0, 0 );
