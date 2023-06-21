@@ -62,10 +62,10 @@ static const unsigned char word_wise_write_blob[] = { // size and address must b
 };
 
 static const unsigned char write64_flash[] = { // size and address must be aligned by 4.
-	0x13, 0x07, 0x45, 0x03, 0x0c, 0x43, 0x13, 0x86, 0x05, 0x04, 0x5c, 0x43,
-	0xb7, 0x02, 0x05, 0x00, 0x14, 0x47, 0x94, 0xc1, 0x23, 0xa0, 0x57, 0x00,
-	0x91, 0x05, 0x11, 0x07, 0xe3, 0xca, 0xc5, 0xfe, 0xfd, 0x56, 0x14, 0xc1,
-	0x82, 0x80, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa
+  0x13, 0x07, 0x45, 0x03, 0x0c, 0x43, 0x13, 0x86, 0x05, 0x04, 0x5c, 0x43,
+  0x8c, 0xc7, 0x14, 0x47, 0x94, 0xc1, 0xb7, 0x06, 0x05, 0x00, 0xd4, 0xc3,
+  0x94, 0x41, 0x91, 0x05, 0x11, 0x07, 0xe3, 0xc8, 0xc5, 0xfe, 0xc1, 0x66,
+  0x93, 0x86, 0x06, 0x04, 0xd4, 0xc3, 0xfd, 0x56, 0x14, 0xc1, 0x82, 0x80
 };
 
 static const unsigned char half_wise_write_blob[] = { // size and address must be aligned by 2
@@ -133,6 +133,7 @@ static void WriteOpArb( struct B003FunProgrammerStruct * eps, const uint8_t * da
 
 static int CommitOp( struct B003FunProgrammerStruct * eps )
 {
+	int retries = 0;
 	int r;
 
 	uint32_t magic_go = 0x1234abcd;
@@ -151,15 +152,24 @@ static int CommitOp( struct B003FunProgrammerStruct * eps )
 	}
 	#endif
 
+resend:
 	r = hid_send_feature_report( eps->hd, eps->commandbuffer, sizeof(eps->commandbuffer) );
 	#ifdef DEBUG_B003
 	printf( "hid_send_feature_report = %d\n", r );
 	#endif
-	if( r < 0 ) return r;
+	if( r < 0 )
+	{
+		fprintf( stderr, "Warning: Issue with hid_send_feature_report. Retrying\n" );
+		if( retries++ > 10 )
+			return r;
+		else
+			goto resend;
+	}
+
 
 	if( eps->prepping_for_erase )
 	{
-		usleep(10000);
+		usleep(4000);
 	}
 
 	int timeout = 0;
@@ -182,17 +192,20 @@ static int CommitOp( struct B003FunProgrammerStruct * eps )
 		}
 		#endif
 
-		if( r < 0 ) return r;
+		if( r < 0 )
+		{
+			if( retries++ > 10 ) return r;
+			continue;
+		}
 
 		if( eps->respbuffer[1] == 0xff ) break;
 
-		if( timeout++ > 10 )
+		if( timeout++ > 20 )
 		{
 			printf( "Error: Timed out waiting for stub to complete\n" );
 			return -99;
 		}
 	} while( 1 );
-
 	return 0;
 }
 
@@ -440,30 +453,21 @@ static int B003FunBlockWrite64( void * dev, uint32_t address_to_write, uint8_t *
 				return -9;
 			}
 		}
-		printf( "Preppinggg %08x\n", address_to_write );
 
 		// Not actually needed.
 		MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG ); // (intptr_t)&FLASH->CTLR = 0x40022010
 		MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG | CR_BUF_RST); // (intptr_t)&FLASH->CTLR = 0x40022010
 
-		uint32_t word1, word2;
-		int r = B003FunReadWord( dev, 0x40022010, &word1 );
-		r |= B003FunReadWord( dev, 0x4002200c, &word2 );
-		printf( "IN: WORD: %d %08x %08x\n", r, word1, word2 );
-
 		ResetOp( eps );
 		WriteOpArb( eps, write64_flash, sizeof(write64_flash) );
 		WriteOp4( eps, address_to_write ); // Base address to write. @52
-		WriteOp4( eps, 0x40022010 ); // FLASH base address. @ 56
+		WriteOp4( eps, 0x4002200c ); // FLASH STATR base address. @ 56
 		memcpy( &eps->commandbuffer[60], data, 64 ); // @60
 		if( MCF.PrepForLongOp ) MCF.PrepForLongOp( dev );  // Give the programmer a headsup this next operation could take a while.
 		if( CommitOp( eps ) ) return -5;
 
-		MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG|CR_STRT_Set); // (intptr_t)&FLASH->CTLR = 0x40022010  (actually commit)
-
-		r = B003FunReadWord( dev, 0x40022010, &word1 );
-		r |= B003FunReadWord( dev, 0x4002200c, &word2 );
-		printf( "WORD: %d %08x %08x\n", r, word1, word2 );
+		// This is actually built-in.
+//		MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG|CR_STRT_Set); // (intptr_t)&FLASH->CTLR = 0x40022010  (actually commit)
 	}
 	else
 	{
@@ -540,8 +544,10 @@ void * TryInit_B003Fun()
 	#define PID 0xb003
 	hid_init();
 	hid_device * hd = hid_open( VID, PID, 0); // third parameter is "serial"
-	printf( "Search: %p\n", hd );
 	if( !hd ) return 0;
+
+	//extern int g_hidapiSuppress;
+	//g_hidapiSuppress = 1;  // Suppress errors for this device.  (don't do this yet)
 
 	struct B003FunProgrammerStruct * eps = malloc( sizeof( struct B003FunProgrammerStruct ) );
 	memset( eps, 0, sizeof( *eps ) );
@@ -728,4 +734,44 @@ void * TryInit_B003Fun()
 				FLASH->STATR = 0; // 1<<14 is zero, so, boot user code.
 				FLASH->CTLR = CR_LOCK_Set;
 				PFIC->SCTLR = 1<<31;
+*/
+
+
+/* Write flash block 64.
+
+. =  0x66
+	addi a4, a0, 52;    // Start reading properties, starting from scratchpad + 52.
+	c.lw a1, 0(a4);     // a1 = Address to write to.
+	addi a2, a1, 64     // a2 = end of section to write to
+	c.lw a5, 4(a4);     // a5 = Get flash address (0x40022010)
+
+	// Must be done outside.
+//	li a3, 0x00080000 | 0x00010000;
+	//c.sw a3, 0(a5);  //FLASH->CTLR = CR_BUF_RST | CR_PAGE_PG
+	c.sw a1, 8(a5);     //FLASH->ADDR = writing location.
+
+	1:
+		c.lw a3, 8(a4);		//lw a3, 0(a1)       // Read from RAM (Starting @60)
+		c.sw a3, 0(a1);		//sw a3, 0(a4)       // Store into flash
+
+		li a3, 0x00010000 | 0x00040000;	// CR_PAGE_PG | FLASH_CTLR_BUF_LOAD
+		c.sw a3, 4(a5);     // Load into flash write buffer.
+
+		c.lw a3, 0(a1);		//Tricky: By reading from flash here, we force it to wait for completion.
+		c.addi a1, 4        // Advance pointers
+		c.addi a4, 4
+
+	//	// Wait for write to complete.
+	//	2:	c.lw a3, 0(a5)   // read FLASH->STATR 
+	//		c.andi a3, 1     // Mask off BUSY bit.
+	//		c.bnez a3, 2b
+
+
+		blt a1, a2, 1b      // Loop til all read.
+
+	li a3, 0x00010000 | 0x00000040 //CR_PAGE_PG|CR_STRT_Set
+	c.sw a3, 4(a5);     //FLASH->CTRL = CR_PAGE_PG|CR_STRT_Set
+	li a3, -1
+	c.sw a3, 0(a0)		// Write -1 into 0x00 indicating all done.
+	ret
 */

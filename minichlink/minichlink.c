@@ -1364,7 +1364,6 @@ int DefaultErase( void * dev, uint32_t address, uint32_t length, int type )
 				int sector = ( chunk_to_erase & 0x00ffffff ) / iss->sector_size;
 				if( sector < MAX_FLASH_SECTORS )
 				{
-					printf( "Check Sector: %08x\n", sector );
 					iss->flash_sector_status[sector] = 1;
 				}
 			}

@@ -2202,6 +2202,8 @@ int main(void)
 
 #include "hidapi.h"
 
+int g_hidapiSuppress;
+
 /* Definitions from linux/hidraw.h. Since these are new, some distros
    may not have header files which contain them. */
 #ifndef HIDIOCSFEATURE
@@ -2796,14 +2798,14 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path)
 
 		/* Get Report Descriptor Size */
 		res = ioctl(dev->device_handle, HIDIOCGRDESCSIZE, &desc_size);
-		if (res < 0)
+		if (res < 0 && !g_hidapiSuppress)
 			perror("HIDIOCGRDESCSIZE");
 
 
 		/* Get Report Descriptor */
 		rpt_desc.size = desc_size;
 		res = ioctl(dev->device_handle, HIDIOCGRDESC, &rpt_desc);
-		if (res < 0) {
+		if (res < 0 && !g_hidapiSuppress) {
 			perror("HIDIOCGRDESC");
 		} else {
 			/* Determine if this device uses numbered reports. */
@@ -2899,7 +2901,7 @@ int HID_API_EXPORT hid_send_feature_report(hid_device *dev, const unsigned char 
 	int res;
 
 	res = ioctl(dev->device_handle, HIDIOCSFEATURE(length), data);
-	if (res < 0)
+	if (res < 0 && !g_hidapiSuppress)
 		perror("ioctl (SFEATURE)");
 
 	return res;
@@ -2910,7 +2912,7 @@ int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, 
 	int res;
 
 	res = ioctl(dev->device_handle, HIDIOCGFEATURE(length), data);
-	if (res < 0)
+	if (res < 0 && !g_hidapiSuppress)
 		perror("ioctl (GFEATURE)");
 
 
