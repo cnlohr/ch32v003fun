@@ -7369,6 +7369,7 @@ void SystemInit(void) __attribute__((used));
 
 // Initialization functions
 void SystemInit144HSI( void );
+void SystemInit144HSE( void );
 
 // TODO: Debug and UART
 

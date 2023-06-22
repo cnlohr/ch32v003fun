@@ -927,6 +927,29 @@ void SystemInit144HSI( void )
 	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x08) {}
 }
 
+void SystemInit144HSE( void )
+{
+	RCC->CTLR |= ((uint32_t)RCC_HSEON);
+	while(!(RCC->CTLR&RCC_HSERDY));
+
+	RCC->CFGR0 = RCC_HPRE_DIV1 | RCC_PPRE2_DIV1 | RCC_PPRE1_DIV2;
+	RCC->CFGR0 &= (uint32_t)((uint32_t)~(RCC_PLLSRC | RCC_PLLXTPRE | RCC_PLLMULL));
+	RCC->CFGR0 |= (uint32_t)(RCC_PLLSRC_HSE | RCC_PLLXTPRE_HSE | RCC_PLLMULL18);
+
+	/* Enable PLL */
+	RCC->CTLR |= RCC_PLLON;
+
+	/* Wait till PLL is ready */
+	while((RCC->CTLR & RCC_PLLRDY) == 0) {}
+
+	/* Select PLL as system clock source */
+	RCC->CFGR0 &= (uint32_t)((uint32_t)~(RCC_SW));
+	RCC->CFGR0 |= (uint32_t)RCC_SW_PLL;
+
+	/* Wait till PLL is used as system clock source */
+	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x08) {}
+}
+
 void DelaySysTick( uint32_t n )
 {
 	uint32_t targend = SysTick->CNT + n;
