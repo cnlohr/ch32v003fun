@@ -810,11 +810,11 @@ asm volatile(
 #ifdef CPLUSPLUS
 	// Call __libc_init_array function
 "	call %0 \n\t"
-: : "i" (__libc_init_array)
+: : "i" (__libc_init_array) 
+: "a0", "a1", "a2", "a3", "a4", "a5", "t0", "t1", "t2", "memory"
 #else
-: :
+: : : "a0", "a1", "a2", "a3", "memory"
 #endif
-: "a0", "a1", "a2", "a3", "memory"
 );
 
 	SETUP_SYSTICK_HCLK
@@ -917,24 +917,61 @@ int putchar(int c)
 }
 #else
 
+
+void handle_debug_input( int numbytes, uint8_t * data ) __attribute__((weak));
+void handle_debug_input( int numbytes, uint8_t * data ) { }
+
+static void internal_handle_input( uint32_t * dmdata0 )
+{
+	uint32_t dmd0 = *dmdata0;
+	int bytes = (dmd0 & 0x3f) - 4;
+	if( bytes > 0 )
+	{
+		handle_debug_input( bytes, ((uint8_t*)dmdata0) + 1 );
+	}
+}
+
+
+void poll_input()
+{
+	uint32_t lastdmd = (*DMDATA0);
+ 	if( !(lastdmd & 0x80) )
+	{
+		internal_handle_input( (uint32_t*)DMDATA0 );
+		*DMDATA0 = 0x84; // Negative
+	}
+}
+
+
 //           MSB .... LSB
 // DMDATA0: char3 char2 char1 [status word]
 // where [status word] is:
 //   b7 = is a "printf" waiting?
-//   b0..b3 = # of bytes in printf (+4).  (4 or higher indicates a print of some kind)
+//   b0..b3 = # of bytes in printf (+4).  (5 or higher indicates a print of some kind)
+//     note: if b7 is 0 in reply, but b0..b3 have >=4 then we received data from host.
 
 int _write(int fd, const char *buf, int size)
 {
 	char buffer[4] = { 0 };
 	int place = 0;
+	uint32_t lastdmd;
 	uint32_t timeout = 160000; // Give up after ~40ms
+	if( size == 0 )
+	{
+		// Simply seeking input.
+		lastdmd = (*DMDATA0);
+		if( lastdmd ) internal_handle_input( (uint32_t*)DMDATA0 );
+	}
 	while( place < size )
 	{
 		int tosend = size - place;
 		if( tosend > 7 ) tosend = 7;
 
-		while( ((*DMDATA0) & 0x80) )
+		while( ( lastdmd = (*DMDATA0) ) & 0x80 )
 			if( timeout-- == 0 ) return place;
+
+		if( lastdmd ) internal_handle_input( (uint32_t*)DMDATA0 );
+
 		timeout = 160000;
 
 		int t = 3;
@@ -963,7 +1000,9 @@ int _write(int fd, const char *buf, int size)
 int putchar(int c)
 {
 	int timeout = 16000;
-	while( ((*DMDATA0) & 0x80) ) if( timeout-- == 0 ) return 0;
+	uint32_t lastdmd = 0;
+	while( (lastdmd = (*DMDATA0)) & 0x80 ) if( timeout-- == 0 ) return 0;
+	if( lastdmd ) internal_handle_input( (uint32_t*)DMDATA0 );
 	*DMDATA0 = 0x85 | ((const char)c<<8);
 	return 1;
 }

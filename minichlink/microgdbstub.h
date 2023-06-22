@@ -29,6 +29,7 @@ void RVDebugExec( void * dev, int halt_reset_or_resume );
 int RVReadMem( void * dev, uint32_t memaddy, uint8_t * payload, int len );
 int RVHandleBreakpoint( void * dev, int set, uint32_t address );
 int RVWriteRAM(void * dev, uint32_t memaddy, uint32_t length, uint8_t * payload );
+void RVCommandResetPart( void * dev );
 void RVHandleDisconnect( void * dev );
 void RVHandleGDBBreakRequest( void * dev );
 void RVHandleKillRequest( void * dev );
@@ -61,7 +62,7 @@ typedef struct pollfd { SOCKET fd; SHORT  events; SHORT  revents; };
 #define POLLIN 0x0001
 #define POLLERR 0x008
 #define POLLHUP 0x010
-int WSAAPI WSAPoll(struct pollfd * fdArray, ULONG       fds, INT         timeout );
+int WSAAPI WSAPoll(struct pollfd * fdArray, ULONG	   fds, INT		 timeout );
 #endif
 #define poll WSAPoll
 #define socklen_t uint32_t
@@ -171,19 +172,33 @@ void HandleGDBPacket( void * dev, char * data, int len )
 	{
 	case 'q':
 		if( StringMatch( data, "Attached" ) )
-		    SendReplyFull( "1" ); //Attached to an existing process.
+			SendReplyFull( "1" ); //Attached to an existing process.
 		else if( StringMatch( data, "Supported" ) )
-		    SendReplyFull( "PacketSize=f000;qXfer:memory-map:read+" );
+			SendReplyFull( "PacketSize=f000;qXfer:memory-map:read+" );
 		else if( StringMatch( data, "C") ) // Get Current Thread ID. (Can't be -1 or 0.  Those are special)
-		    SendReplyFull( "QC1" );
+			SendReplyFull( "QC1" );
 		else if( StringMatch( data, "fThreadInfo" ) )  // Query all active thread IDs (Can't be 0 or 1)
 			SendReplyFull( "m1" );
 		else if( StringMatch( data, "sThreadInfo" ) )  // Query all active thread IDs, continued
-		    SendReplyFull( "l" );
+			SendReplyFull( "l" );
+		else if( StringMatch( data, "Rcmd,7265736574" ) )  // "monitor reset"
+		{
+			RVCommandResetPart( dev ); // Force reset
+			SendReplyFull( "+" );
+		}
 		else if( StringMatch( data, "Xfer:memory-map" ) )
-		    SendReplyFull( MICROGDBSTUB_MEMORY_MAP );
+		{
+			int mslen = strlen( MICROGDBSTUB_MEMORY_MAP ) + 32;
+			char map[mslen];
+			struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
+			snprintf( map, mslen, MICROGDBSTUB_MEMORY_MAP, iss->flash_size, iss->sector_size, iss->ram_size );
+			SendReplyFull( map );
+		}
 		else
+		{
+			printf( "Unknown command: %s\n", data );
 			SendReplyFull( "" );
+		}
 		break;
 	case 'c':
 	case 'C':
@@ -487,6 +502,7 @@ static int GDBListen( void * dev )
 		serverSocket = 0;
 		return -1;
 	}
+	
 	return 0;
 }
 
@@ -494,14 +510,16 @@ int MicroGDBPollServer( void * dev )
 {
 	if( !serverSocket ) return -4;
 
-	struct pollfd allpolls[2];
-
 	int pollct = 1;
+	struct pollfd allpolls[1] = { 0 };
 	allpolls[0].fd = serverSocket;
-	allpolls[0].events = POLLIN;
-
-	//Do something to watch all currently-waiting sockets.
-	poll( allpolls, pollct, 0 );
+	allpolls[0].events = 0x00000100; //POLLRDNORM;
+	int r = poll( allpolls, pollct, 0 );
+	
+	if( r < 0 )
+	{
+		printf( "R: %d\n", r );
+	}
 
 	//If there's faults, bail.
 	if( allpolls[0].revents & (POLLERR|POLLHUP) )
@@ -608,18 +626,16 @@ int MicroGDBStubStartup( void * dev )
 {
 #if defined( WIN32 ) || defined( _WIN32 )
 {
-    WORD wVersionRequested;
-    WSADATA wsaData;
-    int err;
-    wVersionRequested = MAKEWORD(2, 2);
+	WORD wVersionRequested;
+	WSADATA wsaData;
+	int err;
+	wVersionRequested = MAKEWORD(2, 2);
 
-    err = WSAStartup(wVersionRequested, &wsaData);
-    if (err != 0) {
-        /* Tell the user that we could not find a usable */
-        /* Winsock DLL.                                  */
-        fprintf( stderr, "WSAStartup failed with error: %d\n", err);
-        return 1;
-    }
+	err = WSAStartup(wVersionRequested, &wsaData);
+	if (err != 0) {
+		fprintf( stderr, "WSAStartup failed with error: %d\n", err);
+		return 1;
+	}
 }
 #endif
 

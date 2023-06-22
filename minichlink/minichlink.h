@@ -50,17 +50,14 @@ struct MiniChlinkFunctions
 
 	int (*SetEnableBreakpoints)( void * dev, int halt_on_break, int single_step );
 
+	int (*PrepForLongOp)( void * dev ); // Called before the command that will take a while.
 	int (*WaitForFlash)( void * dev );
 	int (*WaitForDoneOp)( void * dev, int ignore );
 
 	int (*PrintChipInfo)( void * dev );
 
-	// Geared for flash, but could be anything.
+	// Geared for flash, but could be anything.  Note: If in flash, must also erase.
 	int (*BlockWrite64)( void * dev, uint32_t address_to_write, uint8_t * data );
-
-	// TODO: What about 64-byte block-reads?
-	// TODO: What about byte read/write?
-	// TODO: What about half read/write?
 
 	// Returns positive if received text.
 	// Returns negative if error.
@@ -86,6 +83,14 @@ struct MiniChlinkFunctions
 	FlushLLCommands
 */
 
+inline static int IsAddressFlash( uint32_t addy ) { return ( addy & 0xff000000 ) == 0x08000000 || ( addy & 0x1FFFF800 ) == 0x1FFFF000; }
+
+#define HALT_MODE_HALT_AND_RESET    0
+#define HALT_MODE_REBOOT            1
+#define HALT_MODE_RESUME            2
+#define HALT_MODE_GO_TO_BOOTLOADER  3
+#define HALT_MODE_HALT_BUT_NO_RESET 5
+
 // Convert a 4-character string to an int.
 #define STTAG( x ) (*((uint32_t*)(x)))
 
@@ -97,6 +102,8 @@ struct ProgrammerStructBase
 	// You can put other things here.
 };
 
+#define MAX_FLASH_SECTORS 262144
+
 struct InternalState
 {
 	uint32_t statetag;
@@ -107,6 +114,10 @@ struct InternalState
 	int autoincrement;
 	uint32_t ram_base;
 	uint32_t ram_size;
+	int sector_size;
+	int flash_size;
+	int target_chip_type; // 0 for unknown (or 003), otherwise a part number.
+	uint8_t flash_sector_status[MAX_FLASH_SECTORS];  // 0 means unerased/unknown. 1 means erased.
 };
 
 
@@ -143,14 +154,23 @@ struct InternalState
 	#define DLLDECORATE
 #endif
 
-void * MiniCHLinkInitAsDLL(struct MiniChlinkFunctions ** MCFO) DLLDECORATE;
+/* initialization hints for init functions */
+/* could be expanded with more in the future (e.g., PID/VID hints, priorities, ...)*/
+/* not all init functions currently need these hints. */
+typedef struct {
+	const char * serial_port;
+	const char * specific_programmer;
+} init_hints_t;
+
+void * MiniCHLinkInitAsDLL(struct MiniChlinkFunctions ** MCFO, const init_hints_t* init_hints) DLLDECORATE;
 extern struct MiniChlinkFunctions MCF;
 
-
 // Returns 'dev' on success, else 0.
-void * TryInit_WCHLinkE();
-void * TryInit_ESP32S2CHFUN();
+void * TryInit_WCHLinkE(void);
+void * TryInit_ESP32S2CHFUN(void);
 void * TryInit_NHCLink042(void);
+void * TryInit_B003Fun(void);
+void * TryInit_Ardulink(const init_hints_t*);
 
 // Returns 0 if ok, populated, 1 if not populated.
 int SetupAutomaticHighLevelFunctions( void * dev );
@@ -160,6 +180,10 @@ int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber );
 
 // For drivers to call
 int DefaultVoidHighLevelState( void * dev );
+int InternalUnlockBootloader( void * dev );
+int InternalIsMemoryErased( struct InternalState * iss, uint32_t address );
+void InternalMarkMemoryNotErased( struct InternalState * iss, uint32_t address );
+int InternalUnlockFlash( void * dev, struct InternalState * iss );
 
 // GDBSever Functions
 int SetupGDBServer( void * dev );

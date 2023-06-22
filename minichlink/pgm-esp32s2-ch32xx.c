@@ -12,6 +12,8 @@ struct ESP32ProgrammerStruct
 	int commandplace;
 	uint8_t reply[256];
 	int replylen;
+
+	int dev_version;
 };
 
 int ESPFlushLLCommands( void * dev );
@@ -243,11 +245,17 @@ int ESPBlockWrite64( void * dev, uint32_t address_to_write, uint8_t * data )
 
 retry:
 
-	Write2LE( eps, 0x0bfe );
+	if( eps->dev_version >= 2 && InternalIsMemoryErased( (struct InternalState*)eps->internal, address_to_write ) )
+		Write2LE( eps, 0x0efe );
+	else
+		Write2LE( eps, 0x0bfe );
 	Write4LE( eps, address_to_write );
+
 	int i;
 	int timeout = 0;
 	for( i = 0; i < 64; i++ ) Write1( eps, data[i] );
+
+	InternalMarkMemoryNotErased( (struct InternalState*)eps->internal, address_to_write );
 
 	do
 	{
@@ -409,6 +417,7 @@ void * TryInit_ESP32S2CHFUN()
 	memset( eps, 0, sizeof( *eps ) );
 	eps->hd = hd;
 	eps->commandplace = 1;
+	eps->dev_version = 0;
 
 	memset( &MCF, 0, sizeof( MCF ) );
 	MCF.WriteReg32 = ESPWriteReg32;
@@ -431,9 +440,16 @@ void * TryInit_ESP32S2CHFUN()
 
 	MCF.BlockWrite64 = ESPBlockWrite64;
 	MCF.VendorCommand = ESPVendorCommand;
+
 	// Reset internal programmer state.
 	Write2LE( eps, 0x0afe );
-
+	ESPFlushLLCommands( eps );
+	Write2LE( eps, 0xfefe );
+	ESPFlushLLCommands( eps );
+	if( eps->replylen > 1 )
+	{
+		eps->dev_version = eps->reply[1];
+	}
 	return eps;
 }
 

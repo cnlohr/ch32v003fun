@@ -8,46 +8,84 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <getopt.h>
+#include "terminalhelp.h"
 #include "minichlink.h"
 #include "../ch32v003fun/ch32v003fun.h"
 
 #if defined(WINDOWS) || defined(WIN32) || defined(_WIN32)
+#ifndef _SYNCHAPI_H_
 void Sleep(uint32_t dwMilliseconds);
+#endif
 #else
 #include <unistd.h>
 #endif
 
-
 static int64_t StringToMemoryAddress( const char * number ) __attribute__((used));
 static void StaticUpdatePROGBUFRegs( void * dev ) __attribute__((used));
-static int InternalUnlockBootloader( void * dev ) __attribute__((used));
 int DefaultReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t read_size, uint8_t * blob );
 
 void TestFunction(void * v );
 struct MiniChlinkFunctions MCF;
 
-void * MiniCHLinkInitAsDLL( struct MiniChlinkFunctions ** MCFO )
+void * MiniCHLinkInitAsDLL( struct MiniChlinkFunctions ** MCFO, const init_hints_t* init_hints )
 {
 	void * dev = 0;
-	if( (dev = TryInit_WCHLinkE()) )
+	
+	const char * specpgm = init_hints->specific_programmer;
+	if( specpgm )
 	{
-		fprintf( stderr, "Found WCH Link\n" );
-	}
-	else if( (dev = TryInit_ESP32S2CHFUN()) )
-	{
-		fprintf( stderr, "Found ESP32S2 Programmer\n" );
-	}
-	else if ((dev = TryInit_NHCLink042()))
-	{
-		fprintf( stderr, "Found NHC-Link042 Programmer\n" );
+		if( strcmp( specpgm, "linke" ) == 0 )
+			dev = TryInit_WCHLinkE();
+		else if( strcmp( specpgm, "esp32s2chfun" ) == 0 )
+			dev = TryInit_ESP32S2CHFUN();
+		else if( strcmp( specpgm, "nchlink" ) == 0 )
+			dev = TryInit_NHCLink042();
+		else if( strcmp( specpgm, "b003boot" ) == 0 )
+			dev = TryInit_B003Fun();
+		else if( strcmp( specpgm, "ardulink" ) == 0 )
+			dev = TryInit_B003Fun();
 	}
 	else
+	{
+		if( (dev = TryInit_WCHLinkE()) )
+		{
+			fprintf( stderr, "Found WCH Link\n" );
+		}
+		else if( (dev = TryInit_ESP32S2CHFUN()) )
+		{
+			fprintf( stderr, "Found ESP32S2 Programmer\n" );
+		}
+		else if ((dev = TryInit_NHCLink042()))
+		{
+			fprintf( stderr, "Found NHC-Link042 Programmer\n" );
+		}
+		else if ((dev = TryInit_B003Fun()))
+		{
+			fprintf( stderr, "Found B003Fun Bootloader\n" );
+		}
+		else if ( init_hints->serial_port && (dev = TryInit_Ardulink(init_hints)))
+		{
+			fprintf( stderr, "Found Ardulink Programmer\n" );
+		}
+	}
+
+	if( !dev )
 	{
 		fprintf( stderr, "Error: Could not initialize any supported programmers\n" );
 		return 0;
 	}
 
+	struct InternalState * iss = calloc( 1, sizeof( struct InternalState ) );
+	((struct ProgrammerStructBase*)dev)->internal = iss;
+	iss->ram_base = 0x20000000;
+	iss->ram_size = 2048;
+	iss->sector_size = 64;
+	iss->flash_size = 16384;
+	iss->target_chip_type = 0;
+
 	SetupAutomaticHighLevelFunctions( dev );
+
 	if( MCFO )
 	{
 		*MCFO = &MCF;
@@ -58,11 +96,34 @@ void * MiniCHLinkInitAsDLL( struct MiniChlinkFunctions ** MCFO )
 #if !defined( MINICHLINK_AS_LIBRARY ) && !defined( MINICHLINK_IMPORT )
 int main( int argc, char ** argv )
 {
+	int i;
+
 	if( argc > 1 && argv[1][0] == '-' && argv[1][1] == 'h' )
 	{
 		goto help;
 	}
-	void * dev = MiniCHLinkInitAsDLL( 0 );
+	init_hints_t hints;
+	memset(&hints, 0, sizeof(hints));
+
+	// Scan for possible hints.
+	for( i = 0; i < argc; i++ )
+	{
+		char * v = argv[i];
+		if( strncmp( v, "-c", 2 ) == 0 )
+		{
+			i++;
+			if( i < argc )
+				hints.serial_port = argv[i];
+		}
+		else if( strncmp( v, "-c", 2 ) == 0 )
+		{
+			i++;
+			if( i < argc )
+				hints.specific_programmer = argv[i];
+		}
+	}
+
+	void * dev = MiniCHLinkInitAsDLL( 0, &hints );
 	if( !dev )
 	{
 		fprintf( stderr, "Error: Could not initialize any supported programmers\n" );
@@ -140,6 +201,17 @@ keep_going:
 				else
 					goto unimplemented;
 				break;
+			case 'C': // For specifying programmer
+			case 'c':
+				// COM port or programmer argument already parsed previously
+				// we still need to skip the next argument
+				iarg+=1;
+				if( iarg >= argc )
+				{
+					fprintf( stderr, "-c/C argument required 2 arguments\n" );
+					goto unimplemented;
+				}
+				break;
 			case 'u':
 				if( MCF.Unbrick )
 					MCF.Unbrick( dev );
@@ -152,55 +224,55 @@ keep_going:
 					goto unimplemented;
 				break;
 			case 'b':  //reBoot
-				if( !MCF.HaltMode || MCF.HaltMode( dev, 1 ) )
+				if( !MCF.HaltMode || MCF.HaltMode( dev, HALT_MODE_REBOOT ) )
 					goto unimplemented;
 				break;
 			case 'B':  //reBoot into Bootloader
-				if( !MCF.HaltMode || MCF.HaltMode( dev, 3 ) )
+				if( !MCF.HaltMode || MCF.HaltMode( dev, HALT_MODE_GO_TO_BOOTLOADER ) )
 					goto unimplemented;
 				break;
 			case 'e':  //rEsume
-				if( !MCF.HaltMode || MCF.HaltMode( dev, 2 ) )
+				if( !MCF.HaltMode || MCF.HaltMode( dev, HALT_MODE_RESUME ) )
 					goto unimplemented;
 				break;
 			case 'E':  //Erase whole chip.
-				if( MCF.HaltMode ) MCF.HaltMode( dev, 0 );
+				if( MCF.HaltMode ) MCF.HaltMode( dev, HALT_MODE_HALT_AND_RESET );
 				if( !MCF.Erase || MCF.Erase( dev, 0, 0, 1 ) )
 					goto unimplemented;
 				break;
 			case 'a':
-				if( !MCF.HaltMode || MCF.HaltMode( dev, 0 ) )
+				if( !MCF.HaltMode || MCF.HaltMode( dev, HALT_MODE_HALT_AND_RESET ) )
 					goto unimplemented;
 				break;
 			case 'A':  // Halt without reboot
-				if( !MCF.HaltMode || MCF.HaltMode( dev, 5 ) )
+				if( !MCF.HaltMode || MCF.HaltMode( dev, HALT_MODE_HALT_BUT_NO_RESET ) )
 					goto unimplemented;
 				break;
 
 			// disable NRST pin (turn it into a GPIO)
 			case 'd':  // see "RSTMODE" in datasheet
-				if( MCF.HaltMode ) MCF.HaltMode( dev, 0 );
+				if( MCF.HaltMode ) MCF.HaltMode( dev, HALT_MODE_HALT_AND_RESET );
 				if( MCF.ConfigureNRSTAsGPIO )
 					MCF.ConfigureNRSTAsGPIO( dev, 0 );
 				else
 					goto unimplemented;
 				break;
 			case 'D': // see "RSTMODE" in datasheet
-				if( MCF.HaltMode ) MCF.HaltMode( dev, 0 );
+				if( MCF.HaltMode ) MCF.HaltMode( dev, HALT_MODE_HALT_AND_RESET );
 				if( MCF.ConfigureNRSTAsGPIO )
 					MCF.ConfigureNRSTAsGPIO( dev, 1 );
 				else
 					goto unimplemented;
 				break;
 			case 'p': 
-				if( MCF.HaltMode ) MCF.HaltMode( dev, 0 );
+				if( MCF.HaltMode ) MCF.HaltMode( dev, HALT_MODE_HALT_AND_RESET );
 				if( MCF.ConfigureReadProtection )
 					MCF.ConfigureReadProtection( dev, 0 );
 				else
 					goto unimplemented;
 				break;
 			case 'P':
-				if( MCF.HaltMode ) MCF.HaltMode( dev, 0 );
+				if( MCF.HaltMode ) MCF.HaltMode( dev, HALT_MODE_HALT_AND_RESET );
 				if( MCF.ConfigureReadProtection )
 					MCF.ConfigureReadProtection( dev, 1 );
 				else
@@ -221,27 +293,48 @@ keep_going:
 				{
 					printf( "GDBServer Running\n" );
 				}
-				else
+				else if( argchar[1] == 'T' )
 				{
 					// In case we aren't running already.
-					//MCF.HaltMode( dev, 2 );
-					//XXX TODO: Why do some programmers start automatically, and others don't? 
+					MCF.HaltMode( dev, 2 );
 				}
 
+				CaptureKeyboardInput();
+
+				uint32_t appendword = 0;
 				do
 				{
 					uint8_t buffer[256];
 					if( !IsGDBServerInShadowHaltState( dev ) )
 					{
-						int r = MCF.PollTerminal( dev, buffer, sizeof( buffer ), 0, 0 );
-						if( r < 0 )
+						// Handle keyboard input.
+						if( appendword == 0 )
+						{
+							int i;
+							for( i = 0; i < 3; i++ )
+							{
+								if( !IsKBHit() ) break;
+								appendword |= ReadKBByte() << (i*8+8);
+							}
+							appendword |= i+4; // Will go into DATA0.
+						}
+						int r = MCF.PollTerminal( dev, buffer, sizeof( buffer ), appendword, 0 );
+						if( r == -1 )
+						{
+							// Other end ack'd without printf.
+							appendword = 0;
+						}
+						else if( r < 0 )
 						{
 							fprintf( stderr, "Terminal dead.  code %d\n", r );
 							return -32;
 						}
-						if( r > 0 )
+						else if( r > 0 )
 						{
-							fwrite( buffer, r, 1, stdout ); 
+							fwrite( buffer, r, 1, stdout );
+							fflush( stdout );
+							// Otherwise it's basically just an ack for appendword.
+							appendword = 0;
 						}
 					}
 
@@ -343,7 +436,7 @@ keep_going:
 			}
 			case 'r':
 			{
-				if( MCF.HaltMode ) MCF.HaltMode( dev, 5 ); //No need to reboot.
+				if( MCF.HaltMode ) MCF.HaltMode( dev, HALT_MODE_HALT_BUT_NO_RESET ); //No need to reboot.
 
 				if( argchar[2] != 0 )
 				{
@@ -367,8 +460,6 @@ keep_going:
 					return -9;
 				}
 
-				// Round up amount.
-				amount = ( amount + 3 ) & 0xfffffffc;
 				FILE * f = 0;
 				int hex = 0;
 				if( strcmp( fname, "-" ) == 0 )
@@ -423,6 +514,7 @@ keep_going:
 			}
 			case 'w':
 			{
+				struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
 				if( argchar[2] != 0 ) goto help;
 				iarg++;
 				argchar = 0; // Stop advancing
@@ -503,14 +595,14 @@ keep_going:
 					fprintf( stderr, "Error: File I/O Fault.\n" );
 					exit( -10 );
 				}
-				if( len > 16384 )
+				if( len > iss->flash_size )
 				{
 					fprintf( stderr, "Error: Image for CH32V003 too large (%d)\n", len );
 					exit( -9 );
 				}
 
-				int is_flash = ( offset & 0xff000000 ) == 0x08000000 || ( offset & 0x1FFFF800 ) == 0x1FFFF000;
-				if( MCF.HaltMode ) MCF.HaltMode( dev, is_flash?0:5 );
+				int is_flash = IsAddressFlash( offset );
+				if( MCF.HaltMode ) MCF.HaltMode( dev, is_flash ? HALT_MODE_HALT_AND_RESET : HALT_MODE_HALT_BUT_NO_RESET );
 
 				if( MCF.WriteBinaryBlob )
 				{
@@ -551,7 +643,9 @@ help:
 	fprintf( stderr, " -5 Enable 5V\n" );
 	fprintf( stderr, " -t Disable 3.3V\n" );
 	fprintf( stderr, " -f Disable 5V\n" );
+	fprintf( stderr, " -c [serial port for Ardulink, try /dev/ttyACM0 or COM11 etc]\n" );
 	fprintf( stderr, " -u Clear all code flash - by power off (also can unbrick)\n" );
+	fprintf( stderr, " -E Erase chip\n" );
 	fprintf( stderr, " -b Reboot out of Halt\n" );
 	fprintf( stderr, " -e Resume from halt\n" );
 	fprintf( stderr, " -a Reboot into Halt\n" );
@@ -582,8 +676,6 @@ unimplemented:
 #if defined(WINDOWS) || defined(WIN32) || defined(_WIN32)
 #define strtoll _strtoi64
 #endif
-
-static int StaticUnlockFlash( void * dev, struct InternalState * iss );
 
 int64_t SimpleReadNumberInt( const char * number, int64_t defaultNumber )
 {
@@ -639,7 +731,7 @@ static int DefaultWaitForFlash( void * dev )
 		rw = 0;
 		MCF.ReadWord( dev, (intptr_t)&FLASH->STATR, &rw ); // FLASH_STATR => 0x4002200C
 		if( timeout++ > 100 ) return -1;
-	} while(rw & 1);  // BSY flag.
+	} while(rw & 3);  // BSY flag for 003, or WRBSY for other processors.
 
 	if( rw & FLASH_STATR_WRPRTERR )
 	{
@@ -654,67 +746,6 @@ static int DefaultWaitForDoneOp( void * dev, int ignore )
 {
 	int r;
 	uint32_t rrv;
-	uint32_t temp;
-
-	//Debug regdump pre-command
-	#if 0
-	MCF.ReadReg32(dev, DMDATA0, &temp);
-	fprintf(stderr, "Pr-DMDATA0: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMDATA1, &temp);
-	fprintf(stderr, "Pr-DMDATA1: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMCONTROL, &temp);
-	fprintf(stderr, "Pr-DMCONTROL: %08x\n", temp);
-	
-	MCF.ReadReg32(dev, DMSTATUS, &temp);
-	fprintf(stderr, "Pr-DMSTATUS: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMHARTINFO, &temp);
-	fprintf(stderr, "Pr-DMHARTINFO: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMABSTRACTCS, &temp);
-	fprintf(stderr, "Pr-DMABSTRACTCS: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMCOMMAND, &temp);
-	fprintf(stderr, "Pr-DMCOMMAND: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMABSTRACTAUTO, &temp);
-	fprintf(stderr, "Pr-DMABSTRACTAUTO: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMPROGBUF0, &temp);
-	fprintf(stderr, "Pr-DMPROGBUF0: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMPROGBUF1, &temp);
-	fprintf(stderr, "Pr-DMPROGBUF1: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMPROGBUF2, &temp);
-	fprintf(stderr, "Pr-DMPROGBUF2: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMPROGBUF3, &temp);
-	fprintf(stderr, "Pr-DMPROGBUF3: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMPROGBUF4, &temp);
-	fprintf(stderr, "Pr-DMPROGBUF4: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMPROGBUF5, &temp);
-	fprintf(stderr, "Pr-DMPROGBUF5: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMPROGBUF6, &temp);
-	fprintf(stderr, "Pr-DMPROGBUF6: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMPROGBUF7, &temp);
-	fprintf(stderr, "Pr-DMPROGBUF7: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMCPBR, &temp);
-	fprintf(stderr, "Pr-DMCPBR: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMCFGR, &temp);
-	fprintf(stderr, "Pr-DMCFGR: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMSHDWCFGR, &temp);
-	fprintf(stderr, "Pr-DMSHDWCFGR: %08x\n", temp);
-	#endif
 
 	do
 	{
@@ -722,66 +753,6 @@ static int DefaultWaitForDoneOp( void * dev, int ignore )
 		if( r ) return r;
 	}
 	while( rrv & (1<<12) );
-
-	//Debug regdump post-command
-	#if 0
-	MCF.ReadReg32(dev, DMDATA0, &temp);
-	fprintf(stderr, "Po-DMDATA0: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMDATA1, &temp);
-	fprintf(stderr, "Po-DMDATA1: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMCONTROL, &temp);
-	fprintf(stderr, "Po-DMCONTROL: %08x\n", temp);
-	
-	MCF.ReadReg32(dev, DMSTATUS, &temp);
-	fprintf(stderr, "Po-DMSTATUS: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMHARTINFO, &temp);
-	fprintf(stderr, "Po-DMHARTINFO: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMABSTRACTCS, &temp);
-	fprintf(stderr, "Po-DMABSTRACTCS: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMCOMMAND, &temp);
-	fprintf(stderr, "Po-DMCOMMAND: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMABSTRACTAUTO, &temp);
-	fprintf(stderr, "Po-DMABSTRACTAUTO: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMPROGBUF0, &temp);
-	fprintf(stderr, "Po-DMPROGBUF0: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMPROGBUF1, &temp);
-	fprintf(stderr, "Po-DMPROGBUF1: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMPROGBUF2, &temp);
-	fprintf(stderr, "Po-DMPROGBUF2: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMPROGBUF3, &temp);
-	fprintf(stderr, "Po-DMPROGBUF3: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMPROGBUF4, &temp);
-	fprintf(stderr, "Po-DMPROGBUF4: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMPROGBUF5, &temp);
-	fprintf(stderr, "Po-DMPROGBUF5: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMPROGBUF6, &temp);
-	fprintf(stderr, "Po-DMPROGBUF6: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMPROGBUF7, &temp);
-	fprintf(stderr, "Po-DMPROGBUF7: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMCPBR, &temp);
-	fprintf(stderr, "Po-MCPBR: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMCFGR, &temp);
-	fprintf(stderr, "Po-DMCFGR: %08x\n", temp);
-
-	MCF.ReadReg32(dev, DMSHDWCFGR, &temp);
-	fprintf(stderr, "Po-DMSHDWCFGR: %08x\n", temp);
-	#endif
 
 	if( (rrv >> 8 ) & 7 )
 	{
@@ -799,6 +770,7 @@ static int DefaultWaitForDoneOp( void * dev, int ignore )
 			default: errortext = "Other Error"; break;
 			}
 
+			uint32_t temp;
 			MCF.ReadReg32( dev, DMSTATUS, &temp );
 			fprintf( stderr, "Fault writing memory (DMABSTRACTS = %08x) (%s) DMSTATUS: %08x\n", rrv, errortext, temp );
 		}
@@ -813,7 +785,7 @@ int DefaultSetupInterface( void * dev )
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
 
 	if( MCF.Control3v3 ) MCF.Control3v3( dev, 1 );
-	if( MCF.DelayUS ) MCF.DelayUS( dev, 16000 );
+	MCF.DelayUS( dev, 16000 );
 	MCF.WriteReg32( dev, DMSHDWCFGR, 0x5aa50000 | (1<<10) ); // Shadow Config Reg
 	MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // CFGR (1<<10 == Allow output from slave)
 	MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // Bug in silicon?  If coming out of cold boot, and we don't do our little "song and dance" this has to be called.
@@ -859,7 +831,7 @@ static void StaticUpdatePROGBUFRegs( void * dev )
 	MCF.WriteReg32( dev, DMCOMMAND, 0x0023100d );      // Copy data to x13
 }
 
-static int InternalUnlockBootloader( void * dev )
+int InternalUnlockBootloader( void * dev )
 {
 	if( !MCF.WriteWord ) return -99;
 	int ret = 0;
@@ -884,6 +856,23 @@ static int InternalUnlockBootloader( void * dev )
 }
 
 
+int InternalIsMemoryErased( struct InternalState * iss, uint32_t address )
+{
+	if(( address & 0xff000000 ) != 0x08000000 ) return 0;
+	int sector = (address & 0xffffff) / iss->sector_size;
+	if( sector >= MAX_FLASH_SECTORS )
+		return 0;
+	else
+		return iss->flash_sector_status[sector];
+}
+
+void InternalMarkMemoryNotErased( struct InternalState * iss, uint32_t address )
+{
+	if(( address & 0xff000000 ) != 0x08000000 ) return;
+	int sector = (address & 0xffffff) / iss->sector_size;
+	if( sector < MAX_FLASH_SECTORS )
+		iss->flash_sector_status[sector] = 0;
+}
 
 static int DefaultWriteHalfWord( void * dev, uint32_t address_to_write, uint16_t data )
 {
@@ -1003,12 +992,7 @@ static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t dat
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
 	int ret = 0;
 
-	int is_flash = 0;
-	if( ( address_to_write & 0xff000000 ) == 0x08000000 || ( address_to_write & 0x1FFFF800 ) == 0x1FFFF000 )
-	{
-		// Is flash.
-		is_flash = 1;
-	}
+	int is_flash = IsAddressFlash( address_to_write );
 
 	if( iss->statetag != STTAG( "WRSQ" ) || is_flash != iss->lastwriteflags )
 	{
@@ -1102,17 +1086,24 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 
 	uint32_t rw;
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
-	int is_flash = 0;
+	int sectorsize = iss->sector_size;
+
+	// We can't write into flash when mapped to 0x00000000
+	if( address_to_write < 0x01000000 )
+		address_to_write |= 0x08000000;
+
+	int is_flash = IsAddressFlash( address_to_write );
 
 	if( blob_size == 0 ) return 0;
 
-	if( (address_to_write & 0xff000000) == 0x08000000 || (address_to_write & 0xff000000) == 0x00000000 || (address_to_write & 0x1FFFF800) == 0x1FFFF000 ) 
-		is_flash = 1;
 
-	// We can't write into flash when mapped to 0x00000000
-	if( is_flash )
-		address_to_write |= 0x08000000;
+	if( is_flash && !iss->flash_unlocked )
+	{
+		if( ( rw = InternalUnlockFlash( dev, iss ) ) )
+			return rw;
+	}
 
+	// Regardless of sector size, allow block write to do its thing if it can.
 	if( is_flash && MCF.BlockWrite64 && ( address_to_write & 0x3f ) == 0 && ( blob_size & 0x3f ) == 0 )
 	{
 		int i;
@@ -1128,50 +1119,48 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 		return 0;
 	}
 
-	if( is_flash && !iss->flash_unlocked )
-	{
-		if( ( rw = StaticUnlockFlash( dev, iss ) ) )
-			return rw;
-	}
-
-
-	uint8_t tempblock[64];
-	int sblock =  address_to_write >> 6;
-	int eblock = ( address_to_write + blob_size + 0x3f) >> 6;
+	uint8_t tempblock[sectorsize];
+	int sblock =  address_to_write / sectorsize;
+	int eblock = ( address_to_write + blob_size + (sectorsize-1) ) / sectorsize;
 	int b;
 	int rsofar = 0;
 
 	for( b = sblock; b < eblock; b++ )
 	{
-		int offset_in_block = address_to_write - (b * 64);
+		int offset_in_block = address_to_write - (b * sectorsize);
 		if( offset_in_block < 0 ) offset_in_block = 0;
-		int end_o_plus_one_in_block = ( address_to_write + blob_size ) - (b*64);
-		if( end_o_plus_one_in_block > 64 ) end_o_plus_one_in_block = 64;
-		int	base = b * 64;
+		int end_o_plus_one_in_block = ( address_to_write + blob_size ) - (b*sectorsize);
+		if( end_o_plus_one_in_block > sectorsize ) end_o_plus_one_in_block = sectorsize;
+		int	base = b * sectorsize;
 
-		if( offset_in_block == 0 && end_o_plus_one_in_block == 64 )
+		if( offset_in_block == 0 && end_o_plus_one_in_block == sectorsize )
 		{
-			if( MCF.BlockWrite64 ) 
+			if( MCF.BlockWrite64 )
 			{
-				int r = MCF.BlockWrite64( dev, base, blob + rsofar );
-				rsofar += 64;
-				if( r )
+				int i;
+				for( i = 0; i < sectorsize/64; i++ )
 				{
-					fprintf( stderr, "Error writing block at memory %08x (error = %d)\n", base, r );
-					return r;
+					int r = MCF.BlockWrite64( dev, base + i*64, blob + rsofar+i*64 );
+					rsofar += 64;
+					if( r )
+					{
+						fprintf( stderr, "Error writing block at memory %08x (error = %d)\n", base, r );
+						return r;
+					}
 				}
 			}
 			else 					// Block Write not avaialble
 			{
 				if( is_flash )
 				{
-					MCF.Erase( dev, base, 64, 0 );
+					if( !InternalIsMemoryErased( iss, base ) )
+						MCF.Erase( dev, base, sectorsize, 0 );
 					MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG ); // THIS IS REQUIRED, (intptr_t)&FLASH->CTLR = 0x40022010
 					MCF.WriteWord( dev, 0x40022010, CR_BUF_RST | CR_PAGE_PG );  // (intptr_t)&FLASH->CTLR = 0x40022010
 				}
 
 				int j;
-				for( j = 0; j < 16; j++ )
+				for( j = 0; j < sectorsize/4; j++ )
 				{
 					uint32_t writeword;
 					memcpy( &writeword, blob + rsofar, 4 );
@@ -1182,8 +1171,10 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 				if( is_flash )
 				{
 					MCF.WriteWord( dev, 0x40022014, base );  //0x40022014 -> FLASH->ADDR
+					if( MCF.PrepForLongOp ) MCF.PrepForLongOp( dev );  // Give the programmer a headsup this next operation could take a while.
 					MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG|CR_STRT_Set ); // 0x40022010 -> FLASH->CTLR
 					if( MCF.WaitForFlash ) MCF.WaitForFlash( dev );
+					InternalMarkMemoryNotErased( iss, base );
 				}
 			}
 		}
@@ -1192,7 +1183,7 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 			//Ok, we have to do something wacky.
 			if( is_flash )
 			{
-				MCF.ReadBinaryBlob( dev, base, 64, tempblock );
+				MCF.ReadBinaryBlob( dev, base, sectorsize, tempblock );
 
 				// Permute tempblock
 				int tocopy = end_o_plus_one_in_block - offset_in_block;
@@ -1201,23 +1192,29 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 
 				if( MCF.BlockWrite64 ) 
 				{
-					int r = MCF.BlockWrite64( dev, base, tempblock );
-					if( r ) return r;
+					int i;
+					for( i = 0; i < sectorsize/64; i++ )
+					{
+						int r = MCF.BlockWrite64( dev, base+i*64, tempblock+i*64 );
+						if( r ) return r;
+					}
 				}
 				else
 				{
-					MCF.Erase( dev, base, 64, 0 );
+					if( !InternalIsMemoryErased( iss, base ) )
+						MCF.Erase( dev, base, sectorsize, 0 );
 					MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG ); // THIS IS REQUIRED, (intptr_t)&FLASH->CTLR = 0x40022010
 					MCF.WriteWord( dev, 0x40022010, CR_BUF_RST | CR_PAGE_PG );  // (intptr_t)&FLASH->CTLR = 0x40022010
 
 					int j;
-					for( j = 0; j < 16; j++ )
+					for( j = 0; j < sectorsize/4; j++ )
 					{
 						MCF.WriteWord( dev, j*4+base, *(uint32_t*)(tempblock + j * 4) );
 						rsofar += 4;
 					}
 					MCF.WriteWord( dev, 0x40022014, base );  //0x40022014 -> FLASH->ADDR
 					MCF.WriteWord( dev, 0x40022010, CR_PAGE_PG|CR_STRT_Set ); // 0x40022010 -> FLASH->CTLR
+					InternalMarkMemoryNotErased( iss, base );
 				}
 				if( MCF.WaitForFlash && MCF.WaitForFlash( dev ) ) goto timedout;
 			}
@@ -1225,7 +1222,7 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 			{
 				// Accessing RAM.  Be careful to only do the needed operations.
 				int j;
-				for( j = 0; j < 16; j++ )
+				for( j = 0; j < sectorsize; j++ )
 				{
 					uint32_t taddy = j*4;
 					if( offset_in_block <= taddy && end_o_plus_one_in_block >= taddy + 4 )
@@ -1285,7 +1282,7 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 	}
 #endif
 
-	if(MCF.DelayUS) MCF.DelayUS( dev, 100 ); // Why do we need this? (We seem to need this on the WCH programmers?)
+	MCF.DelayUS( dev, 100 ); // Why do we need this? (We seem to need this on the WCH programmers?)
 	return 0;
 timedout:
 	fprintf( stderr, "Timed out\n" );
@@ -1337,8 +1334,7 @@ static int DefaultReadWord( void * dev, uint32_t address_to_read, uint32_t * dat
 		}
 
 		MCF.WriteReg32( dev, DMDATA1, address_to_read );
-		//MCF.WriteReg32( dev, DMCOMMAND, 0x00241000 ); // Only execute. //AH removed as part of CH32V307 discussion
-		MCF.WriteReg32( dev, DMCOMMAND, 0x00261000 ); //AH replacement based on that discussion
+		MCF.WriteReg32( dev, DMCOMMAND, 0x00241000 ); 
 
 		iss->statetag = STTAG( "RDSQ" );
 		iss->currentstateval = address_to_read;
@@ -1357,21 +1353,29 @@ static int DefaultReadWord( void * dev, uint32_t address_to_read, uint32_t * dat
 	return r;
 }
 
-static int StaticUnlockFlash( void * dev, struct InternalState * iss )
+int InternalUnlockFlash( void * dev, struct InternalState * iss )
 {
+	int ret = 0;
 	uint32_t rw;
-	MCF.ReadWord( dev, 0x40022010, &rw );  // FLASH->CTLR = 0x40022010
+	ret = MCF.ReadWord( dev, 0x40022010, &rw );  // FLASH->CTLR = 0x40022010
 	if( rw & 0x8080 ) 
 	{
+		ret = MCF.WriteWord( dev, 0x40022004, 0x45670123 ); // FLASH->KEYR = 0x40022004
+		if( ret ) goto reterr;
+		ret = MCF.WriteWord( dev, 0x40022004, 0xCDEF89AB );
+		if( ret ) goto reterr;
+		ret = MCF.WriteWord( dev, 0x40022008, 0x45670123 ); // OBKEYR = 0x40022008
+		if( ret ) goto reterr;
+		ret = MCF.WriteWord( dev, 0x40022008, 0xCDEF89AB );
+		if( ret ) goto reterr;
+		ret = MCF.WriteWord( dev, 0x40022024, 0x45670123 ); // MODEKEYR = 0x40022024
+		if( ret ) goto reterr;
+		ret = MCF.WriteWord( dev, 0x40022024, 0xCDEF89AB );
+		if( ret ) goto reterr;
 
-		MCF.WriteWord( dev, 0x40022004, 0x45670123 ); // FLASH->KEYR = 0x40022004
-		MCF.WriteWord( dev, 0x40022004, 0xCDEF89AB );
-		MCF.WriteWord( dev, 0x40022008, 0x45670123 ); // OBKEYR = 0x40022008
-		MCF.WriteWord( dev, 0x40022008, 0xCDEF89AB );
-		MCF.WriteWord( dev, 0x40022024, 0x45670123 ); // MODEKEYR = 0x40022024
-		MCF.WriteWord( dev, 0x40022024, 0xCDEF89AB );
+		ret = MCF.ReadWord( dev, 0x40022010, &rw ); // FLASH->CTLR = 0x40022010
+		if( ret ) goto reterr;
 
-		MCF.ReadWord( dev, 0x40022010, &rw ); // FLASH->CTLR = 0x40022010
 		if( rw & 0x8080 ) 
 		{
 			fprintf( stderr, "Error: Flash is not unlocked (CTLR = %08x)\n", rw );
@@ -1380,6 +1384,9 @@ static int StaticUnlockFlash( void * dev, struct InternalState * iss )
 	}
 	iss->flash_unlocked = 1;
 	return 0;
+reterr:
+	fprintf( stderr, "Error unlocking flash, got code %d from underlying system\n", ret );
+	return ret;
 }
 
 int DefaultErase( void * dev, uint32_t address, uint32_t length, int type )
@@ -1389,9 +1396,8 @@ int DefaultErase( void * dev, uint32_t address, uint32_t length, int type )
 
 	if( !iss->flash_unlocked )
 	{
-		if( ( rw = StaticUnlockFlash( dev, iss ) ) )
+		if( ( rw = InternalUnlockFlash( dev, iss ) ) )
 			return rw;
-		printf( "Flash unlocked\n" );
 	}
 
 	if( type == 1 )
@@ -1399,37 +1405,47 @@ int DefaultErase( void * dev, uint32_t address, uint32_t length, int type )
 		// Whole-chip flash
 		iss->statetag = STTAG( "XXXX" );
 		printf( "Whole-chip erase\n" );
-		MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, 0 );
-		MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, FLASH_CTLR_MER  );
-		MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_STRT_Set|FLASH_CTLR_MER );
+		if( MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, 0 ) ) goto flashoperr;
+		if( MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, FLASH_CTLR_MER  ) ) goto flashoperr;
+		if( MCF.PrepForLongOp ) MCF.PrepForLongOp( dev );  // Give the programmer a headsup this next operation could take a while.
+		if( MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_STRT_Set|FLASH_CTLR_MER ) ) goto flashoperr;
 		rw = MCF.WaitForDoneOp( dev, 0 );
 		if( MCF.WaitForFlash && MCF.WaitForFlash( dev ) ) { fprintf( stderr, "Error: Wait for flash error.\n" ); return -11; }
-		rw = MCF.WaitForDoneOp( dev, 0 );
-		MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, 0 );
-		rw = MCF.WaitForDoneOp( dev, 0 );
-		fprintf( stderr, "Whole Chip Erase Code: %d\n", rw );
+		MCF.VoidHighLevelState( dev );
+		memset( iss->flash_sector_status, 1, sizeof( iss->flash_sector_status ) );
 	}
 	else
 	{
 		// 16.4.7, Step 3: Check the BSY bit of the FLASH_STATR register to confirm that there are no other programming operations in progress.
 		// skip (we make sure at the end)
-
 		int chunk_to_erase = address;
-
 		while( chunk_to_erase < address + length )
 		{
-			// Step 4:  set PAGE_ER of FLASH_CTLR(0x40022010)
-			MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_PAGE_ER ); // Actually FTER
-			// Step 5: Write the first address of the fast erase page to the FLASH_ADDR register.
-			MCF.WriteWord( dev, (intptr_t)&FLASH->ADDR, chunk_to_erase  );
+			if( ( chunk_to_erase & 0xff000000 ) == 0x08000000 )
+			{
+				int sector = ( chunk_to_erase & 0x00ffffff ) / iss->sector_size;
+				if( sector < MAX_FLASH_SECTORS )
+				{
+					iss->flash_sector_status[sector] = 1;
+				}
+			}
 
+			// Step 4:  set PAGE_ER of FLASH_CTLR(0x40022010)
+			if( MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_PAGE_ER ) ) goto flashoperr; // Actually FTER
+			// Step 5: Write the first address of the fast erase page to the FLASH_ADDR register.
+			if( MCF.WriteWord( dev, (intptr_t)&FLASH->ADDR, chunk_to_erase ) ) goto flashoperr;
 			// Step 6: Set the STAT bit of FLASH_CTLR register to '1' to initiate a fast page erase (64 bytes) action.
-			MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_STRT_Set | CR_PAGE_ER );
+			if( MCF.PrepForLongOp ) MCF.PrepForLongOp( dev );  // Give the programmer a headsup this next operation could take a while.
+			if( MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_STRT_Set | CR_PAGE_ER ) ) goto flashoperr;
 			if( MCF.WaitForFlash && MCF.WaitForFlash( dev ) ) return -99;
-			chunk_to_erase+=64;
+			chunk_to_erase+=iss->sector_size;
 		}
 	}
+
 	return 0;
+flashoperr:
+	fprintf( stderr, "Error: Flash operation error\n" );
+	return -93;
 }
 
 int DefaultReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t read_size, uint8_t * blob )
@@ -1598,28 +1614,26 @@ static int DefaultHaltMode( void * dev, int mode )
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
 	switch ( mode )
 	{
-	case 5: // Don't reboot.
-	case 0:
+	case HALT_MODE_HALT_BUT_NO_RESET: // Don't reboot.
+	case HALT_MODE_HALT_AND_RESET:
 		MCF.WriteReg32( dev, DMSHDWCFGR, 0x5aa50000 | (1<<10) ); // Shadow Config Reg
 		MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // CFGR (1<<10 == Allow output from slave)
 		MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // Bug in silicon?  If coming out of cold boot, and we don't do our little "song and dance" this has to be called.
-
 		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
 		if( mode == 0 ) MCF.WriteReg32( dev, DMCONTROL, 0x80000003 ); // Reboot.
 		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Re-initiate a halt request.
-
 //		MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.  This is recommended, but not doing it seems more stable.
 		// Sometimes, even if the processor is halted but the MSB is clear, it will spuriously start?
 		MCF.FlushLLCommands( dev );
 		break;
-	case 1:
+	case HALT_MODE_REBOOT:
 		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
 		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
 		MCF.WriteReg32( dev, DMCONTROL, 0x80000003 ); // Reboot.
 		MCF.WriteReg32( dev, DMCONTROL, 0x40000001 ); // resumereq
 		MCF.FlushLLCommands( dev );
 		break;
-	case 2:
+	case HALT_MODE_RESUME:
 		MCF.WriteReg32( dev, DMSHDWCFGR, 0x5aa50000 | (1<<10) ); // Shadow Config Reg
 		MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // CFGR (1<<10 == Allow output from slave)
 		MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // Bug in silicon?  If coming out of cold boot, and we don't do our little "song and dance" this has to be called.
@@ -1627,7 +1641,7 @@ static int DefaultHaltMode( void * dev, int mode )
 		MCF.WriteReg32( dev, DMCONTROL, 0x40000001 ); // resumereq
 		MCF.FlushLLCommands( dev );
 		break;
-	case 3:
+	case HALT_MODE_GO_TO_BOOTLOADER:
 		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
 		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
 
@@ -1645,29 +1659,24 @@ static int DefaultHaltMode( void * dev, int mode )
 	default:
 		fprintf( stderr, "Error: Unknown halt mode %d\n", mode );
 	}
-#if 0
-	int i;
-	for( i = 0; i < 100; i++ )
-	{
-		uint32_t temp = 0;
-		MCF.ReadReg32( dev, DMSTATUS, &temp );
-		fprintf( stderr, "DMSTATUS: %08x\n", temp );
-		usleep( 20000);
-	}
-#endif
 
+	iss->flash_unlocked = 0;
 	iss->processor_in_mode = mode;
+
+	// In case processor halt process needs to complete, i.e. if it was in the middle of a flash op.
+	MCF.DelayUS( dev, 3000 );
+
 	return 0;
 }
 
-// Returns positive if received text.
+// Returns positive if received text, or request for input.
+// Returns -1 if nothing was printed but received data.
 // Returns negative if error.
 // Returns 0 if no text waiting.
 // maxlen MUST be at least 8 characters.  We null terminate.
 int DefaultPollTerminal( void * dev, uint8_t * buffer, int maxlen, uint32_t leaveflagA, int leaveflagB )
 {
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
-
 	int r;
 	uint32_t rr;
 	if( iss->statetag != STTAG( "TERM" ) )
@@ -1677,16 +1686,13 @@ int DefaultPollTerminal( void * dev, uint8_t * buffer, int maxlen, uint32_t leav
 	}
 	r = MCF.ReadReg32( dev, DMDATA0, &rr );
 	if( r < 0 ) return r;
-
 	if( maxlen < 8 ) return -9;
 
 	// DMDATA1:
 	//  bit  7 = host-acknowledge.
 	if( rr & 0x80 )
 	{
-		int ret = 0;
 		int num_printf_chars = (rr & 0xf)-4;
-
 		if( num_printf_chars > 0 && num_printf_chars <= 7)
 		{
 			if( num_printf_chars > 3 )
@@ -1699,11 +1705,12 @@ int DefaultPollTerminal( void * dev, uint8_t * buffer, int maxlen, uint32_t leav
 			if( firstrem > 3 ) firstrem = 3;
 			memcpy( buffer, ((uint8_t*)&rr)+1, firstrem );
 			buffer[num_printf_chars] = 0;
-			ret = num_printf_chars;
 		}
 		if( leaveflagA ) MCF.WriteReg32( dev, DMDATA1, leaveflagB );
 		MCF.WriteReg32( dev, DMDATA0, leaveflagA ); // Write that we acknowledge the data.
-		return ret;
+		if( num_printf_chars == 0 ) return -1;      // was acked?
+		if( num_printf_chars < 0 ) num_printf_chars = 0;
+		return num_printf_chars;
 	}
 	else
 	{
@@ -1713,10 +1720,9 @@ int DefaultPollTerminal( void * dev, uint8_t * buffer, int maxlen, uint32_t leav
 
 int DefaultUnbrick( void * dev )
 {
-	// TODO: Why doesn't this work on the ESP32S2?
-
 	printf( "Entering Unbrick Mode\n" );
 	MCF.Control3v3( dev, 0 );
+
 	MCF.DelayUS( dev, 60000 );
 	MCF.DelayUS( dev, 60000 );
 	MCF.DelayUS( dev, 60000 );
@@ -1754,16 +1760,7 @@ int DefaultUnbrick( void * dev )
 	// After more experimentation, it appaers to work best by not clearing the halt request.
 
 	MCF.FlushLLCommands( dev );
-	if( MCF.DelayUS )
-		MCF.DelayUS( dev, 20000 );
-	else
-	{
-#if defined(WINDOWS) || defined(WIN32) || defined(_WIN32)
-		Sleep(20);
-#else
-		usleep(20000);
-#endif
-	}
+	MCF.DelayUS( dev, 20000 );
 
 	if( timeout == max_timeout ) 
 	{
@@ -1779,138 +1776,6 @@ int DefaultConfigureNRSTAsGPIO( void * dev, int one_if_yes_gpio  )
 {
 	fprintf( stderr, "Error: DefaultConfigureNRSTAsGPIO does not work via the programmer here.  Please see the demo \"optionbytes\"\n" );
 	return -5;
-#if 0
-	int ret = 0;
-	uint32_t csw;
-
-
-	if( MCF.ReadWord( dev, 0x1FFFF800, &csw ) )
-	{
-		fprintf( stderr, "Error: failed to get user word\n" );
-		return -5;
-	}
-
-	printf( "CSW WAS : %08x\n", csw );
-
-	MCF.WriteWord( dev, 0x40022008, 0x45670123 ); // OBKEYR = 0x40022008
-	MCF.WriteWord( dev, 0x40022008, 0xCDEF89AB );
-	MCF.WriteWord( dev, 0x40022004, 0x45670123 ); // FLASH->KEYR = 0x40022004
-	MCF.WriteWord( dev, 0x40022004, 0xCDEF89AB );
-	MCF.WriteWord( dev, 0x40022024, 0x45670123 ); // MODEKEYR = 0x40022024
-	MCF.WriteWord( dev, 0x40022024, 0xCDEF89AB );
-
-//XXXX THIS DOES NOT WORK IT CANNOT ERASE.
-	uint32_t ctlr;
-	if( MCF.ReadWord( dev, 0x40022010, &ctlr ) ) // FLASH->CTLR = 0x40022010
-	{
-		return -9;
-	}
-	ctlr |= CR_OPTER_Set | CR_STRT_Set; // OBER
-	MCF.WriteWord( dev, 0x40022010, ctlr ); // FLASH->CTLR = 0x40022010
-	ret |= MCF.WaitForDoneOp( dev, 0 );
-	ret |= MCF.WaitForFlash( dev );
-
-	MCF.WriteHalfWord( dev, (intptr_t)&OB->RDPR, RDP_Key );
-
-    ctlr &=~CR_OPTER_Reset;
-	MCF.WriteWord( dev, 0x40022010, ctlr ); // FLASH->CTLR = 0x40022010
-	ret |= MCF.WaitForDoneOp( dev, 0 );
-	ret |= MCF.WaitForFlash( dev );
-    ctlr |= CR_OPTPG_Set;
-	MCF.WriteWord( dev, 0x40022010, ctlr ); // FLASH->CTLR = 0x40022010
-	ret |= MCF.WaitForDoneOp( dev, 0 );
-	ret |= MCF.WaitForFlash( dev );
-    ctlr &=~CR_OPTPG_Reset;
-	MCF.WriteWord( dev, 0x40022010, ctlr ); // FLASH->CTLR = 0x40022010
-	ret |= MCF.WaitForDoneOp( dev, 0 );
-	ret |= MCF.WaitForFlash( dev );
-
-
-// This does work to write the option bytes, but does NOT work to erase.
-
-	if( MCF.ReadWord( dev, 0x40022010, &ctlr ) ) // FLASH->CTLR = 0x40022010
-	{
-		return -9;
-	}
-	ctlr |= CR_OPTPG_Set; //OBPG
-	MCF.WriteWord( dev, 0x40022010, ctlr ); // FLASH->CTLR = 0x40022010
-	ret |= MCF.WaitForDoneOp( dev, 0 );
-	ret |= MCF.WaitForFlash( dev );
-
-	uint32_t config = OB_IWDG_HW | OB_STOP_NoRST | OB_STDBY_NoRST | (one_if_yes_gpio?OB_RST_NoEN:OB_RST_EN_DT1ms) | (uint16_t)0xE0;
-	printf( "Config (%08x): %08x\n", (intptr_t)&OB->USER, config );
-	MCF.WriteHalfWord( dev,  (intptr_t)&OB->USER, config );
-
-	ret |= MCF.WaitForDoneOp( dev, 0 );
-	ret |= MCF.WaitForFlash( dev );
-
-	ctlr &= CR_OPTPG_Reset;
-	MCF.WriteWord( dev, 0x40022010, ctlr ); // FLASH->CTLR = 0x40022010
-
-
-	if( MCF.ReadWord( dev, 0x1FFFF800, &csw ) )
-	{
-		fprintf( stderr, "Error: failed to get user word\n" );
-		return -5;
-	}
-
-	//csw >>= 16; // Only want bottom part of word.
-	printf( "CSW: %08x\n", csw );
-
-#if 0
-	uint32_t prevuser;
-	if( MCF.ReadWord( dev, 0x1FFFF800, &prevuser ) )
-	{
-		fprintf( stderr, "Error: failed to get user word\n" );
-		return -5;
-	}
-
-	ret |= MCF.WaitForFlash( dev );
-
-	// Erase.
-	MCF.ReadWord( dev, 0x40022010, &csw ); // FLASH->CTLR = 0x40022010
-	csw |= 1<<5;//OBER;
-	MCF.WriteWord( dev, 0x40022010, csw ); // FLASH->CTLR = 0x40022010
-	MCF.WriteHalfWord( dev, 0x1FFFF802, 0xffff );
-	ret |= MCF.WaitForDoneOp( dev, 0 );
-	ret |= MCF.WaitForFlash( dev );
-
-	MCF.ReadWord( dev, 0x40022010, &csw ); // FLASH->CTLR = 0x40022010
-	printf( "CTLR: %08x\n", csw );
-	csw |= 1<<9;//OBPG, OBWRE
-	MCF.WriteWord( dev, 0x40022010, csw );
-
-	int j;
-	for( j = 0; j < 5; j++ )
-	{
-		if( MCF.ReadWord( dev, 0x1FFFF800, &prevuser ) )
-		{
-			fprintf( stderr, "Error: failed to get user word\n" );
-			return -5;
-		}
-
-		//csw >>= 16; // Only want bottom part of word.
-		printf( "CSW was: %08x\n", prevuser );
-		csw = prevuser >> 16;
-		csw = csw & 0xe7e7;
-		csw |= (one_if_yes_gpio?0b11:0b00)<<(3+0);
-		csw |= (one_if_yes_gpio?0b00:0b11)<<(3+8);
-		printf( "CSW writing: %08x\n", csw );
-		MCF.WriteHalfWord( dev, 0x1FFFF802, csw );
-		ret |= MCF.WaitForDoneOp( dev, 0 );
-		ret |= MCF.WaitForFlash( dev );
-	}
-
-
-	MCF.ReadWord( dev, 0x40022010, &csw ); // FLASH->CTLR = 0x40022010
-	printf( "CTLR: %08x\n", csw );
-	csw &= ~(1<<9);//OBPG, OBWRE
-	MCF.WriteWord( dev, 0x40022010, csw );
-
-#endif
-	printf( "RET: %d\n", ret );
-	return 0;
-#endif
 }
 
 int DefaultConfigureReadProtection( void * dev, int one_if_yes_protect  )
@@ -1922,7 +1787,7 @@ int DefaultConfigureReadProtection( void * dev, int one_if_yes_protect  )
 int DefaultPrintChipInfo( void * dev )
 {
 	uint32_t reg;
-	MCF.HaltMode( dev, 5 );
+	MCF.HaltMode( dev, HALT_MODE_HALT_BUT_NO_RESET );
 	
 	if( MCF.ReadWord( dev, 0x1FFFF800, &reg ) ) goto fail;	
 	printf( "USER/RDPR  : %04x/%04x\n", reg>>16, reg&0xFFFF );
@@ -1953,10 +1818,20 @@ int DefaultVoidHighLevelState( void * dev )
 	return 0;
 }
 
+int DefaultDelayUS( void * dev, int us )
+{
+#if defined(WINDOWS) || defined(WIN32) || defined(_WIN32)
+	Sleep( (us+9999) / 1000 );
+#else
+	usleep( us );
+#endif
+	return 0;
+}
+
 int SetupAutomaticHighLevelFunctions( void * dev )
 {
 	// Will populate high-level functions from low-level functions.
-	if( MCF.WriteReg32 == 0 || MCF.ReadReg32 == 0 ) return -5;
+	if( MCF.WriteReg32 == 0 && MCF.ReadReg32 == 0 && MCF.WriteWord == 0 ) return -5;
 
 	// Else, TODO: Build the high level functions from low level functions.
 	// If a high-level function alrady exists, don't override.
@@ -2007,12 +1882,9 @@ int SetupAutomaticHighLevelFunctions( void * dev )
 		MCF.ConfigureNRSTAsGPIO = DefaultConfigureNRSTAsGPIO;
 	if( !MCF.VoidHighLevelState )
 		MCF.VoidHighLevelState = DefaultVoidHighLevelState;
+	if( !MCF.DelayUS )
+		MCF.DelayUS = DefaultDelayUS;
 
-	struct InternalState * iss = calloc( 1, sizeof( struct InternalState ) );
-	iss->ram_base = 0x20000000;
-	iss->ram_size = 2048;
-
-	((struct ProgrammerStructBase*)dev)->internal = iss;
 	return 0;
 }
 
@@ -2068,4 +1940,6 @@ void TestFunction(void * dev )
 		if( (i & 0xf) == 0xf ) printf( "\n" );
 	}
 }
+
+
 

@@ -32,6 +32,16 @@ digitalWrite_lo
 digitalWrite_hi
 digitalRead
 
+additionally, there are functions to operate on an entire port at once
+this can be useful where setting all pins one by one would be too inefficient / unnecessary
+an example: https://www.youtube.com/watch?v=cy6o8TrDUFU
+GPIO_port_digitalWrite
+GPIO_port_digitalRead
+
+function variants with the `P` suffix take a GPIO_pin_Pn instead of a combination of GPIO_port_P and pin number n
+example:
+`GPIO_port_D, 4` becomes `GPIO_pin_D4` when using the function with the `P` suffix
+
 
 
 analog-to-digital usage is almost Arduino-like:
@@ -96,6 +106,28 @@ enum GPIO_port_n {
 	GPIO_port_D = 0b11,
 };
 
+// pin synonyms, use is not mandatory, you can either use
+// 	these with the *P functions or
+// 	specify "GPIO_port_n, N" with the regular functions
+#define GPIO_pin_A1	GPIO_port_A, 1
+#define GPIO_pin_A2	GPIO_port_A, 2
+#define GPIO_pin_C0	GPIO_port_C, 0
+#define GPIO_pin_C1	GPIO_port_C, 1
+#define GPIO_pin_C2	GPIO_port_C, 2
+#define GPIO_pin_C3	GPIO_port_C, 3
+#define GPIO_pin_C4	GPIO_port_C, 4
+#define GPIO_pin_C5	GPIO_port_C, 5
+#define GPIO_pin_C6	GPIO_port_C, 6
+#define GPIO_pin_C7	GPIO_port_C, 7
+#define GPIO_pin_D0	GPIO_port_D, 0
+#define GPIO_pin_D1	GPIO_port_D, 1
+#define GPIO_pin_D2	GPIO_port_D, 2
+#define GPIO_pin_D3	GPIO_port_D, 3
+#define GPIO_pin_D4	GPIO_port_D, 4
+#define GPIO_pin_D5	GPIO_port_D, 5
+#define GPIO_pin_D6	GPIO_port_D, 6
+#define GPIO_pin_D7	GPIO_port_D, 7
+
 enum GPIO_pinModes {
 	GPIO_pinMode_I_floating,
 	GPIO_pinMode_I_pullUp,
@@ -158,15 +190,23 @@ enum GPIO_tim2_output_sets {
 // most functions have been reduced to function-like macros, actual definitions downstairs
 
 // setup
-#define GPIO_portEnable(GPIO_port_n)
+#define GPIO_port_enable(GPIO_port_n)
 #define GPIO_pinMode(GPIO_port_n, pin, pinMode, GPIO_Speed)
+#define GPIO_pinModeP(GPIO_pin_Pn, pinMode, GPIO_Speed)
 
 // digital
 #define GPIO_digitalWrite_hi(GPIO_port_n, pin)
+#define GPIO_digitalWrite_hiP(GPIO_pin_Pn)
 #define GPIO_digitalWrite_lo(GPIO_port_n, pin)
+#define GPIO_digitalWrite_loP(GPIO_pin_Pn)
 #define GPIO_digitalWrite(GPIO_port_n, pin, lowhigh)
+#define GPIO_digitalWriteP(GPIO_pin_Pn, lowhigh)
 #define GPIO_digitalWrite_branching(GPIO_port_n, pin, lowhigh)
+#define GPIO_digitalWrite_branchingP(GPIO_pin_Pn, lowhigh)
 #define GPIO_digitalRead(GPIO_port_n, pin)
+#define GPIO_digitalReadP(GPIO_pin_Pn)
+#define GPIO_port_digitalWrite(GPIO_port_n, byte)
+#define GPIO_port_digitalRead(GPIO_port_n)
 
 // analog to digital
 static inline void GPIO_ADCinit();
@@ -241,6 +281,17 @@ static inline void GPIO_tim2_init();
 #define GPIO_pinMode_set_PUPD_GPIO_pinMode_O_pushPullMux(GPIO_port_n, pin)
 #define GPIO_pinMode_set_PUPD_GPIO_pinMode_O_openDrainMux(GPIO_port_n, pin)
 
+#define GPIO_port_pinMode_set_PUPD2(GPIO_pinMode, GPIO_port_n)			GPIO_port_pinMode_set_PUPD_##GPIO_pinMode(GPIO_port_n)
+#define GPIO_port_pinMode_set_PUPD(GPIO_pinMode, GPIO_port_n)			GPIO_port_pinMode_set_PUPD2(GPIO_pinMode, GPIO_port_n)
+#define GPIO_port_pinMode_set_PUPD_GPIO_pinMode_I_floating(GPIO_port_n)
+#define GPIO_port_pinMode_set_PUPD_GPIO_pinMode_I_pullUp(GPIO_port_n)		GPIO_port_n_to_GPIOx(GPIO_port_n)->OUTDR = 0b11111111
+#define GPIO_port_pinMode_set_PUPD_GPIO_pinMode_I_pullDown(GPIO_port_n)		GPIO_port_n_to_GPIOx(GPIO_port_n)->OUTDR = 0b00000000
+#define GPIO_port_pinMode_set_PUPD_GPIO_pinMode_I_analog(GPIO_port_n)
+#define GPIO_port_pinMode_set_PUPD_GPIO_pinMode_O_pushPull(GPIO_port_n)
+#define GPIO_port_pinMode_set_PUPD_GPIO_pinMode_O_openDrain(GPIO_port_n)
+#define GPIO_port_pinMode_set_PUPD_GPIO_pinMode_O_pushPullMux(GPIO_port_n)
+#define GPIO_port_pinMode_set_PUPD_GPIO_pinMode_O_openDrainMux(GPIO_port_n)
+
 #if !defined(GPIO_ADC_MUX_DELAY)
 #define GPIO_ADC_MUX_DELAY 200
 #endif
@@ -272,8 +323,26 @@ static inline void GPIO_tim2_init();
 //######## small function definitions, static inline
 
 
-#undef GPIO_portEnable
-#define GPIO_portEnable(GPIO_port_n) RCC->APB2PCENR |= GPIO_port_n_to_RCC_APB2Periph(GPIO_port_n);
+#undef GPIO_port_enable
+#define GPIO_port_enable(GPIO_port_n) RCC->APB2PCENR |= GPIO_port_n_to_RCC_APB2Periph(GPIO_port_n);
+
+#define GPIO_port_pinMode(GPIO_port_n, pinMode, GPIO_Speed) ({								\
+	GPIO_port_n_to_GPIOx(GPIO_port_n)->CFGLR =	(GPIO_pinMode_to_CFG(pinMode, GPIO_Speed) << (4 * 0)) | 	\
+							(GPIO_pinMode_to_CFG(pinMode, GPIO_Speed) << (4 * 1)) | 	\
+							(GPIO_pinMode_to_CFG(pinMode, GPIO_Speed) << (4 * 2)) | 	\
+							(GPIO_pinMode_to_CFG(pinMode, GPIO_Speed) << (4 * 3)) | 	\
+							(GPIO_pinMode_to_CFG(pinMode, GPIO_Speed) << (4 * 4)) | 	\
+							(GPIO_pinMode_to_CFG(pinMode, GPIO_Speed) << (4 * 5)) | 	\
+							(GPIO_pinMode_to_CFG(pinMode, GPIO_Speed) << (4 * 6)) |		\
+							(GPIO_pinMode_to_CFG(pinMode, GPIO_Speed) << (4 * 7));		\
+	GPIO_port_pinMode_set_PUPD(pinMode, GPIO_port_n);								\
+})
+
+#undef GPIO_port_digitalWrite
+#define GPIO_port_digitalWrite(GPIO_port_n, byte)	GPIO_port_n_to_GPIOx(GPIO_port_n)->OUTDR = byte
+
+#undef GPIO_port_digitalRead
+#define GPIO_port_digitalRead(GPIO_port_n)		(GPIO_port_n_to_GPIOx(GPIO_port_n)->INDR & 0b11111111)
 
 #undef GPIO_pinMode
 #define GPIO_pinMode(GPIO_port_n, pin, pinMode, GPIO_Speed) ({							\
@@ -281,26 +350,36 @@ static inline void GPIO_tim2_init();
 	GPIO_port_n_to_GPIOx(GPIO_port_n)->CFGLR |= (GPIO_pinMode_to_CFG(pinMode, GPIO_Speed) << (4 * pin));	\
 	GPIO_pinMode_set_PUPD(pinMode, GPIO_port_n, pin);							\
 })
+#undef GPIO_pinModeP
+#define GPIO_pinModeP(GPIO_pin_Pn, pinMode, GPIO_Speed)			GPIO_pinMode(GPIO_pin_Pn, pinMode, GPIO_Speed)
 
 #undef GPIO_digitalWrite_hi
-#define GPIO_digitalWrite_hi(GPIO_port_n, pin)		GPIO_port_n_to_GPIOx(GPIO_port_n)->BSHR = (1 << pin)
+#define GPIO_digitalWrite_hi(GPIO_port_n, pin)				GPIO_port_n_to_GPIOx(GPIO_port_n)->BSHR = (1 << pin)
+#undef GPIO_digitalWrite_hiP
+#define GPIO_digitalWrite_hiP(GPIO_pin_Pn)				GPIO_digitalWrite_hi(GPIO_pin_Pn)
 #undef GPIO_digitalWrite_lo
-#define GPIO_digitalWrite_lo(GPIO_port_n, pin)		GPIO_port_n_to_GPIOx(GPIO_port_n)->BSHR = (1 << (pin + 16))
+#define GPIO_digitalWrite_lo(GPIO_port_n, pin)				GPIO_port_n_to_GPIOx(GPIO_port_n)->BSHR = (1 << (pin + 16))
+#undef GPIO_digitalWrite_loP
+#define GPIO_digitalWrite_loP(GPIO_pin_Pn)				GPIO_digitalWrite_lo(GPIO_pin_Pn)
 
 #undef GPIO_digitalWrite
-#define GPIO_digitalWrite2(GPIO_port_n, pin, lowhigh)	GPIO_digitalWrite_##lowhigh(GPIO_port_n, pin)
-#define GPIO_digitalWrite(GPIO_port_n, pin, lowhigh)	GPIO_digitalWrite2(GPIO_port_n, pin, lowhigh)
-#define GPIO_digitalWrite_low(GPIO_port_n, pin)		GPIO_digitalWrite_lo(GPIO_port_n, pin)
-#define GPIO_digitalWrite_0(GPIO_port_n, pin)		GPIO_digitalWrite_lo(GPIO_port_n, pin)
-#define GPIO_digitalWrite_high(GPIO_port_n, pin)	GPIO_digitalWrite_hi(GPIO_port_n, pin)
-#define GPIO_digitalWrite_1(GPIO_port_n, pin)		GPIO_digitalWrite_hi(GPIO_port_n, pin)
+#define GPIO_digitalWrite(GPIO_port_n, pin, lowhigh)			GPIO_digitalWrite_##lowhigh(GPIO_port_n, pin)
+#undef GPIO_digitalWriteP
+#define GPIO_digitalWriteP(GPIO_pin_Pn, lowhigh)			GPIO_digitalWrite(GPIO_pin_Pn, lowhigh)
+#define GPIO_digitalWrite_low(GPIO_port_n, pin)				GPIO_digitalWrite_lo(GPIO_port_n, pin)
+#define GPIO_digitalWrite_0(GPIO_port_n, pin)				GPIO_digitalWrite_lo(GPIO_port_n, pin)
+#define GPIO_digitalWrite_high(GPIO_port_n, pin)			GPIO_digitalWrite_hi(GPIO_port_n, pin)
+#define GPIO_digitalWrite_1(GPIO_port_n, pin)				GPIO_digitalWrite_hi(GPIO_port_n, pin)
 
 #undef GPIO_digitalWrite_branching
 #define GPIO_digitalWrite_branching(GPIO_port_n, pin, lowhigh)		(lowhigh ? GPIO_digitalWrite_hi(GPIO_port_n, pin) : GPIO_digitalWrite_lo(GPIO_port_n, pin))
+#undef GPIO_digitalWrite_branchingP
+#define GPIO_digitalWrite_branchingP(GPIO_pin_Pn, lowhigh)		GPIO_digitalWrite_branching(GPIO_pin_Pn, lowhigh)
 
 #undef GPIO_digitalRead
-#define GPIO_digitalRead(GPIO_port_n, pin)	 	((GPIO_port_n_to_GPIOx(GPIO_port_n)->INDR >> pin) & 0b1)
-
+#define GPIO_digitalRead(GPIO_port_n, pin)	 			((GPIO_port_n_to_GPIOx(GPIO_port_n)->INDR >> pin) & 0b1)
+#undef GPIO_digitalReadP
+#define GPIO_digitalReadP(GPIO_pin_Pn)			 		GPIO_digitalRead(GPIO_pin_Pn)
 
 #undef GPIO_ADC_set_sampletime
 // 0:7 => 3/9/15/30/43/57/73/241 cycles
@@ -462,15 +541,11 @@ static inline void GPIO_tim2_init() {
 	TIM2->CCER |= (TIM_OutputState_Enable ) << (4 * (channel - 1));		\
 })
 
-#define GPIO_timer_CVR(channel)		CONCAT_INDIRECT(CH, CONCAT_INDIRECT(channel, CVR))
+#define GPIO_timer_CVR(channel)				CONCAT_INDIRECT(CH, CONCAT_INDIRECT(channel, CVR))
 
 #undef GPIO_tim1_analogWrite
-#define GPIO_tim1_analogWrite(channel, value) ({				\
-	TIM1->GPIO_timer_CVR(channel) = value;					\
-})
+#define GPIO_tim1_analogWrite(channel, value) 		TIM1->GPIO_timer_CVR(channel) = value;
 #undef GPIO_tim2_analogWrite
-#define GPIO_tim2_analogWrite(channel, value) ({				\
-	TIM2->GPIO_timer_CVR(channel) = value;					\
-})
+#define GPIO_tim2_analogWrite(channel, value)		TIM2->GPIO_timer_CVR(channel) = value;
 
 #endif // CH32V003_GPIO_BR_H

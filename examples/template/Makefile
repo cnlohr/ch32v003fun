@@ -1,6 +1,6 @@
 all : flash
 
-TARGET:=sandbox
+TARGET:=template
 
 include ../../ch32v003fun/ch32v003fun.mk
 
