@@ -391,6 +391,27 @@ int RVWriteRAM(void * dev, uint32_t memaddy, uint32_t length, uint8_t * payload 
 	return r;
 }
 
+int RVWriteFlash(void * dev, uint32_t memaddy, uint32_t length, uint8_t * payload )
+{
+	if( (memaddy & 0xff000000 ) == 0 )
+	{
+		memaddy |= 0x08000000;
+	}
+	return RVWriteRAM( dev, memaddy, length, payload );
+}
+
+int RVErase( void * dev, uint32_t memaddy, uint32_t length )
+{
+	if( !MCF.Erase )
+	{
+		fprintf( stderr, "Error: Can't alter halt mode with this programmer.\n" );
+		exit( -6 );
+	}
+
+	int r = MCF.Erase( dev, memaddy, length, 0 ); // 0 = not whole chip.
+	return r;
+}
+
 void RVHandleDisconnect( void * dev )
 {
 	MCF.HaltMode( dev, 5 );
