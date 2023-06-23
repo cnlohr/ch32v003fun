@@ -1,5 +1,10 @@
 // This contains a copy of ch32v00x.h and core_riscv.h ch32v00x_conf.h and other misc functions
 
+// Default: CH32V003
+#if !defined(CH32V003) && !defined(CH32V20x)
+#define CH32V003
+#endif
+
 /********************************** (C) COPYRIGHT  *******************************
  * File Name          : core_riscv.h
  * Author             : WCH
