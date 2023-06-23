@@ -181,6 +181,13 @@ void HandleGDBPacket( void * dev, char * data, int len )
 			SendReplyFull( "m1" );
 		else if( StringMatch( data, "sThreadInfo" ) )  // Query all active thread IDs, continued
 			SendReplyFull( "l" );
+		// Unimplemented commands.
+		else if( StringMatch( data, "Offsets" ) )  // Trace-Status
+			SendReplyFull( "" );
+		else if( StringMatch( data, "Symbol" ) )   // Trace-Status
+			SendReplyFull( "" );
+		else if( StringMatch( data, "TStatus" ) )  // Trace-Status
+			SendReplyFull( "" );
 		else if( StringMatch( data, "Rcmd,7265736574" ) )  // "monitor reset"
 		{
 			RVCommandResetPart( dev ); // Force reset
@@ -513,9 +520,13 @@ int MicroGDBPollServer( void * dev )
 	int pollct = 1;
 	struct pollfd allpolls[1] = { 0 };
 	allpolls[0].fd = serverSocket;
+#if defined( WIN32 ) || defined( _WIN32 )
 	allpolls[0].events = 0x00000100; //POLLRDNORM;
+#else
+	allpolls[0].events = POLLIN;
+#endif
 	int r = poll( allpolls, pollct, 0 );
-	
+
 	if( r < 0 )
 	{
 		printf( "R: %d\n", r );
