@@ -25,6 +25,7 @@ void RVNetPoll(void * dev );
 int RVSendGDBHaltReason( void * dev );
 void RVNetConnect( void * dev );
 int RVReadCPURegister( void * dev, int regno, uint32_t * regret );
+int RVWriteCPURegister( void * dev, int regno, uint32_t value );
 void RVDebugExec( void * dev, int halt_reset_or_resume );
 int RVReadMem( void * dev, uint32_t memaddy, uint8_t * payload, int len );
 int RVHandleBreakpoint( void * dev, int set, uint32_t address );
@@ -161,7 +162,6 @@ void HandleGDBPacket( void * dev, char * data, int len )
 {
 	int i;
 
-	//printf( ":::%s:::\n", data );
 	// Got a packet?
 	if( data[0] != '$' ) return;
 
@@ -209,9 +209,14 @@ void HandleGDBPacket( void * dev, char * data, int len )
 		break;
 	case 'c':
 	case 'C':
-	case 's':
-		RVDebugExec( dev, (cmd == 'C')?4:2 );
+		RVDebugExec( dev, (cmd == 's' )?9:(cmd == 'C')?4:2 );
 		SendReplyFull( "OK" );
+		break;
+	case 's':
+		RVDebugExec( dev, 4 );
+		SendReplyFull( "OK" );
+		//RVHandleGDBBreakRequest( dev );
+		RVSendGDBHaltReason( dev );
 		break;
 	case 'D':
 		// Handle disconnect.
@@ -220,8 +225,18 @@ void HandleGDBPacket( void * dev, char * data, int len )
 	case 'k':
 		RVHandleKillRequest( dev ); // no reply.
 		break;
-	case 'Z':
-	case 'z':
+	case 'P': // Set register
+	{
+		uint32_t reg, value;
+		if( ReadHex( &data, -1, &reg ) < 0 ) goto err;
+		if( *(data++) != ',' ) goto err;
+		if( ReadHex( &data, -1, &value ) < 0 ) goto err;
+		printf( "REG: %02x = %08x\n", reg, value );
+		RVWriteCPURegister( dev, reg, value );
+		break;
+	}
+	case 'Z': // set
+	case 'z': // unset
 	{
 		uint32_t type = 0;
 		uint32_t addr = 0;
