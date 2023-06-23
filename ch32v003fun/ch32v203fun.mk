@@ -5,26 +5,25 @@ CH32V003FUN?=../../ch32v003fun
 MINICHLINK?=../../minichlink
 
 CFLAGS+= \
-	-g -Os -flto -ffunction-sections \
+	-g -Os -flto -ffunction-sections -fdata-sections \
 	-static-libgcc \
-	-march=rv32ec \
-	-mabi=ilp32e \
+	-march=rv32imafc \
+	-mabi=ilp32f \
+	-msmall-data-limit=8 \
+	-mno-save-restore \
+	-fmessage-length=0 \
+	-fsigned-char \
 	-I/usr/include/newlib \
-	-I$(CH32V003FUN)/../extralibs \
 	-I$(CH32V003FUN) \
 	-nostdlib \
-	-DCH32V003 \
-	-I. -Wall $(EXTRA_CFLAGS)
+    -DCH32V20x \
+	-I. -Wall
 
-LINKER_SCRIPT?=$(CH32V003FUN)/ch32v003fun.ld
+LDFLAGS+=-T $(CH32V003FUN)/ch32v203fun.ld -Wl,--gc-sections -L$(CH32V003FUN)/../misc -lgcc
 
-LDFLAGS+=-T $(LINKER_SCRIPT) -Wl,--gc-sections -L$(CH32V003FUN)/../misc -lgcc
+SYSTEM_C:=$(CH32V003FUN)/ch32v003fun.c
 
-WRITE_SECTION?=flash
-SYSTEM_C?=$(CH32V003FUN)/ch32v003fun.c
-TARGET_EXT?=c
-
-$(TARGET).elf : $(SYSTEM_C) $(TARGET).$(TARGET_EXT) $(ADDITIONAL_C_FILES)
+$(TARGET).elf : $(SYSTEM_C) $(TARGET).c $(ADDITIONAL_C_FILES)
 	$(PREFIX)-gcc -o $@ $^ $(CFLAGS) $(LDFLAGS)
 
 $(TARGET).bin : $(TARGET).elf
@@ -50,21 +49,9 @@ monitor :
 gdbserver : 
 	-$(MINICHLINK)/minichlink -baG
 
-clangd :
-	make clean
-	bear -- make build
-	@echo "CompileFlags:" > .clangd
-	@echo "  Remove: [-march=*, -mabi=*]" >> .clangd
-
-clangd_clean :
-	rm -f compile_commands.json .clangd
-	rm -rf .cache
-
-FLASH_COMMAND?=$(MINICHLINK)/minichlink -w $< $(WRITE_SECTION) -b
-
 cv_flash : $(TARGET).bin
 	make -C $(MINICHLINK) all
-	$(FLASH_COMMAND)
+	$(MINICHLINK)/minichlink -w $< flash -b
 
 cv_clean :
 	rm -rf $(TARGET).elf $(TARGET).bin $(TARGET).hex $(TARGET).lst $(TARGET).map $(TARGET).hex || true

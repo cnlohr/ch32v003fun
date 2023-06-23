@@ -733,7 +733,7 @@ void OSCWakeUp_IRQHandler( void ) __attribute__((section(".text.vector_handler")
 void UART4_IRQHandler( void ) __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void DMA1_Channel8_IRQHandler( void ) __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 
-void Init() __attribute((section(".init")));
+void Init() 				   __attribute((section(".init")));
 void InterruptVector()         __attribute__((naked)) __attribute((section(".vector"))) __attribute((weak,alias("InterruptVectorDefault")));
 void InterruptVectorDefault()  __attribute__((naked)) __attribute((section(".vector")));
 
