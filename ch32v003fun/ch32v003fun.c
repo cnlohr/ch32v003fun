@@ -1413,7 +1413,7 @@ void DelaySysTick( uint32_t n )
 #ifdef CH32V003
 	uint32_t targend = SysTick->CNT + n;
 	while( ((int32_t)( SysTick->CNT - targend )) < 0 );
-#elif defined(CH32V20x)
+#elif defined(CH32V20x) || defined(CH32V30x)
 	uint64_t targend = SysTick->CNT + n;
 	while( ((int64_t)( SysTick->CNT - targend )) < 0 );
 #endif
