@@ -1,7 +1,7 @@
 
 PREFIX?=riscv64-unknown-elf
 
-CH32V203FUN?=../../ch32v203fun
+CH32V003FUN?=../../ch32v003fun
 MINICHLINK?=../../minichlink
 
 CFLAGS+= \
@@ -14,13 +14,14 @@ CFLAGS+= \
 	-fmessage-length=0 \
 	-fsigned-char \
 	-I/usr/include/newlib \
-	-I$(CH32V203FUN) \
+	-I$(CH32V003FUN) \
 	-nostdlib \
+    -DCH32V30x \
 	-I. -Wall
 
-LDFLAGS+=-T $(CH32V203FUN)/ch32v203fun.ld -Wl,--gc-sections -L$(CH32V203FUN)/../misc -lgcc
+LDFLAGS+=-T $(CH32V003FUN)/ch32v30xfun.ld -Wl,--gc-sections -L$(CH32V003FUN)/../misc -lgcc
 
-SYSTEM_C:=$(CH32V203FUN)/ch32v203fun.c
+SYSTEM_C:=$(CH32V003FUN)/ch32v003fun.c
 
 $(TARGET).elf : $(SYSTEM_C) $(TARGET).c $(ADDITIONAL_C_FILES)
 	$(PREFIX)-gcc -o $@ $^ $(CFLAGS) $(LDFLAGS)

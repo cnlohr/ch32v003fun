@@ -19,7 +19,7 @@ CFLAGS+= \
     -DCH32V20x \
 	-I. -Wall
 
-LDFLAGS+=-T $(CH32V003FUN)/ch32v203fun.ld -Wl,--gc-sections -L$(CH32V003FUN)/../misc -lgcc
+LDFLAGS+=-T $(CH32V003FUN)/ch32v20xfun.ld -Wl,--gc-sections -L$(CH32V003FUN)/../misc -lgcc
 
 SYSTEM_C:=$(CH32V003FUN)/ch32v003fun.c
 
