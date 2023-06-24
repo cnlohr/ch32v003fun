@@ -1,4 +1,5 @@
 // This contains a copy of ch32v00x.h and core_riscv.h ch32v00x_conf.h and other misc functions
+#pragma once
 
 // Default: CH32V003
 #if !defined(CH32V003) && !defined(CH32V20x) && !defined(CH32V30x)
@@ -5952,10 +5953,10 @@ with 00h to 64 bytes, otherwise the short packet is filled with 60 bytes of 0, a
 #define  RB_ETH_MIREGADR_MIRDL  0x1f                                            /* RW PHY register address */
 
 #endif
+#endif
 
 #ifdef __cplusplus
 }
-#endif
 
 #endif /* __CH32V00x_H */
 
