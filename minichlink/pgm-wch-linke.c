@@ -175,7 +175,7 @@ int LEWriteReg32( void * dev, uint8_t reg_7_bit, uint32_t command )
 	uint8_t resp[128];
 	int resplen;
 	wch_link_command( devh, req, sizeof(req), &resplen, resp, sizeof(resp) );
-	if( resplen != 9 || resp[3] != reg_7_bit )
+	if( resplen != 9 || resp[8] == 0x02 || resp[8] == 0x03 ) //|| resp[3] != reg_7_bit )
 	{
 		fprintf( stderr, "Error setting write reg. Tell cnlohr. Maybe we should allow retries here?\n" );
 		fprintf( stderr, "RR: %d :", resplen );
@@ -201,7 +201,7 @@ int LEReadReg32( void * dev, uint8_t reg_7_bit, uint32_t * commandresp )
 			iOP };
 	wch_link_command( devh, req, sizeof( req ), (int*)&transferred, rbuff, sizeof( rbuff ) );
 	*commandresp = ( rbuff[4]<<24 ) | (rbuff[5]<<16) | (rbuff[6]<<8) | (rbuff[7]<<0);
-	if( transferred != 9 || rbuff[3] != reg_7_bit )
+	if( transferred != 9 || resp[8] == 0x02 || resp[8] == 0x03 ) //|| resp[3] != reg_7_bit )
 	{
 		fprintf( stderr, "Error setting write reg. Tell cnlohr. Maybe we should allow retries here?\n" );
 		fprintf( stderr, "RR: %d :", transferred );
