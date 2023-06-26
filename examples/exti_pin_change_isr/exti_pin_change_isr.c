@@ -57,7 +57,7 @@ int main()
 	// GPIO D3 for input pin change.
 	GPIOD->CFGLR =
 		(GPIO_CNF_IN_PUPD)<<(4*1) |  // Keep SWIO enabled.
-		(GPIO_SPEED_IN | GPIO_CNF_IN_PUPD)<<(4*3);  //PD4 = GPIOD IN
+		(GPIO_Speed_In | GPIO_CNF_IN_PUPD)<<(4*3);  //PD4 = GPIOD IN
 
 	// GPIO C0 Push-Pull (our output) 
 	GPIOC->CFGLR =

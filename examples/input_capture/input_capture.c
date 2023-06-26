@@ -70,8 +70,8 @@ int main()
 
 	// GPIO D0, D4 Push-Pull LEDs, D1/SWIO floating, D2 Capture Input(T1CH1), default analog input
 	GPIOD->CFGLR = ((GPIO_Speed_10MHz | GPIO_CNF_OUT_PP) << (4 * 0)) | 
-				   ((GPIO_SPEED_IN | GPIO_CNF_IN_FLOATING) << (4 * 1)) | 
-				   ((GPIO_SPEED_IN | GPIO_CNF_IN_FLOATING) << (4 * 2)) | 
+				   ((GPIO_Speed_In | GPIO_CNF_IN_FLOATING) << (4 * 1)) | 
+				   ((GPIO_Speed_In | GPIO_CNF_IN_FLOATING) << (4 * 2)) | 
 				   ((GPIO_Speed_10MHz | GPIO_CNF_OUT_PP) << (4 * 4));
 
 	TIM1->ATRLR = 0xffff;
