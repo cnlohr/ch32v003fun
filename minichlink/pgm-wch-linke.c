@@ -654,8 +654,7 @@ static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len,
 	
 	wch_link_command( (libusb_device_handle *)dev, "\x81\x02\x01\x05", 4, 0, 0, 0 );
 
-	uint32_t mcu_series = iss->target_chip_type & 0xf00;
-	const uint8_t *bootloader = GetFlashLoader(mcu_series);
+	const uint8_t *bootloader = GetFlashLoader(iss->target_chip_type);
 
 	int pplace = 0;
 	for( pplace = 0; pplace < bootloader_len; pplace += iss->sector_size )
