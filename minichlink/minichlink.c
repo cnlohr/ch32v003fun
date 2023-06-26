@@ -1629,8 +1629,9 @@ static int DefaultHaltMode( void * dev, int mode )
 	case HALT_MODE_REBOOT:
 		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
 		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
-		MCF.WriteReg32( dev, DMCONTROL, 0x80000003 ); // Reboot.
-		MCF.WriteReg32( dev, DMCONTROL, 0x40000001 ); // resumereq
+		MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear haltreq
+		MCF.WriteReg32( dev, DMCONTROL, 0x00000003 ); // Reboot.
+		MCF.WriteReg32( dev, DMCONTROL, 0x10000001 ); // resumereq
 		MCF.FlushLLCommands( dev );
 		break;
 	case HALT_MODE_RESUME:
