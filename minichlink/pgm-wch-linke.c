@@ -161,8 +161,6 @@ static inline libusb_device_handle * wch_link_base_setup( int inhibit_startup )
 // Thanks, CW2 for pointing this out.  See DMI_OP for more info.
 int LEWriteReg32( void * dev, uint8_t reg_7_bit, uint32_t command )
 {
-	fprintf( stderr, "LEWriteReg32: %02x %08x\n", reg_7_bit, command );
-
 	libusb_device_handle * devh = ((struct LinkEProgrammerStruct*)dev)->devh;
 
 	const uint8_t iOP = 2; // op 2 = write
@@ -188,14 +186,6 @@ int LEWriteReg32( void * dev, uint8_t reg_7_bit, uint32_t command )
 		}
 		fprintf( stderr, "\n" );
 	}
-
-	fprintf( stderr, "Response: %d : ", resplen );
-	int i;
-	for( i = 0; i < resplen; i++ )
-	{
-		fprintf( stderr, "%02x ", resp[i] );
-	}
-	fprintf( stderr, "\n" );
 	return 0;
 }
 
