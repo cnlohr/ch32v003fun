@@ -16,6 +16,48 @@ struct LinkEProgrammerStruct
 	int lasthaltmode; // For non-003 chips
 };
 
+static void printChipInfo(enum RiscVChip chip) {
+	switch(chip) {
+		case CH32V10x:
+			fprintf(stderr, "Detected: CH32V10x\n");
+			break;
+		case CH57x:
+			fprintf(stderr, "Detected: CH57x\n");
+			break;
+		case CH56x:
+			fprintf(stderr, "Detected: CH56x\n");
+			break;
+		case CH32V20x:
+			fprintf(stderr, "Detected: CH32V20x\n");
+			break;
+		case CH32V30x:
+			fprintf(stderr, "Detected: CH32V30x\n");
+			break;
+		case CH58x:
+			fprintf(stderr, "Detected: CH58x\n");
+			break;
+		case CH32V003:
+			fprintf(stderr, "Detected: CH32V003\n");
+			break;
+	}
+}
+
+static int checkChip(enum RiscVChip chip) {
+	switch(chip) {
+		case CH32V003:
+			return 0; // Use direct mode
+		case CH32V10x:
+		case CH32V20x:
+		case CH32V30x:
+			return 1; // Use binary blob mode
+		case CH56x:
+		case CH57x:
+		case CH58x:
+		default:
+			return -1; // Not supported yet
+	}
+}
+
 // For non-ch32v003 chips.
 //static int LEReadBinaryBlob( void * d, uint32_t offset, uint32_t amount, uint8_t * readbuff );
 static int InternalLinkEHaltMode( void * d, int mode );
@@ -133,7 +175,7 @@ int LEWriteReg32( void * dev, uint8_t reg_7_bit, uint32_t command )
 	uint8_t resp[128];
 	int resplen;
 	wch_link_command( devh, req, sizeof(req), &resplen, resp, sizeof(resp) );
-	if( resplen != 9 || resp[3] != reg_7_bit )
+	if( resplen != 9 || resp[8] == 0x02 || resp[8] == 0x03 ) //|| resp[3] != reg_7_bit )
 	{
 		fprintf( stderr, "Error setting write reg. Tell cnlohr. Maybe we should allow retries here?\n" );
 		fprintf( stderr, "RR: %d :", resplen );
@@ -159,7 +201,7 @@ int LEReadReg32( void * dev, uint8_t reg_7_bit, uint32_t * commandresp )
 			iOP };
 	wch_link_command( devh, req, sizeof( req ), (int*)&transferred, rbuff, sizeof( rbuff ) );
 	*commandresp = ( rbuff[4]<<24 ) | (rbuff[5]<<16) | (rbuff[6]<<8) | (rbuff[7]<<0);
-	if( transferred != 9 || rbuff[3] != reg_7_bit )
+	if( transferred != 9 || rbuff[8] == 0x02 || rbuff[8] == 0x03 ) //|| rbuff[3] != reg_7_bit )
 	{
 		fprintf( stderr, "Error setting write reg. Tell cnlohr. Maybe we should allow retries here?\n" );
 		fprintf( stderr, "RR: %d :", transferred );
@@ -230,25 +272,35 @@ static int LESetupInterface( void * d )
 
 	// This puts the processor on hold to allow the debugger to run.
 	wch_link_command( dev, "\x81\x0d\x01\x02", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Ignored, 820d050900300500
-	if (rbuff[0] == 0x81 && rbuff[1] == 0x55 && rbuff[2] == 0x01 && rbuff[3] == 0x01)
+	if (rbuff[0] == 0x81 && rbuff[1] == 0x55)
 	{
 		fprintf(stderr, "link error, nothing connected to linker\n");
 		return -1;
 	}
 
-	uint32_t mcu_series = rbuff[4] << 4;
-    uint32_t target_chip_type = mcu_series + (rbuff[5] >> 4);
-	fprintf(stderr, "Chip Type: %03x\n", target_chip_type);
+	if(rbuff[3] == 0x08 || rbuff[3] > 0x09) {
+		fprintf( stderr, "Chip Type unknown. Aborting...\n" );
+		return -1;
+	}
 
-	if( mcu_series == 0x300 || mcu_series == 0x200 )
+	enum RiscVChip chip = (enum RiscVChip)rbuff[3];
+	printChipInfo(chip);
+
+	int result = checkChip(chip);
+	if( result == 1 ) // Using blob write
 	{
-		fprintf( stderr, "CH32V30x or CH32V20x MCU detected. Using binary blob write for operation.\n" );
+		fprintf( stderr, "Using binary blob write for operation.\n" );
 		MCF.WriteBinaryBlob = LEWriteBinaryBlob;
 
 		iss->sector_size = 256;
 
 		wch_link_command( dev, "\x81\x0d\x01\x03", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Ignored, 820d050900300500
+	} else if( !result ) {
+		fprintf( stderr, "Chip type not supported. Aborting...\n" );
+		return -1;
 	}
+
+	iss->target_chip_type = chip;
 
 	// For some reason, if we don't do this sometimes the programmer starts in a hosey mode.
 	MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
@@ -299,7 +351,6 @@ static int LESetupInterface( void * d )
 	}
 
 	iss->flash_size = ((rbuff[2]<<8) | rbuff[3])*1024;
-	iss->target_chip_type = target_chip_type;
 
 	return 0;
 }
@@ -405,7 +456,41 @@ void * TryInit_WCHLinkE()
 
 // Flash Bootloader for V20x and V30x series MCUs
 
-const uint8_t * bootloader = (const uint8_t*)
+const uint8_t * bootloader_v1 = (const uint8_t*)
+"\x93\x77\x15\x00\x41\x11\x99\xCF\xB7\x06\x67\x45\xB7\x27\x02\x40" \
+"\x93\x86\x36\x12\x37\x97\xEF\xCD\xD4\xC3\x13\x07\xB7\x9A\xD8\xC3" \
+"\xD4\xD3\xD8\xD3\x93\x77\x25\x00\x9D\xC7\xB7\x27\x02\x40\x98\x4B" \
+"\xAD\x66\x37\x38\x00\x40\x13\x67\x47\x00\x98\xCB\x98\x4B\x93\x86" \
+"\xA6\xAA\x13\x67\x07\x04\x98\xCB\xD8\x47\x05\x8B\x63\x1F\x07\x10" \
+"\x98\x4B\x6D\x9B\x98\xCB\x93\x77\x45\x00\xA9\xCB\x93\x07\xF6\x07" \
+"\x9D\x83\x2E\xC0\x2D\x68\x81\x76\x3E\xC4\xB7\x08\x02\x00\xB7\x27" \
+"\x02\x40\x37\x33\x00\x40\x13\x08\xA8\xAA\xFD\x16\x98\x4B\x33\x67" \
+"\x17\x01\x98\xCB\x02\x47\xD8\xCB\x98\x4B\x13\x67\x07\x04\x98\xCB" \
+"\xD8\x47\x05\x8B\x71\xEF\x98\x4B\x75\x8F\x98\xCB\x02\x47\x13\x07" \
+"\x07\x08\x3A\xC0\x22\x47\x7D\x17\x3A\xC4\x69\xFB\x93\x77\x85\x00" \
+"\xED\xC3\x93\x07\xF6\x07\x2E\xC0\x9D\x83\x37\x27\x02\x40\x3E\xC4" \
+"\x1C\x4B\xC1\x66\x37\x08\x08\x00\xD5\x8F\x1C\xCB\xA1\x48\x37\x17" \
+"\x00\x20\xB7\x27\x02\x40\x37\x03\x04\x00\x94\x4B\xB3\xE6\x06\x01" \
+"\x94\xCB\xD4\x47\x85\x8A\xF5\xFE\x82\x46\x3A\x8E\x36\xC2\x46\xC6" \
+"\x92\x46\x83\x2E\x07\x00\x41\x07\x23\xA0\xD6\x01\x92\x46\x83\x2E" \
+"\x47\xFF\x23\xA2\xD6\x01\x92\x46\x83\x2E\x87\xFF\x23\xA4\xD6\x01" \
+"\x92\x46\x03\x2E\xCE\x00\x23\xA6\xC6\x01\x94\x4B\xB3\xE6\x66\x00" \
+"\x94\xCB\xD4\x47\x85\x8A\xF5\xFE\x92\x46\x3A\x8E\xC1\x06\x36\xC2" \
+"\xB2\x46\xFD\x16\x36\xC6\xCD\xFE\x82\x46\xD4\xCB\x94\x4B\x93\xE6" \
+"\x06\x04\x94\xCB\xD4\x47\x85\x8A\xF5\xFE\xD4\x47\xD1\x8A\x85\xC6" \
+"\xD8\x47\xB7\x06\xF3\xFF\xFD\x16\x13\x67\x47\x01\xD8\xC7\x98\x4B" \
+"\x21\x45\x75\x8F\x98\xCB\x41\x01\x02\x90\x23\x20\xD8\x00\xE9\xBD" \
+"\x23\x20\x03\x01\x31\xBF\x82\x46\x93\x86\x06\x08\x36\xC0\xA2\x46" \
+"\xFD\x16\x36\xC4\xB9\xFA\x98\x4B\xB7\x06\xF3\xFF\xFD\x16\x75\x8F" \
+"\x98\xCB\x41\x89\x15\xC9\x2E\xC0\x0D\x06\x02\xC4\x09\x82\x32\xC6" \
+"\xB7\x17\x00\x20\x98\x43\x13\x86\x47\x00\xA2\x47\x82\x46\x8A\x07" \
+"\xB6\x97\x9C\x43\x63\x1C\xF7\x00\xA2\x47\x85\x07\x3E\xC4\xA2\x46" \
+"\x32\x47\xB2\x87\xE3\xE0\xE6\xFE\x01\x45\x71\xBF\x41\x45\x61\xBF" \
+"\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" \
+"\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" \
+"\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff";
+
+const uint8_t * bootloader_v2 = (const uint8_t*)
 "\x93\x77\x15\x00\x41\x11\x99\xcf\xb7\x06\x67\x45\xb7\x27\x02\x40" \
 "\x93\x86\x36\x12\x37\x97\xef\xcd\xd4\xc3\x13\x07\xb7\x9a\xd8\xc3" \
 "\xd4\xd3\xd8\xd3\x93\x77\x25\x00\x95\xc7\xb7\x27\x02\x40\x98\x4b" \
@@ -441,6 +526,18 @@ const uint8_t * bootloader = (const uint8_t*)
 
 int bootloader_len = 512;
 #endif
+
+static const uint8_t * GetFlashLoader( enum RiscVChip chip )
+{
+	switch(chip) {
+		case CH32V10x:
+			return bootloader_v1;
+		case CH32V20x:
+		case CH32V30x:
+		default:
+			return bootloader_v2;
+	}
+}
 
 static int InternalLinkEHaltMode( void * d, int mode )
 {
@@ -556,7 +653,9 @@ static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len,
 	wch_link_command( (libusb_device_handle *)dev, rksbuff, 11, 0, 0, 0 );
 	
 	wch_link_command( (libusb_device_handle *)dev, "\x81\x02\x01\x05", 4, 0, 0, 0 );
-	
+
+	const uint8_t *bootloader = GetFlashLoader(iss->target_chip_type);
+
 	int pplace = 0;
 	for( pplace = 0; pplace < bootloader_len; pplace += iss->sector_size )
 	{

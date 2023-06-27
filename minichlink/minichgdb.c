@@ -145,6 +145,36 @@ int RVReadCPURegister( void * dev, int regno, uint32_t * regret )
 	return 0;
 }
 
+
+int RVWriteCPURegister( void * dev, int regno, uint32_t value )
+{
+	if( shadow_running_state )
+	{
+		MCF.HaltMode( dev, 5 );
+		RVCommandPrologue( dev );
+		shadow_running_state = 0;
+	}
+
+	if( regno == 32 ) regno = 16; // Hack - Make 32 also 16 for old GDBs.
+	if( regno > 16 ) return 0; // Invalid register.
+
+	backup_regs[regno] = value;
+
+	if( !MCF.WriteAllCPURegisters )
+	{
+		fprintf( stderr, "ERROR: MCF.WriteAllCPURegisters is not implemented on this platform\n" );
+		return -99;
+	}
+
+	int r;
+	if( ( r = MCF.WriteAllCPURegisters( dev, backup_regs ) ) )
+	{
+		fprintf( stderr, "Error: WriteAllCPURegisters failed (%d)\n", r );
+		return r;
+	}
+	return 0;
+}
+
 void RVDebugExec( void * dev, int halt_reset_or_resume )
 {
 	if( !MCF.HaltMode )
@@ -199,7 +229,13 @@ void RVDebugExec( void * dev, int halt_reset_or_resume )
 				backup_regs[16]+=2;
 			else
 				; //No change, it is a normal instruction.
+
+			if( halt_reset_or_resume == 4 )
+			{
+				MCF.SetEnableBreakpoints( dev, 1, 1 );
+			}
 		}
+
 		halt_reset_or_resume = 2;
 	}
 
@@ -352,6 +388,27 @@ int RVWriteRAM(void * dev, uint32_t memaddy, uint32_t length, uint8_t * payload 
 
 	int r = MCF.WriteBinaryBlob( dev, memaddy, length, payload );
 
+	return r;
+}
+
+int RVWriteFlash(void * dev, uint32_t memaddy, uint32_t length, uint8_t * payload )
+{
+	if( (memaddy & 0xff000000 ) == 0 )
+	{
+		memaddy |= 0x08000000;
+	}
+	return RVWriteRAM( dev, memaddy, length, payload );
+}
+
+int RVErase( void * dev, uint32_t memaddy, uint32_t length )
+{
+	if( !MCF.Erase )
+	{
+		fprintf( stderr, "Error: Can't alter halt mode with this programmer.\n" );
+		exit( -6 );
+	}
+
+	int r = MCF.Erase( dev, memaddy, length, 0 ); // 0 = not whole chip.
 	return r;
 }
 
