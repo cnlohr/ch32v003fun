@@ -1352,6 +1352,65 @@ void SystemInit72HSE( void )
 	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x08) {}
 }
 
+void SystemInit80HSI( void )
+{
+	EXTEN->EXTEN_CTR |= EXTEN_PLL_HSI_PRE;
+
+	/* Enable Prefetch Buffer */
+    FLASH->ACTLR |= FLASH_ACTLR_PRFTBE;
+
+	/* Flash 1 wait state */
+    FLASH->ACTLR &= (uint32_t)((uint32_t)~FLASH_ACTLR_LATENCY);
+    FLASH->ACTLR |= (uint32_t)FLASH_ACTLR_LATENCY_1;
+
+	RCC->CFGR0 = RCC_HPRE_DIV1 | RCC_PPRE2_DIV1 | RCC_PPRE1_DIV2;
+	RCC->CFGR0 &= (uint32_t)((uint32_t)~(RCC_PLLSRC | RCC_PLLXTPRE | RCC_PLLMULL));
+	RCC->CFGR0 |= (uint32_t)(RCC_PLLSRC_HSI_Div2 | RCC_PLLMULL10);
+
+	/* Enable PLL */
+	RCC->CTLR |= RCC_PLLON;
+
+	/* Wait till PLL is ready */
+	while((RCC->CTLR & RCC_PLLRDY) == 0) {}
+
+	/* Select PLL as system clock source */
+	RCC->CFGR0 &= (uint32_t)((uint32_t)~(RCC_SW));
+	RCC->CFGR0 |= (uint32_t)RCC_SW_PLL;
+
+	/* Wait till PLL is used as system clock source */
+	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x08) {}
+}
+
+void SystemInit80HSE( void )
+{
+	RCC->CTLR |= ((uint32_t)RCC_HSEON);
+	while(!(RCC->CTLR&RCC_HSERDY));
+
+	/* Enable Prefetch Buffer */
+	FLASH->ACTLR |= FLASH_ACTLR_PRFTBE;
+
+	/* Flash 2 wait state */
+	FLASH->ACTLR &= (uint32_t)((uint32_t)~FLASH_ACTLR_LATENCY);
+	FLASH->ACTLR |= (uint32_t)FLASH_ACTLR_LATENCY_2;
+
+	RCC->CFGR0 = RCC_HPRE_DIV1 | RCC_PPRE2_DIV1 | RCC_PPRE1_DIV2;
+	RCC->CFGR0 &= (uint32_t)((uint32_t)~(RCC_PLLSRC | RCC_PLLXTPRE | RCC_PLLMULL));
+	RCC->CFGR0 |= (uint32_t)(RCC_PLLSRC_HSE | RCC_PLLMULL10);
+
+	/* Enable PLL */
+	RCC->CTLR |= RCC_PLLON;
+
+	/* Wait till PLL is ready */
+	while((RCC->CTLR & RCC_PLLRDY) == 0) {}
+
+	/* Select PLL as system clock source */
+	RCC->CFGR0 &= (uint32_t)((uint32_t)~(RCC_SW));
+	RCC->CFGR0 |= (uint32_t)RCC_SW_PLL;
+
+	/* Wait till PLL is used as system clock source */
+	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x08) {}
+}
+
 #endif // defined(CH32V10x)
 
 #ifdef CH32V003

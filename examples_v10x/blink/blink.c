@@ -1,12 +1,12 @@
 // Could be defined here, or in the processor defines.
-#define SYSTEM_CORE_CLOCK 72000000
+#define SYSTEM_CORE_CLOCK 80000000
 
 #include "ch32v003fun.h"
 #include <stdio.h>
 
 int main()
 {
-	SystemInit72HSE();
+	SystemInit80HSE();
 
 	// Enable GPIOs
 	//RCC->APB2PCENR |= RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOC;

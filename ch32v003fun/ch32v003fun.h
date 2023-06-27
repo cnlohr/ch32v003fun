@@ -12173,6 +12173,8 @@ void SystemInit144HSE( void );
 // Initialization functions
 void SystemInit72HSI( void );
 void SystemInit72HSE( void );
+void SystemInit80HSI( void );
+void SystemInit80HSE( void );
 
 #endif
 
