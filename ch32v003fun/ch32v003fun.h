@@ -52,19 +52,21 @@
 extern "C" {
 #endif
 
+// Default package for CH32V20x
 #if defined(CH32V20x)
-#if !defined(CH32V20x_D8W) && !defined(CH32V20x_D8) && !defined(CH32V20x_D6)
-#define CH32V20x_D6              /* CH32V203F6-CH32V203F8-CH32V203G6-CH32V203G8-CH32V203K6-CH32V203K8-CH32V203C6-CH32V203C8 */
-//#define CH32V20x_D8              /* CH32V203RBT6 */
-//#define CH32V20x_D8W             /* CH32V208 */
-#endif
+	#if !defined(CH32V20x_D8W) && !defined(CH32V20x_D8) && !defined(CH32V20x_D6)
+	#define CH32V20x_D6              /* CH32V203F6-CH32V203F8-CH32V203G6-CH32V203G8-CH32V203K6-CH32V203K8-CH32V203C6-CH32V203C8 */
+	//#define CH32V20x_D8              /* CH32V203RBT6 */
+	//#define CH32V20x_D8W             /* CH32V208 */
+	#endif
 #endif
 
+// Default package for CH32V30x
 #if defined(CH32V30x)
-#if !defined(CH32V30x_D8) && !defined(CH32V30x_D8C)
-//#define CH32V30x_D8              /* CH32V303x */
-#define CH32V30x_D8C             /* CH32V307x-CH32V305x */
-#endif
+	#if !defined(CH32V30x_D8) && !defined(CH32V30x_D8C)
+	//#define CH32V30x_D8              /* CH32V303x */
+	#define CH32V30x_D8C             /* CH32V307x-CH32V305x */
+	#endif
 #endif
 
 #define __MPU_PRESENT             0  /* Other CH32 devices does not provide an MPU */
@@ -72,43 +74,43 @@ extern "C" {
 
 #if defined(CH32V003)
 
-#define HSE_VALUE                 ((uint32_t)24000000) /* Value of the External oscillator in Hz */
+	#define HSE_VALUE                 ((uint32_t)24000000) /* Value of the External oscillator in Hz */
 
-/* In the following line adjust the External High Speed oscillator (HSE) Startup Timeout value */
-#define HSE_STARTUP_TIMEOUT       ((uint16_t)0x2000) /* Time out for HSE start up */
+	/* In the following line adjust the External High Speed oscillator (HSE) Startup Timeout value */
+	#define HSE_STARTUP_TIMEOUT       ((uint16_t)0x2000) /* Time out for HSE start up */
 
-#define HSI_VALUE                 ((uint32_t)24000000) /* Value of the Internal oscillator in Hz */
+	#define HSI_VALUE                 ((uint32_t)24000000) /* Value of the Internal oscillator in Hz */
 
 #elif defined(CH32V20x)
 
-#if defined(CH32V20x_D8) || defined(CH32V20x_D8W)
-#define HSE_VALUE    ((uint32_t)32000000) /* Value of the External oscillator in Hz */
-#else
-#define HSE_VALUE    ((uint32_t)8000000) /* Value of the External oscillator in Hz */
-#endif
+	#if defined(CH32V20x_D8) || defined(CH32V20x_D8W)
+	#define HSE_VALUE    ((uint32_t)32000000) /* Value of the External oscillator in Hz */
+	#else
+	#define HSE_VALUE    ((uint32_t)8000000) /* Value of the External oscillator in Hz */
+	#endif
 
-/* In the following line adjust the External High Speed oscillator (HSE) Startup Timeout value */
-#define HSE_STARTUP_TIMEOUT    ((uint16_t)0x1000) /* Time out for HSE start up */
+	/* In the following line adjust the External High Speed oscillator (HSE) Startup Timeout value */
+	#define HSE_STARTUP_TIMEOUT    ((uint16_t)0x1000) /* Time out for HSE start up */
 
-#define HSI_VALUE              ((uint32_t)8000000) /* Value of the Internal oscillator in Hz */
+	#define HSI_VALUE              ((uint32_t)8000000) /* Value of the Internal oscillator in Hz */
 
 #elif defined(CH32V30x)
 
-#define HSE_VALUE    ((uint32_t)8000000) /* Value of the External oscillator in Hz */
+	#define HSE_VALUE    ((uint32_t)8000000) /* Value of the External oscillator in Hz */
 
-/* In the following line adjust the External High Speed oscillator (HSE) Startup Timeout value */
-#define HSE_STARTUP_TIMEOUT   ((uint16_t)0x1000) /* Time out for HSE start up */
+	/* In the following line adjust the External High Speed oscillator (HSE) Startup Timeout value */
+	#define HSE_STARTUP_TIMEOUT   ((uint16_t)0x1000) /* Time out for HSE start up */
 
-#define HSI_VALUE    ((uint32_t)8000000) /* Value of the Internal oscillator in Hz */
+	#define HSI_VALUE    ((uint32_t)8000000) /* Value of the Internal oscillator in Hz */
 
 #elif defined(CH32V10x)
 
-#define HSE_VALUE    ((uint32_t)8000000) /* Value of the External oscillator in Hz */
+	#define HSE_VALUE    ((uint32_t)8000000) /* Value of the External oscillator in Hz */
 
-/* In the following line adjust the External High Speed oscillator (HSE) Startup Timeout value */
-#define HSE_STARTUP_TIMEOUT   ((uint16_t)0x500) /* Time out for HSE start up */
+	/* In the following line adjust the External High Speed oscillator (HSE) Startup Timeout value */
+	#define HSE_STARTUP_TIMEOUT   ((uint16_t)0x500) /* Time out for HSE start up */
 
-#define HSI_VALUE    ((uint32_t)8000000) /* Value of the Internal oscillator in Hz */
+	#define HSI_VALUE    ((uint32_t)8000000) /* Value of the Internal oscillator in Hz */
 
 #endif
 
@@ -157,7 +159,7 @@ typedef enum IRQn
     TIM1_TRG_COM_IRQn = 36,  /* TIM1 Trigger and Commutation Interrupt               */
     TIM1_CC_IRQn = 37,       /* TIM1 Capture Compare Interrupt                       */
     TIM2_IRQn = 38,          /* TIM2 global Interrupt                                */
-#elif defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 	/******  RISC-V specific Interrupt Numbers *********************************************************/
 	WWDG_IRQn = 16,            /* Window WatchDog Interrupt                            */
 	PVD_IRQn = 17,             /* PVD through EXTI Line detection Interrupt            */
@@ -178,7 +180,7 @@ typedef enum IRQn
 	DMA1_Channel6_IRQn = 32,   /* DMA1 Channel 6 global Interrupt                      */
 	DMA1_Channel7_IRQn = 33,   /* DMA1 Channel 7 global Interrupt                      */
 	ADC_IRQn = 34,             /* ADC1 and ADC2 global Interrupt                       */
-#if !defined(CH32V10x)
+#if !defined(CH32V10x) // CH32V20x/30x only
 	USB_HP_CAN1_TX_IRQn = 35,  /* USB Device High Priority or CAN1 TX Interrupts       */
 	USB_LP_CAN1_RX0_IRQn = 36, /* USB Device Low Priority or CAN1 RX0 Interrupts       */
 	CAN1_RX1_IRQn = 37,        /* CAN1 RX1 Interrupt                                   */
@@ -204,7 +206,7 @@ typedef enum IRQn
 	EXTI15_10_IRQn = 56,       /* External Line[15:10] Interrupts                      */
 	RTCAlarm_IRQn = 57,        /* RTC Alarm through EXTI Line Interrupt                */
 #endif
-#if defined(CH32V20x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x)
 	USBWakeUp_IRQn = 58,       /* USB Device WakeUp from suspend through EXTI Line Interrupt 	*/
 	USBHD_IRQn = 59,           /* USBHD global Interrupt                               */
 #endif
@@ -337,8 +339,8 @@ typedef enum IRQn
 
 #define HardFault_IRQn    EXC_IRQn
 
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
-#define ADC1_2_IRQn       ADC_IRQn
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
+	#define ADC1_2_IRQn       ADC_IRQn
 #endif
 
 /* Standard Peripheral Library old definitions (maintained for legacy purpose) */
@@ -375,7 +377,7 @@ typedef struct
 #endif
 } ADC_TypeDef;
 
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 /* Backup Registers */
 typedef struct
 {
@@ -538,7 +540,7 @@ typedef struct
 } CRC_TypeDef;
 #endif
 
-#if defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V30x)
 /* Digital to Analog Converter */
 typedef struct
 {
@@ -618,7 +620,7 @@ typedef struct
     __IO uint16_t Data1;
     __IO uint16_t WRPR0;
     __IO uint16_t WRPR1;
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 	__IO uint16_t WRPR2;
 	__IO uint16_t WRPR3;
 #endif
@@ -784,7 +786,7 @@ typedef struct
     uint32_t RESERVED0;
     __IO uint32_t PCFR1;
     __IO uint32_t EXTICR;
-#elif defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 	__IO uint32_t ECR;
 	__IO uint32_t PCFR1;
 	__IO uint32_t EXTICR[4];
@@ -812,7 +814,7 @@ typedef struct
     uint16_t      RESERVED6;
     __IO uint16_t CKCFGR;
     uint16_t      RESERVED7;
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 	__IO uint16_t RTR;
 	uint16_t      RESERVED8;
 #endif
@@ -832,7 +834,7 @@ typedef struct
 {
     __IO uint32_t CTLR;
     __IO uint32_t CSR;
-#ifdef CH32V003
+#ifdef CH32V003	// AWU is CH32V003-only
     __IO uint32_t AWUCSR;
     __IO uint32_t AWUWR;
     __IO uint32_t AWUPSC;
@@ -853,7 +855,7 @@ typedef struct
 #ifdef CH32V003
     __IO uint32_t RESERVED0;
     __IO uint32_t RSTSCKR;
-#elif defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 	__IO uint32_t BDCTLR;
 	__IO uint32_t RSTSCKR;
 #endif
@@ -863,7 +865,7 @@ typedef struct
 #endif
 } RCC_TypeDef;
 
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 /* Real-Time Clock */
 typedef struct
 {
@@ -937,7 +939,7 @@ typedef struct
 #ifdef CH32V003
     uint32_t      RESERVED7;
 	uint32_t      RESERVED8;
-#elif defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 	__IO uint16_t I2SCFGR;
 	uint16_t      RESERVED7;
 	__IO uint16_t I2SPR;
@@ -989,7 +991,7 @@ typedef struct
     uint16_t      RESERVED14;
     __IO uint16_t DMAADR;
     uint16_t      RESERVED15;
-#elif defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 	__IO uint16_t CH1CVR;
 	uint16_t      RESERVED13;
 	__IO uint16_t CH2CVR;
@@ -1288,7 +1290,7 @@ typedef struct  __attribute__((packed))
     __IO uint8_t  RESERVED52;
     __IO uint16_t HOST_SPLIT_DATA;
 } USBHSH_TypeDef;
-#endif
+#endif	// #if defined(CH32V30x)
 
 /* USBFS Registers */
 typedef struct
@@ -1453,7 +1455,7 @@ typedef struct
   __IO uint32_t DMACHTBAR;
   __IO uint32_t DMACHRBAR;
 } ETH_TypeDef;
-#endif
+#endif // #if defined(CH32V30x)
 
 #if defined(CH32V20x_D8) || defined(CH32V20x_D8W)
 /* ETH10M Registers */
@@ -1519,10 +1521,9 @@ typedef struct
     __IO uint8_t  LSI32K_CAL_OV_CNT;
     __IO uint8_t  LSI32K_CAL_CTRL;
 } OSC_TypeDef;
-
 #endif
 
-#endif
+#endif	// #if defined(CH32V20x) || defined(CH32V30x)
 
 /* Peripheral memory map */
 #ifdef __ASSEMBLER__
@@ -1548,42 +1549,42 @@ typedef struct
 #define AHBPERIPH_BASE                          (PERIPH_BASE + 0x20000)
 
 #define TIM2_BASE                               (APB1PERIPH_BASE + 0x0000)
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define TIM3_BASE                               (APB1PERIPH_BASE + 0x0400)
 #define TIM4_BASE                               (APB1PERIPH_BASE + 0x0800)
 #define TIM5_BASE                               (APB1PERIPH_BASE + 0x0C00)
-#if defined(CH32V30x)
+#if defined(CH32V30x)	// CH32V30x
 #define TIM6_BASE             					(APB1PERIPH_BASE + 0x1000)
 #define TIM7_BASE             					(APB1PERIPH_BASE + 0x1400)
 #define UART6_BASE            					(APB1PERIPH_BASE + 0x1800)
 #define UART7_BASE            					(APB1PERIPH_BASE + 0x1C00)
 #define UART8_BASE            					(APB1PERIPH_BASE + 0x2000)
-#endif
-#if defined(CH32V10x)
+#endif					// CH32V30x
+#if defined(CH32V10x)	// CH32V10x
 #define TIM6_BASE                               (APB1PERIPH_BASE + 0x1000)
 #define TIM7_BASE                               (APB1PERIPH_BASE + 0x1400)
 #define TIM12_BASE                              (APB1PERIPH_BASE + 0x1800)
 #define TIM13_BASE                              (APB1PERIPH_BASE + 0x1C00)
 #define TIM14_BASE                              (APB1PERIPH_BASE + 0x2000)
-#endif
+#endif					// CH32V10x
 #define RTC_BASE                                (APB1PERIPH_BASE + 0x2800)
 #endif
 #define WWDG_BASE                               (APB1PERIPH_BASE + 0x2C00)
 #define IWDG_BASE                               (APB1PERIPH_BASE + 0x3000)
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define SPI2_BASE                               (APB1PERIPH_BASE + 0x3800)
-#if defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V30x)
 #define SPI3_BASE             					(APB1PERIPH_BASE + 0x3C00)
-#endif
+#endif // defined(CH32V30x) || defined(CH32V10x)
 #define USART2_BASE                             (APB1PERIPH_BASE + 0x4400)
 #define USART3_BASE                             (APB1PERIPH_BASE + 0x4800)
 #define UART4_BASE                              (APB1PERIPH_BASE + 0x4C00)
-#if defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V30x)
 #define UART5_BASE            					(APB1PERIPH_BASE + 0x5000)
-#endif
-#endif
+#endif // defined(CH32V30x) || defined(CH32V10x)
+#endif // defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define I2C1_BASE                               (APB1PERIPH_BASE + 0x5400)
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define I2C2_BASE                               (APB1PERIPH_BASE + 0x5800)
 #endif
 #if defined(CH32V20x) || defined(CH32V30x)
@@ -1592,11 +1593,11 @@ typedef struct
 #if defined(CH32V30x)
 #define CAN2_BASE             (APB1PERIPH_BASE + 0x6800)
 #endif
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define BKP_BASE                                (APB1PERIPH_BASE + 0x6C00)
 #endif
 #define PWR_BASE                                (APB1PERIPH_BASE + 0x7000)
-#if defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V30x)
 #define DAC_BASE              					(APB1PERIPH_BASE + 0x7400)
 #endif
 
@@ -1605,22 +1606,22 @@ typedef struct
 #define GPIOA_BASE                              (APB2PERIPH_BASE + 0x0800)
 #define GPIOC_BASE                              (APB2PERIPH_BASE + 0x1000)
 #define GPIOD_BASE                              (APB2PERIPH_BASE + 0x1400)
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define GPIOE_BASE                              (APB2PERIPH_BASE + 0x1800)
 #define GPIOF_BASE                              (APB2PERIPH_BASE + 0x1C00)
 #define GPIOG_BASE                              (APB2PERIPH_BASE + 0x2000)
 #endif
 #define ADC1_BASE                               (APB2PERIPH_BASE + 0x2400)
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define ADC2_BASE                               (APB2PERIPH_BASE + 0x2800)
 #endif
 #define TIM1_BASE                               (APB2PERIPH_BASE + 0x2C00)
 #define SPI1_BASE                               (APB2PERIPH_BASE + 0x3000)
-#if defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V30x)
 #define TIM8_BASE             					(APB2PERIPH_BASE + 0x3400)
 #endif
 #define USART1_BASE                             (APB2PERIPH_BASE + 0x3800)
-#if defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V30x)
 #define ADC3_BASE             					(APB2PERIPH_BASE + 0x3C00)
 #define TIM15_BASE            					(APB2PERIPH_BASE + 0x4000)
 #define TIM16_BASE            					(APB2PERIPH_BASE + 0x4400)
@@ -1644,7 +1645,7 @@ typedef struct
 #if defined(CH32V20x)
 #define DMA1_Channel8_BASE                      (AHBPERIPH_BASE + 0x0094)
 #endif
-#if defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V30x)
 #define DMA2_BASE             					(AHBPERIPH_BASE + 0x0400)
 #define DMA2_Channel1_BASE    					(AHBPERIPH_BASE + 0x0408)
 #define DMA2_Channel2_BASE    					(AHBPERIPH_BASE + 0x041C)
@@ -1659,7 +1660,7 @@ typedef struct
 #define DMA2_Channel10_BASE   					(AHBPERIPH_BASE + 0x04B0)
 #define DMA2_Channel11_BASE   					(AHBPERIPH_BASE + 0x04C0)
 #define DMA2_EXTEN_BASE       					(AHBPERIPH_BASE + 0x04D0)
-#endif
+#endif // defined(CH32V30x)
 #endif
 #define RCC_BASE                                (AHBPERIPH_BASE + 0x1000)
 
@@ -1709,7 +1710,7 @@ typedef struct
 
 /* Peripheral declaration */
 #define TIM2                                    ((TIM_TypeDef *)TIM2_BASE)
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define TIM3                                    ((TIM_TypeDef *)TIM3_BASE)
 #define TIM4                                    ((TIM_TypeDef *)TIM4_BASE)
 #define TIM5                                    ((TIM_TypeDef *)TIM5_BASE)
@@ -1719,32 +1720,32 @@ typedef struct
 #define UART6               					((USART_TypeDef *) UART6_BASE)
 #define UART7               					((USART_TypeDef *) UART7_BASE)
 #define UART8               					((USART_TypeDef *) UART8_BASE)
-#endif
+#endif // defined(CH32V30x)
 #if defined(CH32V10x)
 #define TIM6                                    ((TIM_TypeDef *)TIM6_BASE)
 #define TIM7                                    ((TIM_TypeDef *)TIM7_BASE)
 #define TIM12                                   ((TIM_TypeDef *)TIM12_BASE)
 #define TIM13                                   ((TIM_TypeDef *)TIM13_BASE)
 #define TIM14                                   ((TIM_TypeDef *)TIM14_BASE)
-#endif
+#endif // defined(CH32V10x)
 #define RTC                                     ((RTC_TypeDef *)RTC_BASE)
-#endif
+#endif // defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define WWDG                                    ((WWDG_TypeDef *)WWDG_BASE)
 #define IWDG                                    ((IWDG_TypeDef *)IWDG_BASE)
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define SPI2                                    ((SPI_TypeDef *)SPI2_BASE)
-#if defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V30x)
 #define SPI3                					((SPI_TypeDef *) SPI3_BASE)
 #endif
 #define USART2                                  ((USART_TypeDef *)USART2_BASE)
 #define USART3                                  ((USART_TypeDef *)USART3_BASE)
 #define UART4                                   ((USART_TypeDef *)UART4_BASE)
-#if defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V30x)
 #define UART5               					((USART_TypeDef *) UART5_BASE)
 #endif
-#endif
+#endif // defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define I2C1                                    ((I2C_TypeDef *)I2C1_BASE)
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define I2C2                                    ((I2C_TypeDef *)I2C2_BASE)
 #endif
 #if defined(CH32V20x) || defined(CH32V30x)
@@ -1753,11 +1754,11 @@ typedef struct
 #if defined(CH32V30x)
 #define CAN2                					((CAN_TypeDef *) CAN2_BASE)
 #endif
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define BKP                                     ((BKP_TypeDef *)BKP_BASE)
 #endif
 #define PWR                                     ((PWR_TypeDef *)PWR_BASE)
-#if defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V30x)
 #define DAC                 					((DAC_TypeDef *) DAC_BASE)
 #endif
 
@@ -1766,13 +1767,13 @@ typedef struct
 #define GPIOA                                   ((GPIO_TypeDef *)GPIOA_BASE)
 #define GPIOC                                   ((GPIO_TypeDef *)GPIOC_BASE)
 #define GPIOD                                   ((GPIO_TypeDef *)GPIOD_BASE)
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define GPIOE                                   ((GPIO_TypeDef *)GPIOE_BASE)
 #define GPIOF                                   ((GPIO_TypeDef *)GPIOF_BASE)
 #define GPIOG                                   ((GPIO_TypeDef *)GPIOG_BASE)
 #endif
 #define ADC1                                    ((ADC_TypeDef *)ADC1_BASE)
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define ADC2                                    ((ADC_TypeDef *)ADC2_BASE)
 #endif
 #if defined(CH32V20x) || defined(CH32V30x)
@@ -1781,11 +1782,11 @@ typedef struct
 #endif
 #define TIM1                                    ((TIM_TypeDef *)TIM1_BASE)
 #define SPI1                                    ((SPI_TypeDef *)SPI1_BASE)
-#if defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V30x)
 #define TIM8                					((TIM_TypeDef *) TIM8_BASE)
 #endif
 #define USART1                                  ((USART_TypeDef *)USART1_BASE)
-#if defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V30x)
 #define ADC3                					((ADC_TypeDef *) ADC3_BASE)
 #define TIM15               					((TIM_TypeDef *) TIM15_BASE)
 #define TIM16               					((TIM_TypeDef *) TIM16_BASE)
@@ -1793,7 +1794,7 @@ typedef struct
 #define TIM9                					((TIM_TypeDef *) TIM9_BASE)
 #define TIM10               					((TIM_TypeDef *) TIM10_BASE)
 #define TIM11               					((TIM_TypeDef *) TIM11_BASE)
-#endif
+#endif // defined(CH32V10x) || defined(CH32V30x)
 #if defined(CH32V30x)
 #define SDIO                					((SDIO_TypeDef *) SDIO_BASE)
 #endif
@@ -1809,7 +1810,7 @@ typedef struct
 #if defined(CH32V20x)
 #define DMA1_Channel8                           ((DMA_Channel_TypeDef *)DMA1_Channel8_BASE)
 #endif
-#if defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V30x)
 #define DMA2                					((DMA_TypeDef *) DMA2_BASE)
 #define DMA2_EXTEN          					((DMA_TypeDef *) DMA2_EXTEN_BASE)
 #define DMA2_Channel1       					((DMA_Channel_TypeDef *) DMA2_Channel1_BASE)
@@ -1824,18 +1825,18 @@ typedef struct
 #define DMA2_Channel9       					((DMA_Channel_TypeDef *) DMA2_Channel9_BASE)
 #define DMA2_Channel10      					((DMA_Channel_TypeDef *) DMA2_Channel10_BASE)
 #define DMA2_Channel11      					((DMA_Channel_TypeDef *) DMA2_Channel11_BASE)
-#endif
-#endif
+#endif // defined(CH32V30x)
+#endif // defined(CH32V10x) || defined(CH32V30x)
 #define RCC                                     ((RCC_TypeDef *)RCC_BASE)
 #define FLASH                                   ((FLASH_TypeDef *)FLASH_R_BASE)
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define CRC                                     ((CRC_TypeDef *)CRC_BASE)
 #endif
 #if defined(CH32V20x) || defined(CH32V30x)
 #if defined(CH32V30x)
 #define USBHSD              					((USBHSD_TypeDef *) USBHS_BASE)
 #define USBHSH              					((USBHSH_TypeDef *) USBHS_BASE)
-#endif
+#endif // defined(CH32V30x)
 #define USBOTG_FS                               ((USBOTG_FS_TypeDef *)USBFS_BASE)
 #define USBOTG_H_FS                             ((USBOTG_FS_HOST_TypeDef *)USBFS_BASE)
 #define OPA                                     ((OPA_TypeDef *)OPA_BASE)
@@ -1845,7 +1846,7 @@ typedef struct
 #define RNG                 					((RNG_TypeDef *) RNG_BASE)
 #define ETH                 					((ETH_TypeDef *) ETH_BASE)
 #endif
-#endif
+#endif // defined(CH32V20x) || defined(CH32V30x)
 #define OB                                      ((OB_TypeDef *)OB_BASE)
 #define EXTEN                                   ((EXTEN_TypeDef *)EXTEN_BASE)
 
@@ -4200,7 +4201,7 @@ typedef struct
 
 /******************  Bit definition for FLASH_STATR register  *******************/
 #define FLASH_STATR_BSY                         ((uint8_t)0x01) /* Busy */
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define FLASH_STATR_PGERR                       ((uint8_t)0x04) /* Programming Error */
 #endif
 #define FLASH_STATR_WRPRTERR                    ((uint8_t)0x10) /* Write Protection Error */
@@ -4271,7 +4272,7 @@ typedef struct
 #define FLASH_WRPR1_WRPR1                       ((uint32_t)0x00FF0000) /* Flash memory write protection option bytes */
 #define FLASH_WRPR1_nWRPR1                      ((uint32_t)0xFF000000) /* Flash memory write protection complemented option bytes */
 
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 /******************  Bit definition for FLASH_WRPR2 register  ******************/
 #define FLASH_WRPR2_WRPR2                       ((uint32_t)0x000000FF) /* Flash memory write protection option bytes */
 #define FLASH_WRPR2_nWRPR2                      ((uint32_t)0x0000FF00) /* Flash memory write protection complemented option bytes */
@@ -4531,7 +4532,7 @@ typedef struct
 #define GPIO_LCK15                              ((uint32_t)0x00008000) /* Port x Lock bit 15 */
 #define GPIO_LCKK                               ((uint32_t)0x00010000) /* Lock key */
 
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 /******************  Bit definition for AFIO_ECR register  *******************/
 #define AFIO_ECR_PIN                            ((uint8_t)0x0F) /* PIN[3:0] bits (Pin selection) */
 #define AFIO_ECR_PIN_0                          ((uint8_t)0x01) /* Bit 0 */
@@ -4678,7 +4679,7 @@ typedef struct
 #define AFIO_EXTICR1_EXTI3_PF                   ((uint16_t)0x5000) /* PF[3] pin */
 #define AFIO_EXTICR1_EXTI3_PG                   ((uint16_t)0x6000) /* PG[3] pin */
 
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 /*****************  Bit definition for AFIO_EXTICR2 register  *****************/
 #define AFIO_EXTICR2_EXTI4                      ((uint16_t)0x000F) /* EXTI 4 configuration */
 #define AFIO_EXTICR2_EXTI5                      ((uint16_t)0x00F0) /* EXTI 5 configuration */
@@ -4904,7 +4905,7 @@ typedef struct
 #define I2C_CKCFGR_DUTY                         ((uint16_t)0x4000) /* Fast Mode Duty Cycle */
 #define I2C_CKCFGR_FS                           ((uint16_t)0x8000) /* I2C Master Mode Selection */
 
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 /******************  Bit definition for I2C_RTR register  *******************/
 #define I2C_RTR_TRISE                           ((uint8_t)0x3F) /* Maximum Rise Time in Fast/Standard mode (Master mode) */
 #endif
@@ -4995,7 +4996,7 @@ typedef struct
 #define RCC_HPRE_DIV64                          ((uint32_t)0x000000D0) /* SYSCLK divided by 64 */
 #define RCC_HPRE_DIV128                         ((uint32_t)0x000000E0) /* SYSCLK divided by 128 */
 #define RCC_HPRE_DIV256                         ((uint32_t)0x000000F0) /* SYSCLK divided by 256 */
-#elif defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define RCC_HPRE_DIV1                   		((uint32_t)0x00000000) /* SYSCLK not divided */
 #define RCC_HPRE_DIV2                   		((uint32_t)0x00000080) /* SYSCLK divided by 2 */
 #define RCC_HPRE_DIV4                   		((uint32_t)0x00000090) /* SYSCLK divided by 4 */
@@ -5051,7 +5052,7 @@ typedef struct
 #ifdef CH32V003
 #define RCC_PLLSRC_HSI_Mul2                     ((uint32_t)0x00000000) /* HSI clock*2 selected as PLL entry clock source */
 #define RCC_PLLSRC_HSE_Mul2                     ((uint32_t)0x00010000) /* HSE clock*2 selected as PLL entry clock source */
-#elif defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define RCC_PLLSRC_HSI_Div2                     ((uint32_t)0x00000000) /* HSI clock divided by 2 selected as PLL entry clock source */
 #define RCC_PLLSRC_HSE                          ((uint32_t)0x00010000) /* HSE clock selected as PLL entry clock source */
 #endif
@@ -5198,7 +5199,7 @@ typedef struct
 
 #define RCC_USBEN                               ((uint32_t)0x00800000) /* USB Device clock enable */
 
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 /*******************  Bit definition for RCC_BDCTLR register  *******************/
 #define RCC_LSEON                               ((uint32_t)0x00000001) /* External Low Speed oscillator enable */
 #define RCC_LSERDY                              ((uint32_t)0x00000002) /* External Low Speed oscillator Ready */
@@ -5244,7 +5245,7 @@ typedef struct
 #define  RNG_SR_SEIS                          ((uint32_t)0x00000040)
 #endif
 
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 /******************************************************************************/
 /*                             Real-Time Clock                                */
 /******************************************************************************/
@@ -5341,7 +5342,7 @@ typedef struct
 /******************  Bit definition for SPI_TCRCR register  ******************/
 #define SPI_TCRCR_TXCRC                         ((uint16_t)0xFFFF) /* Tx CRC Register */
 
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 /******************  Bit definition for SPI_I2SCFGR register  *****************/
 #define SPI_I2SCFGR_CHLEN                       ((uint16_t)0x0001) /* Channel length (number of bits per audio channel) */
 
@@ -5778,7 +5779,7 @@ typedef struct
 /******************************************************************************/
 
 /****************************  Enhanced register  *****************************/
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define EXTEN_USBD_LS                           ((uint32_t)0x00000001) /* Bit 0 */
 #define EXTEN_USBD_PU_EN                        ((uint32_t)0x00000002) /* Bit 1 */
 #define EXTEN_ETH_10M_EN                        ((uint32_t)0x00000004) /* Bit 2 */
@@ -5787,7 +5788,7 @@ typedef struct
 #define EXTEN_LOCKUP_EN                         ((uint32_t)0x00000040) /* Bit 5 */
 #define EXTEN_LOCKUP_RSTF                       ((uint32_t)0x00000080) /* Bit 7 */
 
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define EXTEN_ULLDO_TRIM                        ((uint32_t)0x00000300) /* ULLDO_TRIM[1:0] bits */
 #define EXTEN_ULLDO_TRIM0                       ((uint32_t)0x00000100) /* Bit 0 */
 #define EXTEN_ULLDO_TRIM1                       ((uint32_t)0x00000200) /* Bit 1 */
@@ -6031,8 +6032,8 @@ with 00h to 64 bytes, otherwise the short packet is filled with 60 bytes of 0, a
 #define  RB_ETH_MIREGADR_MIIWR  0x20                                            /* WO MII write command */
 #define  RB_ETH_MIREGADR_MIRDL  0x1f                                            /* RW PHY register address */
 
-#endif
-#endif
+#endif // defined(CH32V20x)
+#endif // defined(CH32V20x) || defined(CH32V30x)
 
 #ifdef __cplusplus
 }
@@ -6078,7 +6079,7 @@ extern "C" {
 
 /* ch32v00x_gpio.c -----------------------------------------------------------*/
 /* MASK */
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define ECR_PORTPINCONFIG_MASK    ((uint16_t)0xFF80)
 #endif
 #define LSB_MASK                  ((uint16_t)0xFFFF)
@@ -6183,7 +6184,7 @@ extern "C" {
 /* ADC IDATARx registers offset */
 #define IDATAR_Offset                    ((uint8_t)0x28)
 
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 
 /* ADC1 RDATAR register base address */
 #define RDATAR_ADDRESS                   ((uint32_t)0x4001244C)
@@ -6277,7 +6278,7 @@ extern "C" {
 #define DMA2_Channel4_IT_Mask     ((uint32_t)(DMA_GIF4 | DMA_TCIF4 | DMA_HTIF4 | DMA_TEIF4))
 #define DMA2_Channel5_IT_Mask     ((uint32_t)(DMA_GIF5 | DMA_TCIF5 | DMA_HTIF5 | DMA_TEIF5))
 #endif
-#if defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V30x)
 #define DMA2_Channel6_IT_Mask     ((uint32_t)(DMA_GIF6 | DMA_TCIF6 | DMA_HTIF6 | DMA_TEIF6))
 #define DMA2_Channel7_IT_Mask     ((uint32_t)(DMA_GIF7 | DMA_TCIF7 | DMA_HTIF7 | DMA_TEIF7))
 #define DMA2_Channel8_IT_Mask     ((uint32_t)(DMA_GIF8 | DMA_TCIF8 | DMA_HTIF8 | DMA_TEIF8))
@@ -6328,7 +6329,7 @@ extern "C" {
 #define CR_OPTER_Reset             ((uint32_t)0xFFFFFFDF)
 #define CR_STRT_Set                ((uint32_t)0x00000040)
 #define CR_LOCK_Set                ((uint32_t)0x00000080)
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define CR_FAST_LOCK_Set           ((uint32_t)0x00008000)
 #endif
 #define CR_PAGE_PG                 ((uint32_t)0x00010000)
@@ -6359,7 +6360,7 @@ extern "C" {
 #define WRP1_Mask                  ((uint32_t)0x0000FF00)
 #define WRP2_Mask                  ((uint32_t)0x00FF0000)
 #define WRP3_Mask                  ((uint32_t)0xFF000000)
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define OB_USER_BFB2               ((uint16_t)0x0008)
 #endif
 
@@ -6394,7 +6395,7 @@ extern "C" {
 
 #if defined(CH32V30x)
 
-/* ch32v00x_fsmc.c -----------------------------------------------------------*/
+/* ch32v30x_fsmc.c -----------------------------------------------------------*/
 
 /* FSMC BCRx Mask */
 #define BCR_MBKEN_Set          ((uint32_t)0x00000001)
@@ -6586,13 +6587,13 @@ extern "C" {
 #ifdef CH32V003
 static __I uint8_t APBAHBPrescTable[16] = {1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8};
 static __I uint8_t ADCPrescTable[20] = {2, 4, 6, 8, 4, 8, 12, 16, 8, 16, 24, 32, 16, 32, 48, 64, 32, 64, 96, 128};
-#elif defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 static __I uint8_t APBAHBPrescTable[16] = {0, 0, 0, 0, 1, 2, 3, 4, 1, 2, 3, 4, 6, 7, 8, 9};
 static __I uint8_t ADCPrescTable[4] = {2, 4, 6, 8};
 #endif
 #endif
 
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 
 /* ch32v20x_rtc.c ------------------------------------------------------------*/
 
@@ -6603,6 +6604,7 @@ static __I uint8_t ADCPrescTable[4] = {2, 4, 6, 8};
 #endif
 
 #if defined(CH32V30x)
+
 /* ch32v00x_sdio.c -----------------------------------------------------------*/
 
 #define SDIO_OFFSET         (SDIO_BASE - PERIPH_BASE)
@@ -6621,16 +6623,16 @@ static __I uint8_t ADCPrescTable[4] = {2, 4, 6, 8};
 
 /* SDIO RESP Registers Address */
 #define SDIO_RESP_ADDR      ((uint32_t)(SDIO_BASE + 0x14))
-#endif
+
+#endif // defined(CH32V30x)
 
 /* ch32v00x_spi.c ------------------------------------------------------------*/
-
 
 /* SPI SPE mask */
 #define CTLR1_SPE_Set         ((uint16_t)0x0040)
 #define CTLR1_SPE_Reset       ((uint16_t)0xFFBF)
 
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 /* I2S I2SE mask */
 #define I2SCFGR_I2SE_Set      ((uint16_t)0x0400)
 #define I2SCFGR_I2SE_Reset    ((uint16_t)0xFBFF)
@@ -6652,7 +6654,7 @@ static __I uint8_t ADCPrescTable[4] = {2, 4, 6, 8};
 #define SPI_CTLR1_CLEAR_Mask  ((uint16_t)0x3040)
 #define I2SCFGR_CLEAR_Mask    ((uint16_t)0xF040)
 
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 /* SPI or I2S mode selection masks */
 #define SPI_Mode_Select       ((uint16_t)0xF7FF)
 #define I2S_Mode_Select       ((uint16_t)0x0800)
@@ -6736,7 +6738,7 @@ static __I uint8_t ADCPrescTable[4] = {2, 4, 6, 8};
 
 /* ADC_mode */
 #define ADC_Mode_Independent                           ((uint32_t)0x00000000)
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define ADC_Mode_RegInjecSimult                        ((uint32_t)0x00010000)
 #define ADC_Mode_RegSimult_AlterTrig                   ((uint32_t)0x00020000)
 #define ADC_Mode_InjecSimult_FastInterl                ((uint32_t)0x00030000)
@@ -6760,7 +6762,7 @@ static __I uint8_t ADCPrescTable[4] = {2, 4, 6, 8};
 #define ADC_ExternalTrigConv_Ext_PD3_PC2               ((uint32_t)0x000C0000)
 #define ADC_ExternalTrigConv_None                      ((uint32_t)0x000E0000)
 
-#elif defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 
 #define ADC_ExternalTrigConv_T1_CC1                    ((uint32_t)0x00000000)
 #define ADC_ExternalTrigConv_T1_CC2                    ((uint32_t)0x00020000)
@@ -6800,7 +6802,7 @@ static __I uint8_t ADCPrescTable[4] = {2, 4, 6, 8};
 #define ADC_Channel_7                                  ((uint8_t)0x07)
 #define ADC_Channel_8                                  ((uint8_t)0x08)
 #define ADC_Channel_9                                  ((uint8_t)0x09)
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define ADC_Channel_10                                 ((uint8_t)0x0A)
 #define ADC_Channel_11                                 ((uint8_t)0x0B)
 #define ADC_Channel_12                                 ((uint8_t)0x0C)
@@ -6814,7 +6816,7 @@ static __I uint8_t ADCPrescTable[4] = {2, 4, 6, 8};
 #ifdef CH32V003
 #define ADC_Channel_Vrefint                            ((uint8_t)ADC_Channel_8)
 #define ADC_Channel_Vcalint                            ((uint8_t)ADC_Channel_9)
-#elif defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define ADC_Channel_TempSensor                         ((uint8_t)ADC_Channel_16)
 #define ADC_Channel_Vrefint                            ((uint8_t)ADC_Channel_17)
 #endif
@@ -6841,7 +6843,7 @@ static __I uint8_t ADCPrescTable[4] = {2, 4, 6, 8};
 #define ADC_SampleTime_57Cycles                        ((uint8_t)0x05)
 #define ADC_SampleTime_73Cycles                        ((uint8_t)0x06)
 #define ADC_SampleTime_241Cycles                       ((uint8_t)0x07)
-#elif defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define ADC_SampleTime_1Cycles5                        ((uint8_t)0x00)
 #define ADC_SampleTime_7Cycles5                        ((uint8_t)0x01)
 #define ADC_SampleTime_13Cycles5                       ((uint8_t)0x02)
@@ -6860,7 +6862,7 @@ static __I uint8_t ADCPrescTable[4] = {2, 4, 6, 8};
 #define ADC_ExternalTrigInjecConv_T2_CC4               ((uint32_t)0x00003000)
 #define ADC_ExternalTrigInjecConv_Ext_PD1_PA2          ((uint32_t)0x00006000)
 #define ADC_ExternalTrigInjecConv_None                 ((uint32_t)0x00007000)
-#elif defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define ADC_ExternalTrigInjecConv_T2_TRGO              ((uint32_t)0x00002000)
 #define ADC_ExternalTrigInjecConv_T2_CC1               ((uint32_t)0x00003000)
 #define ADC_ExternalTrigInjecConv_T3_CC4               ((uint32_t)0x00004000)
@@ -6917,7 +6919,7 @@ static __I uint8_t ADCPrescTable[4] = {2, 4, 6, 8};
 #define ADC_ExternalTrigInjec_DLY                      ((uint32_t)0x00020000)
 #endif
 
-#if defined(CH32V20x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x)
 
 /* ch32v20x_bkp.h ------------------------------------------------------------*/
 
@@ -7348,7 +7350,7 @@ static __I uint8_t ADCPrescTable[4] = {2, 4, 6, 8};
 #define DMA1_IT_TE8                        ((uint32_t)0x80000000)
 #endif
 
-#if defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V30x)
 #define DMA2_IT_GL1                        ((uint32_t)0x10000001)
 #define DMA2_IT_TC1                        ((uint32_t)0x10000002)
 #define DMA2_IT_HT1                        ((uint32_t)0x10000004)
@@ -7434,7 +7436,7 @@ static __I uint8_t ADCPrescTable[4] = {2, 4, 6, 8};
 #define DMA1_FLAG_TE8                      ((uint32_t)0x80000000)
 #endif
 
-#if defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V30x)
 #define DMA2_FLAG_GL1                      ((uint32_t)0x10000001)
 #define DMA2_FLAG_TC1                      ((uint32_t)0x10000002)
 #define DMA2_FLAG_HT1                      ((uint32_t)0x10000004)
@@ -8663,6 +8665,7 @@ typedef enum
 #define FLASH_WRProt_AllSectors        ((uint32_t)0xFFFFFFFF) /* Write protection of all Sectors */
 
 #elif defined(CH32V10x)
+
 /* Values to be used with CH32V10x Low and Medium density devices */
 #define FLASH_WRProt_Pages0to3           ((uint32_t)0x00000001) /* CH32 Low and Medium density devices: Write protection of page 0 to 3 */
 #define FLASH_WRProt_Pages4to7           ((uint32_t)0x00000002) /* CH32 Low and Medium density devices: Write protection of page 4 to 7 */
@@ -8703,7 +8706,7 @@ typedef enum
 
 #define FLASH_WRProt_AllPages            ((uint32_t)0xFFFFFFFF) /* Write protection of all Pages */
 
-#endif
+#endif // defined(CH32V10x)
 
 /* Option_Bytes_IWatchdog */
 #define OB_IWDG_SW                       ((uint16_t)0x0001) /* Software IWDG selected */
@@ -8760,6 +8763,7 @@ typedef enum
 #endif
 
 #if defined(CH32V30x)
+
 /* ch32v30x_fsmc.h ------------------------------------------------------------*/
 
 /* FSMC_NORSRAM_Bank */
@@ -8911,7 +8915,7 @@ typedef enum
 #define GPIO_Pin_5                     ((uint16_t)0x0020) /* Pin 5 selected */
 #define GPIO_Pin_6                     ((uint16_t)0x0040) /* Pin 6 selected */
 #define GPIO_Pin_7                     ((uint16_t)0x0080) /* Pin 7 selected */
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define GPIO_Pin_8                      ((uint16_t)0x0100) /* Pin 8 selected */
 #define GPIO_Pin_9                      ((uint16_t)0x0200) /* Pin 9 selected */
 #define GPIO_Pin_10                     ((uint16_t)0x0400) /* Pin 10 selected */
@@ -9029,13 +9033,13 @@ typedef enum
 #define GPIO_Remap_MISC                ((uint32_t)0x80002000) /* Miscellaneous Remap (DMA2 Channel5 Position and DAC Trigger remapping, \
                                                                    only for High density Value line devices) */
 
-#endif
+#endif // defined(CH32V10x)
 
 /* GPIO_Port_Sources */
 #define GPIO_PortSourceGPIOA           ((uint8_t)0x00)
 #define GPIO_PortSourceGPIOC           ((uint8_t)0x02)
 #define GPIO_PortSourceGPIOD           ((uint8_t)0x03)
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define GPIO_PortSourceGPIOB            ((uint8_t)0x01)
 #define GPIO_PortSourceGPIOD            ((uint8_t)0x03)
 #define GPIO_PortSourceGPIOE            ((uint8_t)0x04)
@@ -9052,7 +9056,7 @@ typedef enum
 #define GPIO_PinSource5                ((uint8_t)0x05)
 #define GPIO_PinSource6                ((uint8_t)0x06)
 #define GPIO_PinSource7                ((uint8_t)0x07)
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define GPIO_PinSource8                 ((uint8_t)0x08)
 #define GPIO_PinSource9                 ((uint8_t)0x09)
 #define GPIO_PinSource10                ((uint8_t)0x0A)
@@ -9073,7 +9077,7 @@ typedef enum
 
 /* I2C_mode */
 #define I2C_Mode_I2C                                         ((uint16_t)0x0000)
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define I2C_Mode_SMBusDevice                                 ((uint16_t)0x0002)
 #define I2C_Mode_SMBusHost                                   ((uint16_t)0x000A)
 #endif
@@ -9103,7 +9107,7 @@ typedef enum
 #define I2C_Register_STAR1                                   ((uint8_t)0x14)
 #define I2C_Register_STAR2                                   ((uint8_t)0x18)
 #define I2C_Register_CKCFGR                                  ((uint8_t)0x1C)
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define I2C_Register_RTR                                     ((uint8_t)0x20)
 
 /* I2C_SMBus_alert_pin_level */
@@ -9140,7 +9144,7 @@ typedef enum
 
 /* SR2 register flags  */
 #define I2C_FLAG_DUALF                                       ((uint32_t)0x00800000)
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define I2C_FLAG_SMBHOST                                     ((uint32_t)0x00400000)
 #define I2C_FLAG_SMBDEFAULT                                  ((uint32_t)0x00200000)
 #endif
@@ -9150,7 +9154,7 @@ typedef enum
 #define I2C_FLAG_MSL                                         ((uint32_t)0x00010000)
 
 /* SR1 register flags */
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define I2C_FLAG_SMBALERT                                    ((uint32_t)0x10008000)
 #define I2C_FLAG_TIMEOUT                                     ((uint32_t)0x10004000)
 #endif
@@ -9461,7 +9465,7 @@ typedef struct
 /* PWR_Flag */
 #define PWR_FLAG_PVDO             ((uint32_t)0x00000004)
 
-#elif defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 
 /* PVD_detection_level  */
 #define PWR_PVDLevel_2V2          ((uint32_t)0x00000000)
@@ -9503,7 +9507,7 @@ typedef struct
 #define RCC_PLLSource_HSI_MUL2           ((uint32_t)0x00000000)
 #define RCC_PLLSource_HSE_MUL2           ((uint32_t)0x00030000)
 
-#elif defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 
 /* PLL_entry_clock_source */
 #define RCC_PLLSource_HSI_Div2          ((uint32_t)0x00000000)
@@ -9561,7 +9565,7 @@ typedef struct
 #define RCC_PLLMul_15_EXTEN              ((uint32_t)0x00380000)
 #define RCC_PLLMul_16_EXTEN              ((uint32_t)0x003C0000)
 
-#endif
+#endif // defined(CH32V20x) || defined(CH32V30x_D8) || defined(CH32V10x)
 
 /* PREDIV1_division_factor */
 #ifdef CH32V30x_D8C
@@ -9674,7 +9678,7 @@ typedef struct
 #define RCC_SYSCLK_Div128                ((uint32_t)0x000000E0)
 #define RCC_SYSCLK_Div256                ((uint32_t)0x000000F0)
 
-#elif defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 
 /* AHB_clock_source */
 #define RCC_SYSCLK_Div1                 ((uint32_t)0x00000000)
@@ -9698,7 +9702,7 @@ typedef struct
 
 /* RCC_Interrupt_source */
 #define RCC_IT_LSIRDY                    ((uint8_t)0x01)
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define RCC_IT_LSERDY                   ((uint8_t)0x02)
 #endif
 #define RCC_IT_HSIRDY                    ((uint8_t)0x04)
@@ -9767,7 +9771,7 @@ typedef struct
 #define RCC_PCLK2_Div96                  ((uint32_t)0x0000B800)
 #define RCC_PCLK2_Div128                 ((uint32_t)0x0000F800)
 
-#elif defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 
 /* ADC_clock_source */
 #define RCC_PCLK2_Div2                 ((uint32_t)0x00000000)
@@ -9809,21 +9813,26 @@ typedef struct
 #define RCC_APB1Periph_I2C1              ((uint32_t)0x00200000)
 #define RCC_APB1Periph_PWR               ((uint32_t)0x10000000)
 
-#elif defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 
 /* AHB_peripheral */
 #define RCC_AHBPeriph_DMA1             ((uint32_t)0x00000001)
 #define RCC_AHBPeriph_DMA2             ((uint32_t)0x00000002)
 #define RCC_AHBPeriph_SRAM             ((uint32_t)0x00000004)
+
 #if defined(CH32V10x)
 #define RCC_AHBPeriph_FLITF            ((uint32_t)0x00000010)
 #endif
+
 #define RCC_AHBPeriph_CRC              ((uint32_t)0x00000040)
 #define RCC_AHBPeriph_FSMC             ((uint32_t)0x00000100)
+
 #if !defined(CH32V10x)
 #define RCC_AHBPeriph_RNG              ((uint32_t)0x00000200)
 #endif
+
 #define RCC_AHBPeriph_SDIO             ((uint32_t)0x00000400)
+
 #if !defined(CH32V10x)
 #define RCC_AHBPeriph_USBHS            ((uint32_t)0x00000800)
 #define RCC_AHBPeriph_OTG_FS           ((uint32_t)0x00001000)
@@ -9912,7 +9921,7 @@ typedef struct
 #define RCC_MCO_HSE                      ((uint8_t)0x06)
 #ifdef CH32V003
 #define RCC_MCO_PLLCLK                   ((uint8_t)0x07)
-#elif defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define RCC_MCO_PLLCLK_Div2            	 ((uint8_t)0x07)
 #endif
 
@@ -9927,7 +9936,7 @@ typedef struct
 #define RCC_FLAG_HSIRDY                  ((uint8_t)0x21)
 #define RCC_FLAG_HSERDY                  ((uint8_t)0x31)
 #define RCC_FLAG_PLLRDY                  ((uint8_t)0x39)
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 #define RCC_FLAG_LSERDY                	 ((uint8_t)0x41)
 #endif
 #define RCC_FLAG_LSIRDY                  ((uint8_t)0x61)
@@ -9978,7 +9987,7 @@ typedef struct
   #define RCC_ETHCLK_Div2    ((uint32_t)0x01)
 #endif
 
-#endif
+#endif // defined(CH32V20x)
 
 #if defined(CH32V30x)
 
@@ -10032,7 +10041,7 @@ typedef struct
 
 #endif
 
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 
 /* ch32v00x_rtc.h ------------------------------------------------------------*/
 /* RTC_interrupts_define */
@@ -10076,9 +10085,9 @@ typedef struct
 #else
 #define CAB_LSIFQ       32000
 #endif
-#endif
+#endif // defined(CH32V20x_D8) || defined(CH32V20x_D8W)
 
-#endif
+#endif // defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 
 #if defined(CH32V30x)
 /* ch32v00x_sdio.h -----------------------------------------------------------*/
@@ -10256,11 +10265,9 @@ typedef struct
 
 /* SPI_MSB transmission */
 #define SPI_FirstBit_MSB                   ((uint16_t)0x0000)
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
-#define SPI_FirstBit_LSB                   ((uint16_t)0x0080)
-#endif
 
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
+#define SPI_FirstBit_LSB                   ((uint16_t)0x0080)
 
 /* I2S_Mode */
 #define I2S_Mode_SlaveTx                   ((uint16_t)0x0000)
@@ -11972,7 +11979,7 @@ static inline void __set_MCAUSE(uint32_t value)
     __ASM volatile("csrw mcause, %0":: "r"(value));
 }
 
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 
 /*********************************************************************
  * @fn      __get_MTVAL

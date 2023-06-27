@@ -694,21 +694,21 @@ void HardFault_Handler( void )           __attribute__((section(".text.vector_ha
 void Ecall_M_Mode_Handler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void Ecall_U_Mode_Handler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void Break_Point_Handler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
-#endif
+#endif // defined(CH32V20x) || defined(CH32V30x)
 void SysTick_Handler( void )             __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void SW_Handler( void )                  __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void WWDG_IRQHandler( void )             __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void PVD_IRQHandler( void )              __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 void TAMPER_IRQHandler( void )			 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void RTC_IRQHandler( void )				 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
-#endif
+#endif // defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 void FLASH_IRQHandler( void )            __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void RCC_IRQHandler( void )              __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 #ifdef CH32V003
 void EXTI7_0_IRQHandler( void )          __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void AWU_IRQHandler( void )              __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
-#elif defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 void EXTI0_IRQHandler( void ) 			 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void EXTI1_IRQHandler( void ) 			 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void EXTI2_IRQHandler( void ) 			 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
@@ -724,7 +724,7 @@ void DMA1_Channel6_IRQHandler( void )    __attribute__((section(".text.vector_ha
 void DMA1_Channel7_IRQHandler( void )    __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 #ifdef CH32V003
 void ADC1_IRQHandler( void )             __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
-#elif defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 void ADC1_2_IRQHandler( void ) 			 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 #endif
 #if defined(CH32V20x) || defined(CH32V30x)
@@ -732,25 +732,25 @@ void USB_HP_CAN1_TX_IRQHandler( void ) 	 __attribute__((section(".text.vector_ha
 void USB_LP_CAN1_RX0_IRQHandler( void )  __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void CAN1_RX1_IRQHandler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void CAN1_SCE_IRQHandler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
-#endif
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#endif // defined(CH32V20x) || defined(CH32V30x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 void EXTI9_5_IRQHandler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
-#endif
+#endif // defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 void TIM1_BRK_IRQHandler( void )         __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void TIM1_UP_IRQHandler( void )          __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void TIM1_TRG_COM_IRQHandler( void )     __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void TIM1_CC_IRQHandler( void )          __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void TIM2_IRQHandler( void )             __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
-#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 void TIM3_IRQHandler( void ) 			 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void TIM4_IRQHandler( void ) 			 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
-#endif
+#endif // defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 void I2C1_EV_IRQHandler( void )          __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void I2C1_ER_IRQHandler( void )          __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 #ifdef CH32V003
 void USART1_IRQHandler( void )           __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void SPI1_IRQHandler( void )             __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
-#elif defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 void I2C2_EV_IRQHandler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void I2C2_ER_IRQHandler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void SPI1_IRQHandler( void ) 			 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
@@ -761,10 +761,10 @@ void USART3_IRQHandler( void ) 			 __attribute__((section(".text.vector_handler"
 void EXTI15_10_IRQHandler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void RTCAlarm_IRQHandler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 #endif
-#if defined(CH32V20x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x)
 void USBWakeUp_IRQHandler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void USBHD_IRQHandler( void ) 			 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
-#endif
+#endif // defined(CH32V10x) || defined(CH32V20x)
 #if defined(CH32V20x)
 void USBHDWakeUp_IRQHandler( void ) 	 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void ETH_IRQHandler( void ) 			 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
@@ -979,7 +979,7 @@ void SystemInitHSEPLL( int HSEBYP )
 	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x08);    // Wait till PLL is used as system clock source
 }
 
-#elif defined(CH32V20x) || defined(CH32V30x) || defined(CH32V10x)
+#elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 
 void Init() 				   __attribute((section(".init")));
 void InterruptVector()         __attribute__((naked)) __attribute((section(".vector"))) __attribute((weak,alias("InterruptVectorDefault")));
@@ -1089,7 +1089,7 @@ void InterruptVectorDefault()
 	.word   USART3_IRQHandler          /* USART3 */ \n\
 	.word   EXTI15_10_IRQHandler       /* EXTI Line 15..10 */ \n\
 	.word   RTCAlarm_IRQHandler        /* RTC Alarm through EXTI Line */ \n"
-#if defined(CH32V20x) || defined(CH32V10x)
+#if defined(CH32V10x) || defined(CH32V20x)
 "	.word   USBWakeUp_IRQHandler       /* USB Wake up from suspend */ \n\
 	.word   USBHD_IRQHandler           /* USBHD Break */ \n"
 #endif
@@ -1232,7 +1232,7 @@ void handle_reset( void )
 
 #endif
 
-#if defined(CH32V30x) || defined(CH32V20x)
+#if defined(CH32V20x) || defined(CH32V30x)
 
 void SystemInit144HSI( void )
 {
@@ -1289,7 +1289,7 @@ void SystemInit144HSE( void )
 	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x08) {}
 }
 
-#endif
+#endif // defined(CH32V20x) || defined(CH32V30x)
 
 #if defined(CH32V10x)
 
@@ -1352,7 +1352,7 @@ void SystemInit72HSE( void )
 	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x08) {}
 }
 
-#endif
+#endif // defined(CH32V10x)
 
 #ifdef CH32V003
 
