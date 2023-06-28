@@ -1380,6 +1380,9 @@ void SystemInit()
 #endif
 
 #if defined(FUNCONF_USE_HSI) && FUNCONF_USE_HSI
+	#if defined(CH32V30x)
+		EXTEN->EXTEN_CTR |= EXTEN_PLL_HSI_PRE;
+	#endif
 	#if defined(FUNCONF_USE_PLL) && FUNCONF_USE_PLL
 		RCC->CFGR0 = BASE_CFGR0;
 		RCC->CTLR  = RCC_HSION | RCC_PLLON | ((FUNCONF_HSITRIM) << 3); // Use HSI, but enable PLL.
@@ -1395,11 +1398,15 @@ void SystemInit()
 	// Values lifted from the EVT.  There is little to no documentation on what this does.
 	while(!(RCC->CTLR&RCC_HSERDY));
 
-	#if defined(FUNCONF_USE_PLL) && FUNCONF_USE_PLL
+	#if defined(CH32V003)
 		RCC->CFGR0 = BASE_CFGR0 | RCC_SW_HSE;
+	#else
+		RCC->CFGR0 = BASE_CFGR0 | RCC_PLLSRC_HSE | RCC_PLLXTPRE_HSE;
+	#endif
+
+	#if defined(FUNCONF_USE_PLL) && FUNCONF_USE_PLL
 		RCC->CTLR  = RCC_HSEON | RCC_PLLON | HSEBYP;               // Turn off HSI.
 	#else
-		RCC->CFGR0 = BASE_CFGR0 | RCC_SW_HSE;
 		RCC->CTLR  = RCC_HSEON | HSEBYP;                           // Turn off PLL and HSI.
 	#endif
 #endif

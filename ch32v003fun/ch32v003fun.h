@@ -86,7 +86,7 @@
 			#define FUNCONF_PLL_MULTIPLIER 10	// Default: 8 * 10 = 80 MHz
 		#elif defined(CH32V20x)
 			#define FUNCONF_PLL_MULTIPLIER 18	// Default: 8 * 18 = 144 MHz
-		#elif defined(CH32V20x)
+		#elif defined(CH32V30x)
 			#define FUNCONF_PLL_MULTIPLIER 18	// Default: 8 * 18 = 144 MHz
 		#else // CH32V003
 			#define FUNCONF_PLL_MULTIPLIER 2	// Default: 24 * 2 = 48 MHz
@@ -12157,6 +12157,11 @@ void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) 
 
 #endif
 
+#define str(token) #token
+#define xstr(token) str(token)
+
+#pragma message("CH32V003FUN: " xstr(FUNCONF_PLL_MULTIPLIER) " Multiplier")
+
 // Determination of PLL multiplication factor for non-V003 chips
 #if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 	#if !defined(FUNCONF_SYSTEM_CORE_CLOCK)
@@ -12200,41 +12205,44 @@ void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) 
 			#endif
 		#else
 			#if FUNCONF_PLL_MULTIPLIER == 3
-				#define PLL_MULTIPLICATION RCC_PLLMULL3
+				#define PLL_MULTIPLICATION RCC_PLLMULL3_EXTEN
 			#elif FUNCONF_PLL_MULTIPLIER == 4
-				#define PLL_MULTIPLICATION RCC_PLLMULL4
+				#define PLL_MULTIPLICATION RCC_PLLMULL4_EXTEN
 			#elif FUNCONF_PLL_MULTIPLIER == 5
-				#define PLL_MULTIPLICATION RCC_PLLMULL5
+				#define PLL_MULTIPLICATION RCC_PLLMULL5_EXTEN
 			#elif FUNCONF_PLL_MULTIPLIER == 6
-				#define PLL_MULTIPLICATION RCC_PLLMULL6
-			#elif FUNCONF_PLL_MULTIPLIER == 6.5
-				#define PLL_MULTIPLICATION RCC_PLLMULL6_5
+				#define PLL_MULTIPLICATION RCC_PLLMULL6_EXTEN
 			#elif FUNCONF_PLL_MULTIPLIER == 7
-				#define PLL_MULTIPLICATION RCC_PLLMULL7
+				#define PLL_MULTIPLICATION RCC_PLLMULL7_EXTEN
 			#elif FUNCONF_PLL_MULTIPLIER == 8
-				#define PLL_MULTIPLICATION RCC_PLLMULL8
+				#define PLL_MULTIPLICATION RCC_PLLMULL8_EXTEN
 			#elif FUNCONF_PLL_MULTIPLIER == 9
-				#define PLL_MULTIPLICATION RCC_PLLMULL9
+				#define PLL_MULTIPLICATION RCC_PLLMULL9_EXTEN
 			#elif FUNCONF_PLL_MULTIPLIER == 10
-				#define PLL_MULTIPLICATION RCC_PLLMULL10
+				#define PLL_MULTIPLICATION RCC_PLLMULL10_EXTEN
 			#elif FUNCONF_PLL_MULTIPLIER == 11
-				#define PLL_MULTIPLICATION RCC_PLLMULL11
+				#define PLL_MULTIPLICATION RCC_PLLMULL11_EXTEN
 			#elif FUNCONF_PLL_MULTIPLIER == 12
-				#define PLL_MULTIPLICATION RCC_PLLMULL12
+				#define PLL_MULTIPLICATION RCC_PLLMULL12_EXTEN
 			#elif FUNCONF_PLL_MULTIPLIER == 13
-				#define PLL_MULTIPLICATION RCC_PLLMULL13
+				#define PLL_MULTIPLICATION RCC_PLLMULL13_EXTEN
 			#elif FUNCONF_PLL_MULTIPLIER == 14
-				#define PLL_MULTIPLICATION RCC_PLLMULL14
+				#define PLL_MULTIPLICATION RCC_PLLMULL14_EXTEN
 			#elif FUNCONF_PLL_MULTIPLIER == 15
-				#define PLL_MULTIPLICATION RCC_PLLMULL15
+				#define PLL_MULTIPLICATION RCC_PLLMULL15_EXTEN
 			#elif FUNCONF_PLL_MULTIPLIER == 16
-				#define PLL_MULTIPLICATION RCC_PLLMULL16
+				#define PLL_MULTIPLICATION RCC_PLLMULL16_EXTEN
+			#elif FUNCONF_PLL_MULTIPLIER == 18
+				#define PLL_MULTIPLICATION RCC_PLLMULL18_EXTEN
 			#else
 				#error "Invalid PLL multiplier"
 			#endif
 		#endif
 	#endif
 #endif
+
+#pragma message("CH32V003FUN: " xstr(FUNCONF_SYSTEM_CORE_CLOCK) " Clock")
+
 
 #ifndef __ASSEMBLER__
 
