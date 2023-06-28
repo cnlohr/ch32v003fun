@@ -966,8 +966,9 @@ void InterruptVectorDefault()
 	asm volatile( "\n\
 	.align	1 \n\
 	.option norvc; \n\
-	.word   Init \n\
-	.word   0 \n\
+	.word   Init \n"
+#if !defined(FUNCONF_TINYVECTOR) || !FUNCONF_TINYVECTOR
+"	.word   0 \n\
 	.word   NMI_Handler                /* NMI */ \n\
 	.word   HardFault_Handler          /* Hard Fault */ \n\
 	.word   0 \n"
@@ -1104,6 +1105,7 @@ void InterruptVectorDefault()
     .word   DMA2_Channel9_IRQHandler   /* DMA2 Channel 9 */ \n\
     .word   DMA2_Channel10_IRQHandler  /* DMA2 Channel 10 */ \n\
     .word   DMA2_Channel11_IRQHandler  /* DMA2 Channel 11 */ \n"
+#endif
 #endif
 "	.option rvc; \n");
 
@@ -1355,65 +1357,6 @@ void DelaySysTick( uint32_t n )
 #endif
 }
 
-#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
-
-inline uint32_t GetPllClock(uint32_t clock) {
-#if !defined(FUNCONF_SYSTEM_CORE_CLOCK)
-	return 0;
-#else
-#if defined(FUNCONF_USE_HSI) && FUNCONF_USE_HSI
-	uint32_t ratio = FUNCONF_SYSTEM_CORE_CLOCK / HSI_VALUE;
-#else
-	uint32_t ratio = FUNCONF_SYSTEM_CORE_CLOCK / HSE_VALUE;
-#endif
-#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x_D8)
-	switch(ratio) {
-		case 1: return 0;
-		case 2: return RCC_PLLMULL2;
-		case 3: return RCC_PLLMULL3;
-		case 4: return RCC_PLLMULL4;
-		case 5: return RCC_PLLMULL5;
-		case 6: return RCC_PLLMULL6;
-		case 7: return RCC_PLLMULL7;
-		case 8: return RCC_PLLMULL8;
-		case 9: return RCC_PLLMULL9;
-		case 10: return RCC_PLLMULL10;
-		case 11: return RCC_PLLMULL11;
-		case 12: return RCC_PLLMULL12;
-		case 13: return RCC_PLLMULL13;
-		case 14: return RCC_PLLMULL14;
-		case 15: return RCC_PLLMULL15;
-		case 16: return RCC_PLLMULL16;
-#if defined(CH32V20x)
-		case 18: return RCC_PLLMULL18;
-#endif
-		default: return 0;
-	}
-#else
-	switch(ratio) {
-		case 1: return 0;
-		case 3: return RCC_PLLMULL3_EXTEN;
-		case 4: return RCC_PLLMULL4_EXTEN;
-		case 5: return RCC_PLLMULL5_EXTEN;
-		case 6: return RCC_PLLMULL6_EXTEN;
-		case 7: return RCC_PLLMULL7_EXTEN;
-		case 8: return RCC_PLLMULL8_EXTEN;
-		case 9: return RCC_PLLMULL9_EXTEN;
-		case 10: return RCC_PLLMULL10_EXTEN;
-		case 11: return RCC_PLLMULL11_EXTEN;
-		case 12: return RCC_PLLMULL12_EXTEN;
-		case 13: return RCC_PLLMULL13_EXTEN;
-		case 14: return RCC_PLLMULL14_EXTEN;
-		case 15: return RCC_PLLMULL15_EXTEN;
-		case 16: return RCC_PLLMULL16_EXTEN;
-		default: return 0;
-	}
-#endif
-#endif
-}
-
-#endif
-
 void SystemInit()
 {
 #if FUNCONF_HSE_BYPASS
@@ -1423,13 +1366,17 @@ void SystemInit()
 #endif
 
 #if defined(FUNCONF_USE_PLL) && FUNCONF_USE_PLL
-#if defined(CH32V003)
-	#define BASE_CFGR0 RCC_HPRE_DIV1 | RCC_PLLSRC_HSI_Mul2    // HCLK = SYSCLK = APB1 And, enable PLL
+	#if defined(CH32V003)
+		#define BASE_CFGR0 RCC_HPRE_DIV1 | RCC_PLLSRC_HSI_Mul2    // HCLK = SYSCLK = APB1 And, enable PLL
+	#else
+		#define BASE_CFGR0 RCC_HPRE_DIV1 | RCC_PPRE2_DIV1 | RCC_PPRE1_DIV2 | PLL_MULTIPLICATION
+	#endif
 #else
-	#define BASE_CFGR0 RCC_HPRE_DIV1 | RCC_PPRE2_DIV1 | RCC_PPRE1_DIV2 | GetPllClock(FUNCONF_SYSTEM_CORE_CLOCK)
-#endif
-#else
-	#define BASE_CFGR0 RCC_HPRE_DIV1      // HCLK = SYSCLK = APB1 And, no pll.
+	#if defined(CH32V003)
+		#define BASE_CFGR0 RCC_HPRE_DIV1     					  // HCLK = SYSCLK = APB1 And, no pll.
+	#else
+		#define BASE_CFGR0 RCC_HPRE_DIV1 | RCC_PPRE2_DIV1 | RCC_PPRE1_DIV1
+	#endif
 #endif
 
 #if defined(FUNCONF_USE_HSI) && FUNCONF_USE_HSI
@@ -1450,21 +1397,44 @@ void SystemInit()
 
 	#if defined(FUNCONF_USE_PLL) && FUNCONF_USE_PLL
 		RCC->CFGR0 = BASE_CFGR0 | RCC_SW_HSE;
-		RCC->CTLR  = RCC_HSEON | RCC_PLLON | HSEBYP;                    // Turn off HSI.
+		RCC->CTLR  = RCC_HSEON | RCC_PLLON | HSEBYP;               // Turn off HSI.
 	#else
 		RCC->CFGR0 = BASE_CFGR0 | RCC_SW_HSE;
-		RCC->CTLR  = RCC_HSEON | HSEBYP;                                // Turn off PLL and HSI.
+		RCC->CTLR  = RCC_HSEON | HSEBYP;                           // Turn off PLL and HSI.
 	#endif
 #endif
 
-#if defined(CH32V003) || defined(CH32V10x)
-#if FUNCONF_SYSTEM_CORE_CLOCK > 25000000
-	FLASH->ACTLR = FLASH_ACTLR_LATENCY_1;                   //+1 Cycle Latency
-#else
-	FLASH->ACTLR = FLASH_ACTLR_LATENCY_0;                   // +0 Cycle Latency
-#endif
+	// CH32V10x flash prefetch buffer
+#if defined(CH32V10x)
+	// Enable Prefetch Buffer
+	FLASH->ACTLR |= FLASH_ACTLR_PRFTBE;
 #endif
 
+	// CH32V003 flash latency
+#if defined(CH32V003)
+	#if FUNCONF_SYSTEM_CORE_CLOCK > 25000000
+		FLASH->ACTLR = FLASH_ACTLR_LATENCY_1;               // +1 Cycle Latency
+	#else
+		FLASH->ACTLR = FLASH_ACTLR_LATENCY_0;               // +0 Cycle Latency
+	#endif
+#endif
+
+	// CH32V10x flash latency
+#if defined(CH32V10x)
+	#if defined(FUNCONF_USE_HSE) && FUNCONF_USE_HSE
+		#if !defined(FUNCONF_USE_PLL) || !FUNCONF_USE_PLL
+			FLASH->ACTLR = FLASH_ACTLR_LATENCY_0;           // +0 Cycle Latency
+		#else
+			#if FUNCONF_SYSTEM_CORE_CLOCK < 56000000
+				FLASH->ACTLR = FLASH_ACTLR_LATENCY_1;       // +1 Cycle Latency
+			#else
+				FLASH->ACTLR = FLASH_ACTLR_LATENCY_2;       // +2 Cycle Latency
+			#endif
+		#endif
+	#else
+		FLASH->ACTLR = FLASH_ACTLR_LATENCY_1;       		// +1 Cycle Latency
+	#endif
+#endif
 
 	RCC->INTR  = 0x009F0000;                               // Clear PLL, CSSC, HSE, HSI and LSI ready flags.
 
