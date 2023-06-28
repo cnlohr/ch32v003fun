@@ -1018,8 +1018,6 @@ void SystemInit()
 
 #if defined(FUNCONF_USE_HSE) && FUNCONF_USE_HSE
 
-	#define HSEBYP (FUNCONF_HSE_BYPASS)?
-
 	RCC->CTLR  = RCC_HSION | RCC_HSEON | RCC_PLLON | HSEBYP;       // Keep HSI and PLL on just in case, while turning on HSE
 
 	// Values lifted from the EVT.  There is little to no documentation on what this does.
