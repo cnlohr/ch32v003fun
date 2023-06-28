@@ -20,7 +20,7 @@ CFLAGS:= \
 	-nostdlib \
 	-I. -Wall
 
-CFLAGS+=-fno-rtti -DSTDOUT_UART -DCPLUSPLUS
+CFLAGS+=-fno-rtti -DCPLUSPLUS
 
 flash : cv_flash
 clean : cv_clean

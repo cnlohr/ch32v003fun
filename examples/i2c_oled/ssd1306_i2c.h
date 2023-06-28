@@ -48,22 +48,22 @@ void ssd1306_i2c_setup(void)
 	// set freq
 	tempreg = I2C1->CTLR2;
 	tempreg &= ~I2C_CTLR2_FREQ;
-	tempreg |= (APB_CLOCK/SSD1306_I2C_PRERATE)&I2C_CTLR2_FREQ;
+	tempreg |= (FUNCONF_SYSTEM_CORE_CLOCK/SSD1306_I2C_PRERATE)&I2C_CTLR2_FREQ;
 	I2C1->CTLR2 = tempreg;
 	
 	// Set clock config
 	tempreg = 0;
 #if (SSD1306_I2C_CLKRATE <= 100000)
 	// standard mode good to 100kHz
-	tempreg = (APB_CLOCK/(2*SSD1306_I2C_CLKRATE))&SSD1306_I2C_CKCFGR_CCR;
+	tempreg = (FUNCONF_SYSTEM_CORE_CLOCK/(2*SSD1306_I2C_CLKRATE))&SSD1306_I2C_CKCFGR_CCR;
 #else
 	// fast mode over 100kHz
 #ifndef SSD1306_I2C_DUTY
 	// 33% duty cycle
-	tempreg = (APB_CLOCK/(3*SSD1306_I2C_CLKRATE))&SSD1306_I2C_CKCFGR_CCR;
+	tempreg = (FUNCONF_SYSTEM_CORE_CLOCK/(3*SSD1306_I2C_CLKRATE))&SSD1306_I2C_CKCFGR_CCR;
 #else
 	// 36% duty cycle
-	tempreg = (APB_CLOCK/(25*SSD1306_I2C_CLKRATE))&I2C_CKCFGR_CCR;
+	tempreg = (FUNCONF_SYSTEM_CORE_CLOCK/(25*SSD1306_I2C_CLKRATE))&I2C_CKCFGR_CCR;
 	tempreg |= I2C_CKCFGR_DUTY;
 #endif
 	tempreg |= I2C_CKCFGR_FS;

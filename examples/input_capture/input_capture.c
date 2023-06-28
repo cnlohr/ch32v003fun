@@ -1,11 +1,7 @@
 /* Small example showing how to capture timer values on gpio edges */
 
-#define SYSTEM_CORE_CLOCK 48000000
-
 #include "ch32v003fun.h"
 #include <stdio.h>
-
-#define APB_CLOCK SYSTEM_CORE_CLOCK
 
 #define queuelen 16
 volatile uint32_t captureVals[queuelen];
@@ -56,8 +52,7 @@ void TIM1_CC_IRQHandler(void)
 
 int main()
 {
-	SystemInit48HSI();
-	SetupDebugPrintf();
+	SystemInit();
 
 	Delay_Ms(100);
 

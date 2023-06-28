@@ -8,8 +8,6 @@
 // June 13, 2023 Mats Engstrom (github.com/mengstr)
 //
 
-#define SYSTEM_CORE_CLOCK 48000000
-
 #include "ch32v003fun.h"
 #include <stdio.h>
 void FlashOptionData(uint8_t data0, uint8_t data1) {
@@ -61,8 +59,7 @@ void FlashOptionData(uint8_t data0, uint8_t data1) {
 //
 //
 int main() {
-	SystemInit48HSI();
-	SetupDebugPrintf();
+	SystemInit();
 	Delay_Ms(250);
 	
 	uint8_t bootcnt=OB->Data0;

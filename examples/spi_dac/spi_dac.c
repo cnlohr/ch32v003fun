@@ -3,10 +3,6 @@
  * 04-10-2023 E. Brombaugh
  */
 
-// Could be defined here, or in the processor defines.
-#define SYSTEM_CORE_CLOCK 48000000
-#define APB_CLOCK SYSTEM_CORE_CLOCK
-
 #include "ch32v003fun.h"
 #include <stdio.h>
 
@@ -192,10 +188,9 @@ void DMA1_Channel4_IRQHandler( void )
  */
 int main()
 {
-	SystemInit48HSI();
+	SystemInit();
 
 	// start serial @ default 115200bps
-	SetupUART( UART_BRR );
 	Delay_Ms( 100 );
 	printf("\r\r\n\nspi_dac example\n\r");
 

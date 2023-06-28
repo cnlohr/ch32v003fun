@@ -1,16 +1,11 @@
-// Could be defined here, or in the processor defines.
-#define SYSTEM_CORE_CLOCK 24000000
-
 #include "ch32v003fun.h"
 #include <stdio.h>
-
-#define APB_CLOCK SYSTEM_CORE_CLOCK
 
 uint32_t count;
 
 int main()
 {
-	SystemInitHSE( 0 );
+	SystemInit();
 
 	// Enable GPIOs
 	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOC;

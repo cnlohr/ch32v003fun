@@ -2,9 +2,7 @@
 // Doesn't rely on any of the weird HAL stuff from CH
 // Final executable is ~1/4th the size.
 
-// Could be defined here, or in the processor defines.
-#define SYSTEM_CORE_CLOCK 48000000
-#define APB_CLOCK SYSTEM_CORE_CLOCK
+// See funconfig.h to see how this uses the uart.
 
 #include "ch32v003fun.h"
 #include <stdio.h>
@@ -13,8 +11,7 @@ uint32_t count;
 
 int main()
 {
-	SystemInit48HSI();
-	SetupUART( UART_BRR );
+	SystemInit();
 
 	// Enable GPIOD.
 	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD;

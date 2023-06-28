@@ -16,10 +16,10 @@ void EXTI7_0_IRQHandler( void ) {
 
 int main()
 {
-	SystemInit48HSI();
-	SetupUART( UART_BRR );
+	SystemInit();
+	Delay_Ms(100);
 
-	printf("\r\n\r\nlow power example\r\n\r\n");
+	printf("\n\nlow power example\n\n");
 
 	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD;
 	// GPIO D4 Push-Pull
@@ -53,13 +53,13 @@ int main()
 	PFIC->SCTLR |= (1 << 2);
 
 	uint16_t counter = 0;
-	printf("entering sleep loop\r\n");
+	printf("entering sleep loop\n");
 
 	for (;;) {
 		__WFE();
 		// restore clock to full speed
-		SystemInit48HSI();
-		printf("\r\nawake, %u\r\n", counter++);
+		SystemInit();
+		printf("\nawake, %u\n", counter++);
 		GPIOD->OUTDR ^= (1 << 4);
 	}
 }

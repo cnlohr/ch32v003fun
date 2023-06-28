@@ -1,21 +1,13 @@
-// DOES NOT WORK HALP!!!!!!!!!!!!!!
-
-#define SYSTEM_CORE_CLOCK 48000000
-#define SYSTICK_USE_HCLK
-
 #include "ch32v003fun.h"
 #include <stdio.h>
-
 
 int main()
 {
 	int start;
 	int stop;
+	int testok = 1;
 
-	SETUP_SYSTICK_HCLK
-
-	SystemInit48HSI();
-	SetupDebugPrintf();
+	SystemInit();
 
 	Delay_Ms(100);
 
@@ -29,6 +21,7 @@ int main()
 //	FLASH->OBKEYR = 0x45670123;
 //	FLASH->OBKEYR = 0xCDEF89AB;
 
+	// For unlocking programming, in general.
 	FLASH->MODEKEYR = 0x45670123;
 	FLASH->MODEKEYR = 0xCDEF89AB;
 
@@ -40,8 +33,7 @@ int main()
 	}
 
 	uint32_t * ptr = (uint32_t*)0x08003700;
-	printf( "Memory at: %p: %08lx %08lx\n", ptr, ptr[0], ptr[1] );
-
+	printf( "Memory at: %08lx: %08lx %08lx\n", (uint32_t)ptr, ptr[0], ptr[1] );
 
 	printf( "FLASH->CTLR = %08lx\n", FLASH->CTLR );
 
@@ -58,6 +50,13 @@ int main()
 
 
 	printf( "Memory at %p: %08lx %08lx\n", ptr, ptr[0], ptr[1] );
+
+	if( ptr[0] != 0xffffffff )
+	{
+		printf( "WARNING/FAILURE: Flash general erasure failed\n" );
+		testok = 0;
+	}
+
 
 	// Clear buffer and prep for flashing.
 	FLASH->CTLR = CR_PAGE_PG;  // synonym of FTPG.
@@ -95,9 +94,16 @@ int main()
 
 	printf( "Memory at: %08lx: %08lx %08lx\n", (uint32_t)ptr, ptr[0], ptr[1] );
 
+
+	if( ptr[0] != 0xabcd1234 )
+	{
+		printf( "WARNING/FAILURE: Flash general erasure failed\n" );
+		testok = 0;
+	}
+
 	for( i = 0; i < 16; i++ )
 		printf( "%08lx ", ptr[i] );
-	printf( "\n" );
+	printf( "\n\nTest results: %s\n", testok?"PASS":"FAIL" );
 	while(1);
 }
 

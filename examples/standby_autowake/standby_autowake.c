@@ -16,8 +16,8 @@ void AWU_IRQHandler( void ) {
 
 int main()
 {
-	SystemInit48HSI();
-	SetupUART( UART_BRR );
+	SystemInit();
+	Delay_Ms(100);
 
 	printf("\r\n\r\nlow power example\r\n\r\n");
 
@@ -64,7 +64,7 @@ int main()
 	for (;;) {
 		__WFE();
 		// restore clock to full speed
-		SystemInit48HSI();
+		SystemInit();
 		printf("\r\nawake, %u\r\n", counter++);
 		GPIOD->OUTDR ^= (1 << 4);
 	}

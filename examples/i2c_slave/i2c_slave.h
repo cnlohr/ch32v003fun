@@ -29,7 +29,7 @@
 
 #include <stdint.h>
 
-#define APB_CLOCK SYSTEM_CORE_CLOCK
+#define APB_CLOCK FUNCONF_SYSTEM_CORE_CLOCK
 
 struct _i2c_slave_state {
     uint8_t first_write;
