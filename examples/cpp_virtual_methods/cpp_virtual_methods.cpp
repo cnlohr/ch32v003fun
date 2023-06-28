@@ -12,10 +12,8 @@
 #include <stdio.h>
 
 int main() {
-	SystemInit48HSI();
+	SystemInit();
 
-	// Setup UART @ 115200 baud
-	SetupUART(UART_BRR);
 	Delay_Ms(100);
 
 	printf("Begin example\n");

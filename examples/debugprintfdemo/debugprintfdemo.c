@@ -1,7 +1,6 @@
 /* Small example showing how to use the SWIO programming pin to 
    do printf through the debug interface */
 
-#define SYSTEM_CORE_CLOCK 48000000
 #include "ch32v003fun.h"
 #include <stdio.h>
 
@@ -16,8 +15,7 @@ void handle_debug_input( int numbytes, uint8_t * data )
 
 int main()
 {
-	SystemInit48HSI();
-	SetupDebugPrintf();
+	SystemInit();
 
 	// Enable GPIOs
 	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOC;

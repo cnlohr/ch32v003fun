@@ -8,8 +8,7 @@ int main()
 {
 	uint32_t count, regtemp;
 
-	SystemInit48HSI();
-        SetupUART( UART_BRR );
+	SystemInit();
 
 	Delay_Ms(50);
 	printf("\r\r\n\nTesting MCO output options.\r\n");

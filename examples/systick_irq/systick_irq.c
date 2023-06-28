@@ -4,11 +4,6 @@
  * 05-12-2023 C. Lohr (Modified to reflect updated sysclk)
  */
 
-// Could be defined here, or in the processor defines.
-#define SYSTEM_CORE_CLOCK 48000000
-#define SYSTICK_USE_HCLK
-#define APB_CLOCK SYSTEM_CORE_CLOCK
-
 #include "ch32v003fun.h"
 #include <stdio.h>
 
@@ -34,7 +29,7 @@ void systick_init(void)
 	NVIC_EnableIRQ(SysTicK_IRQn);
 	
 	/* Set the tick interval to 1ms for normal op */
-	SysTick->CMP = (SYSTEM_CORE_CLOCK/1000)-1;
+	SysTick->CMP = (FUNCONF_SYSTEM_CORE_CLOCK/1000)-1;
 	
 	/* Start at zero */
 	SysTick->CNT = 0;
@@ -56,7 +51,7 @@ void SysTick_Handler(void)
 	// as a warning, if more than this length of time
 	// passes before triggering, you may miss your
 	// interrupt.
-	SysTick->CMP += (SYSTEM_CORE_CLOCK/1000);
+	SysTick->CMP += (FUNCONF_SYSTEM_CORE_CLOCK/1000);
 
 	/* clear IRQ */
 	SysTick->SR = 0;
@@ -72,9 +67,9 @@ int main()
 {
 	uint32_t count = 0;
 	
-	SystemInit48HSI();
+	SystemInit();
+	Delay_Ms(100);
 
-	SetupDebugPrintf();
 	printf("\r\r\n\nsystick_irq example\n\r");
 
 	// init systick @ 1ms rate

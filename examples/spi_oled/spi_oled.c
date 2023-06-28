@@ -3,10 +3,6 @@
  * 03-29-2023 E. Brombaugh
  */
 
-// Could be defined here, or in the processor defines.
-#define SYSTEM_CORE_CLOCK 48000000
-#define APB_CLOCK SYSTEM_CORE_CLOCK
-
 // what type of OLED - uncomment just one
 //#define SSD1306_64X32
 //#define SSD1306_128X32
@@ -131,15 +127,9 @@ int count = 0;
 int main()
 {
 	// 48MHz internal clock
-	SystemInit48HSI();
+	SystemInit();
 
-	// start serial @ default 115200bps
-#ifdef STDOUT_UART
-	SetupUART( UART_BRR );
 	Delay_Ms( 100 );
-#else
-	SetupDebugPrintf();
-#endif
 	printf("\r\r\n\nspi_oled example\n\r");
 
 	// init spi and oled

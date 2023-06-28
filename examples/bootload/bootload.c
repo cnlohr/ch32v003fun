@@ -24,7 +24,7 @@ uint32_t count;
 
 int main()
 {
-	SystemInit48HSI();
+	SystemInit();
 
 	// From here, you can do whatever you'd like!
 	// This code will live up at 0x1ffff000.
@@ -58,7 +58,7 @@ int main()
 		GPIOC->BSHR = 1<<16;                     // Turn off GPIOC0
 	}
 
-	for( i = 0; i < 3; i++ )
+	for( i = 0; i < 1; i++ )
 	{
 		GPIOD->BSHR = 1 | (1<<4);
 		GPIOC->BSHR = 1;

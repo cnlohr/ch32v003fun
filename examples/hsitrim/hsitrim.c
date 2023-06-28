@@ -1,6 +1,3 @@
-#define SYSTEM_CORE_CLOCK 48000000
-#define APB_CLOCK SYSTEM_CORE_CLOCK
-
 #include "ch32v003fun.h"
 #include <stdio.h>
 
@@ -13,14 +10,19 @@ void set_trim(uint32_t trim)
 	RCC->CTLR = regtemp;
 }
 
+int lastkey = 0;
+void handle_debug_input( int numbytes, uint8_t * data )
+{
+	if( numbytes > 0 )
+		lastkey = data[numbytes-1];
+}
 
 int main()
 {
 	uint32_t trim, regtemp;
 	uint8_t key;
 
-	SystemInit48HSI();
-        SetupUART( UART_BRR );
+	SystemInit();
 
 	Delay_Ms(50);
 	printf("\r\r\n\nHSITRIM example.\r\n");
@@ -42,9 +44,9 @@ int main()
 
 	RCC->APB2PCENR |= RCC_APB2Periph_GPIOC;
 
-        // PC4 is T1CH4, 50MHz Output PP CNF = 10: Mux PP, MODE = 11: Out 50MHz
-        GPIOC->CFGLR &= ~(GPIO_CFGLR_MODE4 | GPIO_CFGLR_CNF4);
-        GPIOC->CFGLR |= GPIO_CFGLR_CNF4_1 | GPIO_CFGLR_MODE4_0 | GPIO_CFGLR_MODE4_1;
+    // PC4 is T1CH4, 50MHz Output PP CNF = 10: Mux PP, MODE = 11: Out 50MHz
+    GPIOC->CFGLR &= ~(GPIO_CFGLR_MODE4 | GPIO_CFGLR_CNF4);
+    GPIOC->CFGLR |= GPIO_CFGLR_CNF4_1 | GPIO_CFGLR_MODE4_0 | GPIO_CFGLR_MODE4_1;
 
 	printf("Enabling HSI signal with MCO function on PC4\r\n");
 	regtemp = (RCC->CFGR0 & ~RCC_CFGR0_MCO) | RCC_CFGR0_MCO_HSI;
@@ -52,14 +54,15 @@ int main()
 
 	// Setup UART RX pin SetupUART() does most of the work.  ###beware### if you use DebugPrintf, this will break!
 	// Input, GPIO D6, with AutoFunction
-        GPIOD->CFGLR &= ~(0xf<<(4*6));
-        GPIOD->CFGLR |= (GPIO_CNF_IN_FLOATING)<<(4*6);
+    GPIOD->CFGLR &= ~(0xf<<(4*6));
+    GPIOD->CFGLR |= (GPIO_CNF_IN_FLOATING)<<(4*6);
 	USART1->CTLR1 |= USART_CTLR1_RE;
 
 	printf("\r\nPress ',' to decrease HSITRIM.  Press '.' to increase HSITRIM.\r\n");
 	while(1){
-		if(USART1->STATR & USART_STATR_RXNE){
-			key = (uint8_t)USART1->DATAR;
+		poll_input();
+		key = lastkey;
+		if( key ){
 			if(key == '.'){
 				if(trim < 0x1f) trim++;
 				printf("Setting HSITRIM to: 0x%02lX\r\n", trim);
@@ -70,6 +73,7 @@ int main()
 				printf("Setting HSITRIM to: 0x%02lX\r\n", trim);
 				set_trim(trim);
 			}
+			lastkey = 0;
 		}
 	}
 }

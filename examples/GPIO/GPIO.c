@@ -12,10 +12,6 @@
 #error "please enable ONE of the demos by setting it to 1 and the others to 0"
 #endif
 
-
-#define SYSTEM_CORE_CLOCK 48000000
-#define APB_CLOCK SYSTEM_CORE_CLOCK
-
 #include "ch32v003fun.h"
 
 #include "ch32v003_GPIO_branchless.h"
@@ -25,7 +21,7 @@
 
 
 int main() {
-	SystemInit48HSI();
+	SystemInit();
 
 #if DEMO_GPIO_blink == 1
 	GPIO_port_enable(GPIO_port_C);

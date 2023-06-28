@@ -1,22 +1,93 @@
-// This contains a copy of ch32v00x.h and core_riscv.h ch32v00x_conf.h and other misc functions
+// This contains a copy of ch32v00x.h and core_riscv.h ch32v00x_conf.h and other misc functions  See copyright notice at end.
 
-/********************************** (C) COPYRIGHT  *******************************
- * File Name          : core_riscv.h
- * Author             : WCH
- * Version            : V1.0.0
- * Date               : 2022/08/08
- * Description        : RISC-V Core Peripheral Access Layer Header File
- *********************************************************************************
- * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
- * Attention: This software (modified or not) and binary are used for 
- * microcontroller manufactured by Nanjing Qinheng Microelectronics.
- *******************************************************************************/
-/*
- * NOTE: This file modified by CNLohr to be fully-header-only.
- */
- 
- 
-/* IO definitions */
+#ifndef __CH32V00x_H
+#define __CH32V00x_H
+
+#include "funconfig.h"
+
+/*****************************************************************************
+	CH32V003 Fun Configs:
+
+#define FUNCONF_USE_PLL 1               // Use built-in 2x PLL 
+#define FUNCONF_USE_HSI 1               // Use HSI Internal Oscillator
+#define FUNCONF_USE_HSE 0               // Use External Oscillator
+#define FUNCONF_HSITRIM 0x10            // Use factory calibration on HSI Trim.
+#define FUNCONF_SYSTEM_CORE_CLOCK  48000000  // Computed Clock in Hz.
+#define FUNCONF_HSE_BYPASS 0            // Use HSE Bypass feature (for oscillator input)
+#define FUNCONF_USE_DEBUGPRINTF 1
+#define FUNCONF_USE_UARTPRINTF  0
+#define FUNCONF_SYSTICK_USE_HCLK 0      // Should systick be at 48 MHz or 6MHz?
+#define FUNCONF_TINYVECTOR 0            // If enabled, Does not allow normal interrupts.
+#define FUNCONF_UARTPRINTF_BAUD 115200  // Only used if FUNCONF_USE_UARTPRINTF is set.
+#define FUNCONF_DEBUGPRINTF_TIMEOUT 160000 // Arbitrary time units
+*/
+
+#if !defined(FUNCONF_USE_DEBUGPRINTF) && !defined(FUNCONF_USE_UARTPRINTF)
+	#define FUNCONF_USE_DEBUGPRINTF 1
+#endif
+
+#if defined(FUNCONF_USE_UARTPRINTF) && FUNCONF_USE_UARTPRINTF && !defined(FUNCONF_UART_PRINTF_BAUD)
+	#define FUNCONF_UART_PRINTF_BAUD 115200
+#endif
+
+#if defined(FUNCONF_USE_DEBUGPRINTF) && FUNCONF_USE_DEBUGPRINTF && !defined(FUNCONF_DEBUGPRINTF_TIMEOUT)
+	#define FUNCONF_DEBUGPRINTF_TIMEOUT 160000
+#endif
+
+
+#if !defined( FUNCONF_USE_HSI ) && !defined( FUNCONF_USE_HSE )
+	#define FUNCONF_USE_HSI 1 // Default to use HSI
+	#define FUNCONF_USE_HSE 0
+#endif
+
+#if !defined( FUNCONF_USE_PLL )
+	#define FUNCONF_USE_PLL 1 // Default to use PLL
+#endif
+
+#ifndef HSE_VALUE
+	#define HSE_VALUE                 (24000000) // Value of the External oscillator in Hz, default
+#endif
+
+#ifndef HSI_VALUE
+	#define HSI_VALUE                 (24000000) // Value of the Internal oscillator in Hz, default.
+#endif
+
+#ifndef FUNCONF_HSITRIM
+	#define FUNCONF_HSITRIM 0x10  // Default (Chip default)
+#endif
+
+#ifndef FUNCONF_USE_PLL
+	#define FUNCONF_USE_PLL 1     // Default, Use PLL.
+#endif
+
+#if !defined( FUNCONF_PLL_MULTIPLIER )
+	#if defined(FUNCONF_USE_PLL) && FUNCONF_USE_PLL
+		#define FUNCONF_PLL_MULTIPLIER 2
+	#else
+		#define FUNCONF_PLL_MULTIPLIER 1
+	#endif
+#endif
+
+#ifndef FUNCONF_SYSTEM_CORE_CLOCK
+	#if defined(FUNCONF_USE_HSI) && FUNCONF_USE_HSI
+		#define FUNCONF_SYSTEM_CORE_CLOCK ((HSI_VALUE)*(FUNCONF_PLL_MULTIPLIER))
+	#elif defined(FUNCONF_USE_HSE) && FUNCONF_USE_HSE
+		#define FUNCONF_SYSTEM_CORE_CLOCK ((HSE_VALUE)*(FUNCONF_PLL_MULTIPLIER))
+	#else
+		#error Must define either FUNCONF_USE_HSI or FUNCONF_USE_HSE to be 1.
+	#endif
+#endif
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+// Legacy, for EVT, CMSIS
+
+#define __MPU_PRESENT             0  /* Other CH32 devices does not provide an MPU */
+#define __Vendor_SysTickConfig    0  /* Set to 1 if different SysTick Config is used */
+
+#ifndef __ASSEMBLER__  // Things before this can be used in assembly.
+
+
 #ifdef __cplusplus
   #define     __I     volatile                /*!< defines 'read only' permissions      */
 #else
@@ -26,41 +97,9 @@
 #define     __IO    volatile                  /*!< defines 'read / write' permissions   */
 
 
-
-
-/********************************** (C) COPYRIGHT  *******************************
- * File Name          : ch32v00x.h
- * Author             : WCH
- * Version            : V1.0.0
- * Date               : 2022/08/08
- * Description        : CH32V00x Device Peripheral Access Layer Header File.
- *********************************************************************************
- * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
- * Attention: This software (modified or not) and binary are used for 
- * microcontroller manufactured by Nanjing Qinheng Microelectronics.
- *******************************************************************************/
-#ifndef __CH32V00x_H
-#define __CH32V00x_H
-
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#define __MPU_PRESENT             0  /* Other CH32 devices does not provide an MPU */
-#define __Vendor_SysTickConfig    0  /* Set to 1 if different SysTick Config is used */
-
-#define HSE_VALUE                 ((uint32_t)24000000) /* Value of the External oscillator in Hz */
-
-/* In the following line adjust the External High Speed oscillator (HSE) Startup Timeout value */
-#define HSE_STARTUP_TIMEOUT       ((uint16_t)0x2000) /* Time out for HSE start up */
-
-#define HSI_VALUE                 ((uint32_t)24000000) /* Value of the Internal oscillator in Hz */
-
-#ifndef HSITRIM
-    #define HSITRIM 0x10
-#endif
-
-#ifndef __ASSEMBLER__
 
 /* Interrupt Number Definition, according to the selected device */
 typedef enum IRQn
@@ -5009,18 +5048,16 @@ extern "C" {
 
 /* SYSTICK info
  * time on the ch32v003 is kept by the SysTick counter (32bit)
- * by default, it will operate at (SYSTEM_CORE_CLOCK / 8) = 6MHz
+ * by default, it will operate at (FUNCONF_SYSTEM_CORE_CLOCK / 8) = 6MHz
  * more info at https://github.com/cnlohr/ch32v003fun/wiki/Time
 */
 
-#ifdef SYSTICK_USE_HCLK
-#define DELAY_US_TIME ((SYSTEM_CORE_CLOCK)/1000000)
-#define DELAY_MS_TIME ((SYSTEM_CORE_CLOCK)/1000)
-#define SETUP_SYSTICK_HCLK SysTick->CTLR = 5;
+#if defined( FUNCONF_SYSTICK_USE_HCLK ) && FUNCONF_SYSTICK_USE_HCLK
+#define DELAY_US_TIME ((FUNCONF_SYSTEM_CORE_CLOCK)/1000000)
+#define DELAY_MS_TIME ((FUNCONF_SYSTEM_CORE_CLOCK)/1000)
 #else // Use systick = hclk/8
-#define DELAY_US_TIME ((SYSTEM_CORE_CLOCK)/8000000)
-#define DELAY_MS_TIME ((SYSTEM_CORE_CLOCK)/8000)
-#define SETUP_SYSTICK_HCLK SysTick->CTLR = 1;
+#define DELAY_US_TIME ((FUNCONF_SYSTEM_CORE_CLOCK)/8000000)
+#define DELAY_MS_TIME ((FUNCONF_SYSTEM_CORE_CLOCK)/8000)
 #endif
 
 #define Delay_Us(n) DelaySysTick( (n) * DELAY_US_TIME )
@@ -5054,16 +5091,7 @@ void DelaySysTick( uint32_t n );
 
 // Tricky: We need to make sure main and SystemInit() are preserved.
 int main() __attribute__((used));
-void SystemInit(void) __attribute__((used));
-
-// Initialization functions
-void SystemInit48HSI( void );
-void SystemInit24HSI( void );  // No PLL, just raw internal RC oscillator.
-
-// NOTE: HSEBYP is ORed with RCC_CTLR.  Set it to RCC_HSEBYP or 0.
-// If you are using an external oscillator, set it to RCC_HSEBYP.  Otherwise, if you are using a crystal, it must be 0.
-void SystemInitHSE( int HSEBYP );
-void SystemInitHSEPLL( int HSEBYP );
+void SystemInit(void);
 
 #define UART_BAUD_RATE 115200
 #define OVER8DIV 4
@@ -5072,9 +5100,7 @@ void SystemInitHSEPLL( int HSEBYP );
 #define UART_BRR ((((INTEGER_DIVIDER) / 100) << 4) | (((((FRACTIONAL_DIVIDER) * ((OVER8DIV)*2)) + 50)/100)&7))
 // Put an output debug UART on Pin D5.
 // You can write to this with printf(...) or puts(...)
-// Call with SetupUART( UART_BRR )
-void SetupUART( int uartBRR );
-void SetupDebugPrintf();
+
 void WaitForDebuggerToAttach();
 
 // Just a definition to the internal _write function.
@@ -5150,7 +5176,22 @@ Examples:
 
 
 
+/* Copyright notice from original EVT.
+ ********************************** (C) COPYRIGHT  *******************************
+ * File Name          : core_riscv.h + ch32v00x.h
+ * Author             : WCH
+ * Version            : V1.0.0
+ * Date               : 2022/08/08
+ * Description        : RISC-V Core Peripheral Access Layer Header File
+ *********************************************************************************
+ * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
+ * Attention: This software (modified or not) and binary are used for 
+ * microcontroller manufactured by Nanjing Qinheng Microelectronics.
+ *******************************************************************************/
+
+
 #ifdef __cplusplus
 };
 #endif
+
 
