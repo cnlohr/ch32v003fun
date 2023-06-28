@@ -84,8 +84,7 @@ uint32_t ReadCSRSelfModifySimple( uint16_t whichcsr )
 
 int main()
 {
-	SystemInit48HSI();
-	SetupDebugPrintf();
+	SystemInit();
 
 	WaitForDebuggerToAttach();
 

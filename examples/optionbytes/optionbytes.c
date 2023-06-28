@@ -13,9 +13,6 @@
  * microcontroller manufactured by Nanjing Qinheng Microelectronics.
  *******************************************************************************/
 
-// Could be defined here, or in the processor defines.
-#define SYSTEM_CORE_CLOCK 48000000
-
 #include "ch32v003fun.h"
 #include <stdio.h>
 
@@ -25,8 +22,9 @@ int FLASH_WaitForLastOperation(uint32_t Timeout);
 
 int main()
 {
-	SystemInit48HSI();
-	SetupDebugPrintf();
+	SystemInit();
+
+	Delay_Ms( 100 );
 
 	FLASH->OBKEYR = FLASH_KEY1;
 	FLASH->OBKEYR = FLASH_KEY2;

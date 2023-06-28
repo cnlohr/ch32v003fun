@@ -1,18 +1,11 @@
 /* Small example showing how to use structs for controling GPIO pins */
 
-#define SYSTEM_CORE_CLOCK 48000000
-
 #include "ch32v003fun.h"
 #include <stdio.h>
 
-#define APB_CLOCK SYSTEM_CORE_CLOCK
-
-uint32_t count;
-
 int main()
 {
-	SystemInit48HSI();
-	SetupDebugPrintf();
+	SystemInit();
 
 	// Enable GPIOs
 	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOC;

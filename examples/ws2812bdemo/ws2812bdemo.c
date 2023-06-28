@@ -38,7 +38,7 @@ uint32_t WS2812BLEDCallback( int ledno )
 int main()
 {
 	int k;
-	SystemInit48HSI();
+	SystemInit();
 
 	// Enable GPIOD (for debugging)
 	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD;

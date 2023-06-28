@@ -3,9 +3,6 @@
  * 04-26-2023 recallmenot 
  */
 
-#define SYSTEM_CORE_CLOCK 48000000
-#define APB_CLOCK SYSTEM_CORE_CLOCK
-
 #include "ch32v003fun.h"
 #include <stdio.h>
 #include "nrf24l01.h"
@@ -116,10 +113,9 @@ void send() {
 
 int main()
 {
-	SystemInit48HSI();
+	SystemInit();
 
-	// start serial @ default 115200bps
-	SetupUART( UART_BRR );
+	Delay_Ms(100);
 
 	printf("\r\r\n\nspi_24L01_TX\n\r");
 

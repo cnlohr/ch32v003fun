@@ -60,13 +60,11 @@ int main()
 {
 	int i;
 
-	SystemInit48HSI();
+	SystemInit();
 
 	// Reset all the peripherals we care about.
 	RCC->APB2PRSTR = 0xffffffff;
 	RCC->APB2PRSTR = 0;
-	
-	SetupDebugPrintf();
 
 	// Enable DMA
 	RCC->AHBPCENR = RCC_AHBPeriph_SRAM | RCC_AHBPeriph_DMA1;

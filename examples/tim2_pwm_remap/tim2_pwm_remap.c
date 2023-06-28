@@ -42,10 +42,6 @@ Timer 2 pin mappings by AFIO->PCFR1
 		D5		T2CH4_
 */
 
-// Could be defined here, or in the processor defines.
-#define SYSTEM_CORE_CLOCK 48000000
-#define APB_CLOCK SYSTEM_CORE_CLOCK
-
 #include "ch32v003fun.h"
 #include <stdio.h>
 
@@ -147,11 +143,7 @@ int main()
 {
 	uint32_t count = 0;
 	
-	SystemInit48HSI();
-
-	// start serial @ default 115200bps
-	SetupDebugPrintf();
-
+	SystemInit();
 	Delay_Ms( 100 );
 	printf("\r\r\n\ntim2_pwm example, with remap\n\r");
 
