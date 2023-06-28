@@ -1,4 +1,3 @@
-// The "bootloader" blob is (C) WCH.
 // The rest of the code, Copyright 2023 Charles Lohr
 // Freely licensable under the MIT/x11, NewBSD Licenses, or
 // public domain where applicable. 
@@ -1096,11 +1095,97 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 
 	if( blob_size == 0 ) return 0;
 
-
 	if( is_flash && !iss->flash_unlocked )
 	{
 		if( ( rw = InternalUnlockFlash( dev, iss ) ) )
 			return rw;
+	}
+
+	// Special: For user data, need to write to it very carefully.
+	if( address_to_write > 0x1ffff7c0 && address_to_write < 0x20000000 )
+	{
+		if( !MCF.WriteHalfWord )
+		{
+			fprintf( stderr, "Error: to write this type of memory, half-word-writing is required\n" );
+			return -5;
+		}
+
+		uint32_t base = address_to_write & 0xffffffc0;
+		uint8_t block[64];
+
+		if( base != ((address_to_write+blob_size-1) & 0xffffffc0) )
+		{
+			fprintf( stderr, "Error: You cannot write across a 64-byte boundary when writing to option bytes\n" );
+			return -9;
+		}
+
+		MCF.ReadBinaryBlob( dev, base, 64, block );
+
+		uint32_t offset = address_to_write - base;
+		memcpy( block + offset, blob, blob_size );
+
+		uint32_t temp;
+		MCF.ReadWord( dev, 0x4002200c, &temp );
+		if( temp & 0x8000 )
+		{
+			MCF.WriteWord( dev, 0x40022004, 0x45670123 ); // KEYR
+			MCF.WriteWord( dev, 0x40022004, 0xCDEF89AB );
+			MCF.WriteWord( dev, 0x40022008, 0x45670123 ); // OBWRE
+			MCF.WriteWord( dev, 0x40022008, 0xCDEF89AB );
+			MCF.WriteWord( dev, 0x40022028, 0x45670123 ); //(FLASH_BOOT_MODEKEYP)
+			MCF.WriteWord( dev, 0x40022028, 0xCDEF89AB ); //(FLASH_BOOT_MODEKEYP)
+			MCF.ReadWord( dev, 0x40022010, &temp );
+			MCF.ReadWord( dev, 0x4002200c, &temp );
+		}
+
+		MCF.ReadWord( dev, 0x4002200c, &temp );
+		if( temp & 0x8000 )
+		{
+			fprintf( stderr, "Error: Critical memory zone is still locked out\n" );
+			return -10;
+		}
+
+		if( MCF.WaitForFlash ) MCF.WaitForFlash( dev );
+
+		MCF.ReadWord( dev, 0x40022010, &temp );
+		if( !(temp & (1<<9)) ) // Check OBWRE
+		{
+			fprintf( stderr, "Error: Option Byte Unlock Failed\n" );
+			return -10;
+		}
+
+		// Perform erase.
+		MCF.WriteWord( dev, 0x40022010, FLASH_CTLR_OPTER | FLASH_CTLR_OPTWRE );
+		MCF.WriteWord( dev, 0x40022010, FLASH_CTLR_OPTER | FLASH_CTLR_OPTWRE | FLASH_CTLR_STRT );
+
+		if( MCF.WaitForFlash ) MCF.WaitForFlash( dev );
+
+		MCF.ReadWord( dev, 0x4002200c, &temp );
+		if( temp & 0x10 )
+		{
+			fprintf( stderr, "WRPTRERR is set.  Write failed\n" );
+			return -9;
+		}
+
+		int i;
+		for( i = 0; i < 8; i++ )
+		{
+			MCF.WriteWord( dev, 0x40022010, FLASH_CTLR_OPTPG | FLASH_CTLR_OPTWRE );
+			MCF.WriteWord( dev, 0x40022010, FLASH_CTLR_OPTPG | FLASH_CTLR_STRT | FLASH_CTLR_OPTWRE );
+			MCF.WriteHalfWord( dev, i*2+base, block[i*2+0] | (block[i*2+1]<<8) );
+
+			if( MCF.WaitForFlash ) MCF.WaitForFlash( dev );
+			MCF.ReadWord( dev, 0x4002200c, &temp );
+			if( temp & 0x10 )
+			{
+				fprintf( stderr, "WRPTRERR is set.  Write failed\n" );
+				return -9;
+			}
+		}
+		if( MCF.WaitForFlash ) MCF.WaitForFlash( dev );
+		MCF.WriteWord( dev, 0x40022010, 0 );
+
+		return 0;
 	}
 
 	// Regardless of sector size, allow block write to do its thing if it can.
@@ -1364,7 +1449,7 @@ int InternalUnlockFlash( void * dev, struct InternalState * iss )
 		if( ret ) goto reterr;
 		ret = MCF.WriteWord( dev, 0x40022004, 0xCDEF89AB );
 		if( ret ) goto reterr;
-		ret = MCF.WriteWord( dev, 0x40022008, 0x45670123 ); // OBKEYR = 0x40022008
+		ret = MCF.WriteWord( dev, 0x40022008, 0x45670123 ); // OBKEYR = 0x40022008  // For user word unlocking
 		if( ret ) goto reterr;
 		ret = MCF.WriteWord( dev, 0x40022008, 0xCDEF89AB );
 		if( ret ) goto reterr;
@@ -1758,8 +1843,16 @@ int DefaultUnbrick( void * dev )
 //	MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
 
 	// After more experimentation, it appaers to work best by not clearing the halt request.
-
 	MCF.FlushLLCommands( dev );
+
+	// Override all option bytes and reset to factory settings, unlocking all flash sections.
+	uint8_t option_data[] = { 0xa5, 0x5a, 0x97, 0x68, 0x00, 0xff, 0x00, 0xff, 0xff, 0x00, 0xff, 0x00 };
+	if( MCF.WriteBinaryBlob != DefaultWriteBinaryBlob )
+	{
+		fprintf( stderr, "Warning, using nonstandard WriteBinaryBlob.  Unbrick may not work.\n" );
+	}
+	MCF.WriteBinaryBlob(dev, 0x1ffff800, sizeof( option_data ), option_data );
+
 	MCF.DelayUS( dev, 20000 );
 
 	if( timeout == max_timeout ) 
@@ -1835,7 +1928,7 @@ int SetupAutomaticHighLevelFunctions( void * dev )
 
 	// Else, TODO: Build the high level functions from low level functions.
 	// If a high-level function alrady exists, don't override.
-	
+
 	if( !MCF.SetupInterface )
 		MCF.SetupInterface = DefaultSetupInterface;
 	if( !MCF.WriteBinaryBlob )

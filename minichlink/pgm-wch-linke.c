@@ -1,3 +1,4 @@
+// The "bootloader" blob is (C) WCH.
 // Tricky: You need to use wch link to use WCH-LinkRV.
 //  you can always uninstall it in device manager.  It will be under USB devices or something like that at the bottom.
 
