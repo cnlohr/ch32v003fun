@@ -16,7 +16,6 @@ CFLAGS+= \
 	-I/usr/include/newlib \
 	-I$(CH32V003FUN) \
 	-nostdlib \
-    -DCH32V10x \
 	-I. -Wall
 
 LDFLAGS+=-T $(CH32V003FUN)/ch32v10xfun.ld -Wl,--gc-sections -L$(CH32V003FUN)/../misc -lgcc
