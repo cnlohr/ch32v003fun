@@ -355,8 +355,6 @@ typedef enum IRQn
 
 #endif
 
-#endif
-
 } IRQn_Type;
 
 #include <stdint.h>
@@ -6062,14 +6060,9 @@ with 00h to 64 bytes, otherwise the short packet is filled with 60 bytes of 0, a
 
 #ifdef __cplusplus
 }
+#endif
 
 #endif /* __CH32V00x_H */
-
-
-
-
-
-
 
 /*
  * This file contains the contents of various parts of the evt.
