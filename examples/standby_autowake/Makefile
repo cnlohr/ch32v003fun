@@ -2,7 +2,6 @@ all : flash
 
 TARGET:=standby_autowake
 
-CFLAGS+=-DSTDOUT_UART
 
 include ../../ch32v003fun/ch32v003fun.mk
 

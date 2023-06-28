@@ -1,5 +1,3 @@
-#define SYSTEM_CORE_CLOCK 48000000
-
 #include "ch32v003fun.h"
 #include "i2c_slave.h"
 #include <stdio.h>
@@ -11,8 +9,8 @@
 volatile uint8_t i2c_registers[32] = {0x00};
 
 int main() {
-    SystemInit48HSI();
-    SetupDebugPrintf();
+    SystemInit();
+
     SetupI2CSlave(0x9, i2c_registers, sizeof(i2c_registers));
 
     // Enable GPIOD and set pin 0 to output
