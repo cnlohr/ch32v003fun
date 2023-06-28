@@ -18,25 +18,25 @@ struct LinkEProgrammerStruct
 
 static void printChipInfo(enum RiscVChip chip) {
 	switch(chip) {
-		case CH32V10x:
+		case CHIP_CH32V10x:
 			fprintf(stderr, "Detected: CH32V10x\n");
 			break;
-		case CH57x:
+		case CHIP_CH57x:
 			fprintf(stderr, "Detected: CH57x\n");
 			break;
-		case CH56x:
+		case CHIP_CH56x:
 			fprintf(stderr, "Detected: CH56x\n");
 			break;
-		case CH32V20x:
+		case CHIP_CH32V20x:
 			fprintf(stderr, "Detected: CH32V20x\n");
 			break;
-		case CH32V30x:
+		case CHIP_CH32V30x:
 			fprintf(stderr, "Detected: CH32V30x\n");
 			break;
-		case CH58x:
+		case CHIP_CH58x:
 			fprintf(stderr, "Detected: CH58x\n");
 			break;
-		case CH32V003:
+		case CHIP_CH32V003:
 			fprintf(stderr, "Detected: CH32V003\n");
 			break;
 	}
@@ -44,15 +44,15 @@ static void printChipInfo(enum RiscVChip chip) {
 
 static int checkChip(enum RiscVChip chip) {
 	switch(chip) {
-		case CH32V003:
+		case CHIP_CH32V003:
 			return 0; // Use direct mode
-		case CH32V10x:
-		case CH32V20x:
-		case CH32V30x:
+		case CHIP_CH32V10x:
+		case CHIP_CH32V20x:
+		case CHIP_CH32V30x:
 			return 1; // Use binary blob mode
-		case CH56x:
-		case CH57x:
-		case CH58x:
+		case CHIP_CH56x:
+		case CHIP_CH57x:
+		case CHIP_CH58x:
 		default:
 			return -1; // Not supported yet
 	}
@@ -530,10 +530,10 @@ int bootloader_len = 512;
 static const uint8_t * GetFlashLoader( enum RiscVChip chip )
 {
 	switch(chip) {
-		case CH32V10x:
+		case CHIP_CH32V10x:
 			return bootloader_v1;
-		case CH32V20x:
-		case CH32V30x:
+		case CHIP_CH32V20x:
+		case CHIP_CH32V30x:
 		default:
 			return bootloader_v2;
 	}

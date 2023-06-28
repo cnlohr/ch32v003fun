@@ -105,13 +105,13 @@ struct ProgrammerStructBase
 #define MAX_FLASH_SECTORS 262144
 
 enum RiscVChip {
-	CH32V10x = 0x01,
-	CH57x = 0x02,
-	CH56x = 0x03,
-	CH32V20x = 0x05,
-	CH32V30x = 0x06,
-	CH58x = 0x07,
-	CH32V003 = 0x09
+	CHIP_CH32V10x = 0x01,
+	CHIP_CH57x = 0x02,
+	CHIP_CH56x = 0x03,
+	CHIP_CH32V20x = 0x05,
+	CHIP_CH32V30x = 0x06,
+	CHIP_CH58x = 0x07,
+	CHIP_CH32V003 = 0x09
 };
 
 struct InternalState
