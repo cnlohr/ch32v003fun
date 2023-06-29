@@ -1,8 +1,5 @@
-
-PREFIX?=riscv64-unknown-elf
-
-CH32V003FUN?=../../ch32v003fun
-MINICHLINK?=../../minichlink
+TARGET_MCU_PACKAGE?=CH32V103R8T6
+MCU_PACKAGE?=1
 
 CFLAGS+= \
 	-g -Os -flto -ffunction-sections -fdata-sections \
@@ -16,43 +13,25 @@ CFLAGS+= \
 	-I/usr/include/newlib \
 	-I$(CH32V003FUN) \
 	-nostdlib \
+	-DCH32V10x=1 \
 	-I. -Wall
 
-LDFLAGS+=-T $(CH32V003FUN)/ch32v10xfun.ld -Wl,--gc-sections -L$(CH32V003FUN)/../misc -lgcc
-
-SYSTEM_C:=$(CH32V003FUN)/ch32v003fun.c
-
-$(TARGET).elf : $(SYSTEM_C) $(TARGET).c $(ADDITIONAL_C_FILES)
-	$(PREFIX)-gcc -o $@ $^ $(CFLAGS) $(LDFLAGS)
-
-$(TARGET).bin : $(TARGET).elf
-	$(PREFIX)-size $^
-	$(PREFIX)-objdump -S $^ > $(TARGET).lst
-	$(PREFIX)-objdump -t $^ > $(TARGET).map
-	$(PREFIX)-objcopy -O binary $< $(TARGET).bin
-	$(PREFIX)-objcopy -O ihex $< $(TARGET).hex
-
-ifeq ($(OS),Windows_NT)
-closechlink :
-	-taskkill /F /IM minichlink.exe /T
-else
-closechlink :
-	-killall minichlink
+# MCU Flash/RAM split
+ifeq ($(findstring R8, $(TARGET_MCU_PACKAGE)), R8)
+	MCU_PACKAGE:=1
+else ifeq ($(findstring C8, $(TARGET_MCU_PACKAGE)), C8)
+	MCU_PACKAGE:=1
+else ifeq ($(findstring C6, $(TARGET_MCU_PACKAGE)), C6)
+	MCU_PACKAGE:=2
 endif
 
-terminal : monitor
+GENERATED_LD_FILE:=$(CH32V003FUN)/generated_$(TARGET_MCU_PACKAGE).ld
+LINKER_SCRIPT:=$(GENERATED_LD_FILE)
+FILES_TO_COMPILE:=$(SYSTEM_C) $(TARGET).$(TARGET_EXT) $(ADDITIONAL_C_FILES)
 
-monitor :
-	$(MINICHLINK)/minichlink -T
+$(GENERATED_LD_FILE) :
+	$(PREFIX)-gcc -E -P -x c -DMCU_PACKAGE=$(MCU_PACKAGE) $(CH32V003FUN)/ch32v10xfun.ld > $(GENERATED_LD_FILE)
 
-gdbserver : 
-	-$(MINICHLINK)/minichlink -baG
-
-cv_flash : $(TARGET).bin
-	make -C $(MINICHLINK) all
-	$(MINICHLINK)/minichlink -w $< flash -b
-
-cv_clean :
-	rm -rf $(TARGET).elf $(TARGET).bin $(TARGET).hex $(TARGET).lst $(TARGET).map $(TARGET).hex || true
-
-build : $(TARGET).bin
+$(TARGET).elf : $(GENERATED_LD_FILE) $(FILES_TO_COMPILE)
+	echo $(FILES_TO_COMPILE)
+	$(PREFIX)-gcc -o $@ $(FILES_TO_COMPILE) $(CFLAGS) $(LDFLAGS)

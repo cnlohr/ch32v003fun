@@ -12157,11 +12157,6 @@ void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) 
 
 #endif
 
-#define str(token) #token
-#define xstr(token) str(token)
-
-#pragma message("CH32V003FUN: " xstr(FUNCONF_PLL_MULTIPLIER) " Multiplier")
-
 // Determination of PLL multiplication factor for non-V003 chips
 #if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 	#if !defined(FUNCONF_SYSTEM_CORE_CLOCK)
@@ -12240,9 +12235,6 @@ void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) 
 		#endif
 	#endif
 #endif
-
-#pragma message("CH32V003FUN: " xstr(FUNCONF_SYSTEM_CORE_CLOCK) " Clock")
-
 
 #ifndef __ASSEMBLER__
 
