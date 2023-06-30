@@ -96,6 +96,8 @@ static int ReadKBByte()
 
 static void CtrlC()
 {
+	fprintf( stderr, "Minichlink Closing\n" );
+	ResetKeyboardInput();
 	exit( 0 );
 }
 
@@ -105,6 +107,7 @@ static void CaptureKeyboardInput()
 	// Hook exit, because we want to re-enable keyboard.
 	atexit(ResetKeyboardInput);
 	signal(SIGINT, CtrlC);
+	signal(SIGPIPE, CtrlC);
 
 	struct termios term;
 	tcgetattr(0, &term);
