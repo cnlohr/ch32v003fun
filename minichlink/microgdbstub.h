@@ -30,7 +30,7 @@ void RVDebugExec( void * dev, int halt_reset_or_resume );
 int RVReadMem( void * dev, uint32_t memaddy, uint8_t * payload, int len );
 int RVHandleBreakpoint( void * dev, int set, uint32_t address );
 int RVWriteRAM(void * dev, uint32_t memaddy, uint32_t length, uint8_t * payload );
-void RVCommandResetPart( void * dev );
+void RVCommandResetPart( void * dev, int mode );
 void RVHandleDisconnect( void * dev );
 void RVHandleGDBBreakRequest( void * dev );
 void RVHandleKillRequest( void * dev );
@@ -106,6 +106,24 @@ static int fromhex( char c )
 	return c;
 }
 
+// output must have length of len / 2.
+static int DecodeHexToBytes(const char* hexstr, size_t string_len, void* output, size_t out_len) {
+	// 2 hex chars make up one byte. out buffer needs to have >= slen/2 bytes.
+	// further, we only want to decode even-length strings
+	if (out_len < (string_len / 2) || (string_len % 2) != 0)
+		return -1;
+	uint8_t* out = (uint8_t*) output;
+	for(size_t i = 0; i < string_len; i += 2) {
+		int nibble1, nibble2;
+		if((nibble1 = fromhex(hexstr[i])) < 0)
+			return nibble1; // error
+		if((nibble2 = fromhex(hexstr[i + 1])) < 0)
+			return nibble2; // error
+		out[i / 2] = ((uint8_t)nibble1 << 4u) | ((uint8_t)nibble2);
+	}
+	return string_len / 2; // number of output bytes written
+}
+
 // if (numhex < 0) 
 static int ReadHex( char ** instr, int numhex, uint32_t * outwrite )
 {
@@ -157,6 +175,19 @@ void SendReplyFull( const char * replyMessage )
 	MicroGDBStubSendReply( replyMessage, -1, '$' );
 }
 
+void MakeGDBPrintText(const char* msg) {
+	// ASCII to hex conversion doubles size, plus 'O', plus NUL
+	size_t buf_len = 2 * strlen(msg) + 2;
+	char* buf = alloca(buf_len);
+	memset(buf, 0, buf_len);
+	buf[0] = 'O'; // for "Output"
+	char* target = buf + 1; 
+	for(size_t i = 0; i < strlen(msg); i++) {
+		target[2*i] = ToHEXNibble((msg[i] & 0xf0u) >> 4u);
+		target[2*i + 1] = ToHEXNibble(msg[i] & 0x0fu);
+	}
+	SendReplyFull(buf);
+}
 ///////////////////////////////////////////////////////////////////////////////
 // General Protocol
 
@@ -191,10 +222,64 @@ void HandleGDBPacket( void * dev, char * data, int len )
 			SendReplyFull( "" );
 		else if( StringMatch( data, "TStatus" ) )  // Trace-Status
 			SendReplyFull( "" );
-		else if( StringMatch( data, "Rcmd,7265736574" ) )  // "monitor reset"
+		else if( StringMatch( data, "Rcmd," ) )  // "monitor <command>"
 		{
-			RVCommandResetPart( dev ); // Force reset
-			SendReplyFull( "+" );
+			// will e.g. be "Rcmd,7265736574#"
+			// hex-decode the rest of it back to ASCII
+			char* cmdHex = data + strlen("Rcmd,");
+			//  check if cmd is empty (no character or only '#' following)
+			if(strlen(cmdHex) > 1) {
+				char cmd[128];
+				memset(cmd, 0, sizeof(cmd));
+				if ( DecodeHexToBytes(cmdHex, strlen(cmdHex) - 1, cmd, sizeof(cmd) - 1) < 0 ) {
+					// decoding failed
+					SendReplyFull( "" );
+					break;
+				}
+				printf("Got monitor command: %s\n", cmd);
+				// Support commands that OpenOCD also does:
+				// https://openocd.org/doc/html/General-Commands.html
+				if(StringMatch(cmd, "halt")) {
+					// only halt
+					RVCommandResetPart( dev, HALT_MODE_HALT_BUT_NO_RESET);
+					SendReplyFull( "+" );
+				}
+				else if(StringMatch(cmd, "reset halt")) {
+					// reset and keep halted after reset
+					RVCommandResetPart( dev, HALT_MODE_HALT_AND_RESET);
+					SendReplyFull( "+" );
+				}
+				else if(StringMatch(cmd, "reset run")) {
+					// reset and run (i.e., reboot)
+					RVCommandResetPart( dev, HALT_MODE_REBOOT);
+					SendReplyFull( "+" );
+				}
+				else if(StringMatch(cmd, "reset")) {
+					// same as reset run per OpenOCD
+					RVCommandResetPart( dev, HALT_MODE_REBOOT);
+					SendReplyFull( "+" );
+				} else if(StringMatch(cmd, "resume")) {
+					// just resume
+					RVCommandResetPart( dev, HALT_MODE_RESUME);
+					SendReplyFull( "+" );
+				} else if(StringMatch(cmd, "help")) {
+					static const char helptext[] = 
+						"minichlink GDB monitor help:\n"
+						"- halt: Halt execution\n"
+						"- resume: Resume execution\n"
+						"- reset [halt, run]: Reset and optionally halt or run\n";
+					MakeGDBPrintText(helptext);
+					SendReplyFull( "+" );
+				}
+				else {
+					printf("Unknown monitor command '%s', use 'monitor help'.\n", cmd);
+					MakeGDBPrintText("Unknown monitor command, use 'monitor help'\n");
+					SendReplyFull( "-" );
+				}
+			} else {
+				MakeGDBPrintText("No monitor command given, use 'monitor help'\n");
+				SendReplyFull( "-" );
+			}
 		}
 		else if( StringMatch( data, "Xfer:memory-map" ) )
 		{
