@@ -68,13 +68,17 @@ int MeasureTouch( int portno, int pin, int pu_mode )
 	endtime = starttime - 1;
 	port->BSHR = 1<<(pin);
 
-	// Allow up to 256 cycles for the pin to change.
+	// Allow up to 384 cycles for the pin to change.
 	#define DELAY8 \
 		asm volatile( "c.nop;c.nop;c.nop;c.nop;c.nop;c.nop;c.nop;c.nop;" );
 	DELAY8 DELAY8 DELAY8 DELAY8 DELAY8 DELAY8 DELAY8 DELAY8
 	DELAY8 DELAY8 DELAY8 DELAY8 DELAY8 DELAY8 DELAY8 DELAY8
 	DELAY8 DELAY8 DELAY8 DELAY8 DELAY8 DELAY8 DELAY8 DELAY8
 	DELAY8 DELAY8 DELAY8 DELAY8 DELAY8 DELAY8 DELAY8 DELAY8
+	DELAY8 DELAY8 DELAY8 DELAY8 DELAY8 DELAY8 DELAY8 DELAY8
+	DELAY8 DELAY8 DELAY8 DELAY8 DELAY8 DELAY8 DELAY8 DELAY8
+
+	// Optimization: If you did the nop sled in assembly, the interrupt could scoot to the end
 
 	// Disable EXTI
 	EXTI->INTENR = 0;
@@ -98,10 +102,16 @@ int main()
 
 	while(1)
 	{
-		printf( "%4d %4d %4d\n",
+		printf( "%d %d %d %d %d %d %d %d\n",
 			MeasureTouch( 2, 4, GPIO_CFGLR_IN_PUPD ), // Port C4
+			MeasureTouch( 2, 5, GPIO_CFGLR_IN_FLOAT ),  // Port C5, with external pull-up.
+			MeasureTouch( 2, 7, GPIO_CFGLR_IN_PUPD ), // Port C7
+			MeasureTouch( 3, 2, GPIO_CFGLR_IN_PUPD ), // Port D2
+			MeasureTouch( 3, 3, GPIO_CFGLR_IN_PUPD ), // Port D3
+			MeasureTouch( 3, 4, GPIO_CFGLR_IN_PUPD ), // Port D4
 			MeasureTouch( 3, 5, GPIO_CFGLR_IN_PUPD ), // Port D5
-			MeasureTouch( 2, 5, GPIO_CFGLR_IN_FLOAT ) ); // Port C5, with external pull-up.
+			MeasureTouch( 3, 6, GPIO_CFGLR_IN_PUPD ) // Port D6
+			 );
 	}
 }
 
