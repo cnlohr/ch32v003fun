@@ -5092,9 +5092,13 @@ void DelaySysTick( uint32_t n );
 int main() __attribute__((used));
 void SystemInit(void);
 
-#define UART_BAUD_RATE 115200
+#ifdef FUNCONF_UART_PRINTF_BAUD
+	#define UART_BAUD_RATE FUNCONF_UART_PRINTF_BAUD
+#else
+	#define UART_BAUD_RATE 115200
+#endif
 #define OVER8DIV 4
-#define INTEGER_DIVIDER (((25 * (APB_CLOCK)) / ((OVER8DIV) * (UART_BAUD_RATE))))
+#define INTEGER_DIVIDER (((25 * (FUNCONF_SYSTEM_CORE_CLOCK)) / ((OVER8DIV) * (UART_BAUD_RATE))))
 #define FRACTIONAL_DIVIDER ((INTEGER_DIVIDER)%100)
 #define UART_BRR ((((INTEGER_DIVIDER) / 100) << 4) | (((((FRACTIONAL_DIVIDER) * ((OVER8DIV)*2)) + 50)/100)&7))
 // Put an output debug UART on Pin D5.
