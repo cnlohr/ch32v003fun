@@ -1825,9 +1825,17 @@ int DefaultUnbrick( void * dev )
 		MCF.WriteReg32( dev, DMSHDWCFGR, 0x5aa50000 | (1<<10) ); // Shadow Config Reg
 		MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // CFGR (1<<10 == Allow output from slave)
 		MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // Bug in silicon?  If coming out of cold boot, and we don't do our little "song and dance" this has to be called.
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // No, really make sure.
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 );
 		MCF.FlushLLCommands( dev );
 		int r = MCF.ReadReg32( dev, DMSTATUS, &ds );
-		printf( "/%d/%08x\n", r, ds );
+		if( r )
+		{
+			fprintf( stderr, "Error: Could not read DMSTATUS from programmers (%d)\n", r );
+			return -99;
+		}
 		MCF.FlushLLCommands( dev );
 		if( ds != 0xffffffff && ds != 0x00000000 ) break;
 	}
@@ -1837,6 +1845,9 @@ int DefaultUnbrick( void * dev )
 	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
 	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // No, really make sure.
 	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 );
+
+	int r = MCF.ReadReg32( dev, DMSTATUS, &ds );
+	printf( "DMStatus After Halt: /%d/%08x\n", r, ds );
 
 //  Many times we would clear the halt request, but in this case, we want to just leave it here, to prevent it from booting.
 //  TODO: Experiment and see if this is needed/wanted in cases.  NOTE: If you don't clear halt request, progarmmers can get stuck.
