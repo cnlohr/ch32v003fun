@@ -71,9 +71,9 @@ void RVCommandEpilogue( void * dev )
 	MCF.WriteReg32( dev, DMDATA0, 0 );
 }
 
-void RVCommandResetPart( void * dev )
+void RVCommandResetPart( void * dev , int mode)
 {
-	MCF.HaltMode( dev, HALT_MODE_HALT_AND_RESET );
+	MCF.HaltMode( dev, mode );
 	RVCommandPrologue( dev );
 }
 
@@ -236,7 +236,7 @@ void RVDebugExec( void * dev, int halt_reset_or_resume )
 			}
 		}
 
-		halt_reset_or_resume = 2;
+		halt_reset_or_resume = HALT_MODE_RESUME;
 	}
 
 	if( shadow_running_state != ( halt_reset_or_resume >= 2 ) )
