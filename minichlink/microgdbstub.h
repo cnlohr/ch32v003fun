@@ -583,6 +583,8 @@ static int GDBListen( void * dev )
 		serverSocket = 0;
 		return -1;
 	}
+
+	fprintf( stderr, "gdbserver running on port %d\n", MICROGDBSTUB_PORT );
 	
 	return 0;
 }
@@ -638,6 +640,7 @@ int MicroGDBPollServer( void * dev )
 			listenMode = 2;
 			gdbbufferstate = 0;
 			RVNetConnect( dev );
+			fprintf( stderr, "Connection established to gdbserver backend\n" );	
 			// Established.
 		}
 		else if( listenMode == 2 )
