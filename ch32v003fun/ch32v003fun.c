@@ -1049,7 +1049,7 @@ void SystemInit()
 #endif
 
 #if defined( FUNCONF_USE_UARTPRINTF ) && FUNCONF_USE_UARTPRINTF
-	SetupUART( FUNCONF_UARTPRINTF_BAUD );
+	SetupUART( UART_BRR );
 #endif
 #if defined( FUNCONF_USE_DEBUGPRINTF ) && FUNCONF_USE_DEBUGPRINTF
 	SetupDebugPrintf();
