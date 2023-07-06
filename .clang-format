@@ -1,0 +1,48 @@
+# Basic style rules by Charles Lohr
+# Additions and modifications by Sam Ellicott
+#
+# For information about the definitions of rules
+# See: https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+
+BasedOnStyle: Microsoft
+AccessModifierOffset: -4
+
+# Basic general rules
+ColumnLimit: '120'
+TabWidth: 4
+UseTab: AlignWithSpaces 
+BreakBeforeBraces: Allman
+PointerAlignment: Right
+MaxEmptyLinesToKeep: 2
+IndentCaseLabels: true
+
+# Allignment rules
+AlignAfterOpenBracket: DontAlign
+AlignTrailingComments: false
+AlignConsecutiveAssignments: false
+AlignConsecutiveMacros: false
+AlignEscapedNewlines: Left
+AlignOperands: AlignAfterOperator
+
+# Rules for brackets/parentheses
+SpaceInEmptyParentheses: false
+SpacesInAngles: true
+SpacesInCStyleCastParentheses: false
+SpacesInContainerLiterals: true
+SpacesInParentheses: true
+SpacesInSquareBrackets: false
+
+# Short statement rules
+AllowShortBlocksOnASingleLine: Never 
+AllowShortIfStatementsOnASingleLine: WithoutElse 
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
+
+# Other Rules
+FixNamespaceComments: true
+AllowAllParametersOfDeclarationOnNextLine: false
+AlwaysBreakTemplateDeclarations: 'Yes'
+BreakBeforeBinaryOperators: None
+BreakConstructorInitializers: BeforeComma
+ExperimentalAutoDetectBinPacking: false
+NamespaceIndentation: None
