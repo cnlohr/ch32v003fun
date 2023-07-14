@@ -34,6 +34,9 @@
 	#define FUNCONF_DEBUGPRINTF_TIMEOUT 160000
 #endif
 
+#if defined(FUNCONF_USE_HSI) && defined(FUNCONF_USE_HSE) && FUNCONF_USE_HSI && FUNCONF_USE_HSE
+       #error FUNCONF_USE_HSI and FUNCONF_USE_HSE cannot both be set
+#endif
 
 #if !defined( FUNCONF_USE_HSI ) && !defined( FUNCONF_USE_HSE )
 	#define FUNCONF_USE_HSI 1 // Default to use HSI
