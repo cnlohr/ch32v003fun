@@ -3,10 +3,6 @@
  * 05/21/2023 A. Mandera
  */
 
-// Could be defined here, or in the processor defines.
-#define SYSTEM_CORE_CLOCK 48000000
-#define APB_CLOCK SYSTEM_CORE_CLOCK
-
 #include "ch32v003fun.h"
 #include "example.h"
 #include <stdio.h>

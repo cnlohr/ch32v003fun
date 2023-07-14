@@ -16,6 +16,11 @@ in the .c files that use this library, you'll need to #define some configuration
 
 SYSTEM_CORE_CLOCK and APB_CLOCK should be defined already as APB_CLOCK is used by this library
 
+
+#ifndef APB_CLOCK
+	#define APB_CLOCK FUNCONF_SYSTEM_CORE_CLOCK
+#endif
+
 to enable using the functions of this library:
 #define CH32V003_SPI_IMPLEMENTATION
 

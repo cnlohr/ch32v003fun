@@ -1,7 +1,6 @@
 /* Small example showing how to use the SWIO programming pin to 
    do printf through the debug interface */
 
-#define SYSTEM_CORE_CLOCK 24000000
 #include "ch32v003fun.h"
 #include <stdio.h>
 

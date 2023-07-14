@@ -1,7 +1,3 @@
-// Could be defined here, or in the processor defines.
-#define SYSTEM_CORE_CLOCK 48000000
-#define APB_CLOCK SYSTEM_CORE_CLOCK
-
 // NOTE: CONNECT WS2812's to PC6
 
 #include "ch32v003fun.h"

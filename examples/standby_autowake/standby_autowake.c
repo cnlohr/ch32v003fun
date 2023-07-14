@@ -1,11 +1,7 @@
 // based on https://paste.sr.ht/blob/b9b4fb45cbc70f2db7e31a77a6ef7dd2a7f220fb
-// Could be defined here, or in the processor defines.
-#define SYSTEM_CORE_CLOCK 48000000
 
 #include "ch32v003fun.h"
 #include <stdio.h>
-
-#define APB_CLOCK SYSTEM_CORE_CLOCK
 
 /* somehow this ISR won't get called??
 void AWU_IRQHandler( void ) __attribute__((interrupt));
