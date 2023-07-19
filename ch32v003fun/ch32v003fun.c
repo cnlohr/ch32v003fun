@@ -1018,13 +1018,16 @@ void SystemInit()
 
 #if defined(FUNCONF_USE_HSE) && FUNCONF_USE_HSE
 
+	RCC->CFGR0 |= (uint32_t)(RCC_PLLSRC_HSE_Mul2);
 	RCC->CTLR  = RCC_HSION | RCC_HSEON | RCC_PLLON | HSEBYP;       // Keep HSI and PLL on just in case, while turning on HSE
 
 	// Values lifted from the EVT.  There is little to no documentation on what this does.
 	while(!(RCC->CTLR&RCC_HSERDY));
 
+	while(!(RCC->CTLR&RCC_PLLRDY));
+
 	#if defined(FUNCONF_USE_PLL) && FUNCONF_USE_PLL
-		RCC->CFGR0 = BASE_CFGR0 | RCC_SW_HSE;
+		RCC->CFGR0 = BASE_CFGR0 | RCC_SW_PLL;
 		RCC->CTLR  = RCC_HSEON | RCC_PLLON | HSEBYP;                    // Turn off HSI.
 	#else
 		RCC->CFGR0 = BASE_CFGR0 | RCC_SW_HSE;
