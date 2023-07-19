@@ -1016,22 +1016,9 @@ void SystemInit()
 #else
 	#define HSEBYP 0
 #endif
-// set the correct clock source for the PLL
-#if defined(FUNCONF_USE_HSE) && FUNCONF_USE_HSE
-    #define PLL_SRC RCC_PLLSRC_HSE_Mul2
-#endif
-#if defined(FUNCONF_USE_HSI) && FUNCONF_USE_HSI
-    #define PLL_SRC RCC_PLLSRC_HSI_Mul2
-#endif
-
-#if defined(FUNCONF_USE_PLL) && FUNCONF_USE_PLL
-    #define BASE_CFGR0 (RCC_HPRE_DIV1 | PLL_SRC)                // HCLK = SYSCLK = APB1 And, enable PLL
-#else
-    #define BASE_CFGR0 (RCC_HPRE_DIV1)     						// HCLK = SYSCLK = APB1 And, no PLL
-#endif
 
 #if defined(FUNCONF_USE_CLK_SEC) && FUNCONF_USE_CLK_SEC
-	#define RCC_CSS RCC_CSSON									// Enable clock security system
+	#define RCC_CSS RCC_CSSON										// Enable clock security system
 #else
 	#define RCC_CSS 0
 #endif
@@ -1042,48 +1029,41 @@ void SystemInit()
 
 #if defined(FUNCONF_USE_HSI) && FUNCONF_USE_HSI
 	#if defined(FUNCONF_USE_PLL) && FUNCONF_USE_PLL
-		RCC->CFGR0 = BASE_CFGR0;
+		RCC->CFGR0 = RCC_HPRE_DIV1 | RCC_PLLSRC_HSI_Mul2;
 		RCC->CTLR  = BASE_CTLR | RCC_HSION | RCC_PLLON; 			// Use HSI, enable PLL.
 	#else
-		RCC->CFGR0 = BASE_CFGR0;                               		// PLLCLK = HCLK = SYSCLK = APB1
-		RCC->CTLR  = BASE_CTLR | RCC_HSION;     					 // Use HSI, Only.
+		RCC->CFGR0 = RCC_HPRE_DIV1;                               	// PLLCLK = HCLK = SYSCLK = APB1
+		RCC->CTLR  = BASE_CTLR | RCC_HSION;     					// Use HSI, Only.
 	#endif
 #endif
 
 #if defined(FUNCONF_USE_HSE) && FUNCONF_USE_HSE
-
-    RCC->CFGR0 = RCC_HPRE_DIV1; 
-    RCC->CTLR  = BASE_CTLR | RCC_HSION;								// start with HSI first, no PLL
-    RCC->APB2PCENR |= RCC_APB2Periph_AFIO;							// enable AFIO
-    AFIO->PCFR1 |= GPIO_Remap_PA1_2;								// remap PA1 PA2 to XTAL
+	// seems that remapping PA1_2 via AFIO is not required?
+	RCC->CTLR  = BASE_CTLR | RCC_HSION | RCC_HSEON ;				// Keep HSI on while turning on HSE
+	while(!(RCC->CTLR & RCC_HSERDY));   							// Wait till HSE is ready
+	RCC->CFGR0 = RCC_PLLSRC_HSE_Mul2 | RCC_SW_HSE;					// Switch to HSE and set the PLL source
+	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x04);		// Wait till HSE is used as system clock source
+	RCC->CTLR  = BASE_CTLR | RCC_HSEON;								// (switch off HSI - optional)
+	// sysclk = HSE now
 
 	#if defined(FUNCONF_USE_PLL) && FUNCONF_USE_PLL
-        RCC->CTLR  = BASE_CTLR | RCC_HSION | RCC_HSEON;				// Keep HSI and PLL on just in case, while turning on HSE
-        while(!(RCC->CTLR&RCC_HSERDY));								// wait untill the HSE is ready
-        RCC->CFGR0 = BASE_CFGR0 | RCC_SW_HSE;						// switch the clock to HSE
-        while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x04);	// Wait till HSE is used as system clock source
-		RCC->CTLR  = BASE_CTLR | RCC_HSEON | RCC_PLLON ;			// enable PLL (switch off HSI - optional)
-	#else
-        RCC->CTLR  = BASE_CTLR | RCC_HSION | RCC_HSEON ;			// Keep HSI on while turning on HSE
-        while(!(RCC->CTLR&RCC_HSERDY));   							// Wait till HSE is ready
-        RCC->CFGR0 = BASE_CFGR0 | RCC_SW_HSE;						// Switch to HSE
-		while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x04);	// Wait till HSE is used as system clock source
-		RCC->CTLR  = BASE_CTLR | RCC_HSEON;							// (switch off HSI - optional)
+		RCC->CTLR = BASE_CTLR | RCC_HSEON | RCC_PLLON;				// start PLL
 	#endif
 #endif
 
 #if FUNCONF_SYSTEM_CORE_CLOCK > 25000000
-	FLASH->ACTLR = FLASH_ACTLR_LATENCY_1;                   //+1 Cycle Latency
+	FLASH->ACTLR = FLASH_ACTLR_LATENCY_1;                   		//+1 Cycle Latency
 #else
-	FLASH->ACTLR = FLASH_ACTLR_LATENCY_0;                   // +0 Cycle Latency
+	FLASH->ACTLR = FLASH_ACTLR_LATENCY_0;                   		// +0 Cycle Latency
 #endif
 
-	RCC->INTR  = 0x009F0000;                               // Clear PLL, CSSC, HSE, HSI and LSI ready flags.
+	RCC->INTR  = 0x009F0000;                               			// Clear PLL, CSSC, HSE, HSI and LSI ready flags.
 
 #if defined(FUNCONF_USE_PLL) && FUNCONF_USE_PLL
-	while((RCC->CTLR & RCC_PLLRDY) == 0);                       // Wait till PLL is ready
-	RCC->CFGR0 = BASE_CFGR0 | RCC_SW_PLL;                       // Select PLL as system clock source
-	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x08); // Wait till PLL is used as system clock source
+	while((RCC->CTLR & RCC_PLLRDY) == 0);                       	// Wait till PLL is ready
+	uint32_t tmp32 = RCC->CFGR0 & ~(0x03);							// clr the SW
+	RCC->CFGR0 = tmp32 | RCC_SW_PLL;                       			// Select PLL as system clock source
+	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x08); 	// Wait till PLL is used as system clock source
 #endif
 
 #if defined( FUNCONF_USE_UARTPRINTF ) && FUNCONF_USE_UARTPRINTF

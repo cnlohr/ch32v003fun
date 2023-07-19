@@ -34,6 +34,7 @@ HSE bypass Disabled
 Sysclk source = PLL 
 MCO output: Disabled
 ```  
+This message is printed out via the SWIO debug line and using UART, with TX on pin PD5.
 ## More details about the clock system  
 According to the [debug system datasheet](https://github.com/openwch/ch32v003/blob/main/RISC-V%20QingKeV2%20Microprocessor%20Debug%20Manual.pdf) for the CH32V003, the HSI is required to access the chip via SWIO pin. The examples provided by WCH confirm it, in their code configuring the HSE modes does not switch the HSI off, it's left always on. This poses a problem for low power projects when all non required subsystems should be turned off. The real measured difference between the HSE only and with HSI running in background was about 800µA.  
 Once the HSI is disabled, the power cycled, the programmer no longer can access the chip via SWIO pin, resulting in error mesages and known "bricking". 
