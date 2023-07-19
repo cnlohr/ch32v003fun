@@ -14,6 +14,7 @@
 #define FUNCONF_HSITRIM 0x10            // Use factory calibration on HSI Trim.
 #define FUNCONF_SYSTEM_CORE_CLOCK  48000000  // Computed Clock in Hz.
 #define FUNCONF_HSE_BYPASS 0            // Use HSE Bypass feature (for oscillator input)
+#define FUNCONF_USE_CLK_SEC	1			// Use clock security system, enabled by default
 #define FUNCONF_USE_DEBUGPRINTF 1
 #define FUNCONF_USE_UARTPRINTF  0
 #define FUNCONF_SYSTICK_USE_HCLK 0      // Should systick be at 48 MHz or 6MHz?
@@ -34,6 +35,9 @@
 	#define FUNCONF_DEBUGPRINTF_TIMEOUT 160000
 #endif
 
+#if defined(FUNCONF_USE_HSI) && defined(FUNCONF_USE_HSE) && FUNCONF_USE_HSI && FUNCONF_USE_HSE
+       #error FUNCONF_USE_HSI and FUNCONF_USE_HSE cannot both be set
+#endif
 
 #if !defined( FUNCONF_USE_HSI ) && !defined( FUNCONF_USE_HSE )
 	#define FUNCONF_USE_HSI 1 // Default to use HSI
@@ -43,6 +47,10 @@
 #if !defined( FUNCONF_USE_PLL )
 	#define FUNCONF_USE_PLL 1 // Default to use PLL
 #endif
+
+#if !defined( FUNCONF_USE_CLK_SEC )
+	#define FUNCONF_USE_CLK_SEC  1// use clock security system by default
+#endif	
 
 #ifndef HSE_VALUE
 	#define HSE_VALUE                 (24000000) // Value of the External oscillator in Hz, default
@@ -5074,6 +5082,10 @@ extern "C" {
 #ifndef __ASSEMBLER__
 void handle_reset()            __attribute__((naked)) __attribute((section(".text.handle_reset"))) __attribute__((used));
 void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) __attribute__((naked)) __attribute__((used));
+// used to clear the CSS flag in case of clock fail switch
+#if defined(FUNCONF_USE_CLK_SEC) && FUNCONF_USE_CLK_SEC
+	void NMI_RCC_CSS_IRQHandler( void ) __attribute__((section(".text.vector_handler"))) __attribute__((naked)) __attribute__((used));
+#endif
 #endif
 
 // For debug writing to the debug interface.
