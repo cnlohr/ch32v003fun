@@ -1018,7 +1018,7 @@ void SystemInit()
 #endif
 
 #if defined(FUNCONF_USE_CLK_SEC) && FUNCONF_USE_CLK_SEC
-	#define RCC_CSS RCC_CSSON										// Enable clock security system
+	#define RCC_CSS RCC_CSSON									 	// Enable clock security system
 #else
 	#define RCC_CSS 0
 #endif
@@ -1039,6 +1039,8 @@ void SystemInit()
 
 #if defined(FUNCONF_USE_HSE) && FUNCONF_USE_HSE
 	// seems that remapping PA1_2 via AFIO is not required?
+	//RCC->APB2PCENR |= RCC_APB2Periph_AFIO;							// enable AFIO
+	//AFIO->PCFR1 |= GPIO_Remap_PA1_2;								// remap PA1 PA2 to XTAL
 	RCC->CTLR  = BASE_CTLR | RCC_HSION | RCC_HSEON ;				// Keep HSI on while turning on HSE
 	while(!(RCC->CTLR & RCC_HSERDY));   							// Wait till HSE is ready
 	RCC->CFGR0 = RCC_PLLSRC_HSE_Mul2 | RCC_SW_HSE;					// Switch to HSE and set the PLL source

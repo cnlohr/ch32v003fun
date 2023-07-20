@@ -53,6 +53,11 @@ MCO_OUT_HSI
 MCO_OUT_HSE	
 MCO_OUT_PLL	
 ```  
+## Custom NMI interrupt handler  
+Uncommenting `#define USE_CUSTOM_NMI_HANDLER` enables the local custom NMI irq handler. The Non Maskabe Interrupt is triggered by the RCC Clock Security System when the HSE fails. It can be used for other tasks like clock recovery or other ways to detect the clock fail.  
+## PA1 PA2 Testing  
+PA1 and PA2 are the HSE pins. According to the datasheet the PA12_RM bit in the AFIO_PCFR1 register has to be 1 for the crystal to work. However, the tests show that the HSE is taking control over these pins no matter what the configuration is. 
+The example performs a few configuration changes trying to make the HSE fail and trigger the NMI interrupt. Please report if it was successful.
 ## Reuse printf for UART  
 Project also shows how to reuse the printf implementation for both channels: via debug line and UART. Experimenting with clock sources might end up with debug channel disabled, UART being the only way to get out the messages.  
 

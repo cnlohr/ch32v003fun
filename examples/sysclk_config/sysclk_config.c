@@ -18,6 +18,13 @@
  */
 
 // LED is on D.6 (nanoCH32 board)
+
+/* Uncomment this to enable an MNI interrrupt handler override
+ * and peform other tasks than the default Clock security system
+ * flag clear. 
+ */
+//#define USE_CUSTOM_NMI_HANDLER
+
 #define LED_PIN     6				
 
 #include <stdarg.h>
@@ -55,11 +62,14 @@ typedef enum
 void print_sysclk_cfg(void);
 static inline void MCO_cfg(mco_cfg_e cfg);
 static inline uint8_t getMCOidx(uint32_t mco);
+void xtal_pin_test(void);
 void UART_setup(int uartBRR);
 int UART_write(int fd, const char *buf, int size);
 static int UART_puts(char *s, int len, void *buf);
 int UART_printf(const char* format, ...);		
 int mini_vpprintf(int (*puts)(char* s, int len, void* buf), void* buf, const char *fmt, va_list va);
+
+volatile uint8_t HSE_fail_flag = 0;		// used in custom NMI handler to signal a HSE fail
 
 // --------------------------------------------------------
 static inline void MCO_cfg(mco_cfg_e cfg)
@@ -181,10 +191,16 @@ int main()
 	// needed for MCO output
     GPIO_port_enable(GPIO_port_C);
     GPIO_pinMode(GPIOv_from_PORT_PIN(GPIO_port_C, 4), GPIO_pinMode_O_pushPullMux, GPIO_Speed_50MHz);
-	
 	MCO_cfg(MCO_OUT_SYSCLK);
-
 	print_sysclk_cfg();
+
+#if defined(FUNCONF_USE_HSE)
+/**
+ * Various test to abuse the PA1 and PA2 xtal pins and show that HSE is taking
+ * full control over the pins.
+ */
+	xtal_pin_test();
+#endif
 
 	while(1)
     {
@@ -195,7 +211,14 @@ int main()
         Delay_Ms(100);
 		// detect clock failsafe, if HSE was enabled but the current source is HSI/NoPLL -
 		// the clock security system did it's job.
-#if defined(FUNCONF_USE_HSE)		
+#if defined(FUNCONF_USE_HSE)
+	#if defined(USE_CUSTOM_NMI_HANDLER)
+		if (HSE_fail_flag)
+		{
+			printf("%s%s%s", msg_sep, msg_clkFail, msg_sep);
+			HSE_fail_flag = 0;
+		}
+	#else
 		if (FUNCONF_USE_HSE && (RCC->CFGR0 & 0x0C) == 0x00)
 		{
 			printf("%s%s%s", msg_sep, msg_clkFail, msg_sep);
@@ -203,6 +226,58 @@ int main()
 			// have bad baudrate setting unless the original clock was HSE only, 24MHz, No PLL
 			//UART_printf("%s%s%s", msg_sep, msg_clkFail, msg_sep);
 		}
+	#endif // END USE_CUSTOM_NMI_HANDLER
 #endif		
     }
 }
+#if defined(FUNCONF_USE_HSE)
+void xtal_pin_test(void)
+{
+	printf(msg_sep);
+	printf("Testing if PA1 and PA2 config has any impact on HSE.\r\n");
+	printf("Any positive result should trigger the HSE Fail.\r\n");
+	printf("AFIO_PCFR1[PA12RM] = %d\r\n", (AFIO->PCFR1 & AFIO_PCFR1_PA12_REMAP) != 0);
+	printf("PA1+PA2 as PP output, write 0\r\n");
+	GPIO_pinMode(GPIOv_from_PORT_PIN(GPIO_port_A, 1), GPIO_pinMode_O_pushPull, GPIO_Speed_10MHz);
+	GPIO_pinMode(GPIOv_from_PORT_PIN(GPIO_port_A, 2), GPIO_pinMode_O_pushPull, GPIO_Speed_10MHz);
+	GPIO_digitalWrite(GPIOv_from_PORT_PIN(GPIO_port_A, 1), low);
+	GPIO_digitalWrite(GPIOv_from_PORT_PIN(GPIO_port_A, 2), low);
+	Delay_Ms(100);
+	
+	printf("PA1+PA2 as PP out Mux, enable TIM1, PWM on CH2\r\n");
+	GPIO_pinMode(GPIOv_from_PORT_PIN(GPIO_port_A, 1), GPIO_pinMode_O_pushPullMux, GPIO_Speed_10MHz);
+	GPIO_pinMode(GPIOv_from_PORT_PIN(GPIO_port_A, 2), GPIO_pinMode_O_pushPullMux, GPIO_Speed_10MHz);
+	RCC->APB2PCENR |= RCC_APB2Periph_TIM1;
+	TIM1->PSC = 0x0000;
+	TIM1->ATRLR = 255;
+	TIM1->SWEVGR |= TIM_UG;
+	TIM1->CCER |= TIM_CC2NE | TIM_CC2NP;
+	TIM1->CHCTLR2 |= TIM_OC2M_2 | TIM_OC2M_1;
+	TIM1->CH2CVR = 128;
+	TIM1->BDTR |= TIM_MOE;
+	TIM1->CTLR1 |= TIM_CEN;
+	Delay_Ms(100);
+	RCC->APB2PRSTR |= RCC_APB2Periph_TIM1;	// reset Tim1
+	RCC->APB2PRSTR &= ~RCC_APB2Periph_TIM1;
+
+	printf("Enabling Opamp on  PA1+PA2\r\n");
+	EXTEN->EXTEN_CTR |= EXTEN_OPA_EN;
+	Delay_Ms(100);
+	EXTEN->EXTEN_CTR &= ~EXTEN_OPA_EN;
+}
+
+	#if defined(USE_CUSTOM_NMI_HANDLER) 
+	/**
+	 * @brief override the built in NMI handler to perform 
+	 * 		additional operation except clearing the CSS flag
+	 * 		and letting the MCU run with HSI as the clock source.
+	 * 		This could be ie.: try to recover
+	 * 
+	 */
+	void NMI_Handler(void)
+	{
+		RCC->INTR |= RCC_CSSC;	// clear the clock security int flag
+		HSE_fail_flag = 1;
+	}
+	#endif // END USE_CUSTOM_NMI_HANDLER
+#endif
