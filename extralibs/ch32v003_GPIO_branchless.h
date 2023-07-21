@@ -290,14 +290,6 @@ static inline void GPIO_tim2_init();
 #define GPIO_timer_prescaler TIM_CKD_DIV2		// APB_CLOCK / 1024 / 2 = 23.4kHz
 #endif
 
-// maintenance define
-#if !defined(SYSTEM_CORE_CLOCK)
-#define SYSTEM_CORE_CLOCK 48000000
-#define APB_CLOCK SYSTEM_CORE_CLOCK
-#endif
-
-
-
 //######## define requirements / maintenance defines
 
 

@@ -4,8 +4,6 @@
 #include "ch32v003fun.h"
 #include <stdio.h>
 
-#define APB_CLOCK SYSTEM_CORE_CLOCK
-
 uint32_t count;
 
 void RamFunction() __attribute__((naked));

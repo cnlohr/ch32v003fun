@@ -1,6 +1,3 @@
-#define SYSTEM_CORE_CLOCK 48000000
-#define APB_CLOCK SYSTEM_CORE_CLOCK
-
 #include "ch32v003fun.h"
 #include <stdio.h>
 

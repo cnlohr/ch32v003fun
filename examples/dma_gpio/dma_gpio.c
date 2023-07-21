@@ -8,12 +8,9 @@
 // The interrupt fires once at the beginning and
 // once at the end.
 //
-#define SYSTEM_CORE_CLOCK 48000000
 
 #include "ch32v003fun.h"
 #include <stdio.h>
-
-#define APB_CLOCK SYSTEM_CORE_CLOCK
 
 volatile uint32_t count;
 
