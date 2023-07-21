@@ -684,7 +684,24 @@ void DefaultIRQHandler( void )
 
 // This makes it so that all of the interrupt handlers just alias to
 // DefaultIRQHandler unless they are individually overridden.
+
+#if defined(FUNCONF_USE_CLK_SEC) && FUNCONF_USE_CLK_SEC
+/**
+ * @brief 	Non Maskabke Interrupt handler
+ * 			Invoked when the Clock Security system
+ * 			detects the failure of the HSE oscilator.
+ * 			The sys clock is switched to HSI.
+ * 			Clears the CSSF flag in RCC->INTR
+ */
+void NMI_RCC_CSS_IRQHandler( void )
+{
+	RCC->INTR |= RCC_CSSC;	// clear the clock security int flag
+}
+
+void NMI_Handler( void ) 				 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("NMI_RCC_CSS_IRQHandler"))) __attribute__((used));
+#else 
 void NMI_Handler( void )                 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+#endif
 void HardFault_Handler( void )           __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void SysTick_Handler( void )             __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void SW_Handler( void )                  __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
@@ -1000,52 +1017,55 @@ void SystemInit()
 	#define HSEBYP 0
 #endif
 
-	#if defined(FUNCONF_USE_PLL) && FUNCONF_USE_PLL
-		#define BASE_CFGR0 RCC_HPRE_DIV1 | RCC_PLLSRC_HSI_Mul2    // HCLK = SYSCLK = APB1 And, enable PLL
-	#else
-		#define BASE_CFGR0 RCC_HPRE_DIV1      // HCLK = SYSCLK = APB1 And, no pll.
-	#endif
+#if defined(FUNCONF_USE_CLK_SEC) && FUNCONF_USE_CLK_SEC
+	#define RCC_CSS RCC_CSSON									 	// Enable clock security system
+#else
+	#define RCC_CSS 0
+#endif
+
+// HSI always ON - needed for the Debug subsystem
+#define BASE_CTLR	(((FUNCONF_HSITRIM) << 3) | RCC_HSION | HSEBYP | RCC_CSS)
+//#define BASE_CTLR	(((FUNCONF_HSITRIM) << 3) | HSEBYP | RCC_CSS)	// disable HSI in HSE modes
 
 #if defined(FUNCONF_USE_HSI) && FUNCONF_USE_HSI
 	#if defined(FUNCONF_USE_PLL) && FUNCONF_USE_PLL
-		RCC->CFGR0 = BASE_CFGR0;
-		RCC->CTLR  = RCC_HSION | RCC_PLLON | ((FUNCONF_HSITRIM) << 3); // Use HSI, but enable PLL.
+		RCC->CFGR0 = RCC_HPRE_DIV1 | RCC_PLLSRC_HSI_Mul2;
+		RCC->CTLR  = BASE_CTLR | RCC_HSION | RCC_PLLON; 			// Use HSI, enable PLL.
 	#else
-		RCC->CFGR0 = BASE_CFGR0;                                // PLLCLK = HCLK = SYSCLK = APB1
-		RCC->CTLR  = RCC_HSION | ((FUNCONF_HSITRIM) << 3);      // Use HSI, Only.
+		RCC->CFGR0 = RCC_HPRE_DIV1;                               	// PLLCLK = HCLK = SYSCLK = APB1
+		RCC->CTLR  = BASE_CTLR | RCC_HSION;     					// Use HSI, Only.
 	#endif
 #endif
 
 #if defined(FUNCONF_USE_HSE) && FUNCONF_USE_HSE
-
-	RCC->CTLR  = RCC_HSION | RCC_HSEON | RCC_PLLON | HSEBYP;       // Keep HSI and PLL on just in case, while turning on HSE
-
-	// Values lifted from the EVT.  There is little to no documentation on what this does.
-	while(!(RCC->CTLR&RCC_HSERDY));
+	// seems that remapping PA1_2 via AFIO is not required?
+	//RCC->APB2PCENR |= RCC_APB2Periph_AFIO;							// enable AFIO
+	//AFIO->PCFR1 |= GPIO_Remap_PA1_2;								// remap PA1 PA2 to XTAL
+	RCC->CTLR  = BASE_CTLR | RCC_HSION | RCC_HSEON ;				// Keep HSI on while turning on HSE
+	while(!(RCC->CTLR & RCC_HSERDY));   							// Wait till HSE is ready
+	RCC->CFGR0 = RCC_PLLSRC_HSE_Mul2 | RCC_SW_HSE;					// Switch to HSE and set the PLL source
+	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x04);		// Wait till HSE is used as system clock source
+	RCC->CTLR  = BASE_CTLR | RCC_HSEON;								// (switch off HSI - optional)
+	// sysclk = HSE now
 
 	#if defined(FUNCONF_USE_PLL) && FUNCONF_USE_PLL
-		RCC->CFGR0 = BASE_CFGR0 | RCC_SW_HSE;
-		RCC->CTLR  = RCC_HSEON | RCC_PLLON | HSEBYP;                    // Turn off HSI.
-	#else
-		RCC->CFGR0 = BASE_CFGR0 | RCC_SW_HSE;
-		RCC->CTLR  = RCC_HSEON | HSEBYP;                                // Turn off PLL and HSI.
+		RCC->CTLR = BASE_CTLR | RCC_HSEON | RCC_PLLON;				// start PLL
 	#endif
 #endif
 
 #if FUNCONF_SYSTEM_CORE_CLOCK > 25000000
-	FLASH->ACTLR = FLASH_ACTLR_LATENCY_1;                   //+1 Cycle Latency
+	FLASH->ACTLR = FLASH_ACTLR_LATENCY_1;                   		//+1 Cycle Latency
 #else
-	FLASH->ACTLR = FLASH_ACTLR_LATENCY_0;                   // +0 Cycle Latency
+	FLASH->ACTLR = FLASH_ACTLR_LATENCY_0;                   		// +0 Cycle Latency
 #endif
 
-
-	RCC->INTR  = 0x009F0000;                               // Clear PLL, CSSC, HSE, HSI and LSI ready flags.
+	RCC->INTR  = 0x009F0000;                               			// Clear PLL, CSSC, HSE, HSI and LSI ready flags.
 
 #if defined(FUNCONF_USE_PLL) && FUNCONF_USE_PLL
-	// From SetSysClockTo_48MHZ_HSI
-	while((RCC->CTLR & RCC_PLLRDY) == 0);                       // Wait till PLL is ready
-	RCC->CFGR0 = BASE_CFGR0 | RCC_SW_PLL;                       // Select PLL as system clock source
-	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x08); // Wait till PLL is used as system clock source
+	while((RCC->CTLR & RCC_PLLRDY) == 0);                       	// Wait till PLL is ready
+	uint32_t tmp32 = RCC->CFGR0 & ~(0x03);							// clr the SW
+	RCC->CFGR0 = tmp32 | RCC_SW_PLL;                       			// Select PLL as system clock source
+	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x08); 	// Wait till PLL is used as system clock source
 #endif
 
 #if defined( FUNCONF_USE_UARTPRINTF ) && FUNCONF_USE_UARTPRINTF
@@ -1054,7 +1074,6 @@ void SystemInit()
 #if defined( FUNCONF_USE_DEBUGPRINTF ) && FUNCONF_USE_DEBUGPRINTF
 	SetupDebugPrintf();
 #endif
-
 }
 
 // C++ Support
