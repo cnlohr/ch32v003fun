@@ -600,8 +600,14 @@ keep_going:
 					exit( -9 );
 				}
 
+
 				int is_flash = IsAddressFlash( offset );
-				if( MCF.HaltMode ) MCF.HaltMode( dev, is_flash ? HALT_MODE_HALT_AND_RESET : HALT_MODE_HALT_BUT_NO_RESET );
+				//if( MCF.HaltMode ) MCF.HaltMode( dev, is_flash ? HALT_MODE_HALT_AND_RESET : HALT_MODE_HALT_BUT_NO_RESET );
+				if( MCF.HaltMode && is_flash )
+				{
+					if ( offset == 0x1ffff000 ) MCF.HaltMode( dev, HALT_MODE_HALT_BUT_NO_RESET ); // do not reset if writing bootloader, even if it is considered flash memory
+					else MCF.HaltMode( dev, HALT_MODE_HALT_AND_RESET );
+				}
 
 				if( MCF.WriteBinaryBlob )
 				{
