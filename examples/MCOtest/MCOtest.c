@@ -16,7 +16,11 @@ int main()
         // PC4 is T1CH4, 50MHz Output PP CNF = 10: Mux PP, MODE = 11: Out 50MHz
         GPIOC->CFGLR &= ~(GPIO_CFGLR_MODE4 | GPIO_CFGLR_CNF4);
         GPIOC->CFGLR |= GPIO_CFGLR_CNF4_1 | GPIO_CFGLR_MODE4_0 | GPIO_CFGLR_MODE4_1;
-
+		// turn the HSE on
+		RCC->CTLR |= RCC_HSE_ON;
+		// Wait till HSE is ready
+		while(!(RCC->CTLR & RCC_HSERDY));
+		
 	while(1)
 	{
 		switch(count)

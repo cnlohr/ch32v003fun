@@ -8,7 +8,9 @@
 #include<stdint.h>								//uintN_t support
 #include"../ch32v003fun/ch32v003fun.h"
 
-
+#ifndef APB_CLOCK
+	#define APB_CLOCK FUNCONF_SYSTEM_CORE_CLOCK
+#endif
 
 /*######## library usage and configuration
 
