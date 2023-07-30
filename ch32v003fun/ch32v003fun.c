@@ -1003,6 +1003,22 @@ void WaitForDebuggerToAttach()
 
 #endif
 
+#if (defined( FUNCONF_USE_DEBUGPRINTF ) && !FUNCONF_USE_DEBUGPRINTF) && \
+((defined( FUNCONF_USE_UARTPRINTF ) && !FUNCONF_USE_UARTPRINTF) || \
+!defined( FUNCONF_USE_UARTPRINTF ))
+#warning( DEBUG Print Disabled)
+int _write(int fd, const char *buf, int size)
+{
+	return size;
+}
+
+// single to debug intf
+int putchar(int c)
+{
+	return 1;
+}
+#endif
+
 void DelaySysTick( uint32_t n )
 {
 	uint32_t targend = SysTick->CNT + n;
