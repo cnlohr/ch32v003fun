@@ -80,6 +80,12 @@ If the C/C++ language server clangd is unable to find `ch32v003fun.h`, the examp
 ![ch32v003f4u6](https://raw.githubusercontent.com/Tengo10/pinout-overview/main/pinouts/CH32v003/ch32v003f4u6.svg)
 ![ch32v003j4m6](https://raw.githubusercontent.com/Tengo10/pinout-overview/main/pinouts/CH32v003/ch32v003j4m6.svg)
 
+## More examples / projects?
+
+Other third party tools are adding lots of examples, etc.  See the following repos, for extra libraries, etc.
+ * [ch32v003fun_wildwest](https://github.com/recallmenot/ch32v003fun_wildwest)
+ * [ch32v003fun_libs](https://github.com/hexeguitar/ch32v003fun_libs)
+
 ## Support
 
 You can open a github ticket or join my Discord in the #ch32v003fun channel. https://discord.gg/CCeyWyZ
