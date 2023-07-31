@@ -139,12 +139,12 @@ void DMA1_Channel3_IRQHandler( void )
 		// Clear all possible flags.
 		DMA1->INTFCR = DMA1_IT_GL3;
 
-		if( intfr & DMA1_IT_TC3 )
+		if( intfr & DMA1_IT_HT3 )
 		{
 			// Halfwaay (Fill in first part)
 			WS2812FillBuffSec( WS2812dmabuff, DMA_BUFFER_LEN / 2, 1 );
 		}
-		if( intfr & DMA1_IT_HT3 )
+		if( intfr & DMA1_IT_TC3 )
 		{
 			// Complete (Fill in second part)
 			WS2812FillBuffSec( WS2812dmabuff + DMA_BUFFER_LEN / 2, DMA_BUFFER_LEN / 2, 0 );
