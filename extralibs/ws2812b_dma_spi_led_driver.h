@@ -11,13 +11,13 @@
 	#define WS2812DMA_IMPLEMENTATION
 
    You will need to implement the following two functions, as callbacks from the ISR.
-	uint32_t CallbackWS2812BLED( int ledno );
+	uint32_t WS2812BLEDCallback( int ledno );
 
    You willalso need to call
-	InitWS2812DMA();
+	WS2812BDMAInit();
 
    Then, whenyou want to update the LEDs, call:
-	WS2812BStart( int num_leds );
+	WS2812BDMAStart( int num_leds );
 */
 
 #ifndef _WS2812_LED_DRIVER_H
@@ -35,7 +35,9 @@ uint32_t WS2812BLEDCallback( int ledno );
 #ifdef WS2812DMA_IMPLEMENTATION
 
 // Must be divisble by 4.
+#ifndef DMALEDS
 #define DMALEDS 16
+#endif
 
 // Note first n LEDs of DMA Buffer are 0's as a "break"
 // Need one extra LED at end to leave line high. 
@@ -138,6 +140,10 @@ void DMA1_Channel3_IRQHandler( void )
 	{
 		// Clear all possible flags.
 		DMA1->INTFCR = DMA1_IT_GL3;
+
+		// Strange note: These are backwards.  DMA1_IT_HT3 should be HALF and
+		// DMA1_IT_TC3 should be COMPLETE.  But for some reason, doing this causes
+		// LED jitter.  I am henseforth flipping the order.
 
 		if( intfr & DMA1_IT_HT3 )
 		{
