@@ -17,6 +17,7 @@
 #define FUNCONF_USE_CLK_SEC	1			// Use clock security system, enabled by default
 #define FUNCONF_USE_DEBUGPRINTF 1
 #define FUNCONF_USE_UARTPRINTF  0
+#define FUNCONF_NULL_PRINTF 0           // Have printf but direct it "nowhere"
 #define FUNCONF_SYSTICK_USE_HCLK 0      // Should systick be at 48 MHz or 6MHz?
 #define FUNCONF_TINYVECTOR 0            // If enabled, Does not allow normal interrupts.
 #define FUNCONF_UART_PRINTF_BAUD 115200 // Only used if FUNCONF_USE_UARTPRINTF is set.

@@ -1004,9 +1004,9 @@ void WaitForDebuggerToAttach()
 #endif
 
 #if (defined( FUNCONF_USE_DEBUGPRINTF ) && !FUNCONF_USE_DEBUGPRINTF) && \
-((defined( FUNCONF_USE_UARTPRINTF ) && !FUNCONF_USE_UARTPRINTF) || \
-!defined( FUNCONF_USE_UARTPRINTF ))
-#warning( DEBUG Print Disabled)
+    (defined( FUNCONF_USE_UARTPRINTF ) && !FUNCONF_USE_UARTPRINTF) && \
+    (defined( FUNCONF_NULL_PRINTF ) && FUNCONF_NULL_PRINTF)
+
 int _write(int fd, const char *buf, int size)
 {
 	return size;

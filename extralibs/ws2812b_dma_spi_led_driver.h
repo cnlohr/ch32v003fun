@@ -264,7 +264,7 @@ void WS2812BDMAInit( )
 	DMA1_Channel3->CFGR |= DMA_CFGR1_EN;
 
 #ifdef WS2812B_ALLOW_INTERRUPT_NESTING
-	__set_INTSYSCR( 2 ); // Enable interrupt nesting.
+	__set_INTSYSCR( __get_INTSYSCR() | 2 ); // Enable interrupt nesting.
 	PFIC->IPRIOR[24] = 0b10000000; // Turn on preemption for DMA1Ch3
 #endif
 }
