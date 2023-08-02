@@ -5121,10 +5121,10 @@ void SystemInit(void);
 #else
 	#define UART_BAUD_RATE 115200
 #endif
-#define OVER8DIV 4
-#define INTEGER_DIVIDER (((25 * (FUNCONF_SYSTEM_CORE_CLOCK)) / ((OVER8DIV) * (UART_BAUD_RATE))))
+#define OVER4DIV 4
+#define INTEGER_DIVIDER (((25 * (FUNCONF_SYSTEM_CORE_CLOCK)) / ((OVER4DIV) * (UART_BAUD_RATE))))
 #define FRACTIONAL_DIVIDER ((INTEGER_DIVIDER)%100)
-#define UART_BRR ((((INTEGER_DIVIDER) / 100) << 4) | (((((FRACTIONAL_DIVIDER) * ((OVER8DIV)*2)) + 50)/100)&7))
+#define UART_BRR ((((INTEGER_DIVIDER) / 100) << 4) | (((((FRACTIONAL_DIVIDER) * ((OVER4DIV)*4)) + 50)/100)&15))
 // Put an output debug UART on Pin D5.
 // You can write to this with printf(...) or puts(...)
 
