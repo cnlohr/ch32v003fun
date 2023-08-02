@@ -4789,6 +4789,18 @@ RV_STATIC_INLINE void NVIC_SystemReset(void)
   NVIC->CFGR = NVIC_KEY3|(1<<7);
 }
 
+// For configuring INTSYSCR, for interrupt nesting + hardware stack enable.
+static inline uint32_t __get_INTSYSCR(void)
+{
+    uint32_t result;
+    asm volatile("csrr %0, 0x804": "=r"(result));
+    return (result);
+}
+
+static inline void __set_INTSYSCR( uint32_t value )
+{
+    asm volatile("csrw 0x804, %0" : : "r"(value));
+}
 
 
 /*********************************************************************

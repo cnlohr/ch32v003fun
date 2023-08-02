@@ -3,12 +3,17 @@
    to generate outputs very efficiently. So, for now, SPI Port.  Additionally, it uses FAR less
    internal bus resources than to do the same thing with timers.
    
-   For the CH32V003 this means output will be on PORTC Pin 6
+   **For the CH32V003 this means output will be on PORTC Pin 6**
 
    Copyright 2023 <>< Charles Lohr, under the MIT-x11 or NewBSD License, you choose!
 
    If you are including this in main, simply 
 	#define WS2812DMA_IMPLEMENTATION
+
+   Other defines inclue:
+	#define WSRBG
+	#define WSGRB
+	#define ALLOW_INTERRUPT_NESTING
 
    You will need to implement the following two functions, as callbacks from the ISR.
 	uint32_t WS2812BLEDCallback( int ledno );
@@ -219,6 +224,11 @@ void WS2812BDMAInit( )
 //	NVIC_SetPriority( DMA1_Channel3_IRQn, 0<<4 ); //We don't need to tweak priority.
 	NVIC_EnableIRQ( DMA1_Channel3_IRQn );
 	DMA1_Channel3->CFGR |= DMA_CFGR1_EN;
+
+#ifdef ALLOW_INTERRUPT_NESTING
+	__set_INTSYSCR( 2 ); // Enable interrupt nesting.
+	PFIC->IPRIOR[24] = 0b10000000; // Turn on preemption for DMA1Ch3
+#endif
 }
 
 #endif
