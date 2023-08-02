@@ -11,9 +11,10 @@
 	#define WS2812DMA_IMPLEMENTATION
 
    Other defines inclue:
+	#define WSRAW
 	#define WSRBG
 	#define WSGRB
-	#define ALLOW_INTERRUPT_NESTING
+	#define WS2812B_ALLOW_INTERRUPT_NESTING
 
    You will need to implement the following two functions, as callbacks from the ISR.
 	uint32_t WS2812BLEDCallback( int ledno );
@@ -48,7 +49,12 @@ uint32_t WS2812BLEDCallback( int ledno );
 // Need one extra LED at end to leave line high. 
 // This must be greater than WS2812B_RESET_PERIOD.
 #define WS2812B_RESET_PERIOD 2
-#define DMA_BUFFER_LEN (((DMALEDS)/2)*6) // The +1 is for the buffered start.
+
+#ifdef WSRAW
+#define DMA_BUFFER_LEN (((DMALEDS)/2)*8)
+#else
+#define DMA_BUFFER_LEN (((DMALEDS)/2)*6)
+#endif
 
 static uint16_t WS2812dmabuff[DMA_BUFFER_LEN];
 static volatile int WS2812LEDs;
@@ -69,6 +75,19 @@ static void WS2812FillBuffSec( uint16_t * ptr, int numhalfwords, int tce )
 	int ledcount = WS2812LEDs;
 	int place = WS2812LEDPlace;
 
+#ifdef WSRAW
+	while( place < 0 && ptr != end )
+	{
+		uint32_t * lptr = (uint32_t *)ptr;
+		lptr[0] = 0;
+		lptr[1] = 0;
+		lptr[2] = 0;
+		lptr[3] = 0;
+		ptr += 8;
+		place++;
+	}
+
+#else
 	while( place < 0 && ptr != end )
 	{
 		(*ptr++) = 0;
@@ -79,6 +98,7 @@ static void WS2812FillBuffSec( uint16_t * ptr, int numhalfwords, int tce )
 		(*ptr++) = 0;
 		place++;
 	}
+#endif
 
 	while( ptr != end )
 	{
@@ -103,6 +123,22 @@ static void WS2812FillBuffSec( uint16_t * ptr, int numhalfwords, int tce )
 			break;
 		}
 
+#ifdef WSRAW
+		uint32_t ledval32bit = WS2812BLEDCallback( place++ );
+
+		ptr[6] = bitquartets[(ledval32bit>>28)&0xf];
+		ptr[7] = bitquartets[(ledval32bit>>24)&0xf];
+		ptr[4] = bitquartets[(ledval32bit>>20)&0xf];
+		ptr[5] = bitquartets[(ledval32bit>>16)&0xf];
+		ptr[2] = bitquartets[(ledval32bit>>12)&0xf];
+		ptr[3] = bitquartets[(ledval32bit>>8)&0xf];
+		ptr[0] = bitquartets[(ledval32bit>>4)&0xf];
+		ptr[1] = bitquartets[(ledval32bit>>0)&0xf];
+
+		ptr += 8;
+		i += 8;
+
+#else
 		// Use a LUT to figure out how we should set the SPI line.
 		uint32_t ledval24bit = WS2812BLEDCallback( place++ );
 
@@ -130,6 +166,8 @@ static void WS2812FillBuffSec( uint16_t * ptr, int numhalfwords, int tce )
 #endif
 		ptr += 6;
 		i += 6;
+#endif
+
 	}
 	WS2812LEDPlace = place;
 }
@@ -225,7 +263,7 @@ void WS2812BDMAInit( )
 	NVIC_EnableIRQ( DMA1_Channel3_IRQn );
 	DMA1_Channel3->CFGR |= DMA_CFGR1_EN;
 
-#ifdef ALLOW_INTERRUPT_NESTING
+#ifdef WS2812B_ALLOW_INTERRUPT_NESTING
 	__set_INTSYSCR( 2 ); // Enable interrupt nesting.
 	PFIC->IPRIOR[24] = 0b10000000; // Turn on preemption for DMA1Ch3
 #endif
