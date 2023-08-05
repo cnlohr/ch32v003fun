@@ -243,6 +243,17 @@ typedef struct
     __IO uint16_t WRPR1;
 } OB_TypeDef;
 
+typedef struct
+{
+	__IO uint16_t CAP;
+	__IO uint16_t RES1;
+	__IO uint32_t RES2;
+	__IO uint32_t UID0;
+	__IO uint32_t UID1;
+	__IO uint32_t UID2;
+	__IO uint32_t RES3;
+} ESG_TypeDef;
+
 /* General Purpose I/O */
 typedef enum
 {
@@ -576,6 +587,7 @@ typedef struct
 
 #define FLASH_R_BASE                            (AHBPERIPH_BASE + 0x2000) /* Flash registers base address */
 #define OB_BASE                                 ((uint32_t)0x1FFFF800)    /* Flash Option Bytes base address */
+#define ESIG_BASE                               ((uint32_t)0x1FFFF7E0)
 #define EXTEN_BASE                              ((uint32_t)0x40023800)
 
 /* Peripheral declaration */
@@ -604,6 +616,7 @@ typedef struct
 #define RCC                                     ((RCC_TypeDef *)RCC_BASE)
 #define FLASH                                   ((FLASH_TypeDef *)FLASH_R_BASE)
 #define OB                                      ((OB_TypeDef *)OB_BASE)
+#define ESIG                                    ((ESG_TypeDef *)ESIG_BASE)
 #define EXTEN                                   ((EXTEN_TypeDef *)EXTEN_BASE)
 
 /******************************************************************************/
