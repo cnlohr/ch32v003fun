@@ -87,11 +87,18 @@ static inline libusb_device_handle * wch_link_base_setup( int inhibit_startup )
 	libusb_device *found = NULL;
 	ssize_t cnt = libusb_get_device_list(ctx, &list);
 	ssize_t i = 0;
+	int found_arm_programmer = 0;
 	for (i = 0; i < cnt; i++) {
 		libusb_device *device = list[i];
 		struct libusb_device_descriptor desc;
 		int r = libusb_get_device_descriptor(device,&desc);
 		if( r == 0 && desc.idVendor == 0x1a86 && desc.idProduct == 0x8010 ) { found = device; }
+		if( r == 0 && desc.idVendor == 0x1a86 && desc.idProduct == 0x8012) { found_arm_programmer = 1; }
+	}
+
+	if (found_arm_programmer) {
+		fprintf( stderr, "Warning: found at least one WCH-LinkE in ARM programming mode. To use it with minichlink, " 
+				 "you need to change it to RISC-V mode as per https://github.com/cnlohr/ch32v003fun/issues/227\n" ); 
 	}
 
 	if( !found )
