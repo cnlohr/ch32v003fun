@@ -9,8 +9,8 @@
 	PORT C, pin 5 - high res pad, with pull-up to 3.3v with 560k resistor.
 	PORT D, pin 5 - regular touch pad, no extra components.
 
-	Note: You may want to consider including a 1k series resistor for better
-	ESD performance.
+	Note: Typical count deltas for a 1 cm^2 pad are typically only 100 lsb's.
+	So, this method is really limited to boolean "down" functions.
 */
 
 #include "ch32v003fun.h"
@@ -95,7 +95,8 @@ int main()
 	SystemInit();
 
 	// Enable GPIOs and pin-change interrupt.
-	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOC | RCC_APB2Periph_AFIO;
+	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOC | RCC_APB2Periph_GPIOA |
+		RCC_APB2Periph_AFIO;
 
 	// enable pin-change-interrupt.
 	NVIC_EnableIRQ( EXTI7_0_IRQn );
