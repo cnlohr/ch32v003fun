@@ -1,6 +1,4 @@
 /*
-	Copyright (c) 2023 Valve Corporation (see copyright notice at bottom)
-
 	ADC-aided capacitive touch sensing.
 
 	This demonstrates use of the ADC with cap sense pads. By using the ADC, you
