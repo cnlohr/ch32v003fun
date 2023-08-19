@@ -5099,7 +5099,19 @@ extern "C" {
 #define Ticks_from_Us(n)	(n * DELAY_US_TIME)
 #define Ticks_from_Ms(n)	(n * DELAY_MS_TIME)
 
+// Depending on a LOT of factors, it's about 6 cycles per n.
+// **DO NOT send it zero or less.**
+static inline void Delay_Tiny( int n ) {
+	asm volatile( "\
+		mv a5, %[n]\n\
+		1: \
+		c.addi a5, -1\n\
+		c.bnez a5, 1b" : : [n]"r"(n) : "a5" );
+}
 
+// Add a certain number of nops.  Note: These are usually executed in pairs
+// and take two cycles, so you typically would use 0, 2, 4, etc.
+#define ADD_N_NOPS( n ) asm volatile( ".rept " #n "\nc.nop\n.endr" );
 
 #if defined(__riscv) || defined(__riscv__) || defined( CH32V003FUN_BASE )
 
