@@ -1,5 +1,7 @@
 # the deepest slumber
 
+**WARNING: You MUST hard-reboot the CH32V003 to allow it to go into deep sleep. You cannot go from flashing to deep sleep without a hard power cycle.**
+
 This example serves to show how to put the CH32V003 into its lowest power state (standby) and have it wake periodically.  
 
 Power consumption should be around 10uA.  
