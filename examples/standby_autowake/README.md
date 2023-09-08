@@ -6,8 +6,7 @@ This example serves to show how to put the CH32V003 into its lowest power state 
 
 Power consumption should be around 10uA.  
 
-The MCU only toggles the LED and prints a message, then it goes to sleep.  
-The LED staying on demonstrates that GPIO keeps its state even when the rest of the mcu is in a coma.  
+GPIO must be put into input pull-up / pull-down mode to have standby current reduced.
 
 Based on the groundwork of Marek M.  
 

@@ -13,27 +13,25 @@ void EXTI7_0_IRQHandler( void ) {
 int main()
 {
 	SystemInit();
-	Delay_Ms(100);
+
+	// This delay gives us some time to reprogram the device. 
+	// Otherwise if the device enters standby mode we can't 
+	// program it any more.
+	Delay_Ms(5000);
 
 	printf("\n\nlow power example\n\n");
 
-	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD;
-	// GPIO D4 Push-Pull
-	GPIOD->CFGLR &= ~(0xf<<(4*4));
-	GPIOD->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*4);
-	GPIOD->OUTDR |= (1 << 4);
+	// Set all GPIOs to input pull up
+	RCC->APB2PCENR |= RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOC | RCC_APB2Periph_GPIOD;
+	GPIOA->CFGLR = 0b10001000100010001000100010001000;
+	GPIOA->OUTDR = 0b11111111;
+	GPIOC->CFGLR = 0b10001000100010001000100010001000;
+	GPIOC->OUTDR = 0b11111111;
+	GPIOD->CFGLR = 0b10001000100010001000100010001000;
+	GPIOD->OUTDR = 0b00000100;
 
-	// give the user time to open the terminal connection
-	//Delay_Ms(5000);
-	//printf("5000ms wait over\r\n");
-	
-	// enable alternate IO function module clock
+	// AFIO is needed for EXTI
 	RCC->APB2PCENR |= RCC_AFIOEN;
-
-	// configure button on PD2 as input, pullup
-	GPIOD->CFGLR &= ~(0xf<<(2*4));
-	GPIOD->CFGLR |= (GPIO_CNF_IN_PUPD)<<(2*4);
-	GPIOD->BSHR = (1 << 2);
 
 	// assign pin 2 interrupt from portD (0b11) to EXTI channel 2
 	AFIO->EXTICR |= (uint32_t)(0b11 << (2 * 2));
@@ -56,6 +54,6 @@ int main()
 		// restore clock to full speed
 		SystemInit();
 		printf("\nawake, %u\n", counter++);
-		GPIOD->OUTDR ^= (1 << 4);
+		Delay_Ms(5000);	// wake and reflash can happen here
 	}
 }
