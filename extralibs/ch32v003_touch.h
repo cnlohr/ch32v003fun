@@ -78,9 +78,9 @@ uint32_t ReadTouchPin( GPIO_TypeDef * io, int portpin, int adcno, int iterations
 
 
 #if TOUCH_FLAT == 1
-#define RELEASEIO io->OUTDR = 1<<(portpin+16*TOUCH_SLOPE); io->CFGLR = CFGFLOAT;
+#define RELEASEIO io->BSHR = 1<<(portpin+16*TOUCH_SLOPE); io->CFGLR = CFGFLOAT;
 #else
-#define RELEASEIO io->CFGLR = CFGFLOAT; io->OUTDR = 1<<(portpin+16*TOUCH_SLOPE);
+#define RELEASEIO io->CFGLR = CFGFLOAT; io->BSHR = 1<<(portpin+16*TOUCH_SLOPE);
 #endif
 
 #define INNER_LOOP( n ) \
@@ -101,7 +101,7 @@ uint32_t ReadTouchPin( GPIO_TypeDef * io, int portpin, int adcno, int iterations
 		__enable_irq();                                                         \
 		while(!(ADC1->STATR & ADC_EOC));                                        \
 		io->CFGLR = CFGDRIVE;                                                   \
-		io->OUTDR = 1<<(portpin+(16*(1-TOUCH_SLOPE)));                          \
+		io->BSHR = 1<<(portpin+(16*(1-TOUCH_SLOPE)));                          \
 		ret += ADC1->RDATAR;                                                    \
 	}
 
@@ -118,6 +118,60 @@ uint32_t ReadTouchPin( GPIO_TypeDef * io, int portpin, int adcno, int iterations
 
 	return ret;
 }
+
+// Run from RAM to get even more stable timing.
+// This function call takes about 8.1uS to execute.
+static uint32_t ReadTouchPinSafe( GPIO_TypeDef * io, int portpin, int adcno, int iterations ) __attribute__((noinline, section(".srodata")));
+uint32_t ReadTouchPinSafe( GPIO_TypeDef * io, int portpin, int adcno, int iterations )
+{
+	uint32_t ret = 0;
+
+	ADC1->RSQR3 = adcno;
+	ADC1->SAMPTR2 = TOUCH_ADC_SAMPLE_TIME<<(3*adcno);
+
+	// If we run multiple times with slightly different wait times, we can
+	// reduce the impact of the ADC's DNL.
+
+#define INNER_LOOP_SAFE( n ) \
+	{ \
+		/* Only lock IRQ for a very narrow window. */                           \
+		__disable_irq();                                                        \
+		                                                                        \
+                                                                                \
+		/* Tricky - we start the ADC BEFORE we transition the pin.  By doing    \
+			this We are catching it onthe slope much more effectively.  */      \
+		ADC1->CTLR2 = ADC_SWSTART | ADC_ADON | ADC_EXTSEL;                      \
+                                                                                \
+		ADD_N_NOPS( n )                                                         \
+                                                                                \
+		io->CFGLR = ((GPIO_CFGLR_IN_PUPD)<<(4*portpin)) | (io->CFGLR & (~(0xf<<(4*portpin))));                                                 \
+        io->BSHR = 1<<(portpin+16*TOUCH_SLOPE);                                \
+																			    \
+		/* Sampling actually starts here, somewhere, so we can let other        \
+			interrupts run */                                                   \
+		__enable_irq();                                                         \
+		while(!(ADC1->STATR & ADC_EOC));                                        \
+		__disable_irq();                                                        \
+		io->CFGLR = (GPIO_CFGLR_OUT_2Mhz_PP)<<(4*portpin) | (io->CFGLR & (~(0xf<<(4*portpin))));                                                  \
+		__enable_irq();                                                         \
+		io->BSHR = 1<<(portpin+(16*(1-TOUCH_SLOPE)));                          \
+		ret += ADC1->RDATAR;                                                    \
+	}
+
+	int i;
+	for( i = 0; i < iterations; i++ )
+	{
+		// Wait a variable amount of time based on loop iteration, in order
+		// to get a variety of RC points and minimize DNL.
+
+		INNER_LOOP_SAFE( 0 );
+		INNER_LOOP_SAFE( 2 );
+		INNER_LOOP_SAFE( 4 );
+	}
+
+	return ret;
+}
+
 
 #endif
 
