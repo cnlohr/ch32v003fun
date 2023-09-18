@@ -68,8 +68,7 @@ void init_adc() {
     RCC->CFGR0 |= RCC_ADCPRE_DIV2;	// set it to 010xx for /2.
 
     // Keep CALVOL register with initial value
-    ADC1->CTLR1 |= ADC_ExternalTrigConv_T1_TRGO;
-    ADC1->CTLR2 = ADC_ADON | ADC_DMA | ADC_EXTTRIG;
+    ADC1->CTLR2 = ADC_ADON | ADC_DMA | ADC_EXTTRIG | ADC_ExternalTrigConv_T1_TRGO;
 
     // Possible times: 0->3,1->9,2->15,3->30,4->43,5->57,6->73,7->241 cycles
     ADC1->SAMPTR2 = 0/*3 cycles*/ << (3/*offset per channel*/ * 2/*channel*/);
