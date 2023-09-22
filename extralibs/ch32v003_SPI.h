@@ -75,7 +75,7 @@ static inline void SPI_write_16(uint16_t data);
 // send a command and get a response from the SPI device
 // you'll use this for most devices
 static inline uint8_t SPI_transfer_8(uint8_t data);
-static inline uint8_t SPI_transfer_16(uint16_t data);
+static inline uint16_t SPI_transfer_16(uint16_t data);
 
 // SPI peripheral power enable / disable (default off, init() automatically enables)
 // send SPI peripheral to sleep
@@ -238,15 +238,15 @@ static inline void SPI_init() {
 }
 
 static inline void SPI_begin_8() {
-	SPI1->CTLR1 |= SPI_DataSize_8b;					// DFF 16bit data-length enable, writable only when SPE is 0
-	SPI1->CTLR1 |= CTLR1_SPE_Set;
+	SPI1->CTLR1 &= ~(SPI_CTLR1_DFF);			// DFF 16bit data-length enable, writable only when SPE is 0
+	SPI1->CTLR1 |= SPI_CTLR1_SPE;
 }
 static inline void SPI_begin_16() {
-	SPI1->CTLR1 |= SPI_DataSize_16b;				// DFF 16bit data-length enable, writable only when SPE is 0
-	SPI1->CTLR1 |= CTLR1_SPE_Set;
+	SPI1->CTLR1 |= SPI_CTLR1_DFF;				// DFF 16bit data-length enable, writable only when SPE is 0
+	SPI1->CTLR1 |= SPI_CTLR1_SPE;
 }
 static inline void SPI_end() {
-	SPI1->CTLR1 &= CTLR1_SPE_Reset;
+	SPI1->CTLR1 &= ~(SPI_CTLR1_SPE);
 }
 
 #if defined(CH32V003_SPI_NSS_SOFTWARE_PC3)
@@ -290,7 +290,7 @@ static inline uint8_t SPI_transfer_8(uint8_t data) {
 	#endif
 	return SPI_read_8();
 }
-static inline uint8_t SPI_transfer_16(uint16_t data) {
+static inline uint16_t SPI_transfer_16(uint16_t data) {
 	#if defined(CH32V003_SPI_NSS_SOFTWARE_PC3) || defined(CH32V003_SPI_NSS_SOFTWARE_PC4) 
 		SPI_NSS_software_high();
 	#endif
