@@ -6,7 +6,7 @@ This example serves to show how to put the CH32V003 into its lowest power state 
 
 Power consumption should be around 10uA.  
 
-GPIO must be put into input pull-up / pull-down mode to have standby current reduced.
+Refer to the standby_btn example for GPIO settings.
 
 Based on the groundwork of Marek M.  
 
