@@ -83,7 +83,7 @@ uint8_t digitalRead(uint8_t u8Pin)
     	u32Value = GPIOD->INDR & u32GPIO;
     	break;
     }
-    return (u32Value == 0);
+    return (u32Value != 0);
 } /* digitalRead() */
 
 void digitalWrite(uint8_t u8Pin, uint8_t u8Value)
@@ -447,8 +447,7 @@ uint32_t u32Prescaler = 0;
         u32Prescaler = SPI_BaudRatePrescaler_64;
     else if (iSpeed >= (FUNCONF_SYSTEM_CORE_CLOCK/128))
         u32Prescaler = SPI_BaudRatePrescaler_128;
-    else
-        u32Prescaler = SPI_BaudRatePrescaler_256;
+    else u32Prescaler = SPI_BaudRatePrescaler_256;
 
         // Enable GPIOC and SPI
         RCC->APB2PCENR |= RCC_APB2Periph_GPIOC | RCC_APB2Periph_SPI1;

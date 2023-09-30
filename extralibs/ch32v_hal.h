@@ -17,9 +17,9 @@
 #ifndef CH32V_HAL_H_
 #define CH32V_HAL_H_
 
-#include "ch32v003fun.h"
 #include <stdio.h>
 #include <stdint.h>
+#include "ch32v003fun.h"
 
 #define BITBANG
 // GPIO pin states
