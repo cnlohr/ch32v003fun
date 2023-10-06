@@ -21,7 +21,6 @@
 #include <stdint.h>
 #include "ch32v003fun.h"
 
-#define BITBANG
 // GPIO pin states
 enum {
 	OUTPUT = 0,
@@ -60,10 +59,17 @@ void I2CSetSpeed(int iSpeed);
 void SPI_write(uint8_t *pData, int iLen);
 void SPI_begin(int iSpeed, int iMode);
 
+// UART1 (polling mode)
+void UARTInit(uint32_t u32Baud, int bRemap);
+int UART_Read(uint32_t u32Timeout);
+void UART_Write(uint8_t *pData, int iLen);
 
 // Random stuff
 void Standby82ms(uint8_t iTicks);
 void breatheLED(uint8_t u8Pin, int iPeriod);
-
+uint32_t udiv32(uint32_t num, uint32_t den);
+uint32_t udivmod32(uint32_t num, uint32_t den, uint32_t *pRemainder);
+uint32_t umod32(uint32_t num, uint32_t den);
+uint64_t udiv64(uint64_t num, uint64_t den);
 
 #endif /* CH32V_HAL_H_ */

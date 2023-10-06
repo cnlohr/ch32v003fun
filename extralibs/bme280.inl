@@ -16,6 +16,14 @@ static int32_t calT1,calT2,calT3;
 static int32_t calP1, calP2, calP3, calP4, calP5, calP6, calP7, calP8, calP9;
 static int32_t calH1, calH2, calH3, calH4, calH5, calH6;
 
+int32_t GetInt16(uint8_t *p)
+{
+   uint32_t u32;
+   u32 = (uint32_t)p[0] | ((uint32_t)p[1] << 8);
+   if (u32 > 32767L) u32 -= 65536L; // negative value
+   return (int32_t)u32;
+} /* GetInt16() */
+
 //
 // Opens a file system handle to the I2C device
 // reads the calibration data and sets the device
@@ -43,34 +51,23 @@ uint8_t ucCal[36];
    I2CReadRegister(bAddr, 0xe1, &ucCal[25], 7); // get 7 more humidity calibration bytes
         // Prepare temperature calibration data
         calT1 = (uint32_t)ucCal[0] + ((uint32_t)ucCal[1] << 8);
-        calT2 = (uint32_t)ucCal[2] + ((uint32_t)ucCal[3] << 8);
-        if (calT2 > 32767L) calT2 -= 65536L; // negative value
-        calT3 = (uint32_t)ucCal[4] + ((uint32_t)ucCal[5] << 8);
-        if (calT3 > 32767L) calT3 -= 65536L;
+        calT2 = GetInt16(&ucCal[2]);
+        calT3 = GetInt16(&ucCal[4]);
 
         // Prepare pressure calibration data
         calP1 = (uint32_t)ucCal[6] + ((uint32_t)ucCal[7] << 8);
-        calP2 =(uint32_t) ucCal[8] + ((uint32_t)ucCal[9] << 8);
-        if (calP2 > 32767L) calP2 -= 65536L; // signed short
-        calP3 = (uint32_t)ucCal[10] + ((uint32_t)ucCal[11] << 8);
-        if (calP3 > 32767L) calP3 -= 65536L;
-        calP4 = (uint32_t)ucCal[12] + ((uint32_t)ucCal[13] << 8);
-        if (calP4 > 32767L) calP4 -= 65536L;
-        calP5 = (uint32_t)ucCal[14] + ((uint32_t)ucCal[15] << 8);
-        if (calP5 > 32767L) calP5 -= 65536L;
-        calP6 = (uint32_t)ucCal[16] + ((uint32_t)ucCal[17] << 8);
-        if (calP6 > 32767L) calP6 -= 65536L;
-        calP7 = (uint32_t)ucCal[18] + ((uint32_t)ucCal[19] << 8);
-        if (calP7 > 32767L) calP7 -= 65536L;
-        calP8 = (uint32_t)ucCal[20] + ((uint32_t)ucCal[21] << 8);
-        if (calP8 > 32767L) calP8 -= 65536L;
-        calP9 = (uint32_t)ucCal[22] + ((uint32_t)ucCal[23] << 8);
-        if (calP9 > 32767L) calP9 -= 65536L;
+        calP2 = GetInt16(&ucCal[8]);
+        calP3 = GetInt16(&ucCal[10]);
+        calP4 = GetInt16(&ucCal[12]);
+        calP5 = GetInt16(&ucCal[14]);
+        calP6 = GetInt16(&ucCal[16]);
+        calP7 = GetInt16(&ucCal[18]);
+        calP8 = GetInt16(&ucCal[20]);
+        calP9 = GetInt16(&ucCal[22]);
 
         // Prepare humidity calibration data
         calH1 = (uint32_t)ucCal[24];
-        calH2 = (uint32_t)ucCal[25] + ((uint32_t)ucCal[26] << 8);
-        if (calH2 > 32767L) calH2 -= 65536L;
+        calH2 = GetInt16(&ucCal[25]);
         calH3 = (uint32_t)ucCal[27];
         calH4 = ((uint32_t)ucCal[28] << 4) + ((uint32_t)ucCal[29] & 0xf);
         if (calH4 > 2047L) calH4 -= 4096L; // signed 12-bit
@@ -136,11 +133,11 @@ int64_t var1_64, var2_64;
         else
         {
                 P_64 = 1048576LL - p;
-                P_64 = (((P_64<<31)-var2_64)*3125LL)/var1_64;
+                P_64 = udiv64((((P_64<<31)-var2_64)*3125LL), var1_64);
                 var1_64 = (((int64_t)calP9) * (P_64>>13) * (P_64>>13)) >> 25;
                 var2_64 = (((int64_t)calP8) * P_64) >> 19;
                 P_64 = ((P_64 + var1_64 + var2_64) >> 8) + (((int64_t)calP7)<<4);
-                *P = (uint32_t)(P_64 / 100LL);
+                *P = (uint32_t)udiv64(P_64, 100LL);
         }
         // Calculate calibrated humidity value
         var1 = (t_fine - 76800L);

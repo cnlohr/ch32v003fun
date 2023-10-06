@@ -8,9 +8,8 @@
 //
 #define USE_IMU
 #define USE_RTC
-#define USE_BATT
+//#define USE_BATT
 #define USE_BME
-//#define USE_GPS
 
 #include "../../extralibs/ch32v_hal.inl"
 #include "../../extralibs/sharp_lcd.inl"
@@ -27,6 +26,7 @@
 //#include "psp_logo.h"
 
 struct tm myTime;
+char szTemp[128];
 
 // Hardware connections. The hex value represents the port (upper nibble) and GPIO pin (lower nibble)
 // QFN20 PCB
@@ -84,14 +84,14 @@ int i2str(char *pDest, int iVal)
         }
         while (iPlaceVal) {
                 if (iVal >= iPlaceVal) {
-                        i = iVal / iPlaceVal;
+                        i = udiv32(iVal, iPlaceVal);
                         *d++ = '0' + (char)i;
                         iVal -= (i*iPlaceVal);
                         iDigits++;
                 } else if (iDigits != 0) {
                         *d++ = '0'; // non-zeros were already displayed
                 }
-                iPlaceVal /= 10;
+                iPlaceVal = udiv32(iPlaceVal, 10);
         }
         if (d == pDest) // must be zero
                 *d++ = '0';
@@ -107,32 +107,12 @@ void i2strf(char *pDest, int iVal, int iDigits)
         pDest[iDigits] = 0;
         while (iDigits) {
         	iDigits--;
-            i = iVal % 10;
+            i = umod32(iVal, 10);
             d[iDigits] = '0' + (char)i;
-            iVal /= 10;
+            iVal = udiv32(iVal, 10);
         }
 } /* i2strf() */
 
-#ifdef USE_GPS
-#define UART_TIMEOUT 10000
-//
-// Returns an 8-bit character (0-255)
-// or -1 to indicate a timeout
-//
-int UART_Read(void)
-{
-uint8_t c;
-int iTimeout = 0;
-
-    while(USART_GetFlagStatus(USART1, USART_FLAG_RXNE) == RESET && iTimeout < UART_TIMEOUT)
-    {
-        iTimeout++;
-    }
-    if (iTimeout >= UART_TIMEOUT)
-        return -1;
-    c = (USART_ReceiveData(USART1));
-    return c;
-} /* UART_Read() */
 //
 // Parse a zero-padded number (fixed length)
 // from a string
@@ -198,9 +178,9 @@ int i;
 // Acquire the correct time and date
 // from an external GPS module
 //
+#define UART_TIMEOUT 10000
 int GPSTime(void)
 {
-char szTemp[128];
 char szLAT[16], szLONG[16];
 int i, iLen = 0;
 int iCount = 0;
@@ -208,14 +188,13 @@ int bHaveTime = 0;
 struct tm myTime;
 
 //	pinMode(LED_PIN, OUTPUT); // Show GPS is in use with LED blinking for data reception
-//    UART_Init(9600);
 	sharpFill(0);
 	sharpWriteString(2,0, "GPS Parser", FONT_12x16, 0);
 	sharpWriteBuffer();
 	while (GetButtons() != 0) {}; // wait for user to release the button that got us here
 
     while (1) {
-    	i = UART_Read();
+    	i = UART_Read(UART_TIMEOUT);
     	if (i != -1) {
     		digitalWrite(LED_PIN, 1);
     		if (i == 0xa) {
@@ -284,35 +263,9 @@ struct tm myTime;
 
 void RunGPS(void)
 {
-	GPSTime();
+    UARTInit(9600, 1); // enable remap to PC0/PC1
+    GPSTime();
 } /* RunGPS() */
-
-void USARTInit(uint32_t baudrate)
-{
-    GPIO_InitTypeDef  GPIO_InitStructure;
-    USART_InitTypeDef USART_InitStructure;
-
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC | RCC_APB2Periph_USART1, ENABLE);
-// Remap USART1 to PC0/PC1
-    RCC->APB2PCENR |= RCC_AFIOEN;
-    AFIO->PCFR1 |= (1<<21) | (1<<2); // set both remap bits for TX=PC0, RX=PC1
-
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-    GPIO_Init(GPIOC, &GPIO_InitStructure);
-
-    USART_InitStructure.USART_BaudRate = baudrate;
-    USART_InitStructure.USART_WordLength = USART_WordLength_8b;
-    USART_InitStructure.USART_StopBits = USART_StopBits_1;
-    USART_InitStructure.USART_Parity = USART_Parity_No;
-    USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
-    USART_InitStructure.USART_Mode = USART_Mode_Rx;
-
-    USART_Init(USART1, &USART_InitStructure);
-    USART_Cmd(USART1, ENABLE);
-} /* USARTInit() */
-#endif // USE_GPS
 
 #ifdef USE_BATT
 void ADCInit(void)
@@ -368,7 +321,6 @@ void ShowBattery(int x, int y)
 {
 	int iBatt;
 	uint8_t *s;
-char szTemp[16];
 
     ADCInit();
     iBatt = ADCGetValue();
@@ -394,7 +346,6 @@ void SetTime(void)
 {
 	int i, iFlash, iCount = 0, iTick = 0, iCursor = 0, bDone = 0;
 	int iButts, iOldButts = 0;
-	char szTemp[16];
 	struct tm myTime;
 
 	rtcGetTime(&myTime);
@@ -416,7 +367,7 @@ void SetTime(void)
            sharpWriteString(36, 18, szTemp, FONT_12x16, bInvert);
 	    sharpWriteString(60, 18, "/", FONT_12x16, bInvert);
 
-	    i = myTime.tm_year % 100;
+	    i = umod32(myTime.tm_year, 100);
 	    i2strf(szTemp, i+2000, 2);
 	    if (iCursor != 2 || (iCursor == 2 && iFlash))
            sharpWriteString(72, 18, szTemp, FONT_12x16, bInvert);
@@ -461,7 +412,7 @@ void SetTime(void)
 	    		break;
 	    	case 2: // year
 	    		myTime.tm_year++;
-	    		myTime.tm_year = (myTime.tm_year % 100) + 100;
+	    		myTime.tm_year = 100 + umod32(myTime.tm_year, 100);
 	    		break;
 	    	case 3: // hour
 	    		myTime.tm_hour++;
@@ -508,7 +459,6 @@ void SetTime(void)
 
 void ShowTime(void)
 {
-char szTemp[16];
 
 	sharpFill(bInvert);
 	sharpWriteString(136, 2, "Set", FONT_8x8, bInvert);
@@ -526,7 +476,9 @@ char szTemp[16];
    	szTemp[5] = '/';
    	i2strf(&szTemp[6], myTime.tm_year + 1900, 4);
    	sharpWriteString(2, 36, szTemp, FONT_12x16, bInvert);
+#ifdef USE_BATT
    	ShowBattery(2, 52);
+#endif
    	sharpWriteBuffer();
 } /* ShowTime() */
 #endif // USE_RTC
@@ -534,24 +486,23 @@ char szTemp[16];
 void ShowLTR390Sample(int iValue, int iMax)
 {
 int iUVI;
-char szTemp[16];
 int i;
 
     sharpFill(bInvert);
 	sharpWriteString(24, 6, "UVI   Max", FONT_12x16, bInvert);
 	iUVI = ltr390_getUVI(iValue); // instaneous value
-	i2str(szTemp, iUVI/10); // whole part
+	i2str(szTemp, udiv32(iUVI,10)); // whole part
     sharpWriteStringCustom(&Roboto_Black_40, 0, 62, szTemp, !bInvert, 0);
     sharpWriteStringCustom(&Roboto_Black_40, -1, 62, ".", !bInvert, 0);
-	i = iUVI % 10; // 10ths
+	i = umod32(iUVI, 10); // 10ths
 	i2str(szTemp, i);
     sharpWriteStringCustom(&Roboto_Black_40, -1, 62, szTemp, !bInvert, 0);
 
 	iUVI = ltr390_getUVI(iMax); // max value from the last 3.2 seconds
-	i2str(szTemp, iUVI/10); // whole part
+	i2str(szTemp, udiv32(iUVI,10)); // whole part
     sharpWriteStringCustom(&Roboto_Black_40, 84, 62, szTemp, !bInvert, 0);
     sharpWriteStringCustom(&Roboto_Black_40, -1, 62, ".", !bInvert, 0);
-	i = iUVI % 10; // 10ths
+	i = umod32(iUVI, 10); // 10ths
 	i2str(szTemp, i);
     sharpWriteStringCustom(&Roboto_Black_40, -1, 62, szTemp, !bInvert, 0);
 // DEBUG
@@ -631,7 +582,6 @@ void ScanBus(void)
 {
 uint8_t i, y;
 int iBad = 0;
-char szTemp[16];
 
 I2CInit(SDA_PIN, SCL_PIN, 100000);
 scan_again:
@@ -737,13 +687,12 @@ void TIM2_PWMOut_Init(u16 arr, u16 psc, u16 ccp)
 
 void ShowBME280(uint32_t T, uint32_t P, uint32_t H)
 {
-char szTemp[16];
 
      sharpFill(bInvert);
      sharpWriteString(2,2, "Temp: ", FONT_12x16, bInvert);
-     i2str(szTemp, (int)T/100);
+     i2str(szTemp, udiv32(T,100));
      szTemp[2] = '.';
-     i2str(&szTemp[3], T % 100);
+     i2str(&szTemp[3], umod32(T, 100));
      szTemp[5] = 'C';
      szTemp[6] = 0;
      sharpWriteString(-1, -1, szTemp, FONT_12x16, bInvert);
@@ -801,7 +750,6 @@ void RunLTR390(void)
 void ShowCO2(void)
 {
 	int i, x;
-	char szTemp[32];
 
 			sharpFill(bInvert);
 			sharpWriteString(132,2, "CAL", FONT_8x8, bInvert);
@@ -816,15 +764,15 @@ void ShowCO2(void)
 	        sharpWriteString(x, 10, "ppm", FONT_8x8, bInvert);
 
 	        sharpWriteString(2, 36, "Temp ", FONT_12x16, bInvert);
-	        i2str(szTemp, _iTemperature/10); // whole part
+	        i2str(szTemp, udiv32(_iTemperature,10)); // whole part
 	        sharpWriteString(-1, 36, szTemp, FONT_12x16, bInvert);
-	        i2str(szTemp, _iTemperature % 10); // fraction
+	        i2str(szTemp, umod32(_iTemperature, 10)); // fraction
 	        sharpWriteString(-1, 36, ".", FONT_12x16, bInvert);
 	        sharpWriteString(-1, 36, szTemp, FONT_12x16, bInvert);
 	        sharpWriteString(-1, 36, "C", FONT_12x16, bInvert);
 
 	        sharpWriteString(2, 52, "Humidity ", FONT_12x16, bInvert);
-	        i2str(szTemp, _iHumidity/10); // throw away fraction since it's not accurate
+	        i2str(szTemp, udiv32(_iHumidity,10)); // throw away fraction since it's not accurate
 	        sharpWriteString(-1, 52, szTemp, FONT_12x16, bInvert);
 	        sharpWriteString(-1, 52, "%", FONT_12x16, bInvert);
 	        sharpWriteBuffer();
@@ -834,7 +782,6 @@ void ShowCO2(void)
 void ShowIMU(void)
 {
 	int16_t acc[3];
-	char szTemp[16];
 
 	IMUGetSample(acc, NULL, NULL); // get accelerometer samples
 	sharpFill(0);
@@ -855,12 +802,11 @@ void ShowIMU(void)
 
 void ShowCountdown(int iSecs)
 {
-	char szTemp[8];
     szTemp[0] = '0';
-	szTemp[1] = (iSecs/60)+'0';
+	szTemp[1] = udiv32(iSecs,60)+'0';
 	szTemp[2] = ':';
-	szTemp[3] = ((iSecs % 60) / 10) + '0';
-	szTemp[4] = (iSecs % 10) + '0';
+	szTemp[3] = udiv32(umod32(iSecs, 60), 10) + '0';
+	szTemp[4] = umod32(iSecs, 10) + '0';
 	szTemp[5] = 0;
 	sharpWriteStringCustom(&Roboto_Black_40, 10, 56, szTemp, 1-bInvert, 1);
 	sharpWriteBuffer();
@@ -987,11 +933,12 @@ int i;
 //    sharpWriteBuffer();
 //    Delay_Ms(3000);
 //    sharpFill(0);
-    sharpWriteString(32, 2, "CH32V003", FONT_12x16, 0);
-    sharpWriteString(44, 18, "Sensor", FONT_12x16, 0);
-    sharpWriteString(32, 34, "Platform", FONT_12x16, 0);
-    sharpWriteString(28, 50, "by Larry Bank", FONT_8x8, 0);
-    sharpWriteString(2, 58,"Button 0/1 to start", FONT_8x8, 0);
+    sharpWriteString(6, 2, "CH32V003", FONT_12x16, 0);
+    sharpWriteString(18, 18, "Sensor", FONT_12x16, 0);
+    sharpWriteString(6, 34, "Platform", FONT_12x16, 0);
+    sharpWriteString(2, 50, "by Larry Bank", FONT_8x8, 0);
+    sharpWriteString(136, 2,"GPS", FONT_8x8, 0);
+    sharpWriteString(136, 58, "I2C", FONT_8x8, 0);
     sharpWriteBuffer();
     Delay_Ms(2000);
 //    pinMode(LCD_VCOM, OUTPUT);
@@ -1002,17 +949,16 @@ int i;
     	Delay_Ms(250);
     	i++;
     }
+    i = GetButtons();
     digitalWrite(LED_PIN, 0);
     while (GetButtons() != 0) {
     	//Delay_Ms(100);
     }
-#ifdef USE_GPS
-    USARTInit(9600);
-    RunGPS();
-#endif // USE_GPS
-    ScanBus(); // if we return from here, we have a recognized sensor
-    digitalWrite(LED_PIN, 0);
-    switch (iSensor) { // start displaying sensor data
+    if (i == 1) { // GPS option
+       RunGPS();
+    } else { // I2C option
+       ScanBus(); // if we return from here, we have a recognized sensor
+       switch (iSensor) { // start displaying sensor data
 #ifdef USE_IMU
     	case SENSOR_LSM6DS3:
     		RunIMU();
@@ -1035,5 +981,6 @@ int i;
     	case SENSOR_SCD4X:
     		RunSCD4X();
     		break;
-    }
+       } // switch
+   } // I2C option
 } /* main() */
