@@ -14,8 +14,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-#include "ch32v_hal.inl"
-#include "spi_lcd.inl" 
+#include "../../extralibs/ch32v_hal.inl"
+#include "../../extralibs/spi_lcd.inl" 
 #include <stdlib.h>
 
 // Pin definitions for the LCD project protoboard

@@ -5,8 +5,8 @@
 
 // what type of OLED - uncomment just one
 //#define SSD1306_64X32
-#define SSD1306_128X32
-//#define SSD1306_128X64
+//#define SSD1306_128X32
+#define SSD1306_128X64
 
 #include "ch32v003fun.h"
 #include <stdio.h>
