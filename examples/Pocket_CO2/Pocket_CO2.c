@@ -88,18 +88,17 @@ void BlinkLED(uint8_t u8LED, int iDuration);
 
 const char *szMode[] = {"Continuous", "Low Power ", /*"On Demand ", */ "Stealth   ", "Calibrate ", "Timer     "};
 const char *szAlert[] = {"Vibration", "LEDs     ", "Vib+LEDs "};
-STATE state;
-
+STATE state, oldstate;
+static char szTemp[32];
 static int iSample = 0; // number of CO2 samples captured
-#ifdef FUTURE
 #define MAX_SAMPLES 540
 static uint8_t ucLast32[32]; // holds top 8 bits of last 32 samples
 static uint8_t ucSamples[MAX_SAMPLES]; // 24h worth of samples (80 seconds each)
-static int iHead = 0, iTail = 0; // circular list of samples
+static int iHead = 0;
+//static int iTail = 0; // circular list of samples
 static int iMaxCO2 = 0, iMinCO2 = 5000;
 static int iMaxTemp = 0, iMinTemp = 1000;
 static uint8_t ucMaxHumid = 0, ucMinHumid = 100;
-#endif // FUTURE
 
 // Convert a number into a zero-terminated string
 int i2str(char *pDest, int iVal)
@@ -214,7 +213,6 @@ uint16_t ADCGetValue(void)
         return (uint16_t)ADC1->RDATAR;
 } /* ADCGetValue() */
 
-#ifdef FUTURE
 //
 // Add a sample to the collected statistics
 //
@@ -240,7 +238,6 @@ void AddSample(int i)
 	else if ((_iHumidity/10) < ucMinHumid)
 		ucMinHumid = (uint8_t)(_iHumidity/10);
 } /* AddSample() */
-#endif // FUTURE
 
 #ifdef FUTURE
 void EXTI7_0_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
@@ -274,10 +271,9 @@ void Option_Byte_CFG(void)
 #ifdef FUTURE
 void ShowGraph(void)
 {
-	char szTemp[32];
 	int i;
 
-	I2CInit(SDA_PIN, SCL_PIN, 400000);
+//	I2CInit(SDA_PIN, SCL_PIN, 400000);
 	oledFill(0);
 
 	i2str(szTemp, iHead*32);
@@ -326,10 +322,9 @@ void ShowCurrent(void)
 {
 int i, x;
 uint32_t u32, remainder;
-char szTemp[32];
 uint8_t *s;
 
-	I2CInit(SDA_PIN, SCL_PIN, 400000); // OLED can handle 400k
+//	I2CInit(SDA_PIN, SCL_PIN, 400000); // OLED can handle 400k
 	i = i2str(szTemp, (int)_iCO2);
 	oledWriteStringCustom(&Roboto_Black_40, 0, 32, szTemp, 1);
 	x = oledGetCursorX();
@@ -368,6 +363,7 @@ uint8_t *s;
     x = udivmod32(x, 500, NULL);
     if (x > 4) x = 4;
     oledDrawSprite(96, 16, 31, 32, (uint8_t *)&co2_emojis[x * 4], 20, 1);
+return;
     // show battery level
     i = ADCGetValue(); // 512 = <=3.3v, 643 = 4.2v
     if (i > 400 && i <700) { // valid values, otherwise no battery measurement
@@ -410,7 +406,7 @@ void RunTimer(void)
 		  }
 	  }
 	  BlinkLED((i & 1) ? LED_GREEN : LED_RED, 10);
-	  Delay_Ms(990);
+	  delay(990);
   }
   ShowAlert();
 } /* RunTimer() */
@@ -419,9 +415,8 @@ void RunMenu(void)
 {
 int iSelItem = 0;
 int y, bDone = 0;
-char szTemp[16];
-STATE oldstate = state;
 
+           oldstate = state;
 	   oledInit(0x3c, 400000);
 	   oledFill(0);
 	   oledContrast(150);
@@ -452,11 +447,11 @@ STATE oldstate = state;
 		   oledWriteString(-1,y, " Mins ", FONT_8x8, 0); // erase old value
 		   // wait for button releases
 		   while (GetButtons() != 0) {
-			   Delay_Ms(20);
+			   delay(20);
 		   }
 		   // wait for a button press
 		   while (GetButtons() == 0) {
-			   Delay_Ms(20);
+			   delay(20);
 		   }
 		   y = GetButtons();
 		   if (y & 1) { // button 0
@@ -495,9 +490,9 @@ STATE oldstate = state;
 	   // Check if any values changed; if so, write new values to FLASH
 	   if (state.iMode != MODE_CALIBRATE && memcmp(&state, &oldstate, sizeof(state)) != 0)  {
 		   if (state.bAutoCal != oldstate.bAutoCal) {
-			   I2CInit(SDA_PIN, SCL_PIN, 50000); // tell the SCD40 the new auto calibration state
+			   //I2CInit(SDA_PIN, SCL_PIN, 50000); // tell the SCD40 the new auto calibration state
 			   scd41_setAutoCalibration(state.bAutoCal);
-			   I2CInit(SDA_PIN, SCL_PIN, 400000);
+			  // I2CInit(SDA_PIN, SCL_PIN, 400000);
 		   }
 		   WriteFlash(); // don't save settings for calibration mode
 	   }
@@ -505,9 +500,9 @@ STATE oldstate = state;
 
 void BlinkLED(uint8_t u8LED, int iDuration)
 {
-	pinMode(u8LED, OUTPUT);
+    pinMode(u8LED, OUTPUT);
     digitalWrite(u8LED, 1);
-    Delay_Ms(iDuration);
+    delay(iDuration);
     digitalWrite(u8LED, 0);
 } /* BlinkLED() */
 
@@ -520,7 +515,7 @@ void Vibrate(int iDuration)
 {
 	pinMode(MOTOR_PIN, OUTPUT);
 	digitalWrite(MOTOR_PIN, 1);
-	Delay_Ms(iDuration);
+	delay(iDuration);
 	digitalWrite(MOTOR_PIN, 0);
 } /* Vibrate() */
 
@@ -534,7 +529,7 @@ int i;
 		for (i=0; i<3; i++) {
 		    Vibrate(150);
 		//    Standby82ms(10);
-		    Delay_Ms(820);
+		    delay(820);
 		  }
 		break;
 	case ALERT_LED:
@@ -557,7 +552,6 @@ void ShowTime(int iSecs)
 {
 	int i;
         uint32_t rem;
-	char szTemp[8];
 
 	i = udivmod32(iSecs, 60, &rem);
     szTemp[0] = '0';
@@ -587,7 +581,7 @@ void RunLowPower(void)
 	int i, iUITick = 20, iSampleTick = 0;
 	int bWasSuspended = 0;
 
-    I2CInit(SDA_PIN, SCL_PIN, 50000);
+    //I2CInit(SDA_PIN, SCL_PIN, 50000);
     scd41_start(SCD_POWERMODE_LOW); // start low power mode (available on SCD40 & SCD41)
 
 	while (1) {
@@ -611,7 +605,7 @@ void RunLowPower(void)
 		   iUITick = 20; // number of 250ms periods before turning off the display
 		}
 #ifdef DEBUG_MODE
-		Delay_Ms(250);
+		delay(250);
 #else
 	Standby82ms(3); // conserve power (1.8mA running, 10uA standby)
 	bWasSuspended = 1;
@@ -653,10 +647,10 @@ void RunStealth(void)
   oledWriteString(0,32,"pulses. 1=good, 6=bad", FONT_6x8, 0);
   oledWriteString(0,56,"press button to start", FONT_6x8, 0);
   while (GetButtons() != 0) {
-	  Delay_Ms(20); // wait for user to release all buttons
+	  delay(20); // wait for user to release all buttons
   }
   while (GetButtons() == 0) {
-	  Delay_Ms(20);
+	  delay(20);
   }
   j = GetButtons();
   oledFill(0);
@@ -672,7 +666,7 @@ void RunStealth(void)
 		  scd41_stop();
 		  return;
 	  }
-	  Delay_Ms(250);
+	  delay(250);
 	  if ((iTick % 20) == 19) { // get new sample every 5 seconds
 		  scd41_getSample();
 		  iLevel = 1 + udivmod32(_iCO2, 500, NULL); // 0-499 = perfect, 500-999 = good, 1000-1499=so-so, 1500-1999=not great, 2000-2499=bad, 2500+ = very bad
@@ -682,7 +676,7 @@ void RunStealth(void)
 	  if ((iTick % iUpdate) == (iUpdate-1)) { // time to buzz
 		  for (j=0; j<iLevel; j++) {
 			  Vibrate(100);
-			  Delay_Ms(395);
+			  delay(395);
 //			  BlinkLED(LED_GREEN, 5);
 			  iTick += 2; // we delayed it 500ms
 		  }
@@ -697,12 +691,12 @@ void RunStealth(void)
 //
 void RunOnDemand(void)
 {
-	Delay_Ms(2000); // show startup message for 2 seconds
+	delay(2000); // show startup message for 2 seconds
 	oledPower(0);
 	while (1) {
 		int i, j;
 #ifdef DEBUG_MODE
-			Delay_Ms(3*82); // use a power wasting delay to allow SWDIO to work
+			delay(3*82); // use a power wasting delay to allow SWDIO to work
 #else
 			Standby82ms(3); // conserve power (1.8mA running, 10uA standby)
 #endif
@@ -718,7 +712,7 @@ void RunOnDemand(void)
 		       scd41_start(SCD_POWERMODE_NORMAL);
 			   for (j=0; j<4*60; j++) { // wait for time to pass
 #ifdef DEBUG_MODE
-				   Delay_Ms(250);
+				   delay(250);
 #else
 				   Standby82ms(3);
 #endif
@@ -754,10 +748,10 @@ void RunCalibrate(void)
     oledWriteString(0,48,"finishes, result will", FONT_6x8, 0);
     oledWriteString(0,56,"show success or fail", FONT_6x8, 0);
     while (GetButtons()) {
-    	Delay_Ms(20); // wait for user to release button(s)
+    	delay(20); // wait for user to release button(s)
     }
 	while ((j = GetButtons()) == 0) {
-		Delay_Ms(20);
+		delay(20);
 	}
 	if (j == 3) { // both buttons, exit
 		return;
@@ -774,7 +768,7 @@ void RunCalibrate(void)
 		  scd41_stop();
 		  return;
 	  }
-	  Delay_Ms(1000);
+	  delay(1000);
    }
    oledClearLine(24);
    oledClearLine(32);
@@ -788,19 +782,28 @@ void RunCalibrate(void)
 	   oledWriteString(0,32, "Failed", FONT_12x16, 0);
    oledWriteString(0,56, "Press button to exit", FONT_6x8, 0);
    while (GetButtons() == 0) {
-	   Delay_Ms(20);
+	   delay(20);
    }
 } /* RunCalibrate() */
 
 int main(void)
 {
     SystemInit();
+    delay(3000);
+    SetClock(8000000);
+    while (1) {
+       pinMode(0xc6, OUTPUT);
+       digitalWrite(0xc6, 1);
+       delay(410);
+       Standby82ms(20);
+    }
+    SetClock(8000000); // save power
     oledInit(0x3c, 400000);
-    oledDrawSprite(0, 0, 128, 64, pocket_co2_logo_0, 16, 1);
+    oledDrawSprite(0, 0, 128, 64, (uint8_t*)pocket_co2_logo_0, 16, 1);
     ReadFlash(); // get the user settings from FLASH
 //    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 //    Option_Byte_CFG(); // allow PD7 to be used as GPIO
-//    Delay_Ms(5000); //100); // give time for power to settle
+//    delay(5000); //100); // give time for power to settle
 //    USART_Printf_Init(460800);
 //    printf("SystemClk:%d\r\n",SystemCoreClock);
     pinMode(MOTOR_PIN, OUTPUT);
@@ -811,7 +814,6 @@ int main(void)
     state.iMode = MODE_CONTINUOUS;
     goto hot_start; // power up into continuous mode
 //    while (1) {
-//    	char szTemp[16];
 //    	uint16_t u16 = ADCGetValue();
 //    	i2str(szTemp, u16);
 //    	oledWriteString(0,0,szTemp, FONT_8x8, 0);
@@ -819,15 +821,11 @@ int main(void)
 //    	i2str(szTemp, i);
 //    	oledWriteString(0,16,szTemp, FONT_8x8, 0);
 //    	i++;
-//    	Delay_Ms(100);
+//    	delay(100);
 //    }
 menu_top:
    RunMenu();
 hot_start:
-   // Display the chosen mode
-//	oledFill(0);
-//	oledWriteString(0,0,szMode[state.iMode], FONT_8x8, 0);
-//    oledWriteString(0,8,"Starting...", FONT_8x8, 0);
    if (state.iMode == MODE_TIMER) {
 	   RunTimer();
 	   goto menu_top;
@@ -844,29 +842,34 @@ hot_start:
 	   RunStealth();
 	   goto menu_top;
    } else { // continuous mode
-	   I2CInit(SDA_PIN, SCL_PIN,50000);
+//	   I2CInit(SDA_PIN, SCL_PIN,50000);
 	   scd41_start(SCD_POWERMODE_NORMAL);
 #ifdef DEBUG_MODE
-	   Delay_Ms(5000); // allow time for first sample to capture
+	   delay(5000); // allow time for first sample to capture
 #else
 	   Standby82ms(59);
 #endif
+          oledFill(0);
     while(1) {
     	int i, j;
-        I2CInit(SDA_PIN, SCL_PIN,50000); // SCD40 can't handle 400k
-    	//I2CSetSpeed(50000); // SCD40 can't handle 400k
-    	scd41_getSample();
+//        I2CInit(SDA_PIN, SCL_PIN,50000); // SCD40 can't handle 400k
+    	i = scd41_getSample();
+	if (i != SCD_SUCCESS) {
+		oledWriteString(0,0,"Error", FONT_8x8, 0);
+		while (1) {};
+	}
     	iSample++;
-#ifdef FUTURE
     	if (iSample > 3) AddSample(iSample); // add it to collected stats
-#endif // FUTURE
-    	if (iSample == 16 && state.iMode != MODE_CONTINUOUS ) { // after 1 minute, turn off the display
+    	if (iSample == 16 && state.iMode == MODE_CONTINUOUS ) { // after 1 minute, turn off the display and switch to lower power mode
     		oledPower(0); // turn off display
+		scd41_stop();
+		state.iMode = MODE_LOW_POWER;
+		goto hot_start; // switch to low power loop
     	}
     	ShowCurrent(); // display the current conditions on the OLED
 		for (i=0; i<61; i+= 3) { // 5 seconds total
 #ifdef DEBUG_MODE
-			Delay_Ms(3*82); // use a power wasting delay to allow SWDIO to work
+			delay(3*82); // use a power wasting delay to allow SWDIO to work
 #else
 			Standby82ms(3); // conserve power (1.8mA running, 10uA standby)
 #endif

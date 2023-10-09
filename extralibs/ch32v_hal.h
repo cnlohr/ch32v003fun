@@ -35,7 +35,7 @@ enum {
 #define pgm_read_word(s) *(uint16_t *)s
 
 // Wrapper methods
-void delay(int i);
+void delay(uint32_t u32);
 //
 // Digital pin functions use a numbering scheme to make it easier to map the
 // pin number to a port name and number
@@ -65,7 +65,9 @@ int UART_Read(uint32_t u32Timeout);
 void UART_Write(uint8_t *pData, int iLen);
 
 // Random stuff
+void UpdateDelay(void);
 void Standby82ms(uint8_t iTicks);
+void SetClock(uint32_t speed);
 void breatheLED(uint8_t u8Pin, int iPeriod);
 uint32_t udiv32(uint32_t num, uint32_t den);
 uint32_t udivmod32(uint32_t num, uint32_t den, uint32_t *pRemainder);

@@ -6,8 +6,8 @@
  */
 #include "scd41.h"
 
-int _iPowerMode, _iTemperature, _iHumidity;
-uint16_t _iCO2;
+static int _iPowerMode, _iTemperature, _iHumidity;
+static uint16_t _iCO2;
 
 int scd41_getSample(void)
 {
@@ -30,14 +30,16 @@ int rc;
     }
     scd41_sendCMD(SCD41_CMD_READ_MEASUREMENT);
     Delay_Ms(5);
-    I2CRead(0x62, ucTemp, 9); // 9 bytes of data for the 3 fields
+    if (I2CRead(0x62, ucTemp, 9)) { // 9 bytes of data for the 3 fields
 //Serial.println("Got 9 bytes from sensor");
     _iCO2 = ((uint16_t)ucTemp[0] << 8) | ucTemp[1];
     _iTemperature = (ucTemp[3] << 8) | ucTemp[4];
     _iHumidity = ((uint16_t)ucTemp[6] << 8) | ucTemp[7];
-    _iTemperature = -450 + ((_iTemperature) * 1750L / 65536L);
-    _iHumidity = (_iHumidity * 1000L) / 65536L;
+    _iTemperature = -450 + (((_iTemperature) * 1750L) >> 16);
+    _iHumidity = (_iHumidity * 1000L) >> 16;
     return SCD_SUCCESS;
+    }
+  return SCD_ERROR;
 } /* scd41_getSample() */
 
 void scd41_wakeup(void)

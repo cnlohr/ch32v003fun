@@ -8,9 +8,6 @@
 #ifndef SCD41_H_
 #define SCD41_H_
 
-extern int _iPowerMode, _iTemperature, _iHumidity;
-extern uint16_t _iCO2;
-
 #define SCD_SUCCESS 0
 #define SCD_ERROR 1
 #define SCD_NOT_READY 2

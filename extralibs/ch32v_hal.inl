@@ -22,10 +22,187 @@
 uint8_t u8SDA_Pin, u8SCL_Pin;
 int iDelay = 1;
 #endif
+uint32_t SystemCoreClock = 48000000;
+uint32_t u32TickMicros = 48000000 / 8000;
 
-void delay(int i)
+// Put CPU into standby mode for a multiple of 82ms tick increments
+// max ticks value is 63
+void Standby82ms(uint8_t iTicks)
 {
-	Delay_Ms(i);
+uint32_t tmp = 0;
+
+    // init external interrupts
+    //RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
+    RCC->APB2PCENR |= RCC_APB2Periph_AFIO;
+
+//    EXTI_InitStructure.EXTI_Line = EXTI_Line9;
+//    EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Event;
+//    EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
+//    EXTI_InitStructure.EXTI_LineCmd = ENABLE;
+//    EXTI_Init(&EXTI_InitStructure);
+    EXTI->INTENR &= ~EXTI_Line9;
+    EXTI->EVENR &= ~EXTI_Line9;
+    tmp = (uint32_t)EXTI_BASE;
+    tmp += EXTI_Mode_Event;
+    *(__IO uint32_t *)tmp |= EXTI_Line9;
+    EXTI->RTENR &= ~EXTI_Line9;
+    EXTI->FTENR &= ~EXTI_Line9;
+    tmp = (uint32_t)EXTI_BASE;
+    tmp += EXTI_Trigger_Falling;
+    *(__IO uint32_t *)tmp |= EXTI_Line9;
+    
+    // Init GPIOs
+    //RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOC | RCC_APB2Periph_GPIOD, ENABLE);
+    RCC->APB2PCENR |= (RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOC | RCC_APB2Periph_GPIOA);
+    //RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
+    RCC->APB1PCENR |= RCC_APB1Periph_PWR;
+
+//    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_All;
+//    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPD;
+//    GPIO_Init(GPIOA, &GPIO_InitStructure);
+//    GPIO_Init(GPIOC, &GPIO_InitStructure);
+//    GPIO_Init(GPIOD, &GPIO_InitStructure);
+// Set all pins to input pull-down mode
+    for (int i=0; i<8; i++) {
+        GPIOA->CFGLR &= ~(0xf << (4 * i)); // unset all flags
+        GPIOC->CFGLR &= ~(0xf << (4 * i));
+        GPIOD->CFGLR &= ~(0xf << (4 * i));
+        GPIOA->CFGLR |= ((GPIO_Speed_10MHz | GPIO_CNF_IN_PUPD) << (4*i)); // set as input pull-down
+        GPIOC->CFGLR |= ((GPIO_Speed_10MHz | GPIO_CNF_IN_PUPD) << (4*i));
+        GPIOD->CFGLR |= ((GPIO_Speed_10MHz | GPIO_CNF_IN_PUPD) << (4*i));
+    }
+    // init wake up timer and enter standby mode
+//    RCC_LSICmd(ENABLE);
+      RCC->RSTSCKR |= 1; // enable the LSI (low speed internal oscillator)
+//    while(RCC_GetFlagStatus(RCC_FLAG_LSIRDY) == RESET);
+      while ((RCC->CTLR & 2) == 0) {}; // wait for LSI to be ready
+//    PWR_AWU_SetPrescaler(PWR_AWU_Prescaler_10240);
+      tmp = PWR->AWUPSC & AWUPSC_MASK;
+      tmp |= PWR_AWU_Prescaler_10240;
+      PWR->AWUPSC = tmp;
+//    PWR_AWU_SetWindowValue(iTicks);
+      tmp = (PWR->AWUWR & AWUWR_MASK) | iTicks;
+      PWR->AWUWR = tmp;
+//    PWR_AutoWakeUpCmd(ENABLE);
+      PWR->AWUCSR |= 2;
+//    PWR_EnterSTANDBYMode(PWR_STANDBYEntry_WFE);
+      PWR->CTLR &= CTLR_DS_MASK;
+      PWR->CTLR |= PWR_CTLR_PDDS;
+      NVIC->SCTLR |= 4;
+      __WFE();
+      NVIC->SCTLR &= ~(4);
+
+// we've woken up, disable all GPIO
+    RCC->APB2PRSTR &= ~(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOC | RCC_APB2Periph_GPIOD);
+    //GPIO_DeInit(GPIOA);
+    //GPIO_DeInit(GPIOC);
+    //GPIO_DeInit(GPIOD);
+} /* Standby82ms() */
+
+void SetClock(uint32_t u32Clock)
+{
+        uint32_t u32Div = 0;
+
+if (u32Clock > 24000000)
+        SystemCoreClock = 48000000;
+else if (u32Clock > 12000000) {
+        SystemCoreClock = 24000000;
+        u32Div = RCC_HPRE_DIV1;
+}
+else if (u32Clock > 8000000) {
+        SystemCoreClock = 12000000;
+        u32Div = RCC_HPRE_DIV2;
+}
+else if (u32Clock > 6000000) {
+        SystemCoreClock = 8000000;
+        u32Div = RCC_HPRE_DIV3;
+}
+else if (u32Clock > 4800000) {
+        SystemCoreClock = 6000000;
+        u32Div = RCC_HPRE_DIV4;
+}
+else if (u32Clock > 4000000) {
+        SystemCoreClock = 4800000;
+        u32Div = RCC_HPRE_DIV5;
+}
+else if (u32Clock > 3428571) {
+        SystemCoreClock = 4000000;
+        u32Div = RCC_HPRE_DIV6;
+}
+else if (u32Clock >= 3000000) {
+        SystemCoreClock = 3428571;
+        u32Div = RCC_HPRE_DIV7;
+}
+else if (u32Clock > 1500000) {
+        SystemCoreClock = 3000000;
+        u32Div = RCC_HPRE_DIV8;
+}
+else if (u32Clock > 750000) {
+        SystemCoreClock = 1500000;
+        u32Div = RCC_HPRE_DIV16;
+}
+else if (u32Clock > 375000) {
+        SystemCoreClock = 750000;
+        u32Div = RCC_HPRE_DIV32;
+}
+else if (u32Clock > 187500) {
+        SystemCoreClock = 375000;
+        u32Div = RCC_HPRE_DIV64;
+}
+else {
+        SystemCoreClock = 187500; // slowest setting for now
+        u32Div = RCC_HPRE_DIV128;
+}
+switch (SystemCoreClock) {
+case 48000000: // special case - needs PLL
+    /* Flash 0 wait state */
+    FLASH->ACTLR &= (uint32_t)((uint32_t)~FLASH_ACTLR_LATENCY);
+    FLASH->ACTLR |= (uint32_t)FLASH_ACTLR_LATENCY_1;
+
+    /* HCLK = SYSCLK = APB1 */
+    RCC->CFGR0 |= (uint32_t)RCC_HPRE_DIV1;
+
+    /* PLL configuration: PLLCLK = HSI * 2 = 48 MHz */
+    RCC->CFGR0 &= (uint32_t)((uint32_t)~(RCC_PLLSRC));
+    RCC->CFGR0 |= (uint32_t)(RCC_PLLSRC_HSI_Mul2);
+
+    /* Enable PLL */
+    RCC->CTLR |= RCC_PLLON;
+    /* Wait till PLL is ready */
+    while((RCC->CTLR & RCC_PLLRDY) == 0)
+    {
+    }
+    /* Select PLL as system clock source */
+    RCC->CFGR0 &= (uint32_t)((uint32_t)~(RCC_SW));
+    RCC->CFGR0 |= (uint32_t)RCC_SW_PLL;
+    /* Wait till PLL is used as system clock source */
+    while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x08)
+    {
+    }
+        break;
+default: // simpler - just use the RC clock with a divider
+    /* Flash 0 wait state */
+    FLASH->ACTLR &= (uint32_t)((uint32_t)~FLASH_ACTLR_LATENCY);
+    FLASH->ACTLR |= (SystemCoreClock >= 24000000) ? (uint32_t)FLASH_ACTLR_LATENCY_1 : (uint32_t)FLASH_ACTLR_LATENCY_0;
+
+    /* HCLK = SYSCLK = APB1 */
+    RCC->CFGR0 |= u32Div;
+        break;
+} // switch on clock
+    UpdateDelay();
+} /* SetClock() */
+
+void UpdateDelay(void)
+{
+    if (SystemCoreClock == 48000000)
+       u32TickMicros = udiv32(SystemCoreClock, 8000);
+    else
+       u32TickMicros = udiv32(SystemCoreClock, 4000); // PLL disabled
+}
+void delay(uint32_t u32)
+{
+    uint32_t targend = SysTick->CNT + (u32 * u32TickMicros);
+    while( ((int32_t)( SysTick->CNT - targend )) < 0 );
 }
 // Arduino-like API defines and function wrappers for WCH MCUs
 
@@ -317,9 +494,9 @@ void I2CInit(uint8_t iSDA, uint8_t iSCL, int iSpeed)
     (void)iSDA; (void)iSCL; // Use C1/C2
 
         // Enable GPIOC and I2C
-        RCC->APB2PCENR |= RCC_APB2Periph_GPIOC | RCC_APB2Periph_AFIO;
+        RCC->APB2PCENR |= RCC_APB2Periph_GPIOC;
         RCC->APB1PCENR |= RCC_APB1Periph_I2C1;
-        
+
         // PC1 is SDA, 10MHz Output, alt func
         GPIOC->CFGLR &= ~(0xf<<(4*1));
         GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_OD_AF)<<(4*1);
@@ -328,10 +505,16 @@ void I2CInit(uint8_t iSDA, uint8_t iSCL, int iSpeed)
         GPIOC->CFGLR &= ~(0xf<<(4*2));
         GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_OD_AF)<<(4*2);
 
+// reset I2C registers
+        RCC->APB1PRSTR |= RCC_APB1Periph_I2C1;
+        RCC->APB1PRSTR &= ~RCC_APB1Periph_I2C1;
+    I2C1->CTLR1 |= I2C_CTLR1_SWRST;
+    I2C1->CTLR1 &= ~I2C_CTLR1_SWRST;
+
     tmpreg = I2C1->CTLR2;
     tmpreg &= CTLR2_FREQ_Reset;
 //    RCC_GetClocksFreq(&rcc_clocks);
-    pclk1 = 48000000; //rcc_clocks.PCLK1_Frequency;
+    pclk1 = SystemCoreClock; //rcc_clocks.PCLK1_Frequency;
     freqrange = (uint16_t)udiv32(pclk1 , 1000000);
     tmpreg |= freqrange;
     I2C1->CTLR2 = tmpreg;
@@ -376,7 +559,7 @@ void I2CInit(uint8_t iSDA, uint8_t iSCL, int iSpeed)
     tmpreg |= (uint16_t)(uint32_t)(I2C_Mode_I2C | I2C_Ack_Enable);
     I2C1->CTLR1 = tmpreg;
 
-    I2C1->OADDR1 = 0x2; //(I2C_InitStruct->I2C_AcknowledgedAddress | I2C_InitStruct->I2C_OwnAddress1);
+    I2C1->OADDR1 = 0x2 | I2C_AcknowledgedAddress_7bit;
     I2C1->CTLR1 |= I2C_CTLR1_PE; // enable I2C
 
 } /* I2CInit() */
@@ -387,6 +570,8 @@ void I2CInit(uint8_t iSDA, uint8_t iSCL, int iSpeed)
 #define I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED              ((uint32_t)0x00030002) /* BUSY, MSL and ADDR flags */
 /* I2C FLAG mask */
 #define I2C_FLAG_Mask                ((uint32_t)0x00FFFFFF)
+#define CTLR1_ACK_Reset          ((uint16_t)0xFBFF)
+#define TIMEOUT 100000
 
 uint8_t I2C_CheckEvent(uint32_t event_mask)
 {
@@ -439,32 +624,43 @@ void I2C_ClearFlag(uint32_t I2C_FLAG)
 int I2CRead(uint8_t u8Addr, uint8_t *pData, int iLen)
 {
 int iTimeout = 0;
+uint16_t u16;
 
+//    while( I2C_GetFlagStatus( I2C_FLAG_BUSY ) != 0) {};
     I2C1->CTLR1 |= I2C_CTLR1_START;
     while( !I2C_CheckEvent( I2C_EVENT_MASTER_MODE_SELECT ) );
 
-    I2C1->DATAR = (u8Addr << 1) | 1; // read flag = 1
+    I2C1->DATAR = (u8Addr << 1) | 1; // send 7-bit address, read flag = 1
 
-    while(iTimeout < 10000 && !I2C_CheckEvent( I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED ) ) {
+    while(/*iTimeout < TIMEOUT &&*/ !I2C_CheckEvent( I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED ) ) {
     	iTimeout++;
     }
-    if (iTimeout >= 10000) return 0; // error
-
+    //if (iTimeout >= TIMEOUT) return 0; // error
+    u16 = I2C1->STAR2; // clear the status register
+    I2C1->CTLR1 |= CTLR1_ACK_Set; // enable acknowledge
     iTimeout = 0;
-    while(iLen && iTimeout < 10000)
+    while(iLen && iTimeout < TIMEOUT)
     {
-        if( I2C_GetFlagStatus( I2C_FLAG_RXNE ) !=  0 )
-        {
+//        if( I2C_GetFlagStatus( I2C_FLAG_RXNE ) !=  0 )
+        if (I2C1->STAR1 & I2C_STAR1_RXNE)
+//	if (I2C_GetFlagStatus( I2C_FLAG_RXNE) == 0) {
+//		I2C1->CTLR1 &= CTLR1_ACK_Reset;
+//		iTimeout++;
+//	} else {
+	{
             iTimeout = 0;
-            pData[0] = I2C1->DATAR;
-            pData++;
+            *pData++ = (uint8_t)I2C1->DATAR;
             iLen--;
+            if (iLen == 1) { // last byte
+               I2C1->CTLR1 &= CTLR1_ACK_Reset; // disable acknowledge
+               I2C1->CTLR1 |= I2C_CTLR1_STOP; // send stop signal
+            }
         } else {
-        	iTimeout++;
-        }
-    }
+	    iTimeout++;
+	}
+    } // while
 
-    I2C1->CTLR1 |= I2C_CTLR1_STOP;
+//    I2C1->CTLR1 |= I2C_CTLR1_STOP;
     return (iLen == 0);
 } /* I2CRead() */
 
@@ -498,17 +694,17 @@ int I2CTest(uint8_t u8Addr)
 
 	I2C_ClearFlag(I2C_FLAG_AF);
     I2C1->CTLR1 |= I2C_CTLR1_START;
-    while(iTimeout < 10000 && !I2C_CheckEvent( I2C_EVENT_MASTER_MODE_SELECT ) ) {
+    while(iTimeout < TIMEOUT && !I2C_CheckEvent( I2C_EVENT_MASTER_MODE_SELECT ) ) {
     	iTimeout++;
     }
-    if (iTimeout >= 10000) return 0; // no pull-ups, open bus
+    if (iTimeout >= TIMEOUT) return 0; // no pull-ups, open bus
 
     I2C1->DATAR = (u8Addr << 1) | 0; // transmit direction
 
-    while(iTimeout < 10000 && !I2C_CheckEvent( I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED ) ) {
+    while(iTimeout < TIMEOUT && !I2C_CheckEvent( I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED ) ) {
     	iTimeout++;
     }
-    if (iTimeout >= 10000) return 0; // no device at that address; the MTMS flag will never get set
+    if (iTimeout >= TIMEOUT) return 0; // no device at that address; the MTMS flag will never get set
 
     I2C1->CTLR1 |= I2C_CTLR1_STOP;
     // check ACK failure flag

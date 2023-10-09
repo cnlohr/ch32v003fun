@@ -6,10 +6,12 @@
 // The FLASH memory (16K) doesn't allow too many sensors + display routines to be included
 // but the ones supported are auto-detected and use a nice large font to display the information
 //
-#define USE_IMU
-#define USE_RTC
+//#define USE_IMU
+//#define USE_RTC
 //#define USE_BATT
-#define USE_BME
+//#define USE_BME
+
+//#define BITBANG
 
 #include "../../extralibs/ch32v_hal.inl"
 #include "../../extralibs/sharp_lcd.inl"

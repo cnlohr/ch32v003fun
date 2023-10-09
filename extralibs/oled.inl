@@ -24,7 +24,7 @@
 
 static int cursor_x, cursor_y;
 static uint8_t oledAddr;
-static uint8_t u8Cache[130];
+static uint8_t ucTemp[40], u8Cache[130];
 
 const unsigned char oled64_initbuf[]={0x00,0xae,0xa8,0x3f,0xd3,0x00,0x40,0xa1,0xc8,
       0xda,0x12,0x81,0xff,0xa4,0xa6,0xd5,0x80,0x8d,0x14,
@@ -267,8 +267,6 @@ void oledDrawSprite(int x, int y, int cx, int cy, uint8_t *pSprite, int iPitch, 
 //
 void oledPower(int bOn)
 {
-	uint8_t ucTemp[4];
-
 	ucTemp[0] = 0; // CMD
 	ucTemp[1] = 0xae | (bOn != 0); // power on/off (LSB)
 	I2CWrite(oledAddr, ucTemp, 2);
@@ -321,8 +319,6 @@ uint8_t i;
 
 void oledContrast(uint8_t cont)
 {
-	uint8_t ucTemp[4];
-
 	ucTemp[0] = 0; // CMD
 	ucTemp[1] = 0x81; // contrast
 	ucTemp[2] = cont; // value
@@ -335,7 +331,7 @@ void oledContrast(uint8_t cont)
 int oledWriteString(int x, int y, const char *szMsg, int iSize, int bInvert)
 {
 int i, iFontOff, iLen;
-unsigned char c, *s, ucTemp[40];
+unsigned char c, *s;
 
     if (x >= 128 || y >= 64)
        return -1; // can't draw off the display
@@ -535,7 +531,7 @@ GFXfont font;
 GFXglyph glyph, *pGlyph;
 
    u8Cache[0] = 0x40; // start of data
-    if (x == -1)
+    if (x == 1)
         x = cursor_x;
     if (y == -1)
         y = cursor_y;
