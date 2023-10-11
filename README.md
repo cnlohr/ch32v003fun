@@ -90,6 +90,12 @@ Other third party tools are adding lots of examples, etc.  See the following rep
 
 You can open a github ticket or join my Discord in the #ch32v003fun channel. https://discord.gg/CCeyWyZ
 
+## General notes about the CH32V003.
+
+CPI/Processor Speed:
+
+Ignoring branches and load/stores, compressed instructions run at 1 CPI. Non-compressed instructions run at 1 CPI for the first 2 instructions, then further ones take 2 CPI regardless of how many more you have.  Running from RAM and running from FLASH have slightly different performance characteristics depending on wait states that should be measured in-situation.
+
 ### Footnotes/links
 
  * https://raw.githubusercontent.com/openwch/ch32v003/main/RISC-V%20QingKeV2%20Microprocessor%20Debug%20Manual.pdf Debugging Manual

@@ -3,30 +3,56 @@
 #include "ch32v003fun.h"
 #include <stdio.h>
 
-/* somehow this ISR won't get called??
-void AWU_IRQHandler( void ) __attribute__((interrupt));
-void AWU_IRQHandler( void ) {
-	GPIOD->OUTDR ^= (1 << 4);
-}
-*/
 
 int main()
 {
 	SystemInit();
-	Delay_Ms(100);
+
+	// This delay gives us some time to reprogram the device. 
+	// Otherwise if the device enters standby mode we can't 
+	// program it any more.
+	Delay_Ms(5000);
 
 	printf("\r\n\r\nlow power example\r\n\r\n");
 
-	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD;
-	// GPIO D4 Push-Pull
-	GPIOD->CFGLR &= ~(0xf<<(4*4));
-	GPIOD->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*4);
-	GPIOD->OUTDR |= (1 << 4);
-
-	// give the user time to open the terminal connection
-	//Delay_Ms(5000);
-	printf("5000ms wait over\r\n");
+	// Set all GPIOs to input pull up
+	RCC->APB2PCENR |= RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOC | RCC_APB2Periph_GPIOD;
+	// GPIOA: Set to output
+	GPIOA->CFGLR = (GPIO_CNF_IN_PUPD<<(4*2)) |	
+				   (GPIO_CNF_IN_PUPD<<(4*1));
+	GPIOA->BSHR = GPIO_BSHR_BS2 | GPIO_BSHR_BR1;
+	GPIOC->CFGLR = (GPIO_CNF_IN_PUPD<<(4*7)) |
+				   (GPIO_CNF_IN_PUPD<<(4*6)) |
+				   (GPIO_CNF_IN_PUPD<<(4*5)) |
+				   (GPIO_CNF_IN_PUPD<<(4*4)) |
+				   (GPIO_CNF_IN_PUPD<<(4*3)) |
+				   (GPIO_CNF_IN_PUPD<<(4*2)) |
+				   (GPIO_CNF_IN_PUPD<<(4*1)) |
+				   (GPIO_CNF_IN_PUPD<<(4*0));
+	GPIOC->BSHR = GPIO_BSHR_BS7 |
+				  GPIO_BSHR_BS6 |
+				  GPIO_BSHR_BS5 |
+				  GPIO_BSHR_BS4 |
+				  GPIO_BSHR_BS3 |
+				  GPIO_BSHR_BS2 |
+				  GPIO_BSHR_BS1 |
+				  GPIO_BSHR_BS0;
+	GPIOD->CFGLR = (GPIO_CNF_IN_PUPD<<(4*7)) |
+				   (GPIO_CNF_IN_PUPD<<(4*6)) |
+				   (GPIO_CNF_IN_PUPD<<(4*5)) |
+				   (GPIO_CNF_IN_PUPD<<(4*4)) |
+				   (GPIO_CNF_IN_PUPD<<(4*3)) |
+				   (GPIO_CNF_IN_PUPD<<(4*2)) |
+				   (GPIO_CNF_IN_PUPD<<(4*0));
+	GPIOD->BSHR = GPIO_BSHR_BS7 |
+				  GPIO_BSHR_BS6 |
+				  GPIO_BSHR_BS5 |
+				  GPIO_BSHR_BS4 |
+				  GPIO_BSHR_BS3 |
+				  GPIO_BSHR_BS2 |
+				  GPIO_BSHR_BS0;
 	
+
 	// enable power interface module clock
 	RCC->APB1PCENR |= RCC_APB1Periph_PWR;
 
@@ -62,6 +88,5 @@ int main()
 		// restore clock to full speed
 		SystemInit();
 		printf("\r\nawake, %u\r\n", counter++);
-		GPIOD->OUTDR ^= (1 << 4);
 	}
 }
