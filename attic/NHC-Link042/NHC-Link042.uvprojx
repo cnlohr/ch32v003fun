@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER,STM32F042, INTERNAL_PULLUP, USB_CLOCK_SOURCE_CRS</Define>
               <Undefine></Undefine>
-              <IncludePath>.\User;.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include;.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc;.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\inc;.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc;.\LibUSB;.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Include</IncludePath>
+              <IncludePath>.\User;.\STM32F0x2_USB-FS-Device_Lib_V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Include;.\STM32F0x2_USB-FS-Device_Lib_V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\inc;.\STM32F0x2_USB-FS-Device_Lib_V1.0.0\Libraries\STM32_USB_Device_Driver\inc;.\STM32F0x2_USB-FS-Device_Lib_V1.0.0\Libraries\STM32_USB_Device_Library\Core\inc;.\LibUSB;.\STM32F0x2_USB-FS-Device_Lib_V1.0.0\Libraries\CMSIS\Include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -462,7 +462,7 @@
             <File>
               <FileName>startup_stm32f042.s</FileName>
               <FileType>2</FileType>
-              <FilePath>.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Source\Templates\arm\startup_stm32f042.s</FilePath>
+              <FilePath>.\STM32F0x2_USB-FS-Device_Lib_V1.0.0\Libraries\CMSIS\Device\ST\STM32F0xx\Source\Templates\arm\startup_stm32f042.s</FilePath>
             </File>
           </Files>
         </Group>
@@ -472,37 +472,37 @@
             <File>
               <FileName>stm32f0xx_crs.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\src\stm32f0xx_crs.c</FilePath>
+              <FilePath>.\STM32F0x2_USB-FS-Device_Lib_V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\src\stm32f0xx_crs.c</FilePath>
             </File>
             <File>
               <FileName>stm32f0xx_exti.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\src\stm32f0xx_exti.c</FilePath>
+              <FilePath>.\STM32F0x2_USB-FS-Device_Lib_V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\src\stm32f0xx_exti.c</FilePath>
             </File>
             <File>
               <FileName>stm32f0xx_gpio.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\src\stm32f0xx_gpio.c</FilePath>
+              <FilePath>.\STM32F0x2_USB-FS-Device_Lib_V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\src\stm32f0xx_gpio.c</FilePath>
             </File>
             <File>
               <FileName>stm32f0xx_rcc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\src\stm32f0xx_rcc.c</FilePath>
+              <FilePath>.\STM32F0x2_USB-FS-Device_Lib_V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\src\stm32f0xx_rcc.c</FilePath>
             </File>
             <File>
               <FileName>stm32f0xx_syscfg.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\src\stm32f0xx_syscfg.c</FilePath>
+              <FilePath>.\STM32F0x2_USB-FS-Device_Lib_V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\src\stm32f0xx_syscfg.c</FilePath>
             </File>
             <File>
               <FileName>stm32f0xx_tim.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\src\stm32f0xx_tim.c</FilePath>
+              <FilePath>.\STM32F0x2_USB-FS-Device_Lib_V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\src\stm32f0xx_tim.c</FilePath>
             </File>
             <File>
               <FileName>stm32f0xx_misc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\src\stm32f0xx_misc.c</FilePath>
+              <FilePath>.\STM32F0x2_USB-FS-Device_Lib_V1.0.0\Libraries\STM32F0xx_StdPeriph_Driver\src\stm32f0xx_misc.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -512,32 +512,32 @@
             <File>
               <FileName>usb_core.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\src\usb_core.c</FilePath>
+              <FilePath>.\STM32F0x2_USB-FS-Device_Lib_V1.0.0\Libraries\STM32_USB_Device_Driver\src\usb_core.c</FilePath>
             </File>
             <File>
               <FileName>usb_dcd.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\src\usb_dcd.c</FilePath>
+              <FilePath>.\STM32F0x2_USB-FS-Device_Lib_V1.0.0\Libraries\STM32_USB_Device_Driver\src\usb_dcd.c</FilePath>
             </File>
             <File>
               <FileName>usb_dcd_int.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Driver\src\usb_dcd_int.c</FilePath>
+              <FilePath>.\STM32F0x2_USB-FS-Device_Lib_V1.0.0\Libraries\STM32_USB_Device_Driver\src\usb_dcd_int.c</FilePath>
             </File>
             <File>
               <FileName>usbd_core.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\src\usbd_core.c</FilePath>
+              <FilePath>.\STM32F0x2_USB-FS-Device_Lib_V1.0.0\Libraries\STM32_USB_Device_Library\Core\src\usbd_core.c</FilePath>
             </File>
             <File>
               <FileName>usbd_ioreq.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\src\usbd_ioreq.c</FilePath>
+              <FilePath>.\STM32F0x2_USB-FS-Device_Lib_V1.0.0\Libraries\STM32_USB_Device_Library\Core\src\usbd_ioreq.c</FilePath>
             </File>
             <File>
               <FileName>usbd_req.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\STM32F0x2_USB-FS-Device_Lib V1.0.0\Libraries\STM32_USB_Device_Library\Core\src\usbd_req.c</FilePath>
+              <FilePath>.\STM32F0x2_USB-FS-Device_Lib_V1.0.0\Libraries\STM32_USB_Device_Library\Core\src\usbd_req.c</FilePath>
             </File>
           </Files>
         </Group>
