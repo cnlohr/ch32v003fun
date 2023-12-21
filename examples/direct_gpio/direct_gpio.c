@@ -1,8 +1,6 @@
 #include "ch32v003fun.h"
 #include <stdio.h>
 
-uint32_t count;
-
 int main()
 {
 	SystemInit();
@@ -41,7 +39,6 @@ int main()
 		GPIOC->OUTDR &= ~(1<<(4)); // CLEAR GPIO C4
 
 		Delay_Ms( 50 );
-		count++;
 	}
 }
 
