@@ -587,7 +587,6 @@ typedef struct
 
 #define FLASH_R_BASE                            (AHBPERIPH_BASE + 0x2000) /* Flash registers base address */
 #define OB_BASE                                 ((uint32_t)0x1FFFF800)    /* Flash Option Bytes base address */
-#define DBGMCU_BASE                             ((uint32_t)0xE000D000)
 #define ESIG_BASE                               ((uint32_t)0x1FFFF7E0)
 #define EXTEN_BASE                              ((uint32_t)0x40023800)
 
@@ -617,7 +616,6 @@ typedef struct
 #define RCC                                     ((RCC_TypeDef *)RCC_BASE)
 #define FLASH                                   ((FLASH_TypeDef *)FLASH_R_BASE)
 #define OB                                      ((OB_TypeDef *)OB_BASE)
-#define DBGMCU                                  ((DBGMCU_TypeDef *)DBGMCU_BASE)
 #define ESIG                                    ((ESG_TypeDef *)ESIG_BASE)
 #define EXTEN                                   ((EXTEN_TypeDef *)EXTEN_BASE)
 
@@ -1999,8 +1997,8 @@ typedef struct
 
 #define RCC_ADCPRE_DIV2                         ((uint32_t)0x00000000) /* PCLK2 divided by 2 */
 #define RCC_ADCPRE_DIV4                         ((uint32_t)0x00004000) /* PCLK2 divided by 4 */
-#define RCC_ADCPRE_ DIV8                         ((uint32_t)0x00006000) /* PCLK2 divided by 8 */
-#define RCC_ADCPRE_DIV12                        ((uint32_t)0x0000A000)
+#define RCC_ADCPRE_DIV6                         ((uint32_t)0x00008000) /* PCLK2 divided by 6 */
+#define RCC_ADCPRE_DIV8                         ((uint32_t)0x0000C000) /* PCLK2 divided by 8 */
 
 #define RCC_PLLSRC                              ((uint32_t)0x00010000) /* PLL entry clock source */
 
@@ -3931,13 +3929,6 @@ typedef struct
 #define SysTick_CLKSource_HCLK_Div8      ((uint32_t)0xFFFFFFFB)
 #define SysTick_CLKSource_HCLK           ((uint32_t)0x00000004)
 
-#define SYSTICK_SR_CNTIF                 (1u<<0u)
-
-#define SYSTICK_CTLR_STE                 (1u<<0u)
-#define SYSTICK_CTLR_STIE                (1u<<1u)
-#define SYSTICK_CTLR_STCLK               (1u<<2u)
-#define SYSTICK_CTLR_STRE                (1u<<3u)
-#define SYSTICK_CTLR_SWIE                (1u<<31u)
 
 /* ch32v00x_spi.h ------------------------------------------------------------*/
 
@@ -4539,7 +4530,7 @@ typedef struct
  *
  * @return  none
  */
-RV_STATIC_INLINE void __enable_irq(void)
+RV_STATIC_INLINE void __enable_irq()
 {
   uint32_t result;
 
@@ -4548,7 +4539,7 @@ RV_STATIC_INLINE void __enable_irq(void)
 		".option arch, +zicsr\n"
 #endif
 		"csrr %0," "mstatus": "=r"(result));
-  result |= 0x88u;
+  result |= 0x88;
   __asm volatile ("csrw mstatus, %0" : : "r" (result) );
 }
 
@@ -4559,7 +4550,7 @@ RV_STATIC_INLINE void __enable_irq(void)
  *
  * @return  none
  */
-RV_STATIC_INLINE void __disable_irq(void)
+RV_STATIC_INLINE void __disable_irq()
 {
   uint32_t result;
 
@@ -4568,7 +4559,7 @@ RV_STATIC_INLINE void __disable_irq(void)
 		".option arch, +zicsr\n"
 #endif
 		"csrr %0," "mstatus": "=r"(result));
-  result &= ~0x88u;
+  result &= ~0x88;
   __asm volatile ("csrw mstatus, %0" : : "r" (result) );
 }
 
@@ -4618,7 +4609,7 @@ RV_STATIC_INLINE uint32_t __get_cpu_sp(void)
  *
  * @return  none
  */
-RV_STATIC_INLINE void __NOP(void)
+RV_STATIC_INLINE void __NOP()
 {
   __asm volatile ("nop");
 }
@@ -4758,28 +4749,28 @@ RV_STATIC_INLINE void NVIC_SetPriority(IRQn_Type IRQn, uint8_t priority)
  * Specifying an invalid IRQn_to_keep like 0 will disable all interrupts.
  */
 
-RV_STATIC_INLINE uint32_t NVIC_get_enabled_IRQs(void)
+RV_STATIC_INLINE uint32_t NVIC_get_enabled_IRQs()
 {
-	return ( ((NVIC->ISR[0] >> 2u) & 0b11) | ((NVIC->ISR[0] >> 12u) << 2u) | ((NVIC->ISR[1] & 0b1111111) << 23u) );
+	return ( ((NVIC->ISR[0] >> 2) & 0b11) | ((NVIC->ISR[0] >> 12) << 2) | ((NVIC->ISR[1] & 0b1111111) << 23) );
 }
 
 RV_STATIC_INLINE void NVIC_clear_all_IRQs_except(uint8_t IRQn_to_keep)
 {
-	if (!(IRQn_to_keep >> 5u)) {		// IRQn_to_keep < 32
-		NVIC->IRER[0] = (~0u) & (~(1u << IRQn_to_keep));
-		NVIC->IRER[1] = (~0u);
+	if (!(IRQn_to_keep >> 5)) {		// IRQn_to_keep < 32
+		NVIC->IRER[0] = (~0) & (~(1 << IRQn_to_keep));
+		NVIC->IRER[1] = (~0);
 	}
 	else {
-		IRQn_to_keep = IRQn_to_keep >> 5u;
-		NVIC->IRER[0] = (~0u);
-		NVIC->IRER[1] = (~0u) & (~(1u << IRQn_to_keep));
+		IRQn_to_keep = IRQn_to_keep >> 5;
+		NVIC->IRER[0] = (~0);
+		NVIC->IRER[1] = (~0) & (~(1 << IRQn_to_keep));
 	}
 }
 
 RV_STATIC_INLINE void NVIC_restore_IRQs(uint32_t old_state)
 {
-	NVIC->IENR[0] = (old_state >> 2u) << 12u;
-	NVIC->IENR[1] = old_state >> 23u;
+	NVIC->IENR[0] = (old_state >> 2) << 12;
+	NVIC->IENR[1] = old_state >> 23;
 }
 
 /*********************************************************************
@@ -4791,8 +4782,8 @@ RV_STATIC_INLINE void NVIC_restore_IRQs(uint32_t old_state)
  */
 __attribute__( ( always_inline ) ) RV_STATIC_INLINE void __WFI(void)
 {
-  NVIC->SCTLR &= ~(1u<<3u);   // wfi
-  __asm volatile("wfi");
+  NVIC->SCTLR &= ~(1<<3);   // wfi
+  asm volatile ("wfi");
 }
 
 /*********************************************************************
@@ -4807,10 +4798,10 @@ __attribute__( ( always_inline ) ) RV_STATIC_INLINE void __WFE(void)
   uint32_t t;
 
   t = NVIC->SCTLR;
-  NVIC->SCTLR |= (1u<<3u)|(1u<<5u);     // (wfi->wfe)+(__sev)
-  NVIC->SCTLR = (NVIC->SCTLR & ~(1u<<5u)) | ( t & (1u<<5u));
-  __asm volatile ("wfi");
-  __asm volatile ("wfi");
+  NVIC->SCTLR |= (1<<3)|(1<<5);     // (wfi->wfe)+(__sev)
+  NVIC->SCTLR = (NVIC->SCTLR & ~(1<<5)) | ( t & (1<<5));
+  asm volatile ("wfi");
+  asm volatile ("wfi");
 }
 
 /*********************************************************************
@@ -4826,16 +4817,16 @@ __attribute__( ( always_inline ) ) RV_STATIC_INLINE void __WFE(void)
  * @return  none
  */
 RV_STATIC_INLINE void SetVTFIRQ(uint32_t addr, IRQn_Type IRQn, uint8_t num, FunctionalState NewState){
-  if(num > 1u)  return ;
+  if(num > 1)  return ;
 
   if (NewState != DISABLE)
   {
       NVIC->VTFIDR[num] = IRQn;
-      NVIC->VTFADDR[num] = ((addr&0xFFFFFFFEu)|0x1u);
+      NVIC->VTFADDR[num] = ((addr&0xFFFFFFFE)|0x1);
   }
   else{
       NVIC->VTFIDR[num] = IRQn;
-      NVIC->VTFADDR[num] = ((addr&0xFFFFFFFEu)&(~0x1u));
+      NVIC->VTFADDR[num] = ((addr&0xFFFFFFFE)&(~0x1));
   }
 }
 
@@ -4848,20 +4839,20 @@ RV_STATIC_INLINE void SetVTFIRQ(uint32_t addr, IRQn_Type IRQn, uint8_t num, Func
  */
 RV_STATIC_INLINE void NVIC_SystemReset(void)
 {
-  NVIC->CFGR = NVIC_KEY3|(1u<<7u);
+  NVIC->CFGR = NVIC_KEY3|(1<<7);
 }
 
 // For configuring INTSYSCR, for interrupt nesting + hardware stack enable.
-RV_STATIC_INLINE uint32_t __get_INTSYSCR(void)
+static inline uint32_t __get_INTSYSCR(void)
 {
     uint32_t result;
-    __asm volatile("csrr %0, 0x804": "=r"(result));
-    return result;
+    asm volatile("csrr %0, 0x804": "=r"(result));
+    return (result);
 }
 
-RV_STATIC_INLINE void __set_INTSYSCR( uint32_t value )
+static inline void __set_INTSYSCR( uint32_t value )
 {
-    __asm volatile("csrw 0x804, %0" : : "r"(value));
+    asm volatile("csrw 0x804, %0" : : "r"(value));
 }
 
 
@@ -4876,7 +4867,7 @@ static inline uint32_t __get_MSTATUS(void)
 {
     uint32_t result;
 
-    __asm volatile("csrr %0," "mstatus": "=r"(result));
+    __ASM volatile("csrr %0," "mstatus": "=r"(result));
     return (result);
 }
 
@@ -4891,7 +4882,7 @@ static inline uint32_t __get_MSTATUS(void)
  */
 static inline void __set_MSTATUS(uint32_t value)
 {
-    __asm volatile("csrw mstatus, %0" : : "r"(value));
+    __ASM volatile("csrw mstatus, %0" : : "r"(value));
 }
 
 /*********************************************************************
@@ -4905,7 +4896,7 @@ static inline uint32_t __get_MISA(void)
 {
     uint32_t result;
 
-    __asm volatile("csrr %0,""misa" : "=r"(result));
+    __ASM volatile("csrr %0,""misa" : "=r"(result));
     return (result);
 }
 
@@ -4920,7 +4911,7 @@ static inline uint32_t __get_MISA(void)
  */
 static inline void __set_MISA(uint32_t value)
 {
-    __asm volatile("csrw misa, %0" : : "r"(value));
+    __ASM volatile("csrw misa, %0" : : "r"(value));
 }
 
 /*********************************************************************
@@ -4934,7 +4925,7 @@ static inline uint32_t __get_MTVEC(void)
 {
     uint32_t result;
 
-    __asm volatile("csrr %0," "mtvec": "=r"(result));
+    __ASM volatile("csrr %0," "mtvec": "=r"(result));
     return (result);
 }
 
@@ -4949,7 +4940,7 @@ static inline uint32_t __get_MTVEC(void)
  */
 static inline void __set_MTVEC(uint32_t value)
 {
-    __asm volatile("csrw mtvec, %0":: "r"(value));
+    __ASM volatile("csrw mtvec, %0":: "r"(value));
 }
 
 /*********************************************************************
@@ -4963,7 +4954,7 @@ static inline uint32_t __get_MSCRATCH(void)
 {
     uint32_t result;
 
-    __asm volatile("csrr %0," "mscratch" : "=r"(result));
+    __ASM volatile("csrr %0," "mscratch" : "=r"(result));
     return (result);
 }
 
@@ -4978,7 +4969,7 @@ static inline uint32_t __get_MSCRATCH(void)
  */
 static inline void __set_MSCRATCH(uint32_t value)
 {
-    __asm volatile("csrw mscratch, %0" : : "r"(value));
+    __ASM volatile("csrw mscratch, %0" : : "r"(value));
 }
 
 /*********************************************************************
@@ -4992,7 +4983,7 @@ static inline uint32_t __get_MEPC(void)
 {
     uint32_t result;
 
-    __asm volatile("csrr %0," "mepc" : "=r"(result));
+    __ASM volatile("csrr %0," "mepc" : "=r"(result));
     return (result);
 }
 
@@ -5005,7 +4996,7 @@ static inline uint32_t __get_MEPC(void)
  */
 static inline void __set_MEPC(uint32_t value)
 {
-    __asm volatile("csrw mepc, %0" : : "r"(value));
+    __ASM volatile("csrw mepc, %0" : : "r"(value));
 }
 
 /*********************************************************************
@@ -5019,7 +5010,7 @@ static inline uint32_t __get_MCAUSE(void)
 {
     uint32_t result;
 
-    __asm volatile("csrr %0," "mcause": "=r"(result));
+    __ASM volatile("csrr %0," "mcause": "=r"(result));
     return (result);
 }
 
@@ -5032,7 +5023,7 @@ static inline uint32_t __get_MCAUSE(void)
  */
 static inline void __set_MCAUSE(uint32_t value)
 {
-    __asm volatile("csrw mcause, %0":: "r"(value));
+    __ASM volatile("csrw mcause, %0":: "r"(value));
 }
 
 /*********************************************************************
@@ -5046,7 +5037,7 @@ static inline uint32_t __get_MVENDORID(void)
 {
     uint32_t result;
 
-    __asm volatile("csrr %0,""mvendorid": "=r"(result));
+    __ASM volatile("csrr %0,""mvendorid": "=r"(result));
     return (result);
 }
 
@@ -5061,7 +5052,7 @@ static inline uint32_t __get_MARCHID(void)
 {
     uint32_t result;
 
-    __asm volatile("csrr %0,""marchid": "=r"(result));
+    __ASM volatile("csrr %0,""marchid": "=r"(result));
     return (result);
 }
 
@@ -5076,7 +5067,7 @@ static inline uint32_t __get_MIMPID(void)
 {
     uint32_t result;
 
-    __asm volatile("csrr %0,""mimpid": "=r"(result));
+    __ASM volatile("csrr %0,""mimpid": "=r"(result));
     return (result);
 }
 
@@ -5091,7 +5082,7 @@ static inline uint32_t __get_MHARTID(void)
 {
     uint32_t result;
 
-    __asm volatile("csrr %0,""mhartid": "=r"(result));
+    __ASM volatile("csrr %0,""mhartid": "=r"(result));
     return (result);
 }
 
@@ -5106,7 +5097,7 @@ static inline uint32_t __get_SP(void)
 {
     uint32_t result;
 
-    __asm volatile("mv %0,""sp": "=r"(result):);
+    __ASM volatile("mv %0,""sp": "=r"(result):);
     return (result);
 }
 
