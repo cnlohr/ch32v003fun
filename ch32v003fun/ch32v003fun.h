@@ -6,15 +6,15 @@
 #include "funconfig.h"
 
 /*****************************************************************************
-  CH32V003 Fun Configs:
+	CH32V003 Fun Configs:
 
-#define FUNCONF_USE_PLL 1               // Use built-in 2x PLL
+#define FUNCONF_USE_PLL 1               // Use built-in 2x PLL 
 #define FUNCONF_USE_HSI 1               // Use HSI Internal Oscillator
 #define FUNCONF_USE_HSE 0               // Use External Oscillator
 #define FUNCONF_HSITRIM 0x10            // Use factory calibration on HSI Trim.
 #define FUNCONF_SYSTEM_CORE_CLOCK  48000000  // Computed Clock in Hz.
 #define FUNCONF_HSE_BYPASS 0            // Use HSE Bypass feature (for oscillator input)
-#define FUNCONF_USE_CLK_SEC  1      // Use clock security system, enabled by default
+#define FUNCONF_USE_CLK_SEC	1			// Use clock security system, enabled by default
 #define FUNCONF_USE_DEBUGPRINTF 1
 #define FUNCONF_USE_UARTPRINTF  0
 #define FUNCONF_NULL_PRINTF 0           // Have printf but direct it "nowhere"
@@ -25,15 +25,15 @@
 */
 
 #if !defined(FUNCONF_USE_DEBUGPRINTF) && !defined(FUNCONF_USE_UARTPRINTF)
-  #define FUNCONF_USE_DEBUGPRINTF 1
+	#define FUNCONF_USE_DEBUGPRINTF 1
 #endif
 
 #if defined(FUNCONF_USE_UARTPRINTF) && FUNCONF_USE_UARTPRINTF && !defined(FUNCONF_UART_PRINTF_BAUD)
-  #define FUNCONF_UART_PRINTF_BAUD 115200
+	#define FUNCONF_UART_PRINTF_BAUD 115200
 #endif
 
 #if defined(FUNCONF_USE_DEBUGPRINTF) && FUNCONF_USE_DEBUGPRINTF && !defined(FUNCONF_DEBUGPRINTF_TIMEOUT)
-  #define FUNCONF_DEBUGPRINTF_TIMEOUT 160000
+	#define FUNCONF_DEBUGPRINTF_TIMEOUT 160000
 #endif
 
 #if defined(FUNCONF_USE_HSI) && defined(FUNCONF_USE_HSE) && FUNCONF_USE_HSI && FUNCONF_USE_HSE
@@ -41,50 +41,50 @@
 #endif
 
 #if !defined( FUNCONF_USE_HSI ) && !defined( FUNCONF_USE_HSE )
-  #define FUNCONF_USE_HSI 1 // Default to use HSI
-  #define FUNCONF_USE_HSE 0
+	#define FUNCONF_USE_HSI 1 // Default to use HSI
+	#define FUNCONF_USE_HSE 0
 #endif
 
 #if !defined( FUNCONF_USE_PLL )
-  #define FUNCONF_USE_PLL 1 // Default to use PLL
+	#define FUNCONF_USE_PLL 1 // Default to use PLL
 #endif
 
 #if !defined( FUNCONF_USE_CLK_SEC )
-  #define FUNCONF_USE_CLK_SEC  1// use clock security system by default
-#endif
+	#define FUNCONF_USE_CLK_SEC  1// use clock security system by default
+#endif	
 
 #ifndef HSE_VALUE
-  #define HSE_VALUE                 (24000000) // Value of the External oscillator in Hz, default
+	#define HSE_VALUE                 (24000000) // Value of the External oscillator in Hz, default
 #endif
 
 #ifndef HSI_VALUE
-  #define HSI_VALUE                 (24000000) // Value of the Internal oscillator in Hz, default.
+	#define HSI_VALUE                 (24000000) // Value of the Internal oscillator in Hz, default.
 #endif
 
 #ifndef FUNCONF_HSITRIM
-  #define FUNCONF_HSITRIM 0x10  // Default (Chip default)
+	#define FUNCONF_HSITRIM 0x10  // Default (Chip default)
 #endif
 
 #ifndef FUNCONF_USE_PLL
-  #define FUNCONF_USE_PLL 1     // Default, Use PLL.
+	#define FUNCONF_USE_PLL 1     // Default, Use PLL.
 #endif
 
 #if !defined( FUNCONF_PLL_MULTIPLIER )
-  #if defined(FUNCONF_USE_PLL) && FUNCONF_USE_PLL
-    #define FUNCONF_PLL_MULTIPLIER 2
-  #else
-    #define FUNCONF_PLL_MULTIPLIER 1
-  #endif
+	#if defined(FUNCONF_USE_PLL) && FUNCONF_USE_PLL
+		#define FUNCONF_PLL_MULTIPLIER 2
+	#else
+		#define FUNCONF_PLL_MULTIPLIER 1
+	#endif
 #endif
 
 #ifndef FUNCONF_SYSTEM_CORE_CLOCK
-  #if defined(FUNCONF_USE_HSI) && FUNCONF_USE_HSI
-    #define FUNCONF_SYSTEM_CORE_CLOCK ((HSI_VALUE)*(FUNCONF_PLL_MULTIPLIER))
-  #elif defined(FUNCONF_USE_HSE) && FUNCONF_USE_HSE
-    #define FUNCONF_SYSTEM_CORE_CLOCK ((HSE_VALUE)*(FUNCONF_PLL_MULTIPLIER))
-  #else
-    #error Must define either FUNCONF_USE_HSI or FUNCONF_USE_HSE to be 1.
-  #endif
+	#if defined(FUNCONF_USE_HSI) && FUNCONF_USE_HSI
+		#define FUNCONF_SYSTEM_CORE_CLOCK ((HSI_VALUE)*(FUNCONF_PLL_MULTIPLIER))
+	#elif defined(FUNCONF_USE_HSE) && FUNCONF_USE_HSE
+		#define FUNCONF_SYSTEM_CORE_CLOCK ((HSE_VALUE)*(FUNCONF_PLL_MULTIPLIER))
+	#else
+		#error Must define either FUNCONF_USE_HSI or FUNCONF_USE_HSE to be 1.
+	#endif
 #endif
 
 
@@ -245,137 +245,137 @@ typedef struct
 
 typedef struct
 {
-  __IO uint16_t CAP;
-  __IO uint16_t RES1;
-  __IO uint32_t RES2;
-  __IO uint32_t UID0;
-  __IO uint32_t UID1;
-  __IO uint32_t UID2;
-  __IO uint32_t RES3;
+	__IO uint16_t CAP;
+	__IO uint16_t RES1;
+	__IO uint32_t RES2;
+	__IO uint32_t UID0;
+	__IO uint32_t UID1;
+	__IO uint32_t UID2;
+	__IO uint32_t RES3;
 } ESG_TypeDef;
 
 /* General Purpose I/O */
 typedef enum
 {
-  GPIO_CFGLR_IN_ANALOG = 0,
-  GPIO_CFGLR_IN_FLOAT = 4,
-  GPIO_CFGLR_IN_PUPD = 8,
-  GPIO_CFGLR_OUT_10Mhz_PP = 1,
-  GPIO_CFGLR_OUT_2Mhz_PP = 2,
-  GPIO_CFGLR_OUT_50Mhz_PP = 3,
-  GPIO_CFGLR_OUT_10Mhz_OD = 5,
-  GPIO_CFGLR_OUT_2Mhz_OD = 6,
-  GPIO_CFGLR_OUT_50Mhz_OD = 7,
-  GPIO_CFGLR_OUT_10Mhz_AF_PP = 9,
-  GPIO_CFGLR_OUT_2Mhz_AF_PP = 10,
-  GPIO_CFGLR_OUT_50Mhz_AF_PP = 11,
-  GPIO_CFGLR_OUT_10Mhz_AF_OD = 13,
-  GPIO_CFGLR_OUT_2Mhz_AF_OD = 14,
-  GPIO_CFGLR_OUT_50Mhz_AF_OD = 15,
+	GPIO_CFGLR_IN_ANALOG = 0,
+	GPIO_CFGLR_IN_FLOAT = 4,
+	GPIO_CFGLR_IN_PUPD = 8,
+	GPIO_CFGLR_OUT_10Mhz_PP = 1,
+	GPIO_CFGLR_OUT_2Mhz_PP = 2,
+	GPIO_CFGLR_OUT_50Mhz_PP = 3,
+	GPIO_CFGLR_OUT_10Mhz_OD = 5,
+	GPIO_CFGLR_OUT_2Mhz_OD = 6,
+	GPIO_CFGLR_OUT_50Mhz_OD = 7,
+	GPIO_CFGLR_OUT_10Mhz_AF_PP = 9,
+	GPIO_CFGLR_OUT_2Mhz_AF_PP = 10,
+	GPIO_CFGLR_OUT_50Mhz_AF_PP = 11,
+	GPIO_CFGLR_OUT_10Mhz_AF_OD = 13,
+	GPIO_CFGLR_OUT_2Mhz_AF_OD = 14,
+	GPIO_CFGLR_OUT_50Mhz_AF_OD = 15,
 } GPIO_CFGLR_PIN_MODE_Typedef;
 
 typedef union {
-  uint32_t __FULL;
-  struct {
-    GPIO_CFGLR_PIN_MODE_Typedef PIN0 :4;
-    GPIO_CFGLR_PIN_MODE_Typedef PIN1 :4;
-    GPIO_CFGLR_PIN_MODE_Typedef PIN2 :4;
-    GPIO_CFGLR_PIN_MODE_Typedef PIN3 :4;
-    GPIO_CFGLR_PIN_MODE_Typedef PIN4 :4;
-    GPIO_CFGLR_PIN_MODE_Typedef PIN5 :4;
-    GPIO_CFGLR_PIN_MODE_Typedef PIN6 :4;
-    GPIO_CFGLR_PIN_MODE_Typedef PIN7 :4;
-  };
+	uint32_t __FULL;
+	struct {
+		GPIO_CFGLR_PIN_MODE_Typedef PIN0 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN1 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN2 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN3 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN4 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN5 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN6 :4;
+		GPIO_CFGLR_PIN_MODE_Typedef PIN7 :4;
+	};
 } GPIO_CFGLR_t;
 typedef union {
-  uint32_t __FULL;
-  const struct {
-    uint32_t IDR0 :1;
-    uint32_t IDR1 :1;
-    uint32_t IDR2 :1;
-    uint32_t IDR3 :1;
-    uint32_t IDR4 :1;
-    uint32_t IDR5 :1;
-    uint32_t IDR6 :1;
-    uint32_t IDR7 :1;
-    uint32_t :24;
-  };
+	uint32_t __FULL;
+	const struct {
+		uint32_t IDR0 :1;
+		uint32_t IDR1 :1;
+		uint32_t IDR2 :1;
+		uint32_t IDR3 :1;
+		uint32_t IDR4 :1;
+		uint32_t IDR5 :1;
+		uint32_t IDR6 :1;
+		uint32_t IDR7 :1;
+		uint32_t :24;
+	};
 } GPIO_INDR_t;
 typedef union {
-  uint32_t __FULL;
-  struct {
-    uint32_t ODR0 :1;
-    uint32_t ODR1 :1;
-    uint32_t ODR2 :1;
-    uint32_t ODR3 :1;
-    uint32_t ODR4 :1;
-    uint32_t ODR5 :1;
-    uint32_t ODR6 :1;
-    uint32_t ODR7 :1;
-    uint32_t :24;
-  };
+	uint32_t __FULL;
+	struct {
+		uint32_t ODR0 :1;
+		uint32_t ODR1 :1;
+		uint32_t ODR2 :1;
+		uint32_t ODR3 :1;
+		uint32_t ODR4 :1;
+		uint32_t ODR5 :1;
+		uint32_t ODR6 :1;
+		uint32_t ODR7 :1;
+		uint32_t :24;
+	};
 } GPIO_OUTDR_t;
 typedef union {
-  uint32_t __FULL;
-  struct {
-    uint32_t BS0 :1;
-    uint32_t BS1 :1;
-    uint32_t BS2 :1;
-    uint32_t BS3 :1;
-    uint32_t BS4 :1;
-    uint32_t BS5 :1;
-    uint32_t BS6 :1;
-    uint32_t BS7 :1;
-    uint32_t :8;
-    uint32_t BR0 :1;
-    uint32_t BR1 :1;
-    uint32_t BR2 :1;
-    uint32_t BR3 :1;
-    uint32_t BR4 :1;
-    uint32_t BR5 :1;
-    uint32_t BR6 :1;
-    uint32_t BR7 :1;
-    uint32_t :8;
-  };
+	uint32_t __FULL;
+	struct {
+		uint32_t BS0 :1;
+		uint32_t BS1 :1;
+		uint32_t BS2 :1;
+		uint32_t BS3 :1;
+		uint32_t BS4 :1;
+		uint32_t BS5 :1;
+		uint32_t BS6 :1;
+		uint32_t BS7 :1;
+		uint32_t :8;
+		uint32_t BR0 :1;
+		uint32_t BR1 :1;
+		uint32_t BR2 :1;
+		uint32_t BR3 :1;
+		uint32_t BR4 :1;
+		uint32_t BR5 :1;
+		uint32_t BR6 :1;
+		uint32_t BR7 :1;
+		uint32_t :8;
+	};
 } GPIO_BSHR_t;
 typedef union {
-  uint32_t __FULL;
-  struct {
-    uint32_t BR0 :1;
-    uint32_t BR1 :1;
-    uint32_t BR2 :1;
-    uint32_t BR3 :1;
-    uint32_t BR4 :1;
-    uint32_t BR5 :1;
-    uint32_t BR6 :1;
-    uint32_t BR7 :1;
-    uint32_t :24;
-  };
+	uint32_t __FULL;
+	struct {
+		uint32_t BR0 :1;
+		uint32_t BR1 :1;
+		uint32_t BR2 :1;
+		uint32_t BR3 :1;
+		uint32_t BR4 :1;
+		uint32_t BR5 :1;
+		uint32_t BR6 :1;
+		uint32_t BR7 :1;
+		uint32_t :24;
+	};
 } GPIO_BCR_t;
 typedef union {
-  uint32_t __FULL;
-  struct {
-    uint32_t LCK0 :1;
-    uint32_t LCK1 :1;
-    uint32_t LCK2 :1;
-    uint32_t LCK3 :1;
-    uint32_t LCK4 :1;
-    uint32_t LCK5 :1;
-    uint32_t LCK6 :1;
-    uint32_t LCK7 :1;
-    uint32_t LCKK :1;
-    uint32_t :23;
-  };
+	uint32_t __FULL;
+	struct {
+		uint32_t LCK0 :1;
+		uint32_t LCK1 :1;
+		uint32_t LCK2 :1;
+		uint32_t LCK3 :1;
+		uint32_t LCK4 :1;
+		uint32_t LCK5 :1;
+		uint32_t LCK6 :1;
+		uint32_t LCK7 :1;
+		uint32_t LCKK :1;
+		uint32_t :23;
+	};
 } GPIO_LCKR_t;
 typedef struct
 {
-  __IO uint32_t CFGLR;
-  __IO uint32_t CFGHR;
-  __I  uint32_t INDR;
-  __IO uint32_t OUTDR;
-  __IO uint32_t BSHR;
-  __IO uint32_t BCR;
-  __IO uint32_t LCKR;
+	__IO uint32_t CFGLR;
+	__IO uint32_t CFGHR;
+	__I  uint32_t INDR;
+	__IO uint32_t OUTDR;
+	__IO uint32_t BSHR;
+	__IO uint32_t BCR;
+	__IO uint32_t LCKR;
 } GPIO_TypeDef;
 
 #define DYN_GPIO_READ(gpio, field) ((GPIO_##field##_t) { .__FULL = gpio->field })
@@ -499,7 +499,7 @@ typedef struct
     uint16_t      RESERVED12;
     __IO uint32_t CH1CVR;
     __IO uint32_t CH2CVR;
-    __IO uint32_t CH3CVR; /* 16bit only, based on datasheet! */
+    __IO uint32_t CH3CVR;
     __IO uint32_t CH4CVR;
     __IO uint16_t BDTR;
     uint16_t      RESERVED13;
@@ -2629,10 +2629,10 @@ typedef struct
 
 /*
  * This file contains the contents of various parts of the evt.
- *
+ * 
  * The collection of this file was generated by cnlohr, 2023-02-18
  *
- * Contents subject to below copyright where applicable by law.
+ * Contents subject to below copyright where applicable by law. 
  *
  * (IANAL, BUT Because it is an interface, it is unlikely protected by copyright)
  *
@@ -2644,7 +2644,7 @@ typedef struct
  * Description        : Library configuration file.
 *********************************************************************************
 * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
-* Attention: This software (modified or not) and binary are used for
+* Attention: This software (modified or not) and binary are used for 
 * microcontroller manufactured by Nanjing Qinheng Microelectronics.
 *******************************************************************************/
 #ifndef __CH32V00x_CONF_H
@@ -3408,10 +3408,10 @@ typedef enum
 /* Output Maximum frequency selection */
 typedef enum
 {
-  GPIO_Speed_In,
-  GPIO_Speed_10MHz,
-  GPIO_Speed_2MHz,
-  GPIO_Speed_50MHz
+	GPIO_Speed_In,
+	GPIO_Speed_10MHz,
+	GPIO_Speed_2MHz,
+	GPIO_Speed_50MHz
 } GPIOSpeed_TypeDef;
 
 #endif
@@ -3576,40 +3576,40 @@ typedef enum
 
 /****************I2C Master Events (Events grouped in order of communication)********************/
 
-/********************************************************************************************************************
+/******************************************************************************************************************** 
   * @brief  Start communicate
-  *
-  * After master use I2C_GenerateSTART() function sending the START condition,the master
-  * has to wait for event 5(the Start condition has been correctly
+  * 
+  * After master use I2C_GenerateSTART() function sending the START condition,the master 
+  * has to wait for event 5(the Start condition has been correctly 
   * released on the I2C bus ).
-  *
+  * 
   */
 /* EVT5 */
 #define  I2C_EVENT_MASTER_MODE_SELECT                      ((uint32_t)0x00030001)  /* BUSY, MSL and SB flag */
 
 /********************************************************************************************************************
   * @brief  Address Acknowledge
-  *
-  * When start condition correctly released on the bus(check EVT5), the
-  * master use I2C_Send7bitAddress() function sends the address of the slave(s) with which it will communicate
-  * it also determines master as transmitter or Receiver. Then the master has to wait that a slave acknowledges
+  * 
+  * When start condition correctly released on the bus(check EVT5), the 
+  * master use I2C_Send7bitAddress() function sends the address of the slave(s) with which it will communicate 
+  * it also determines master as transmitter or Receiver. Then the master has to wait that a slave acknowledges 
   * his address. If an acknowledge is sent on the bus, one of the following events will be set:
+  * 
   *
-  *
-  *
-  *  1) In case of Master Receiver (7-bit addressing): the I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED
+  * 
+  *  1) In case of Master Receiver (7-bit addressing): the I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED 
   *     event is set.
-  *
-  *  2) In case of Master Transmitter (7-bit addressing): the I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED
+  *  
+  *  2) In case of Master Transmitter (7-bit addressing): the I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED 
   *     is set
+  *  
+  *  3) In case of 10-Bit addressing mode, the master (after generating the START 
+  *  and checking on EVT5) use I2C_SendData() function send the header of 10-bit addressing mode.  
+  *  Then master wait EVT9. EVT9 means that the 10-bit addressing header has been correctly sent 
+  *  on the bus. Then master should use the function I2C_Send7bitAddress() to send the second part 
+  *  of the 10-bit address (LSB) . Then master should wait for event 6. 
   *
-  *  3) In case of 10-Bit addressing mode, the master (after generating the START
-  *  and checking on EVT5) use I2C_SendData() function send the header of 10-bit addressing mode.
-  *  Then master wait EVT9. EVT9 means that the 10-bit addressing header has been correctly sent
-  *  on the bus. Then master should use the function I2C_Send7bitAddress() to send the second part
-  *  of the 10-bit address (LSB) . Then master should wait for event 6.
-  *
-  *
+  *     
   */
 
 /* EVT6 */
@@ -3618,37 +3618,37 @@ typedef enum
 /*EVT9 */
 #define  I2C_EVENT_MASTER_MODE_ADDRESS10                   ((uint32_t)0x00030008)  /* BUSY, MSL and ADD10 flags */
 
-/********************************************************************************************************************
+/******************************************************************************************************************** 
   * @brief Communication events
-  *
-  * If START condition has generated and slave address
-  * been acknowledged. then the master has to check one of the following events for
+  * 
+  * If START condition has generated and slave address 
+  * been acknowledged. then the master has to check one of the following events for 
   * communication procedures:
-  *
-  * 1) Master Receiver mode: The master has to wait on the event EVT7 then use
+  *  
+  * 1) Master Receiver mode: The master has to wait on the event EVT7 then use  
   *   I2C_ReceiveData() function to read the data received from the slave .
-  *
-  * 2) Master Transmitter mode: The master use I2C_SendData() function to send data
+  * 
+  * 2) Master Transmitter mode: The master use I2C_SendData() function to send data  
   *     then to wait on event EVT8 or EVT8_2.
-  *    These two events are similar:
-  *     - EVT8 means that the data has been written in the data register and is
+  *    These two events are similar: 
+  *     - EVT8 means that the data has been written in the data register and is 
   *       being shifted out.
-  *     - EVT8_2 means that the data has been physically shifted out and output
+  *     - EVT8_2 means that the data has been physically shifted out and output 
   *       on the bus.
   *     In most cases, using EVT8 is sufficient for the application.
   *     Using EVT8_2  will leads to a slower communication  speed but will more reliable .
-  *     EVT8_2 is also more suitable than EVT8 for testing on the last data transmission
-  *
-  *
+  *     EVT8_2 is also more suitable than EVT8 for testing on the last data transmission 
+  *    
+  *     
   *  Note:
-  *  In case the  user software does not guarantee that this event EVT7 is managed before
-  *  the current byte end of transfer, then user may check on I2C_EVENT_MASTER_BYTE_RECEIVED
+  *  In case the  user software does not guarantee that this event EVT7 is managed before 
+  *  the current byte end of transfer, then user may check on I2C_EVENT_MASTER_BYTE_RECEIVED 
   *  and I2C_FLAG_BTF flag at the same time .But in this case the communication may be slower.
   *
-  *
+  * 
   */
 
-/* Master Receive mode */
+/* Master Receive mode */ 
 /* EVT7 */
 #define  I2C_EVENT_MASTER_BYTE_RECEIVED                    ((uint32_t)0x00030040)  /* BUSY, MSL and RXNE flags */
 
@@ -3660,32 +3660,32 @@ typedef enum
 
 /******************I2C Slave Events (Events grouped in order of communication)******************/
 
-/********************************************************************************************************************
+/******************************************************************************************************************** 
   * @brief  Start Communicate events
+  * 
+  * Wait on one of these events at the start of the communication. It means that 
+  * the I2C peripheral detected a start condition of master device generate on the bus.  
+  * If the acknowledge feature is enabled through function I2C_AcknowledgeConfig()),The peripheral generates an ACK condition on the bus. 
+  *    
   *
-  * Wait on one of these events at the start of the communication. It means that
-  * the I2C peripheral detected a start condition of master device generate on the bus.
-  * If the acknowledge feature is enabled through function I2C_AcknowledgeConfig()),The peripheral generates an ACK condition on the bus.
   *
-  *
-  *
-  * a) In normal case (only one address managed by the slave), when the address
-  *   sent by the master matches the own address of the peripheral (configured by
-  *   I2C_OwnAddress1 field) the I2C_EVENT_SLAVE_XXX_ADDRESS_MATCHED event is set
+  * a) In normal case (only one address managed by the slave), when the address 
+  *   sent by the master matches the own address of the peripheral (configured by 
+  *   I2C_OwnAddress1 field) the I2C_EVENT_SLAVE_XXX_ADDRESS_MATCHED event is set 
   *   (where XXX could be TRANSMITTER or RECEIVER).
-  *
-  * b) In case the address sent by the master matches the second address of the
-  *   peripheral (configured by the function I2C_OwnAddress2Config() and enabled
-  *   by the function I2C_DualAddressCmd()) the events I2C_EVENT_SLAVE_XXX_SECONDADDRESS_MATCHED
+  *    
+  * b) In case the address sent by the master matches the second address of the 
+  *   peripheral (configured by the function I2C_OwnAddress2Config() and enabled 
+  *   by the function I2C_DualAddressCmd()) the events I2C_EVENT_SLAVE_XXX_SECONDADDRESS_MATCHED 
   *   (where XXX could be TRANSMITTER or RECEIVER) are set.
-  *
-  * c) In case the address sent by the master is General Call (address 0x00) and
-  *   if the General Call is enabled for the peripheral (using function I2C_GeneralCallCmd())
-  *   the following event is set I2C_EVENT_SLAVE_GENERALCALLADDRESS_MATCHED.
-  *
+  *   
+  * c) In case the address sent by the master is General Call (address 0x00) and 
+  *   if the General Call is enabled for the peripheral (using function I2C_GeneralCallCmd()) 
+  *   the following event is set I2C_EVENT_SLAVE_GENERALCALLADDRESS_MATCHED.   
+  * 
   */
 
-/* EVT1 */
+/* EVT1 */   
 /* a) Case of One Single Address managed by the slave */
 #define  I2C_EVENT_SLAVE_RECEIVER_ADDRESS_MATCHED          ((uint32_t)0x00020002) /* BUSY and ADDR flags */
 #define  I2C_EVENT_SLAVE_TRANSMITTER_ADDRESS_MATCHED       ((uint32_t)0x00060082) /* TRA, BUSY, TXE and ADDR flags */
@@ -3697,35 +3697,35 @@ typedef enum
 /* c) Case of General Call enabled for the slave */
 #define  I2C_EVENT_SLAVE_GENERALCALLADDRESS_MATCHED        ((uint32_t)0x00120000)  /* GENCALL and BUSY flags */
 
-/********************************************************************************************************************
+/******************************************************************************************************************** 
   * @brief  Communication events
-  *
-  * Wait on one of these events when EVT1 has already been checked :
-  *
+  * 
+  * Wait on one of these events when EVT1 has already been checked : 
+  * 
   * - Slave Receiver mode:
-  *     - EVT2--The device is expecting to receive a data byte .
-  *     - EVT4--The device is expecting the end of the communication: master
+  *     - EVT2--The device is expecting to receive a data byte . 
+  *     - EVT4--The device is expecting the end of the communication: master 
   *       sends a stop condition and data transmission is stopped.
-  *
+  *    
   * - Slave Transmitter mode:
-  *    - EVT3--When a byte has been transmitted by the slave and the Master is expecting
+  *    - EVT3--When a byte has been transmitted by the slave and the Master is expecting 
   *      the end of the byte transmission. The two events I2C_EVENT_SLAVE_BYTE_TRANSMITTED and
-  *      I2C_EVENT_SLAVE_BYTE_TRANSMITTING are similar. If the user software doesn't guarantee
+  *      I2C_EVENT_SLAVE_BYTE_TRANSMITTING are similar. If the user software doesn't guarantee 
   *      the EVT3 is managed before the current byte end of transfer The second one can optionally
-  *      be used.
-  *    - EVT3_2--When the master sends a NACK  to tell slave device that data transmission
-  *      shall end . The slave device has to stop sending
+  *      be used. 
+  *    - EVT3_2--When the master sends a NACK  to tell slave device that data transmission 
+  *      shall end . The slave device has to stop sending 
   *      data bytes and wait a Stop condition from bus.
-  *
+  *      
   *  Note:
-  *  If the  user software does not guarantee that the event 2 is
-  *  managed before the current byte end of transfer, User may check on I2C_EVENT_SLAVE_BYTE_RECEIVED
+  *  If the  user software does not guarantee that the event 2 is 
+  *  managed before the current byte end of transfer, User may check on I2C_EVENT_SLAVE_BYTE_RECEIVED 
   *  and I2C_FLAG_BTF flag at the same time .
   *  In this case the communication will be slower.
   *
   */
 
-/* Slave Receiver mode*/
+/* Slave Receiver mode*/ 
 /* EVT2 */
 #define  I2C_EVENT_SLAVE_BYTE_RECEIVED                     ((uint32_t)0x00020040)  /* BUSY and RXNE flags */
 /* EVT4  */
@@ -4409,8 +4409,8 @@ typedef struct
 #endif /* __CH32V00x_CONF_H */
 
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////
+	
+///////////////////////////////////////////////////////////////////////////////////////////////	
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifndef __CORE_RISCV_H__
@@ -4438,7 +4438,7 @@ typedef struct
 #ifdef __cplusplus
  extern "C" {
 #endif
-
+	
 #ifndef __ASSEMBLER__
 
 /* Standard Peripheral Library old types (maintained for legacy purpose) */
@@ -4525,8 +4525,8 @@ typedef struct
 #define PFIC            ((PFIC_Type *) 0xE000E000 )
 #define NVIC            PFIC
 #define NVIC_KEY1       ((uint32_t)0xFA050000)
-#define  NVIC_KEY2      ((uint32_t)0xBCAF0000)
-#define  NVIC_KEY3    ((uint32_t)0xBEEF0000)
+#define	NVIC_KEY2	    ((uint32_t)0xBCAF0000)
+#define	NVIC_KEY3		((uint32_t)0xBEEF0000)
 
 #define SysTick         ((SysTick_Type *) 0xE000F000)
 
@@ -4541,15 +4541,15 @@ typedef struct
  */
 RV_STATIC_INLINE void __enable_irq(void)
 {
-    uint32_t result;
+  uint32_t result;
 
     __asm volatile(
 #if __GNUC__ > 10
-    ".option arch, +zicsr\n"
+		".option arch, +zicsr\n"
 #endif
-    "csrr %0," "mstatus": "=r"(result));
-    result |= 0x88u;
-    __asm volatile ("csrw mstatus, %0" : : "r" (result) );
+		"csrr %0," "mstatus": "=r"(result));
+  result |= 0x88u;
+  __asm volatile ("csrw mstatus, %0" : : "r" (result) );
 }
 
 /*********************************************************************
@@ -4561,15 +4561,15 @@ RV_STATIC_INLINE void __enable_irq(void)
  */
 RV_STATIC_INLINE void __disable_irq(void)
 {
-    uint32_t result;
+  uint32_t result;
 
     __asm volatile(
 #if __GNUC__ > 10
-    ".option arch, +zicsr\n"
+		".option arch, +zicsr\n"
 #endif
-    "csrr %0," "mstatus": "=r"(result));
-    result &= ~0x88u;
-    __asm volatile ("csrw mstatus, %0" : : "r" (result) );
+		"csrr %0," "mstatus": "=r"(result));
+  result &= ~0x88u;
+  __asm volatile ("csrw mstatus, %0" : : "r" (result) );
 }
 
 /*********************************************************************
@@ -4749,12 +4749,12 @@ RV_STATIC_INLINE void NVIC_SetPriority(IRQn_Type IRQn, uint8_t priority)
  * 1. save the enabled IRQs: uint32_t IRQ_backup = NVIC_get_enabled_IRQs();
  * 2. disable all IRQs: NVIC_clear_all_IRQs_except(IRQ_of_interest);
  * 3. restore the previously enabled IRQs: NVIC_restore_IRQs(IRQ_backup);
- *
+ * 
  * bit layout of the IRQ backup
- * bit    0 | 1 | 2  |  3  | 4  |  5  | 6  .. 22 | 23 .. 28
- * IRQn    2 | 3 | 12 | res | 14 | res | 16 .. 31 | 32 .. 38
+ * bit		0 | 1 | 2  |  3  | 4  |  5  | 6  .. 22 | 23 .. 28
+ * IRQn		2 | 3 | 12 | res | 14 | res | 16 .. 31 | 32 .. 38
  * IRQn 2 and 3 aren't actually user-settable (see RM).
- *
+ * 
  * Specifying an invalid IRQn_to_keep like 0 will disable all interrupts.
  */
 
@@ -5114,11 +5114,11 @@ static inline uint32_t __get_SP(void)
 // **DO NOT send it zero or less.**
 #ifndef __MACOSX__
 static inline void Delay_Tiny( int n ) {
-  asm volatile( "\
-    mv a5, %[n]\n\
-    1: \
-    c.addi a5, -1\n\
-    c.bnez a5, 1b" : : [n]"r"(n) : "a5" );
+	asm volatile( "\
+		mv a5, %[n]\n\
+		1: \
+		c.addi a5, -1\n\
+		c.bnez a5, 1b" : : [n]"r"(n) : "a5" );
 }
 #endif
 
@@ -5156,8 +5156,8 @@ extern "C" {
 #define Delay_Us(n) DelaySysTick( (n) * DELAY_US_TIME )
 #define Delay_Ms(n) DelaySysTick( (n) * DELAY_MS_TIME )
 
-#define Ticks_from_Us(n)  (n * DELAY_US_TIME)
-#define Ticks_from_Ms(n)  (n * DELAY_MS_TIME)
+#define Ticks_from_Us(n)	(n * DELAY_US_TIME)
+#define Ticks_from_Ms(n)	(n * DELAY_MS_TIME)
 
 // Add a certain number of nops.  Note: These are usually executed in pairs
 // and take two cycles, so you typically would use 0, 2, 4, etc.
@@ -5172,7 +5172,7 @@ void handle_reset()            __attribute__((naked)) __attribute((section(".tex
 void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) __attribute__((naked)) __attribute__((used));
 // used to clear the CSS flag in case of clock fail switch
 #if defined(FUNCONF_USE_CLK_SEC) && FUNCONF_USE_CLK_SEC
-  void NMI_RCC_CSS_IRQHandler( void ) __attribute__((section(".text.vector_handler"))) __attribute__((naked)) __attribute__((used));
+	void NMI_RCC_CSS_IRQHandler( void ) __attribute__((section(".text.vector_handler"))) __attribute__((naked)) __attribute__((used));
 #endif
 #endif
 
@@ -5193,9 +5193,9 @@ int main() __attribute__((used));
 void SystemInit(void);
 
 #ifdef FUNCONF_UART_PRINTF_BAUD
-  #define UART_BAUD_RATE FUNCONF_UART_PRINTF_BAUD
+	#define UART_BAUD_RATE FUNCONF_UART_PRINTF_BAUD
 #else
-  #define UART_BAUD_RATE 115200
+	#define UART_BAUD_RATE 115200
 #endif
 #define OVER4DIV 4
 #define INTEGER_DIVIDER (((25 * (FUNCONF_SYSTEM_CORE_CLOCK)) / ((OVER4DIV) * (UART_BAUD_RATE))))
@@ -5222,11 +5222,11 @@ void handle_debug_input( int numbytes, uint8_t * data );
 /*
 Encoder for some of the proprietary 'XW' RISC-V instructions present on the QingKe RV32 processor.
 Examples:
-  XW_C_LBU(a3, a1, 27); // c.xw.lbu a3, 27(a1)
-  XW_C_SB(a0, s0, 13);  // c.xw.sb a0, 13(s0)
+	XW_C_LBU(a3, a1, 27); // c.xw.lbu a3, 27(a1)
+	XW_C_SB(a0, s0, 13);  // c.xw.sb a0, 13(s0)
 
-  XW_C_LHU(a5, a5, 38); // c.xw.lhu a5, 38(a5)
-  XW_C_SH(a2, s1, 14);  // c.xw.sh a2, 14(s1)
+	XW_C_LHU(a5, a5, 38); // c.xw.lhu a5, 38(a5)
+	XW_C_SH(a2, s1, 14);  // c.xw.sh a2, 14(s1)
 */
 
 // Let us do some compile-time error checking.
@@ -5260,10 +5260,10 @@ Examples:
 
 // The two different XW encodings supported at the moment.
 #define XW_ENCODE1(OP, R1, R2, IMM) ASM_ASSERT((IMM) >= 0 && (IMM) < 32); .2byte ((OP) | (REG2I(R1) << 2) | (REG2I(R2) << 7) | \
-  (((IMM) & 0b1) << 12) | (((IMM) & 0b110) << (5 - 1)) | (((IMM) & 0b11000) << (10 - 3)))
+	(((IMM) & 0b1) << 12) | (((IMM) & 0b110) << (5 - 1)) | (((IMM) & 0b11000) << (10 - 3)))
 
 #define XW_ENCODE2(OP, R1, R2, IMM) ASM_ASSERT((IMM) >= 0 && (IMM) < 32); .2byte ((OP) | (REG2I(R1) << 2) | (REG2I(R2) << 7) | \
-  (((IMM) & 0b11) << 5) | (((IMM) & 0b11100) << (10 - 2))
+	(((IMM) & 0b11) << 5) | (((IMM) & 0b11100) << (10 - 2))
 
 // Compressed load byte, zero-extend result
 #define XW_C_LBU(RD, RS, IMM) XW_ENCODE1(XW_OP_LBU, RD, RS, IMM)
@@ -5288,7 +5288,7 @@ Examples:
  * Description        : RISC-V Core Peripheral Access Layer Header File
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
- * Attention: This software (modified or not) and binary are used for
+ * Attention: This software (modified or not) and binary are used for 
  * microcontroller manufactured by Nanjing Qinheng Microelectronics.
  *******************************************************************************/
 
