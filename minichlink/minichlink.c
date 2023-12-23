@@ -649,6 +649,7 @@ help:
 	fprintf( stderr, " -t Disable 3.3V\n" );
 	fprintf( stderr, " -f Disable 5V\n" );
 	fprintf( stderr, " -c [serial port for Ardulink, try /dev/ttyACM0 or COM11 etc]\n" );
+	fprintf( stderr, " -C [Specified programmer, eg. b003boot, ardulink, esp32s2chfun]\n" );
 	fprintf( stderr, " -u Clear all code flash - by power off (also can unbrick)\n" );
 	fprintf( stderr, " -E Erase chip\n" );
 	fprintf( stderr, " -b Reboot out of Halt\n" );
