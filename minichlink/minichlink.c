@@ -114,7 +114,7 @@ int main( int argc, char ** argv )
 			if( i < argc )
 				hints.serial_port = argv[i];
 		}
-		else if( strncmp( v, "-c", 2 ) == 0 )
+		else if( strncmp( v, "-C", 2 ) == 0 )
 		{
 			i++;
 			if( i < argc )
