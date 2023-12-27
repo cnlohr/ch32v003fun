@@ -1,6 +1,9 @@
 // Include necessary libraries
 #include <stdlib.h>
 
+#define BITBANG_WS2812B_PORT GPIOD
+#define BITBANG_WS2812B_PIN 6
+
 // Initialise the variables for animation
 uint8_t flag = 0;
 uint32_t count = 1;
@@ -17,7 +20,7 @@ void LED_SendBit(uint8_t bit)
 {
     if (bit) {
     //// Send a 1 bit
-        GPIOD->BSHR = 1 << 6; // put pin C4 high and wait for 800nS
+        BITBANG_WS2812B_PORT->BSHR = 1 << BITBANG_WS2812B_PIN; // put BITBANG_WS2812B_PIN high and wait for 800nS
             __asm__("nop");__asm__("nop");__asm__("nop");__asm__("nop");
             __asm__("nop");__asm__("nop");__asm__("nop");__asm__("nop");
             __asm__("nop");__asm__("nop");__asm__("nop");__asm__("nop");
@@ -27,17 +30,17 @@ void LED_SendBit(uint8_t bit)
             __asm__("nop");__asm__("nop");__asm__("nop");__asm__("nop");
             __asm__("nop");__asm__("nop");__asm__("nop");__asm__("nop");
             __asm__("nop");__asm__("nop");
-        GPIOD->BCR = 1 << 6; // put pin C4 low and exit, 400nS is taken up by other functions
+        BITBANG_WS2812B_PORT->BCR = 1 << BITBANG_WS2812B_PIN; // put low and exit, 400nS is taken up by other functions
         return;
         }
 //    else {
         // Send a 0 bit
-        GPIOD->BSHR = 1 << 6; // put pin C4 high and wait for 400nS
+        BITBANG_WS2812B_PORT->BSHR = 1 << BITBANG_WS2812B_PIN; // put pin BITBANG_WS2812B_PIN high and wait for 400nS
             __asm__("nop");__asm__("nop");__asm__("nop");__asm__("nop");
             __asm__("nop");__asm__("nop");__asm__("nop");__asm__("nop");
             __asm__("nop");__asm__("nop");__asm__("nop");__asm__("nop");
             __asm__("nop");__asm__("nop");
-        GPIOD->BCR = 1 << 6; // put pin C4 low and wait for 400nS, 400nS is taken up by other functions
+        BITBANG_WS2812B_PORT->BCR = 1 << BITBANG_WS2812B_PIN; // put pin BITBANG_WS2812B_PIN low and wait for 400nS, 400nS is taken up by other functions
             __asm__("nop");__asm__("nop");__asm__("nop");__asm__("nop");
             __asm__("nop");__asm__("nop");__asm__("nop");__asm__("nop");
             __asm__("nop");__asm__("nop");__asm__("nop");__asm__("nop");
