@@ -7,10 +7,16 @@
 // Include the sine and rand lookup tables
 #include "lookups.h"
 
+#define WS_GPIO_PORT D
+#define WS_GPIO_PIN 6
+#define LOCAL_CONCAT(A, B) A##B
+#define LOCAL_EXP(A, B) LOCAL_CONCAT(A,B)
+#define WS_GPIO LOCAL_EXP( GPIO, WS_GPIO_PORT)
+
 // Include the Green Dragon Bitbanging driver
 #include "ws2812bbitbang_driver.h"
 
-// Include the colour and animation functios
+// Include the colour and animation functions
 #include "led_functions.h"
 
 
@@ -22,11 +28,20 @@ int main(void)
     SystemInit();
 
     // Enable GPIO Port D
-    RCC->APB2PCENR |= RCC_APB2Periph_GPIOD;
+    //RCC->APB2PCENR |= RCC_APB2Periph_GPIOD;
+    RCC->APB2PCENR |= LOCAL_EXP( RCC_APB2Periph_GPIO, WS_GPIO_PORT );
+
 
     // GPIO D6 Push-Pull
-    GPIOD->CFGLR &= ~(0xf<<(4*6));
-    GPIOD->CFGLR |= (GPIO_Speed_50MHz | GPIO_CNF_OUT_PP)<<(4*6);
+    //GPIOD->CFGLR &= ~(0xf<<(4*6));
+    //GPIOD->CFGLR |= (GPIO_Speed_50MHz | GPIO_CNF_OUT_PP)<<(4*6);
+    LOCAL_EXP( GPIO, WS_GPIO_PORT )->CFGLR =
+        ( LOCAL_EXP( GPIO, WS_GPIO_PORT )->CFGLR &
+          (~(0xf<<(WS_GPIO_PIN*4))))
+        |
+        (GPIO_Speed_50MHz | GPIO_CNF_OUT_PP)<<(WS_GPIO_PIN*4);
+
+
 
 
     Delay_Ms(5);

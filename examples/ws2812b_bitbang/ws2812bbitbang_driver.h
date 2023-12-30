@@ -4,6 +4,10 @@
 #define BITBANG_WS2812B_PORT GPIOD
 #define BITBANG_WS2812B_PIN 6
 
+#define WAIT_ON_TIME_1  6
+#define WAIT_ON_TIME_0  3
+#define WAIT_OFF_TIME_0 2
+
 // Initialise the variables for animation
 uint8_t flag = 0;
 uint32_t count = 1;
@@ -18,35 +22,23 @@ uint8_t BUFFER_LEDS[num_leds][3] = {};
 // Check mark/space ratio of the data on GPIO D6 with an oscilloscope (or Logic analyser?).
 void LED_SendBit(uint8_t bit)
 {
-    if (bit) {
+    switch (bit) {
+    case 1:
     //// Send a 1 bit
         BITBANG_WS2812B_PORT->BSHR = 1 << BITBANG_WS2812B_PIN; // put BITBANG_WS2812B_PIN high and wait for 800nS
-            __asm__("nop");__asm__("nop");__asm__("nop");__asm__("nop");
-            __asm__("nop");__asm__("nop");__asm__("nop");__asm__("nop");
-            __asm__("nop");__asm__("nop");__asm__("nop");__asm__("nop");
-            __asm__("nop");__asm__("nop");__asm__("nop");__asm__("nop");
-            __asm__("nop");__asm__("nop");__asm__("nop");__asm__("nop");
-            __asm__("nop");__asm__("nop");__asm__("nop");__asm__("nop");
-            __asm__("nop");__asm__("nop");__asm__("nop");__asm__("nop");
-            __asm__("nop");__asm__("nop");__asm__("nop");__asm__("nop");
-            __asm__("nop");__asm__("nop");
+        Delay_Tiny(WAIT_ON_TIME_1);
         BITBANG_WS2812B_PORT->BCR = 1 << BITBANG_WS2812B_PIN; // put low and exit, 400nS is taken up by other functions
-        return;
-        }
+        break;
+    default:
 //    else {
         // Send a 0 bit
         BITBANG_WS2812B_PORT->BSHR = 1 << BITBANG_WS2812B_PIN; // put pin BITBANG_WS2812B_PIN high and wait for 400nS
-            __asm__("nop");__asm__("nop");__asm__("nop");__asm__("nop");
-            __asm__("nop");__asm__("nop");__asm__("nop");__asm__("nop");
-            __asm__("nop");__asm__("nop");__asm__("nop");__asm__("nop");
-            __asm__("nop");__asm__("nop");
+        Delay_Tiny(WAIT_ON_TIME_0);
         BITBANG_WS2812B_PORT->BCR = 1 << BITBANG_WS2812B_PIN; // put pin BITBANG_WS2812B_PIN low and wait for 400nS, 400nS is taken up by other functions
-            __asm__("nop");__asm__("nop");__asm__("nop");__asm__("nop");
-            __asm__("nop");__asm__("nop");__asm__("nop");__asm__("nop");
-            __asm__("nop");__asm__("nop");__asm__("nop");__asm__("nop");
-            __asm__("nop");__asm__("nop");__asm__("nop");__asm__("nop");
-            __asm__("nop");__asm__("nop");__asm__("nop");__asm__("nop");
+        Delay_Tiny(WAIT_OFF_TIME_0);
+        break;
 //    }
+    }
 }
 
 // Send a single colour for a single LED
