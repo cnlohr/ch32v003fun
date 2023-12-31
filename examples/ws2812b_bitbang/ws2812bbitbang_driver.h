@@ -8,19 +8,12 @@
 #define WAIT_ON_TIME_0  3
 #define WAIT_OFF_TIME_0 2
 
-// Initialise the variables for animation
-uint8_t flag = 0;
-uint32_t count = 1;
-
-// Initialise the variable for the srand seed
-uint16_t ADC_val;
-
 // Define an array to buffer the color data for each LED in the strip
 uint8_t BUFFER_LEDS[num_leds][3] = {};
 
 // Send a single bit using the GD pinwiggle protocol.
 // Check mark/space ratio of the data on GPIO D6 with an oscilloscope (or Logic analyser?).
-void LED_SendBit(uint8_t bit)
+static void led_send_bit(uint8_t bit)
 {
     switch (bit) {
     case 1:
@@ -39,20 +32,20 @@ void LED_SendBit(uint8_t bit)
     }
 }
 
-// Send a single colour for a single LED
+// Send a single color for a single LED
 // WS2812B LEDs want 24 bits per led in the string
-void LED_SendColour(uint8_t red, uint8_t green, uint8_t blue)
+void led_send_color(uint8_t red, uint8_t green, uint8_t blue)
 {
     // Send the green component first (MSB)
     for (int i = 7; i >= 0; i--) {
-        LED_SendBit((green >> i) & 1);
+        led_send_bit((green >> i) & 1);
     }
     // Send the red component next
     for (int i = 7; i >= 0; i--) {
-        LED_SendBit((red >> i) & 1);
+        led_send_bit((red >> i) & 1);
     }
     // Send the blue component last (LSB)
     for (int i = 7; i >= 0; i--) {
-        LED_SendBit((blue >> i) & 1);
+        led_send_bit((blue >> i) & 1);
     }
 }

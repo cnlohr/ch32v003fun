@@ -16,7 +16,7 @@
 // Include the Green Dragon Bitbanging driver
 #include "ws2812bbitbang_driver.h"
 
-// Include the colour and animation functions
+// Include the color and animation functions
 #include "led_functions.h"
 
 
@@ -38,23 +38,23 @@ int main(void)
         (GPIO_Speed_50MHz | GPIO_CNF_OUT_PP)<<(WS_GPIO_PIN*4);
 
     Delay_Ms(5);
-    // Send initial LED colour values to the LED strip
-    LED_OFF();
-    SHOWTIME(BUFFER_LEDS);
+    // Send initial LED color values to the LED strip
+    led_off();
+    showtime(BUFFER_LEDS);
     Delay_Ms(200);
 
     while (1) {
 
-        // LED_COLD_WHITE();
-        // LED_WARM_WHITE();
-        LED_RAINBOWS(10, num_leds); // variables are delay speed in mS and width (number of leds)
-        // LED_RED(255); // variable is brightness 0-255
-        // LED_GREEN(10); // variable is brightness 0-255
-        // LED_BLUE(10); // variable is brightness 0-255
-        // LED_CUSTOM(255,255,255); // set custom clour (red, green, blue) 0-255 RGB
-        // LED_RGB_FLASH(200, 2); // variables are speed in mS delay and brightness
-        // LED_WHITE_FLASH(50, 10); // variables are max and min flash speed
-        // LED_WHITE_FADE(4); // variable is speed in mS delay
+        // led_cold_white();
+        // led_warm_white();
+        led_rainbows(10, num_leds); // variables are delay speed in mS and width (number of leds)
+        // led_red(255); // variable is brightness 0-255
+        // led_green(10); // variable is brightness 0-255
+        // led_blue(10); // variable is brightness 0-255
+        // led_custom(255,255,255); // set custom clour (red, green, blue) 0-255 RGB
+        // led_rgb_flash(200, 2); // variables are speed in mS delay and brightness
+        // led_white_flash(50, 10); // variables are max and min flash speed
+        // led_white_fade(4); // variable is speed in mS delay
 
     } // end of while loop
 } // end of main
