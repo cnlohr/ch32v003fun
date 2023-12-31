@@ -24,25 +24,23 @@ void LED_SendBit(uint8_t bit)
 {
     switch (bit) {
     case 1:
-    //// Send a 1 bit
+        /**** Send a 1 bit ****/
         BITBANG_WS2812B_PORT->BSHR = 1 << BITBANG_WS2812B_PIN; // put BITBANG_WS2812B_PIN high and wait for 800nS
         Delay_Tiny(WAIT_ON_TIME_1);
         BITBANG_WS2812B_PORT->BCR = 1 << BITBANG_WS2812B_PIN; // put low and exit, 400nS is taken up by other functions
         break;
     default:
-//    else {
-        // Send a 0 bit
+        /**** Send a 0 bit ****/
         BITBANG_WS2812B_PORT->BSHR = 1 << BITBANG_WS2812B_PIN; // put pin BITBANG_WS2812B_PIN high and wait for 400nS
         Delay_Tiny(WAIT_ON_TIME_0);
         BITBANG_WS2812B_PORT->BCR = 1 << BITBANG_WS2812B_PIN; // put pin BITBANG_WS2812B_PIN low and wait for 400nS, 400nS is taken up by other functions
         Delay_Tiny(WAIT_OFF_TIME_0);
         break;
-//    }
     }
 }
 
 // Send a single colour for a single LED
-//WS2812B LEDs want 24 bits per led in the string
+// WS2812B LEDs want 24 bits per led in the string
 void LED_SendColour(uint8_t red, uint8_t green, uint8_t blue)
 {
     // Send the green component first (MSB)
