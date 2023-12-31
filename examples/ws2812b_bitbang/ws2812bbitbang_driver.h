@@ -6,7 +6,7 @@
 
 #define WAIT_ON_TIME_1  6
 #define WAIT_ON_TIME_0  3
-#define WAIT_OFF_TIME_0 2
+#define WAIT_OFF_TIME_0 1
 
 // Define an array to buffer the color data for each LED in the strip
 uint8_t BUFFER_LEDS[num_leds][3] = {};
