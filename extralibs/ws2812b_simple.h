@@ -1,7 +1,5 @@
 /* Single-File-Header for using asynchronous LEDs with the CH32V003 using GPIO.
 
-   For the CH32V003 this means output will be on PORTC Pin 6
-
    Copyright 2023 <>< Charles Lohr, under the MIT-x11 or NewBSD License, you choose!
 
    If you are including this in main, simply
