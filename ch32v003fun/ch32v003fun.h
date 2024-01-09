@@ -4564,6 +4564,45 @@ RV_STATIC_INLINE void __disable_irq()
 }
 
 /*********************************************************************
+ * @fn      __isenabled_irq
+ *
+ * @brief   Is Global Interrupt enabled
+ *
+ * @return  1: yes, 0: no
+ */
+RV_STATIC_INLINE uint8_t __isenabled_irq(void)
+{
+    uint32_t result;
+
+    __asm volatile(
+#if __GNUC__ > 10
+    ".option arch, +zicsr\n"
+#endif
+    "csrr %0," "mstatus": "=r"(result));
+    return (result & 0x08) != 0u;
+}
+
+/*********************************************************************
+ * @fn      __get_cpu_sp
+ *
+ * @brief   Get stack pointer
+ *
+ * @return  stack pointer
+ */
+RV_STATIC_INLINE uint32_t __get_cpu_sp(void);
+RV_STATIC_INLINE uint32_t __get_cpu_sp(void)
+{
+  uint32_t result;
+
+  __asm volatile(
+#if __GNUC__ > 10
+    ".option arch, +zicsr\n"
+#endif
+  "mv %0, sp" : "=r"(result));
+  return result;
+}
+
+/*********************************************************************
  * @fn      __NOP
  *
  * @brief   nop

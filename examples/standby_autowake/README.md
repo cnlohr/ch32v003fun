@@ -1,11 +1,12 @@
 # the deepest slumber
 
+**WARNING: You MUST hard-reboot the CH32V003 to allow it to go into deep sleep. You cannot go from flashing to deep sleep without a hard power cycle.**
+
 This example serves to show how to put the CH32V003 into its lowest power state (standby) and have it wake periodically.  
 
 Power consumption should be around 10uA.  
 
-The MCU only toggles the LED and prints a message, then it goes to sleep.  
-The LED staying on demonstrates that GPIO keeps its state even when the rest of the mcu is in a coma.  
+Refer to the standby_btn example for GPIO settings.
 
 Based on the groundwork of Marek M.  
 

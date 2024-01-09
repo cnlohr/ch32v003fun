@@ -895,7 +895,7 @@ int putchar(int c)
 void handle_debug_input( int numbytes, uint8_t * data ) __attribute__((weak));
 void handle_debug_input( int numbytes, uint8_t * data ) { }
 
-static void internal_handle_input( uint32_t * dmdata0 )
+static void internal_handle_input( volatile uint32_t * dmdata0 )
 {
 	uint32_t dmd0 = *dmdata0;
 	int bytes = (dmd0 & 0x3f) - 4;
@@ -908,11 +908,12 @@ static void internal_handle_input( uint32_t * dmdata0 )
 
 void poll_input()
 {
-	uint32_t lastdmd = (*DMDATA0);
- 	if( !(lastdmd & 0x80) )
+	volatile uint32_t * dmdata0 = (volatile uint32_t *)DMDATA0;
+ 	if( ((*dmdata0) & 0x80) == 0 )
 	{
-		internal_handle_input( (uint32_t*)DMDATA0 );
-		*DMDATA0 = 0x84; // Negative
+		internal_handle_input( dmdata0 );
+		// Should be 0x80 or so, but for some reason there's a bug that retriggers.
+		*dmdata0 = 0x00;
 	}
 }
 
@@ -980,10 +981,6 @@ int putchar(int c)
 		if( timeout-- == 0 ) return 0;
 
 	// Simply seeking input.
-	lastdmd = (*DMDATA0);
-	if( lastdmd ) internal_handle_input( (uint32_t*)DMDATA0 );
-
-	while( (lastdmd = (*DMDATA0)) & 0x80 ) if( timeout-- == 0 ) return 0;
 	if( lastdmd ) internal_handle_input( (uint32_t*)DMDATA0 );
 	*DMDATA0 = 0x85 | ((const char)c<<8);
 	return 1;
