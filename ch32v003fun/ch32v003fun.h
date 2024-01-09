@@ -5115,6 +5115,40 @@ extern "C" {
 // and take two cycles, so you typically would use 0, 2, 4, etc.
 #define ADD_N_NOPS( n ) asm volatile( ".rept " #n "\nc.nop\n.endr" );
 
+// Arduino-like GPIO Functionality
+#define GpioOf( pin ) ((GPIO_TypeDef *)(GPIOA_BASE + 0x400 * ((pin)>>4)))
+
+#define FUN_HIGH 0x1
+#define FUN_LOW 0x0
+#define FUN_OUTPUT (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)
+#define FUN_INPUT (GPIO_CNF_IN_FLOATING)
+
+#define PA1 1
+#define PA2 2
+#define PC0 32
+#define PC1 33
+#define PC2 34
+#define PC3 35
+#define PC4 36
+#define PC5 37
+#define PC6 38
+#define PC7 39
+#define PD0 48
+#define PD1 49
+#define PD2 50
+#define PD3 51
+#define PD4 52
+#define PD5 53
+#define PD6 54
+#define PD7 55
+
+#define funDigitalWrite( pin, value ) { GpioOf( pin )->BSHR = 1<<((value)*16 + ((pin) & 0xf)); }
+#define funPinMode( pin, mode ) { GpioOf(pin)->CFGLR = (GpioOf(pin)->CFGLR & (~(0xf<<(4*((pin)&0xf))))) | ((GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*((pin)&0xf))); }
+#define funGpioInitAll() { RCC->APB2PCENR |= ( RCC_APB2Periph_AFIO | RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOC | RCC_APB2Periph_GPIOD ); }
+#define funDigitalRead( pin ) ((GpioOf(pin)->INDR >> ((pin)&0xf)) & 1)
+
+
+
 #if defined(__riscv) || defined(__riscv__) || defined( CH32V003FUN_BASE )
 
 // Stuff that can only be compiled on device (not for the programmer, or other host programs)
