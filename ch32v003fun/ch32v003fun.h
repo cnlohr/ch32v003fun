@@ -5181,7 +5181,7 @@ extern "C" {
 #define PD6 54
 #define PD7 55
 
-#define funDigitalWrite( pin, value ) { GpioOf( pin )->BSHR = 1<<((value)*16 + ((pin) & 0xf)); }
+#define funDigitalWrite( pin, value ) { GpioOf( pin )->BSHR = 1<<((!(value))*16 + ((pin) & 0xf)); }
 #define funPinMode( pin, mode ) { GpioOf(pin)->CFGLR = (GpioOf(pin)->CFGLR & (~(0xf<<(4*((pin)&0xf))))) | ((mode)<<(4*((pin)&0xf))); }
 #define funGpioInitAll() { RCC->APB2PCENR |= ( RCC_APB2Periph_AFIO | RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOC | RCC_APB2Periph_GPIOD ); }
 #define funDigitalRead( pin ) ((GpioOf(pin)->INDR >> ((pin)&0xf)) & 1)
