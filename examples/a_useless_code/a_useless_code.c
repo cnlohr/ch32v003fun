@@ -6,16 +6,29 @@
 
 #include "ch32v003fun.h"
 #include <stdio.h>
+#include "fun_button.h"
+
+void button_onSingleClick() {
+   printf("\nI'M USELESS.");
+	digitalWrite(0xC0, 0);
+}
+
+void button_onDoubleClick() {
+   printf("\nI'M USELESS TWICE.");
+	digitalWrite(0xC0, !digitalRead(0xC0));
+}
 
 int main()
-{
-	SystemInit();
+{  
+	pinMode(0xC0, OUTPUT);
+	digitalWrite(0xC0, 1);
 
+	button_setup(0xC3);
+
+	printf("looping...\n\r");
 	while(1)
 	{
-		printf("\nI'M USELESS");
-
-      // Give the user's brain sometime to process
-		Delay_Ms( 2000 );
+		button_run();
 	}
 }
+
