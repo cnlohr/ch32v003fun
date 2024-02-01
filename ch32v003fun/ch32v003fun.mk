@@ -5,7 +5,7 @@ CH32V003FUN?=../../ch32v003fun
 MINICHLINK?=$(CH32V003FUN)/../minichlink
 
 CFLAGS+= \
-	-g -Os -flto -ffunction-sections \
+	-g -Os -flto -fdata-sections -ffunction-sections \
 	-static-libgcc \
 	-march=rv32ec \
 	-mabi=ilp32e \
