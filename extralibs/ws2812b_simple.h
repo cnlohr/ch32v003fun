@@ -1,16 +1,11 @@
-/* Single-File-Header for using asynchronous LEDs with the CH32V003 using DMA to the SPI port.
-   I may write another version of this to use DMA to timer ports, but, the SPI port can be used
-   to generate outputs very efficiently. So, for now, SPI Port.  Additionally, it uses FAR less
-   internal bus resources than to do the same thing with timers.
-   
-   For the CH32V003 this means output will be on PORTC Pin 6
+/* Single-File-Header for using asynchronous LEDs with the CH32V003 using GPIO.
 
    Copyright 2023 <>< Charles Lohr, under the MIT-x11 or NewBSD License, you choose!
 
-   If you are including this in main, simply 
+   If you are including this in main, simply
 	#define WS2812BSIMPLE_IMPLEMENTATION
 
-   You may also want to define 
+   You may also want to define
 	#define WS2812BSIMPLE_NO_IRQ_TWEAKING
 
 */
