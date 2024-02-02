@@ -1,5 +1,6 @@
 #include "ch32v003fun.h"
 #include "fun_timer.h"
+#include "fun_gpio.h"
 #include <stdio.h>
 
 #define TICK_DEBOUNCE_DUR 10
