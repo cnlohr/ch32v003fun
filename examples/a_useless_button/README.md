@@ -1,4 +1,4 @@
-# A Useless Code
+# A Useless Button
 Example of a useless button. It doesn't do anything good except being great at what it does.
 It demonstrates the power of repetition: if you repeat the samething many times over, it becomes you.
 
