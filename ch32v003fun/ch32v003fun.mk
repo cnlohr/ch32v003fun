@@ -1,5 +1,12 @@
-
-PREFIX?=riscv64-unknown-elf
+ifeq ($(OS),Windows_NT)
+    PREFIX?=riscv64-unknown-elf
+else
+    ifeq (, $(shell which riscv64-unknown-elf-gcc))
+        PREFIX?=riscv64-elf
+    else
+        PREFIX?=riscv64-unknown-elf
+    endif
+endif
 
 CH32V003FUN?=../../ch32v003fun
 MINICHLINK?=$(CH32V003FUN)/../minichlink
