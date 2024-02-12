@@ -5232,6 +5232,8 @@ void SystemInit(void);
 // Put an output debug UART on Pin D5.
 // You can write to this with printf(...) or puts(...)
 
+void SetupUART( int uartBRR );
+
 void WaitForDebuggerToAttach();
 
 // Just a definition to the internal _write function.
