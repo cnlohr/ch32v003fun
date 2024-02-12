@@ -104,6 +104,16 @@ struct ProgrammerStructBase
 
 #define MAX_FLASH_SECTORS 262144
 
+enum RiscVChip {
+	CHIP_CH32V10x = 0x01,
+	CHIP_CH57x = 0x02,
+	CHIP_CH56x = 0x03,
+	CHIP_CH32V20x = 0x05,
+	CHIP_CH32V30x = 0x06,
+	CHIP_CH58x = 0x07,
+	CHIP_CH32V003 = 0x09
+};
+
 struct InternalState
 {
 	uint32_t statetag;
@@ -116,7 +126,7 @@ struct InternalState
 	uint32_t ram_size;
 	int sector_size;
 	int flash_size;
-	int target_chip_type; // 0 for unknown (or 003), otherwise a part number.
+	enum RiscVChip target_chip_type;
 	uint8_t flash_sector_status[MAX_FLASH_SECTORS];  // 0 means unerased/unknown. 1 means erased.
 };
 

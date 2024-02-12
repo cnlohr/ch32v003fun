@@ -18,6 +18,7 @@ CFLAGS:= \
 	-I/usr/include/newlib \
 	-I$(CH32V003FUN) \
 	-nostdlib \
+	-DCH32V003 \
 	-I. -Wall
 
 CFLAGS+=-fno-rtti -DCPLUSPLUS
