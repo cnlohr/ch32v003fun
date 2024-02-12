@@ -41,7 +41,8 @@ ifeq ($(TARGET_MCU),CH32V003)
 		-DCH32V003=1 \
 		-I. -Wall $(EXTRA_CFLAGS)
 
-	LINKER_SCRIPT?=$(CH32V003FUN)/ch32v003fun.ld
+	GENERATED_LD_FILE?=$(CH32V003FUN)/generated_ch32v003.ld
+	LINKER_SCRIPT?=$(GENERATED_LD_FILE)
 else
 	ifeq ($(findstring CH32V10,$(TARGET_MCU)),CH32V10)
 		include $(CH32V003FUN)/ch32v10xfun.mk
@@ -97,6 +98,10 @@ clangd_clean :
 	rm -rf .cache
 
 FLASH_COMMAND?=$(MINICHLINK)/minichlink -w $< $(WRITE_SECTION) -b
+
+$(GENERATED_LD_FILE) :
+	$(PREFIX)-gcc -E -P -x c -DTARGET_MCU=CH32V003 $(CH32V003FUN)/ch32v003fun.ld > $(GENERATED_LD_FILE)
+
 
 cv_flash : $(TARGET).bin
 	make -C $(MINICHLINK) all

@@ -6,6 +6,35 @@
 #include "funconfig.h"
 
 /*****************************************************************************
+	CH32V003 BASICS
+
+	1. Be sure to see configuration section below!
+
+	2. Backend Initialization
+		SystemInit();
+
+	3. Arduino-like I/O
+		funGpioInitAll();
+		funPinMode( PA2, GPIO_CFGLR_OUT_10Mhz_PP );
+		funDigitalWrite( PA2, FUN_HIGH );
+		funDigitalWrite( PA2, FUN_HIGH );
+
+	4. Delays
+		Delay_Us(n)
+		Delay_Ms(n)
+		DelaySysTick( uint32_t n );
+
+	5. printf
+		printf, _write may be semihosted, or printed to UART.
+
+		poll_input, handle_debug_input may be used with semihsoting.
+
+		Note: Semihosting appears to currently only work on the CH32V003 (may be improved in future)
+*/
+
+
+
+/*****************************************************************************
 	CH32V003 Fun Configs:
 
 #define FUNCONF_USE_PLL 1               // Use built-in 2x PLL 
