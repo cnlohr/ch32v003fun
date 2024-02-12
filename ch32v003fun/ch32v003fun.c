@@ -1420,19 +1420,18 @@ void SystemInit()
 //#define BASE_CTLR	(((FUNCONF_HSITRIM) << 3) | HSEBYP | RCC_CSS)	// disable HSI in HSE modes
 
 #if defined(FUNCONF_USE_HSI) && FUNCONF_USE_HSI
-	#if defined(CH32V30x)
+	#if defined(CH32V30x) || defined(CH32V20x) || defined(CH32V10x)
 		EXTEN->EXTEN_CTR |= EXTEN_PLL_HSI_PRE;
 	#endif
 	#if defined(FUNCONF_USE_PLL) && FUNCONF_USE_PLL
-		RCC->CFGR0 = RCC_HPRE_DIV1 | RCC_PLLSRC_HSI_Mul2;
+		RCC->CFGR0 = RCC_HPRE_DIV1 | PLL_MULTIPLICATION;
 		RCC->CTLR  = BASE_CTLR | RCC_HSION | RCC_PLLON; 			// Use HSI, enable PLL.
 	#else
 		RCC->CFGR0 = RCC_HPRE_DIV1;                               	// PLLCLK = HCLK = SYSCLK = APB1
 		RCC->CTLR  = BASE_CTLR | RCC_HSION;     					// Use HSI, Only.
 	#endif
-#endif
 
-#if defined(FUNCONF_USE_HSE) && FUNCONF_USE_HSE
+#elif defined(FUNCONF_USE_HSE) && FUNCONF_USE_HSE
 
 	#if defined(CH32V003)
 		RCC->CTLR = BASE_CTLR | RCC_HSION | RCC_HSEON ;       		  // Keep HSI on while turning on HSE

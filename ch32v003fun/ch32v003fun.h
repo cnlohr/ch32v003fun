@@ -12,7 +12,7 @@
 #define FUNCONF_USE_HSI 1               // Use HSI Internal Oscillator
 #define FUNCONF_USE_HSE 0               // Use External Oscillator
 #define FUNCONF_HSITRIM 0x10            // Use factory calibration on HSI Trim.
-#define FUNCONF_SYSTEM_CORE_CLOCK  48000000  // Computed Clock in Hz.
+#define FUNCONF_SYSTEM_CORE_CLOCK 48000000  // Computed Clock in Hz.
 #define FUNCONF_HSE_BYPASS 0            // Use HSE Bypass feature (for oscillator input)
 #define FUNCONF_USE_CLK_SEC	1			// Use clock security system, enabled by default
 #define FUNCONF_USE_DEBUGPRINTF 1
