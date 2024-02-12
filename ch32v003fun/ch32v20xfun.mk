@@ -4,8 +4,8 @@ MCU_PACKAGE?=1
 CFLAGS+= \
 	-g -Os -flto -ffunction-sections -fdata-sections \
 	-static-libgcc \
-	-march=rv32imafc \
-	-mabi=ilp32f \
+	-march=rv32imac \
+	-mabi=ilp32 \
 	-msmall-data-limit=8 \
 	-mno-save-restore \
 	-fmessage-length=0 \
@@ -57,7 +57,7 @@ LINKER_SCRIPT:=$(GENERATED_LD_FILE)
 FILES_TO_COMPILE:=$(SYSTEM_C) $(TARGET).$(TARGET_EXT) $(ADDITIONAL_C_FILES)
 
 $(GENERATED_LD_FILE) :
-	$(PREFIX)-gcc -E -P -x c -DMCU_PACKAGE=$(MCU_PACKAGE) $(CH32V003FUN)/ch32v20xfun.ld > $(GENERATED_LD_FILE)
+	$(PREFIX)-gcc -E -P -x c -DMCU_PACKAGE=$(MCU_PACKAGE) -DMCU_TYPE=CH32V20x $(CH32V003FUN)/ch32v003fun.ld > $(GENERATED_LD_FILE)
 
 $(TARGET).elf : $(GENERATED_LD_FILE) $(FILES_TO_COMPILE)
 	echo $(FILES_TO_COMPILE)

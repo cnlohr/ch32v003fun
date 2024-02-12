@@ -5,19 +5,15 @@ int main()
 {
 	SystemInit();
 
-	// Enable GPIOs
-	//RCC->APB2PCENR |= RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOC;
-	RCC->APB2PCENR |= RCC_APB2Periph_GPIOA;
+	funGpioInitAll();
 
-	// GPIO A15 Push-Pull
-	GPIOA->CFGHR &= ~((uint32_t)0x0F<<(4*7));
-	GPIOA->CFGHR |= (uint32_t)(GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*7);
+	funPinMode( PA15, GPIO_CFGLR_OUT_10Mhz_PP );
 
 	while(1)
 	{
-		GPIOA->BSHR = (1<<15);	 // Turn on GPIO
+		funDigitalWrite( PA15, FUN_HIGH );	 // Turn on GPIO
 		Delay_Ms( 1000 );
-		GPIOA->BSHR = (1<<(16+15)); // Turn off GPIO
+		funDigitalWrite( PA15, FUN_LOW );	 // Turn off GPIO
 		Delay_Ms( 1000 );
 	}
 }

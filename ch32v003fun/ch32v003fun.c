@@ -951,7 +951,7 @@ asm volatile(
 
 #elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 
-void Init() 				   __attribute((section(".init")));
+void Init() 				   __attribute((section(".init"))) __attribute((used));
 void InterruptVector()         __attribute__((naked)) __attribute((section(".vector"))) __attribute((weak,alias("InterruptVectorDefault")));
 void InterruptVectorDefault()  __attribute__((naked)) __attribute((section(".vector")));
 

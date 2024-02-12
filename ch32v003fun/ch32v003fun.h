@@ -12256,9 +12256,55 @@ extern "C" {
 #define PD6 54
 #define PD7 55
 
+
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
+#define PA0 0
+#define PA3 3
+#define PA4 4
+#define PA5 5
+#define PA6 6
+#define PA7 7
+#define PA8 8
+#define PA9 9
+#define PA10 10
+#define PA11 11
+#define PA12 12
+#define PA13 13
+#define PA14 14
+#define PA15 15
+#define PB0 16
+#define PB1 17
+#define PB2 18
+#define PB3 19
+#define PB4 20
+#define PB5 21
+#define PB6 22
+#define PB7 23
+#define PB8 24
+#define PB9 25
+#define PB10 26
+#define PB11 27
+#define PB12 28
+#define PB13 29
+#define PB14 30
+#define PB15 31
+#endif
+
+
+// For pins, use things like PA8, PB15
+// For configuration, use things like GPIO_CFGLR_OUT_10Mhz_PP
+
 #define funDigitalWrite( pin, value ) { GpioOf( pin )->BSHR = 1<<((!(value))*16 + ((pin) & 0xf)); }
-#define funPinMode( pin, mode ) { GpioOf(pin)->CFGLR = (GpioOf(pin)->CFGLR & (~(0xf<<(4*((pin)&0xf))))) | ((mode)<<(4*((pin)&0xf))); }
+
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
+#define funGpioInitAll() { RCC->APB2PCENR |= ( RCC_APB2Periph_AFIO | RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB | RCC_APB2Periph_GPIOC | RCC_APB2Periph_GPIOD ); }
+#define funPinMode( pin, mode ) { *((&GpioOf(pin)->CFGLR)+((pin&0x8)>>3)) = ( (*((&GpioOf(pin)->CFGLR)+((pin&0x8)>>3))) & (~(0xf<<(4*((pin)&0x7))))) | ((mode)<<(4*((pin)&0x7))); }
+#define funGpioInitB() { RCC->APB2PCENR |= ( RCC_APB2Periph_AFIO | RCC_APB2Periph_GPIOB ); }
+#else
 #define funGpioInitAll() { RCC->APB2PCENR |= ( RCC_APB2Periph_AFIO | RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOC | RCC_APB2Periph_GPIOD ); }
+#define funPinMode( pin, mode ) { GpioOf(pin)->CFGLR = (GpioOf(pin)->CFGLR & (~(0xf<<(4*((pin)&0xf))))) | ((mode)<<(4*((pin)&0xf))); }
+#endif
+
 #define funGpioInitA() { RCC->APB2PCENR |= ( RCC_APB2Periph_AFIO | RCC_APB2Periph_GPIOA ); }
 #define funGpioInitC() { RCC->APB2PCENR |= ( RCC_APB2Periph_AFIO | RCC_APB2Periph_GPIOC ); }
 #define funGpioInitD() { RCC->APB2PCENR |= ( RCC_APB2Periph_AFIO | RCC_APB2Periph_GPIOD ); }
