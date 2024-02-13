@@ -375,7 +375,7 @@ static int LESetupInterface( void * d )
 		iss->sector_size = 256;
 
 		wch_link_command( dev, "\x81\x0d\x01\x03", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Ignored, 820d050900300500
-	} else if( !result ) {
+	} else if( result < 0 ) {
 		fprintf( stderr, "Chip type not supported. Aborting...\n" );
 		return -1;
 	}
