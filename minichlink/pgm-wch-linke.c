@@ -337,9 +337,11 @@ static int LESetupInterface( void * d )
 				return -1;
 
 			wch_link_multicommands( (libusb_device_handle *)dev, 1, 4, "\x81\x0d\x01\x13" ); // Try forcing reset line low.
+			wch_link_command( (libusb_device_handle *)dev, "\x81\x0d\x01\xff", 4, 0, 0, 0); //Exit programming
 
 			if( already_tried_reset > 3 )
 			{
+				MCF.DelayUS( iss, 5000 );
 				wch_link_command( dev, "\x81\x0d\x01\x03", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Ignored, 820d050900300500
 			}
 			else
@@ -347,7 +349,6 @@ static int LESetupInterface( void * d )
 				MCF.DelayUS( iss, 5000 );
 			}
 
-			wch_link_multicommands( (libusb_device_handle *)dev, 3, 4, "\x81\x0b\x01\x01", 4, "\x81\x0d\x01\x02", 4, "\x81\x0d\x01\xff" );
 			wch_link_multicommands( (libusb_device_handle *)dev, 1, 4, "\x81\x0d\x01\x14" ); // Release reset line.
 			wch_link_multicommands( (libusb_device_handle *)dev, 3, 4, "\x81\x0b\x01\x01", 4, "\x81\x0d\x01\x02", 4, "\x81\x0d\x01\xff" );
 			already_tried_reset++;

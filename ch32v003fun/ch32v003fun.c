@@ -1211,13 +1211,21 @@ void handle_reset( void )
 #if defined( FUNCONF_USE_UARTPRINTF ) && FUNCONF_USE_UARTPRINTF
 void SetupUART( int uartBRR )
 {
+#ifdef CH32V003
 	// Enable GPIOD and UART.
 	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD | RCC_APB2Periph_USART1;
 
 	// Push-Pull, 10MHz Output, GPIO D5, with AutoFunction
 	GPIOD->CFGLR &= ~(0xf<<(4*5));
 	GPIOD->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP_AF)<<(4*5);
-	
+#else
+	RCC->APB2PCENR |= RCC_APB2Periph_GPIOA | RCC_APB2Periph_USART1;
+
+	// Push-Pull, 10MHz Output, GPIO A9, with AutoFunction
+	GPIOA->CFGHR &= ~(0xf<<(4*1));
+	GPIOA->CFGHR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP_AF)<<(4*1);
+#endif
+
 	// 115200, 8n1.  Note if you don't specify a mode, UART remains off even when UE_Set.
 	USART1->CTLR1 = USART_WordLength_8b | USART_Parity_No | USART_Mode_Tx;
 	USART1->CTLR2 = USART_StopBits_1;
