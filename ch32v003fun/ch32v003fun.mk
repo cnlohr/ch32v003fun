@@ -33,6 +33,7 @@ ifeq ($(TARGET_MCU),CH32V003)
 	GENERATED_LD_FILE?=$(CH32V003FUN)/generated_ch32v003.ld
 	TARGET_MCU_LD:=0
 	LINKER_SCRIPT?=$(GENERATED_LD_FILE)
+	LDFLAGS+=-L$(CH32V003FUN)/../misc -lgcc
 else
 	ifeq ($(findstring CH32V10,$(TARGET_MCU)),CH32V10)
 		include $(CH32V003FUN)/ch32v10xfun.mk
@@ -45,7 +46,7 @@ else
 	endif
 endif
 
-LDFLAGS+=-T $(LINKER_SCRIPT) -Wl,--gc-sections -L$(CH32V003FUN)/../misc -lgcc
+LDFLAGS+=-T $(LINKER_SCRIPT) -Wl,--gc-sections
 
 ifeq ($(TARGET_MCU), CH32V003)
 
