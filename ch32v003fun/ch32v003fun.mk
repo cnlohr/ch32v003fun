@@ -14,23 +14,12 @@ TARGET_EXT?=c
 CH32V003FUN?=../../ch32v003fun
 MINICHLINK?=$(CH32V003FUN)/../minichlink
 
-CFLAGS+= \
-	-g -Os -flto -fdata-sections -ffunction-sections \
-	-static-libgcc \
-	-march=rv32ec \
-	-mabi=ilp32e \
-	-I/usr/include/newlib \
-	-I$(CH32V003FUN)/../extralibs \
-	-I$(CH32V003FUN) \
-	-nostdlib \
-	-I. -Wall $(EXTRA_CFLAGS)
-
 WRITE_SECTION?=flash
 SYSTEM_C?=$(CH32V003FUN)/ch32v003fun.c
 
 ifeq ($(TARGET_MCU),CH32V003)
 	CFLAGS+= \
-		-g -Os -flto -ffunction-sections \
+		-g -Os -flto -ffunction-sections -fdata-sections \
 		-static-libgcc \
 		-march=rv32ec \
 		-mabi=ilp32e \
