@@ -126,25 +126,67 @@ static inline libusb_device_handle * wch_link_base_setup( int inhibit_startup )
 	}
 	
 	libusb_device **list;
-	libusb_device *found = NULL;
 	ssize_t cnt = libusb_get_device_list(ctx, &list);
 	ssize_t i = 0;
-	int found_arm_programmer = 0;
+
+	libusb_device *found = NULL;
+	libusb_device * found_arm_programmer = NULL;
+	libusb_device * found_programmer_in_iap = NULL;
+
 	for (i = 0; i < cnt; i++) {
 		libusb_device *device = list[i];
 		struct libusb_device_descriptor desc;
 		int r = libusb_get_device_descriptor(device,&desc);
 		if( r == 0 && desc.idVendor == 0x1a86 && desc.idProduct == 0x8010 ) { found = device; }
-		if( r == 0 && desc.idVendor == 0x1a86 && desc.idProduct == 0x8012) { found_arm_programmer = 1; }
-	}
-
-	if (found_arm_programmer) {
-		fprintf( stderr, "Warning: found at least one WCH-LinkE in ARM programming mode. To use it with minichlink, " 
-				 "you need to change it to RISC-V mode as per https://github.com/cnlohr/ch32v003fun/issues/227\n" ); 
+		if( r == 0 && desc.idVendor == 0x1a86 && desc.idProduct == 0x8012) { found_arm_programmer = device; }
+		if( r == 0 && desc.idVendor == 0x4348 && desc.idProduct == 0x55e0) { found_programmer_in_iap = device; }
 	}
 
 	if( !found )
 	{
+		// On a lark see if we have a programmer which got stuck in IAP mode.
+
+		if (found_arm_programmer) {
+			fprintf( stderr, "Warning: found at least one WCH-LinkE in ARM programming mode. Attempting automatic switch to RISC-V.  Will need a to re-attempt.\n" );
+			fprintf( stderr, "For more information, you may need to change it to RISC-V mode as per https://github.com/cnlohr/ch32v003fun/issues/227\n" ); 
+
+			// Just in case we got stuck in IAP mode, try sending 0x83 to eject.
+			libusb_device_handle * devh = 0;
+			status = libusb_open( found_arm_programmer, &devh );
+			if( status )
+			{
+				fprintf( stderr, "Found programmer in ARM mode, but couldn't open it.\n" );
+				exit( -10 );
+			}
+
+			// https://github.com/wagiminator/MCU-Flash-Tools/blob/main/rvmode.py
+			uint8_t rbuff[4] = { 0x81, 0xff, 0x01, 0x52 };
+			int transferred = 0;
+			libusb_bulk_transfer( devh, 0x02, rbuff, 4, &transferred, 1 );
+			fprintf( stderr, "RISC-V command sent (%d)\n", transferred );
+			exit( -3 );
+		}
+
+
+		if( found_programmer_in_iap )
+		{
+			// Just in case we got stuck in IAP mode, try sending 0x83 to eject.
+			fprintf( stderr, "Found programmer in IAP mode. Attempting to eject it out of IAP.\n" );
+			libusb_device_handle * devh = 0;
+			status = libusb_open( found_programmer_in_iap, &devh );
+			if( status )
+			{
+				fprintf( stderr, "Found programmer in IAP mode, but couldn't open it.\n" );
+				exit( -10 );
+			}
+			uint8_t rbuff[4];
+			int transferred = 0;
+			rbuff[0] = 0x83;
+			libusb_bulk_transfer( devh, 0x02, rbuff, 1, &transferred, 1 );
+			fprintf( stderr, "Eject command sent (%d)\n", transferred );
+			exit( -3 );
+		}
+
 		return 0;
 	}
 
@@ -157,7 +199,7 @@ static inline libusb_device_handle * wch_link_base_setup( int inhibit_startup )
 	}
 		
 	WCHCHECK( libusb_claim_interface(devh, 0) );
-	
+
 	uint8_t rbuff[1024];
 	int transferred;
 	libusb_bulk_transfer( devh, 0x81, rbuff, 1024, &transferred, 1 ); // Clear out any pending transfers.  Don't wait though.
@@ -279,12 +321,42 @@ static int LESetupInterface( void * d )
 	//wch_link_command( dev, "\x81\x0c\x02\x05\x01", 5, 0, 0, 0 ); //Reply is: 820c0101
 
 	// This puts the processor on hold to allow the debugger to run.
-	wch_link_command( dev, "\x81\x0d\x01\x02", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Ignored, 820d050900300500
-	if (rbuff[0] == 0x81 && rbuff[1] == 0x55)
+	int already_tried_reset = 0;
+	do
 	{
-		fprintf(stderr, "link error, nothing connected to linker\n");
-		return -1;
-	}
+		wch_link_command( dev, "\x81\x0d\x01\x02", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Ignored, 820d050900300500
+		if (rbuff[0] == 0x81 && rbuff[1] == 0x55 && rbuff[2] == 0x01 ) // && rbuff[3] == 0x01 )
+		{
+			// The following code may try to execute a few times to get the processor to actually reset.
+			// This code could likely be much better.
+
+			fprintf(stderr, "link error, nothing connected to linker (%d = [%02x %02x %02x %02x]).  Trying to put processor in hold and retrying.\n", transferred, rbuff[0], rbuff[1], rbuff[2], rbuff[3]);
+
+			// Give up if too long
+			if( already_tried_reset > 10 )
+				return -1;
+
+			wch_link_multicommands( (libusb_device_handle *)dev, 1, 4, "\x81\x0d\x01\x13" ); // Try forcing reset line low.
+
+			if( already_tried_reset > 3 )
+			{
+				wch_link_command( dev, "\x81\x0d\x01\x03", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Ignored, 820d050900300500
+			}
+			else
+			{
+				MCF.DelayUS( iss, 5000 );
+			}
+
+			wch_link_multicommands( (libusb_device_handle *)dev, 3, 4, "\x81\x0b\x01\x01", 4, "\x81\x0d\x01\x02", 4, "\x81\x0d\x01\xff" );
+			wch_link_multicommands( (libusb_device_handle *)dev, 1, 4, "\x81\x0d\x01\x14" ); // Release reset line.
+			wch_link_multicommands( (libusb_device_handle *)dev, 3, 4, "\x81\x0b\x01\x01", 4, "\x81\x0d\x01\x02", 4, "\x81\x0d\x01\xff" );
+			already_tried_reset++;
+		}
+		else
+		{
+			break;
+		}
+	} while( 1 );
 
 	if(rbuff[3] == 0x08 || rbuff[3] > 0x09) {
 		fprintf( stderr, "Chip Type unknown. Aborting...\n" );
