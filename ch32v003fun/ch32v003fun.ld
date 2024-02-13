@@ -2,10 +2,10 @@ ENTRY( InterruptVector )
 
 MEMORY
 {
-#if TARGET_MCU == CH32V003
+#if TARGET_MCU_LD == 0
 	FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 16K
 	RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 2K
-#elif TARGET_MCU == CH32V10x
+#elif TARGET_MCU_LD == 1
 	#if MCU_PACKAGE == 1
 		FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 64K
 		RAM (xrw) : ORIGIN = 0x20000000, LENGTH = 20K
@@ -15,7 +15,7 @@ MEMORY
 	#else
 		#error "Unknown MCU package"
 	#endif
-#elif TARGET_MCU == CH32V20x
+#elif TARGET_MCU_LD == 2
 	#if MCU_PACKAGE == 1
 		FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 64K
 		RAM (xrw) : ORIGIN = 0x20000000, LENGTH = 20K
@@ -28,7 +28,7 @@ MEMORY
 	#else
 		#error "Unknown MCU package"
 	#endif
-#elif TARGET_MCU == CH32V30x
+#elif TARGET_MCU_LD == 3
 	#if MCU_PACKAGE == 1
 		FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 256K
 		RAM (xrw) : ORIGIN = 0x20000000, LENGTH = 64K
