@@ -12452,10 +12452,9 @@ void SystemInit(void);
 #else
 	#define UART_BAUD_RATE 115200
 #endif
-#define OVER4DIV 4
-#define INTEGER_DIVIDER (((25 * (FUNCONF_SYSTEM_CORE_CLOCK)) / ((OVER4DIV) * (UART_BAUD_RATE))))
-#define FRACTIONAL_DIVIDER ((INTEGER_DIVIDER)%100)
-#define UART_BRR ((((INTEGER_DIVIDER) / 100) << 4) | (((((FRACTIONAL_DIVIDER) * ((OVER4DIV)*4)) + 50)/100)&15))
+// Debug UART baud rate register calculation. Works assuming HCLK prescaler is off.
+// Computes UART_BRR = CORE_CLOCK / BAUD_RATE with rounding to closest integer
+#define UART_BRR (((FUNCONF_SYSTEM_CORE_CLOCK) + (UART_BAUD_RATE)/2) / (UART_BAUD_RATE))
 // Put an output debug UART on Pin D5.
 // You can write to this with printf(...) or puts(...)
 
