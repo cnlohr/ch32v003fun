@@ -28,7 +28,7 @@ ifeq ($(TARGET_MCU),CH32V003)
 		-I$(CH32V003FUN) \
 		-nostdlib \
 		-DCH32V003=1 \
-		-I. -Wall $(EXTRA_CFLAGS)
+		-I. -Wall
 
 	GENERATED_LD_FILE?=$(CH32V003FUN)/generated_ch32v003.ld
 	TARGET_MCU_LD:=0
@@ -45,6 +45,8 @@ else
 		$(error Unknown MCU $(TARGET_MCU))
 	endif
 endif
+
+CFLAGS+= $(EXTRA_CFLAGS)
 
 LDFLAGS+=-T $(LINKER_SCRIPT) -Wl,--gc-sections
 
