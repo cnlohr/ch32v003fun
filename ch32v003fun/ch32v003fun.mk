@@ -17,44 +17,135 @@ MINICHLINK?=$(CH32V003FUN)/../minichlink
 WRITE_SECTION?=flash
 SYSTEM_C?=$(CH32V003FUN)/ch32v003fun.c
 
-ifeq ($(TARGET_MCU),CH32V003)
-	CFLAGS+= \
-		-g -Os -flto -ffunction-sections -fdata-sections \
-		-static-libgcc \
-		-march=rv32ec \
-		-mabi=ilp32e \
-		-I/usr/include/newlib \
-		-I$(CH32V003FUN)/../extralibs \
-		-I$(CH32V003FUN) \
-		-nostdlib \
-		-DCH32V003=1 \
-		-I. -Wall
+CFLAGS?=-g -Os -flto -ffunction-sections -fdata-sections
 
+ifeq ($(TARGET_MCU),CH32V003)
+	CFLAGS_ARCH+=-march=rv32ec -mabi=ilp32e -DCH32V003=1
 	GENERATED_LD_FILE?=$(CH32V003FUN)/generated_ch32v003.ld
 	TARGET_MCU_LD:=0
 	LINKER_SCRIPT?=$(GENERATED_LD_FILE)
 	LDFLAGS+=-L$(CH32V003FUN)/../misc -lgcc
 else
-	ifeq ($(findstring CH32V10,$(TARGET_MCU)),CH32V10)
-		include $(CH32V003FUN)/ch32v10xfun.mk
-	else ifeq ($(findstring CH32V20,$(TARGET_MCU)),CH32V20)
-		include $(CH32V003FUN)/ch32v20xfun.mk
-	else ifeq ($(findstring CH32V30,$(TARGET_MCU)),CH32V30)
-		include $(CH32V003FUN)/ch32v30xfun.mk
+	MCU_PACKAGE?=1
+
+	ifeq ($(findstring CH32V10,$(TARGET_MCU)),CH32V10) # CH32V103
+		TARGET_MCU_PACKAGE?=CH32V103R8T6
+		CFLAGS_ARCH+=	-march=rv32imac \
+			-mabi=ilp32 \
+			-fmessage-length=0 \
+			-msmall-data-limit=8 \
+			-mno-save-restore \
+			-DCH32V10x=1
+
+		# MCU Flash/RAM split
+		ifeq ($(findstring R8, $(TARGET_MCU_PACKAGE)), R8)
+			MCU_PACKAGE:=1
+		else ifeq ($(findstring C8, $(TARGET_MCU_PACKAGE)), C8)
+			MCU_PACKAGE:=1
+		else ifeq ($(findstring C6, $(TARGET_MCU_PACKAGE)), C6)
+			MCU_PACKAGE:=2
+		endif
+
+		TARGET_MCU_LD:=1
+	else ifeq ($(findstring CH32V20,$(TARGET_MCU)),CH32V20) # CH32V203
+		TARGET_MCU_PACKAGE?=CH32V203F8P6
+		CFLAGS_ARCH+=	-march=rv32imac \
+			-mabi=ilp32 \
+			-fmessage-length=0 \
+			-msmall-data-limit=8 \
+			-mno-save-restore \
+			-DCH32V20x=1
+
+		# MCU Flash/RAM split
+		ifeq ($(findstring F8, $(TARGET_MCU_PACKAGE)), F8)
+			MCU_PACKAGE:=1
+		else ifeq ($(findstring G8, $(TARGET_MCU_PACKAGE)), G8)
+			MCU_PACKAGE:=1
+		else ifeq ($(findstring K8, $(TARGET_MCU_PACKAGE)), K8)
+			MCU_PACKAGE:=1
+		else ifeq ($(findstring C8, $(TARGET_MCU_PACKAGE)), C8)
+			MCU_PACKAGE:=1
+		else ifeq ($(findstring F6, $(TARGET_MCU_PACKAGE)), F6)
+			MCU_PACKAGE:=2
+		else ifeq ($(findstring G6, $(TARGET_MCU_PACKAGE)), G6)
+			MCU_PACKAGE:=2
+		else ifeq ($(findstring K6, $(TARGET_MCU_PACKAGE)), K6)
+			MCU_PACKAGE:=2
+		else ifeq ($(findstring C6, $(TARGET_MCU_PACKAGE)), C6)
+			MCU_PACKAGE:=2
+		else ifeq ($(findstring RB, $(TARGET_MCU_PACKAGE)), RB)
+			MCU_PACKAGE:=3
+		else ifeq ($(findstring GB, $(TARGET_MCU_PACKAGE)), GB)
+			MCU_PACKAGE:=3
+		else ifeq ($(findstring CB, $(TARGET_MCU_PACKAGE)), CB)
+			MCU_PACKAGE:=3
+		else ifeq ($(findstring WB, $(TARGET_MCU_PACKAGE)), WB)
+			MCU_PACKAGE:=3
+		endif
+
+		# Package
+		ifeq ($(findstring 203RB, $(TARGET_MCU_PACKAGE)), 203RB)
+			CFLAGS+=-DCH32V20x_D8
+		else ifeq ($(findstring 208, $(TARGET_MCU_PACKAGE)), 208)
+			CFLAGS+=-DCH32V20x_D8W
+		else
+			CFLAGS+=-DCH32V20x_D6
+		endif
+
+		TARGET_MCU_LD:=2
+	else ifeq ($(findstring CH32V30,$(TARGET_MCU)),CH32V30) #CH32V307
+		TARGET_MCU_PACKAGE?=CH32V307VCT6
+		MCU_PACKAGE?=1
+
+		CFLAGS_ARCH+= -march=rv32imafc \
+			-mabi=ilp32f \
+			-msmall-data-limit=8 \
+			-mno-save-restore \
+			-fmessage-length=0 \
+			-DCH32V30x=1
+
+		# MCU Flash/RAM split
+		ifeq ($(findstring RC, $(TARGET_MCU_PACKAGE)), RC)
+			MCU_PACKAGE:=1
+		else ifeq ($(findstring VC, $(TARGET_MCU_PACKAGE)), VC)
+			MCU_PACKAGE:=1
+		else ifeq ($(findstring WC, $(TARGET_MCU_PACKAGE)), WC)
+			MCU_PACKAGE:=1
+		else ifeq ($(findstring CB, $(TARGET_MCU_PACKAGE)), CB)
+			MCU_PACKAGE:=2
+		else ifeq ($(findstring FB, $(TARGET_MCU_PACKAGE)), FB)
+			MCU_PACKAGE:=2
+		else ifeq ($(findstring RB, $(TARGET_MCU_PACKAGE)), RB)
+			MCU_PACKAGE:=2
+		endif
+
+		# Package
+		ifeq ($(findstring 303, $(TARGET_MCU_PACKAGE)), 303)
+			CFLAGS+=-DCH32V30x_D8
+		else
+			CFLAGS+=-DCH32V30x_D8C
+		endif
+
+		TARGET_MCU_LD:=3
 	else
 		$(error Unknown MCU $(TARGET_MCU))
 	endif
+
+	LDFLAGS+=-lgcc
+	GENERATED_LD_FILE:=$(CH32V003FUN)/generated_$(TARGET_MCU_PACKAGE).ld
+	LINKER_SCRIPT:=$(GENERATED_LD_FILE)
 endif
 
-CFLAGS+= $(EXTRA_CFLAGS)
+CFLAGS+= \
+	$(CFLAGS_ARCH) -static-libgcc \
+	-I/usr/include/newlib \
+	-I$(CH32V003FUN)/../extralibs \
+	-I$(CH32V003FUN) \
+	-nostdlib \
+	-I. -Wall $(EXTRA_CFLAGS)
 
 LDFLAGS+=-T $(LINKER_SCRIPT) -Wl,--gc-sections
-
-ifeq ($(TARGET_MCU), CH32V003)
-
 FILES_TO_COMPILE:=$(SYSTEM_C) $(TARGET).$(TARGET_EXT) $(ADDITIONAL_C_FILES) 
-
-endif
 
 $(TARGET).bin : $(TARGET).elf
 	$(PREFIX)-size $^

@@ -59,6 +59,13 @@
 #define FUNCONF_DEBUGPRINTF_TIMEOUT 160000 // Arbitrary time units
 */
 
+// Sanity check for when porting old code.
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
+	#if defined(CH32V003)
+		#error Cannot define CH32V003 and another arch.
+	#endif
+#endif
+
 #if !defined(FUNCONF_USE_DEBUGPRINTF) && !defined(FUNCONF_USE_UARTPRINTF)
 	#define FUNCONF_USE_DEBUGPRINTF 1
 #endif
@@ -12361,8 +12368,13 @@ void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) 
 #endif
 
 // For debug writing to the debug interface.
-#define DMDATA0 ((volatile uint32_t*)0xe00000f4)
-#define DMDATA1 ((volatile uint32_t*)0xe00000f8)
+#if defined(CH32V003)
+	#define DMDATA0 ((volatile uint32_t*)0xe00000f4)
+	#define DMDATA1 ((volatile uint32_t*)0xe00000f8)
+#else
+	#define DMDATA0 ((volatile uint32_t*)0xe0000380)
+	#define DMDATA1 ((volatile uint32_t*)0xe0000384)
+#endif
 
 #endif
 
