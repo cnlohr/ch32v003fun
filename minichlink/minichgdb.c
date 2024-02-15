@@ -33,7 +33,7 @@ void SendReplyFull( const char * replyMessage );
 // Several pieces from picorvd. https://github.com/aappleby/PicoRVD/
 int shadow_running_state = 1;
 int last_halt_reason = 5;
-uint32_t backup_regs[17];
+uint32_t backup_regs[33]; //0..15 + PC, or 0..32 + PC
 
 #define MAX_SOFTWARE_BREAKPOINTS 128
 int num_software_breakpoints = 0;
@@ -131,6 +131,9 @@ void RVNetPoll(void * dev )
 
 int RVReadCPURegister( void * dev, int regno, uint32_t * regret )
 {
+	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
+	int nrregs = iss->nr_registers_for_debug;
+
 	if( shadow_running_state )
 	{
 		MCF.HaltMode( dev, 5 );
@@ -138,8 +141,15 @@ int RVReadCPURegister( void * dev, int regno, uint32_t * regret )
 		shadow_running_state = 0;
 	}
 
-	if( regno == 32 ) regno = 16; // Hack - Make 32 also 16 for old GDBs.
-	if( regno > 16 ) return 0; // Invalid register.
+	if( nrregs == 16 )
+	{
+		if( regno == 32 ) regno = 16; // Hack - Make 32 also 16 for old GDBs.
+		if( regno > 16 ) return 0; // Invalid register.
+	}
+	else
+	{
+		if( regno > nrregs ) return 0;
+	}
 
 	*regret = backup_regs[regno];
 	return 0;
@@ -148,6 +158,9 @@ int RVReadCPURegister( void * dev, int regno, uint32_t * regret )
 
 int RVWriteCPURegister( void * dev, int regno, uint32_t value )
 {
+	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
+	int nrregs = iss->nr_registers_for_debug;
+
 	if( shadow_running_state )
 	{
 		MCF.HaltMode( dev, 5 );
@@ -155,8 +168,15 @@ int RVWriteCPURegister( void * dev, int regno, uint32_t value )
 		shadow_running_state = 0;
 	}
 
-	if( regno == 32 ) regno = 16; // Hack - Make 32 also 16 for old GDBs.
-	if( regno > 16 ) return 0; // Invalid register.
+	if( nrregs == 16 )
+	{
+		if( regno == 32 ) regno = 16; // Hack - Make 32 also 16 for old GDBs.
+		if( regno > 16 ) return 0; // Invalid register.
+	}
+	else
+	{
+		if( regno > nrregs ) return 0;
+	}
 
 	backup_regs[regno] = value;
 
@@ -177,6 +197,9 @@ int RVWriteCPURegister( void * dev, int regno, uint32_t value )
 
 void RVDebugExec( void * dev, int halt_reset_or_resume )
 {
+	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
+	int nrregs = iss->nr_registers_for_debug;
+
 	if( !MCF.HaltMode )
 	{
 		fprintf( stderr, "Error: Can't alter halt mode with this programmer.\n" );
@@ -189,7 +212,7 @@ void RVDebugExec( void * dev, int halt_reset_or_resume )
 		// First see if we already know about this breakpoint
 		int matchingbreakpoint = -1;
 		// For this we want to advance PC.
-		uint32_t exceptionptr = backup_regs[16];
+		uint32_t exceptionptr = backup_regs[nrregs];
 		uint32_t instruction = 0;
 
 		int i;
@@ -224,9 +247,9 @@ void RVDebugExec( void * dev, int halt_reset_or_resume )
 				MCF.ReadWord( dev, exceptionptr, &instruction );
 			}
 			if( instruction == 0x00100073 )
-				backup_regs[16]+=4;
+				backup_regs[nrregs]+=4;
 			else if( ( instruction & 0xffff ) == 0x9002 )
-				backup_regs[16]+=2;
+				backup_regs[nrregs]+=2;
 			else
 				; //No change, it is a normal instruction.
 

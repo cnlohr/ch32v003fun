@@ -23,7 +23,7 @@ void Sleep(uint32_t dwMilliseconds);
 static int64_t StringToMemoryAddress( const char * number ) __attribute__((used));
 static void StaticUpdatePROGBUFRegs( void * dev ) __attribute__((used));
 int DefaultReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t read_size, uint8_t * blob );
-
+void PostSetupConfigureInterface( void * dev );
 void TestFunction(void * v );
 struct MiniChlinkFunctions MCF;
 
@@ -149,6 +149,7 @@ int main( int argc, char ** argv )
 		printf( "Interface Setup\n" );
 	}
 
+	PostSetupConfigureInterface( dev );
 //	TestFunction( dev );
 
 	int iarg = 1;
@@ -1540,6 +1541,26 @@ flashoperr:
 	return -93;
 }
 
+void PostSetupConfigureInterface( void * dev )
+{
+	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
+	switch( iss->target_chip_type )
+	{
+	case CHIP_CH32V10x:
+	case CHIP_CH57x:
+	case CHIP_CH56x:
+	case CHIP_CH32V20x:
+	case CHIP_CH32V30x:
+	case CHIP_CH58x:
+	default:
+		iss->nr_registers_for_debug = 32;
+		break;
+	case CHIP_CH32V003:
+		iss->nr_registers_for_debug = 16;
+		break;
+	}
+}
+
 int DefaultReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t read_size, uint8_t * blob )
 {
 	uint32_t rpos = address_to_read_from;
@@ -1625,7 +1646,7 @@ int DefaultReadAllCPURegisters( void * dev, uint32_t * regret )
 	MCF.WriteReg32( dev, DMABSTRACTAUTO, 0x00000001 ); // Disable Autoexec.
 	iss->statetag = STTAG( "RER2" );
 	int i;
-	for( i = 0; i < 16; i++ )
+	for( i = 0; i < iss->nr_registers_for_debug; i++ )
 	{
 		MCF.WriteReg32( dev, DMCOMMAND, 0x00220000 | 0x1000 | i ); // Read xN into DATA0.
 		if( MCF.ReadReg32( dev, DMDATA0, regret + i ) )
@@ -1646,7 +1667,7 @@ int DefaultWriteAllCPURegisters( void * dev, uint32_t * regret )
 	MCF.WriteReg32( dev, DMABSTRACTAUTO, 0x00000001 ); // Disable Autoexec.
 	iss->statetag = STTAG( "WER2" );
 	int i;
-	for( i = 0; i < 16; i++ )
+	for( i = 0; i < iss->nr_registers_for_debug; i++ )
 	{
 		MCF.WriteReg32( dev, DMCOMMAND, 0x00230000 | 0x1000 | i ); // Read xN into DATA0.
 		if( MCF.WriteReg32( dev, DMDATA0, regret[i] ) )

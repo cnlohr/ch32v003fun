@@ -128,6 +128,7 @@ struct InternalState
 	int flash_size;
 	enum RiscVChip target_chip_type;
 	uint8_t flash_sector_status[MAX_FLASH_SECTORS];  // 0 means unerased/unknown. 1 means erased.
+	int nr_registers_for_debug; // Updated by PostSetupConfigureInterface
 };
 
 
