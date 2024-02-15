@@ -29,8 +29,6 @@
 
 		poll_input, handle_debug_input may be used with semihsoting.
 
-		Note: Semihosting appears to currently only work on the CH32V003 (may be improved in future)
-
 	For UART printf, on:
 		CH32V003, Port D5, 115200 8n1
 		CH32V203, Port A9, 115200 8n1
