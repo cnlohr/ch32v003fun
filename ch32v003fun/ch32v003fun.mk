@@ -17,7 +17,7 @@ MINICHLINK?=$(CH32V003FUN)/../minichlink
 WRITE_SECTION?=flash
 SYSTEM_C?=$(CH32V003FUN)/ch32v003fun.c
 
-CFLAGS?=-g -Os -flto -ffunction-sections -fdata-sections
+CFLAGS?=-g -Os -flto -ffunction-sections -fdata-sections -fmessage-length=0 -msmall-data-limit=8
 
 ifeq ($(TARGET_MCU),CH32V003)
 	CFLAGS_ARCH+=-march=rv32ec -mabi=ilp32e -DCH32V003=1
@@ -32,9 +32,6 @@ else
 		TARGET_MCU_PACKAGE?=CH32V103R8T6
 		CFLAGS_ARCH+=	-march=rv32imac \
 			-mabi=ilp32 \
-			-fmessage-length=0 \
-			-msmall-data-limit=8 \
-			-mno-save-restore \
 			-DCH32V10x=1
 
 		# MCU Flash/RAM split
@@ -51,9 +48,6 @@ else
 		TARGET_MCU_PACKAGE?=CH32V203F8P6
 		CFLAGS_ARCH+=	-march=rv32imac \
 			-mabi=ilp32 \
-			-fmessage-length=0 \
-			-msmall-data-limit=8 \
-			-mno-save-restore \
 			-DCH32V20x=1
 
 		# MCU Flash/RAM split
@@ -99,9 +93,6 @@ else
 
 		CFLAGS_ARCH+= -march=rv32imafc \
 			-mabi=ilp32f \
-			-msmall-data-limit=8 \
-			-mno-save-restore \
-			-fmessage-length=0 \
 			-DCH32V30x=1
 
 		# MCU Flash/RAM split
