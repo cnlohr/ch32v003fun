@@ -610,7 +610,6 @@ typedef struct
 	uint16_t      RESERVED1;
 	__IO uint32_t CTLR;
 } CRC_TypeDef;
-#endif
 
 #if defined(CH32V10x) || defined(CH32V30x)
 /* Digital to Analog Converter */
@@ -1604,9 +1603,12 @@ typedef struct
     __IO uint8_t  LSI32K_CAL_OV_CNT;
     __IO uint8_t  LSI32K_CAL_CTRL;
 } OSC_TypeDef;
+
 #endif
 
-#endif	// #if defined(CH32V20x) || defined(CH32V30x)
+#endif // #if defined(CH32V20x) || defined(CH32V30x)
+
+#endif
 
 /* Peripheral memory map */
 #ifdef __ASSEMBLER__
