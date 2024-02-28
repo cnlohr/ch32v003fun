@@ -1,6 +1,6 @@
 # ch32v003fun
 
-An open source development environment (tooling, headers, examples) for the [CH32V003](http://www.wch-ic.com/products/CH32V003.html) with gcc-riscv64 that can be used in Windows (Native), Linux and/or WSL.  The CH32V003 is 10-cent part with a RISC-V EC core that runs at 48MHz, has 16kB of flash and 2kB of RAM and a bunch of peripherals.  It also comes in SOP-8, QFN-20 and SOIC packages.  You can get the datasheet [here](http://www.wch-ic.com/downloads/CH32V003DS0_PDF.html).
+An open source development environment (tooling, headers, examples) for the [CH32V003](http://www.wch-ic.com/products/CH32V003.html) (and many other chips within the CH32V family) with gcc-riscv64 that can be used in Windows (Native), Linux and/or WSL.  The CH32V003 is 10-cent part with a RISC-V EC core that runs at 48MHz, has 16kB of flash and 2kB of RAM and a bunch of peripherals.  It also comes in SOP-8, QFN-20 and SOIC packages.  You can get the datasheet [here](http://www.wch-ic.com/downloads/CH32V003DS0_PDF.html).
 
 The goal of this project is to develop the tooling and environment for efficient use of the CH32V003.  Avoid complicated HALs, and unleash the hardware! The existing EVT is massive, and dev environment weighty.  This project specifically avoids the HAL and makes it so you can just use the [TRM](http://www.wch-ic.com/downloads/CH32V003RM_PDF.html). In contrast, blinky is only 500 bytes with ch32v003fun, boots faster, and significantly simpler overall.
 
@@ -18,9 +18,9 @@ ch32v003fun contains:
 5. On some systems ability to "printf" back through
 6. A demo bootloader.
 
-In Progress:
-1. Write more demos.
-2. Improve/integrate [rv003usb](https://github.com/cnlohr/rv003usb/)
+## Other family support
+
+Currently, there is experimental support for the ch32v103, ch32v203, ch32v208, and ch32v307.  Note: GDB will only workon the 003 at this time.
 
 ## Getting Started
 
