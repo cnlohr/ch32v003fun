@@ -158,6 +158,9 @@ terminal : monitor
 monitor :
 	$(MINICHLINK)/minichlink -T
 
+unbrick :
+	$(MINICHLINK)/minichlink -u
+
 gdbserver : 
 	-$(MINICHLINK)/minichlink -baG
 
