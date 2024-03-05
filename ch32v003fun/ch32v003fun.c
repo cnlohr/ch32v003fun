@@ -31,7 +31,21 @@ int printf(const char* format, ...)
 	va_end( args );
 	return ret_status;
 }
-	
+
+int vprintf(const char* format, va_list args)
+{
+	return mini_vpprintf(__puts_uart, 0, format, args);
+}
+
+int snprintf(char * buffer, unsigned int buffer_len, const char* format, ...)
+{
+	va_list args;
+	va_start( args, format );
+	int ret = mini_vsnprintf( buffer, buffer_len, format, args );
+	va_end( args );
+	return ret;
+}
+
 /* Some stuff from MUSL
 
 
