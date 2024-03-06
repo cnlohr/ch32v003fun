@@ -42,7 +42,7 @@ minichlink.dll : $(C_S)
 
 install_udev_rules :
 	cp 70-minichlink.rules /etc/udev/rules.d/
-	service udev restart
+	udevadm control --reload && udevadm trigger
 
 inspect_bootloader : minichlink
 	./minichlink -r test.bin launcher 0x780
