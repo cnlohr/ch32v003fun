@@ -1689,6 +1689,9 @@ typedef struct
 #define AFIO_BASE                               (APB2PERIPH_BASE + 0x0000)
 #define EXTI_BASE                               (APB2PERIPH_BASE + 0x0400)
 #define GPIOA_BASE                              (APB2PERIPH_BASE + 0x0800)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
+#define GPIOB_BASE                              (APB2PERIPH_BASE + 0x0C00)
+#endif
 #define GPIOC_BASE                              (APB2PERIPH_BASE + 0x1000)
 #define GPIOD_BASE                              (APB2PERIPH_BASE + 0x1400)
 #if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
@@ -1851,6 +1854,9 @@ typedef struct
 #define AFIO                                    ((AFIO_TypeDef *)AFIO_BASE)
 #define EXTI                                    ((EXTI_TypeDef *)EXTI_BASE)
 #define GPIOA                                   ((GPIO_TypeDef *)GPIOA_BASE)
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
+#define GPIOB                                   ((GPIO_TypeDef *)GPIOB_BASE)
+#endif
 #define GPIOC                                   ((GPIO_TypeDef *)GPIOC_BASE)
 #define GPIOD                                   ((GPIO_TypeDef *)GPIOD_BASE)
 #if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
