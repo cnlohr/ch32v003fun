@@ -24,7 +24,7 @@ Currently, there is experimental support for the ch32v103, ch32v203, ch32v208, c
 
 ## Getting Started
 
-For installation instructions, see the [wiki page here](https://github.com/cnlohr/ch32v003fun/wiki/Installation)
+For installation / setup instructions, see the [wiki page here](https://github.com/cnlohr/ch32v003fun/wiki/Installation)
 
 ## Features!
 
