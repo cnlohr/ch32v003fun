@@ -1,12 +1,24 @@
+# Default prefix for Windows
 ifeq ($(OS),Windows_NT)
     PREFIX?=riscv64-unknown-elf
+# Check if riscv64-linux-gnu-gcc exists
+else ifneq ($(shell which riscv64-linux-gnu-gcc),)
+    PREFIX?=riscv64-linux-gnu
+# Check if riscv64-unknown-elf-gcc exists
+else ifneq ($(shell which riscv64-unknown-elf-gcc),)
+    PREFIX?=riscv64-unknown-elf
+# Default prefix
 else
-    ifeq (, $(shell which riscv64-unknown-elf-gcc))
-        PREFIX?=riscv64-elf
-    else
-        PREFIX?=riscv64-unknown-elf
-    endif
+    PREFIX?=riscv64-elf
 endif
+
+# Fedora places newlib in a different location
+ifneq ($(wildcard /etc/fedora-release),)
+	NEWLIB?=/usr/arm-none-eabi/include
+else
+	NEWLIB?=/usr/include/newlib
+endif
+
 
 TARGET_MCU?=CH32V003
 TARGET_EXT?=c
@@ -129,7 +141,7 @@ endif
 
 CFLAGS+= \
 	$(CFLAGS_ARCH) -static-libgcc \
-	-I/usr/include/newlib \
+	-I$(NEWLIB) \
 	-I$(CH32V003FUN)/../extralibs \
 	-I$(CH32V003FUN) \
 	-nostdlib \

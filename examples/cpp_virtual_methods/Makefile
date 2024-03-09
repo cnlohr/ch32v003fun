@@ -15,7 +15,7 @@ CFLAGS:= \
 	-static-libgcc \
 	-march=rv32ec \
 	-mabi=ilp32e \
-	-I/usr/include/newlib \
+	-I$(NEWLIB) \
 	-I$(CH32V003FUN) \
 	-nostdlib \
 	-DCH32V003 \
