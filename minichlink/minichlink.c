@@ -17,7 +17,9 @@
 void Sleep(uint32_t dwMilliseconds);
 #endif
 #else
+#include <pwd.h>
 #include <unistd.h>
+#include <grp.h>
 #endif
 
 static int64_t StringToMemoryAddress( const char * number ) __attribute__((used));
@@ -121,6 +123,30 @@ int main( int argc, char ** argv )
 				hints.specific_programmer = argv[i];
 		}
 	}
+
+#if !defined(WINDOWS) && !defined(WIN32) && !defined(_WIN32)
+	{
+		uid_t uid = getuid();
+		struct passwd* pw = getpwuid(uid);
+		if( pw )
+		{
+			gid_t groups[512];
+			int ngroups = sizeof( groups ) / sizeof( groups[0] );
+			int gl = getgrouplist( pw->pw_name, pw->pw_gid, groups, &ngroups );
+			int i;
+			for( i = 0; i < gl; i++ )
+			{
+				struct group * gr = getgrgid( groups[i] );
+				if( strcmp( gr->gr_name, "plugdev" ) == 0 )
+					break;
+			}
+			if( i == gl )
+			{
+				printf( "WARNING: You are not in the plugdev group, the canned udev rules will not work on your system.\n" );
+			}
+		}
+	}
+#endif
 
 	void * dev = MiniCHLinkInitAsDLL( 0, &hints );
 	if( !dev )
