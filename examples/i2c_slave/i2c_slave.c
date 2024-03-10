@@ -8,21 +8,21 @@
 
 volatile uint8_t i2c_registers[32] = {0x00};
 
+void onWrite(uint8_t reg, uint8_t length) {
+    funDigitalWrite(PA2, i2c_registers[0] & 1);
+}
+
 int main() {
     SystemInit();
+    funGpioInitAll();
 
-    SetupI2CSlave(0x9, i2c_registers, sizeof(i2c_registers));
+    // Initialize I2C slave
+    funPinMode(PC1, GPIO_CFGLR_OUT_10Mhz_AF_OD); // SDA
+    funPinMode(PC2, GPIO_CFGLR_OUT_10Mhz_AF_OD); // SCL
+    SetupI2CSlave(0x9, i2c_registers, sizeof(i2c_registers), onWrite, NULL, false);
 
-    // Enable GPIOD and set pin 0 to output
-    RCC->APB2PCENR |= RCC_APB2Periph_GPIOD;
-    GPIOD->CFGLR &= ~(0xf<<(4*0));
-    GPIOD->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*0);
+    // Initialize LED
+    funPinMode(PA2, GPIO_CFGLR_OUT_10Mhz_PP); // LED
 
-    while (1) {
-        if (i2c_registers[0] & 1) { // Turn on LED (PD0) if bit 1 of register 0 is set
-            GPIOD-> BSHR |= 1 << 16;
-        } else {
-            GPIOD-> BSHR |= 1;
-        }
-    }
+    while (1) {} // Do not let main exit, you can do other things here
 }
