@@ -41,8 +41,9 @@ minichlink.dll : $(C_S)
 	x86_64-w64-mingw32-gcc -o $@ $^ $(LDFLAGS) $(CFLAGS) $(INCS) -shared -DMINICHLINK_AS_LIBRARY
 
 install_udev_rules :
-	cp 99-WCH-LinkE.rules /etc/udev/rules.d/
-	service udev restart
+	cp 99-minichlink.rules /etc/udev/rules.d/
+	udevadm --reload
+	udevadm trigger
 
 inspect_bootloader : minichlink
 	./minichlink -r test.bin launcher 0x780
