@@ -88,7 +88,7 @@ Other third party tools are adding lots of examples, etc.  See the following rep
 
 ## Support
 
-You can open a github ticket or join my Discord in the #ch32v003fun channel. https://discord.gg/CCeyWyZ
+You can open a github ticket or join my Discord in the #ch32v003fun channel.  Right now invites are private, so just ping me @cnlohr for an invite link.  My PMs are open.
 
 ## General notes about the CH32V003.
 
