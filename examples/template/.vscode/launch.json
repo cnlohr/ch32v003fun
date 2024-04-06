@@ -18,7 +18,7 @@
 				},
 				{
 					"type": "shell",
-					"command": "${workspaceFolder}/minichlink/minichlink -aG",
+					"command": "${workspaceFolder}/../../minichlink/minichlink -aG",
 					"continueOn": "gdbserver running"
 				},
 			],
@@ -29,7 +29,7 @@
 					"ignoreFailures": true,
 				},
 			],
-			"svdPath": "${workspaceFolder}/misc/CH32V003xx.svd", // extension 'Peripheral Viewer' by mcu-debug (cortex-debug)
+			"svdPath": "${workspaceFolder}/../../misc/CH32V003xx.svd", // extension 'Peripheral Viewer' by mcu-debug (cortex-debug)
 			"miDebuggerPath": "gdb-multiarch",
 			"miDebuggerServerAddress": "localhost:2000",
 			"logging": {
