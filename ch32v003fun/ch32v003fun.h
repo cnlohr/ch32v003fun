@@ -1615,10 +1615,12 @@ typedef struct
 #define FLASH_BASE                              (0x08000000) /* FLASH base address in the alias region */
 #define SRAM_BASE                               (0x20000000) /* SRAM base address in the alias region */
 #define PERIPH_BASE                             (0x40000000) /* Peripheral base address in the alias region */
+#define CORE_PERIPH_BASE                        (0xE0000000) /* System peripherals base address in the alias region */
 #else
 #define FLASH_BASE                              ((uint32_t)0x08000000) /* FLASH base address in the alias region */
 #define SRAM_BASE                               ((uint32_t)0x20000000) /* SRAM base address in the alias region */
 #define PERIPH_BASE                             ((uint32_t)0x40000000) /* Peripheral base address in the alias region */
+#define CORE_PERIPH_BASE                        ((uint32_t)0xE0000000) /* System peripherals base address in the alias region */
 #endif
 
 #if defined(CH32V30x)
@@ -1790,6 +1792,9 @@ typedef struct
 #elif defined(CH32V20x) || defined(CH32V30x)
 #define EXTEN_BASE                              (AHBPERIPH_BASE + 0x3800)
 #endif
+
+#define PFIC_BASE    (CORE_PERIPH_BASE + 0xE000)
+#define SysTick_BASE    (CORE_PERIPH_BASE + 0xF000)
 
 #if defined(CH32V20x)
 #if defined(CH32V20x_D8) || defined(CH32V20x_D8W)
@@ -11517,13 +11522,14 @@ typedef struct
 
 #endif
 
-#define PFIC            ((PFIC_Type *) 0xE000E000 )
+#define PFIC            ((PFIC_Type *) PFIC_BASE )
 #define NVIC            PFIC
 #define NVIC_KEY1       ((uint32_t)0xFA050000)
 #define	NVIC_KEY2	    ((uint32_t)0xBCAF0000)
 #define	NVIC_KEY3		((uint32_t)0xBEEF0000)
 
-#define SysTick         ((SysTick_Type *) 0xE000F000)
+
+#define SysTick         ((SysTick_Type *) SysTick_BASE)
 
 #ifndef __ASSEMBLER__
 
