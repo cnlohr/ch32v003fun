@@ -322,15 +322,30 @@ static int LESetupInterface( void * d )
 
 	// This puts the processor on hold to allow the debugger to run.
 	int already_tried_reset = 0;
+	int is_already_connected = 0;
 	do
 	{
+		// Read DMSTATUS - in case we are a ch32x035, or other chip that does not respond to \x81\x0d\x01\x02.
+		wch_link_command( dev, "\x81\x08\x06\x05\x11\x00\x00\x00\x00\x01", 11, (int*)&transferred, rbuff, 1024 ); // Reply: Ignored, 820d050900300500
+		if( transferred == 9 && rbuff[8] != 0x02 && rbuff[8] != 0x03 )
+		{
+			// Already connected.
+			if( is_already_connected )
+			{
+				printf( "Already Connected\n" );
+				break;
+			}
+			is_already_connected = 1;
+		}
+
+
 		wch_link_command( dev, "\x81\x0d\x01\x02", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Ignored, 820d050900300500
 		if (rbuff[0] == 0x81 && rbuff[1] == 0x55 && rbuff[2] == 0x01 ) // && rbuff[3] == 0x01 )
 		{
 			// The following code may try to execute a few times to get the processor to actually reset.
 			// This code could likely be much better.
-
-			fprintf(stderr, "link error, nothing connected to linker (%d = [%02x %02x %02x %02x]).  Trying to put processor in hold and retrying.\n", transferred, rbuff[0], rbuff[1], rbuff[2], rbuff[3]);
+			if( already_tried_reset > 1)
+				fprintf(stderr, "link error, nothing connected to linker (%d = [%02x %02x %02x %02x]).  Trying to put processor in hold and retrying.\n", transferred, rbuff[0], rbuff[1], rbuff[2], rbuff[3]);
 
 			// Give up if too long
 			if( already_tried_reset > 10 )
@@ -360,7 +375,7 @@ static int LESetupInterface( void * d )
 	} while( 1 );
 
 	if(rbuff[3] == 0x08 || rbuff[3] > 0x09) {
-		fprintf( stderr, "Chip Type unknown. Aborting...\n" );
+		fprintf( stderr, "Chip Type unknown [%02x]. Aborting...\n", rbuff[3] );
 		return -1;
 	}
 
