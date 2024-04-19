@@ -37,6 +37,9 @@ static void printChipInfo(enum RiscVChip chip) {
 		case CHIP_CH58x:
 			fprintf(stderr, "Detected: CH58x\n");
 			break;
+		case CHIP_CH32X03x:
+			fprintf(stderr, "Detected: CH32X03x\n");
+			break;
 		case CHIP_CH32V003:
 			fprintf(stderr, "Detected: CH32V003\n");
 			break;
@@ -46,6 +49,7 @@ static void printChipInfo(enum RiscVChip chip) {
 static int checkChip(enum RiscVChip chip) {
 	switch(chip) {
 		case CHIP_CH32V003:
+		case CHIP_CH32X03x:
 			return 0; // Use direct mode
 		case CHIP_CH32V10x:
 		case CHIP_CH32V20x:
@@ -333,11 +337,12 @@ static int LESetupInterface( void * d )
 			if( is_already_connected )
 			{
 				printf( "Already Connected\n" );
+				// Still need to read in the data so we can select the correct chip.
+				wch_link_command( dev, "\x81\x0d\x01\x02", 4, (int*)&transferred, rbuff, 1024 ); // ?? this seems to work?
 				break;
 			}
 			is_already_connected = 1;
 		}
-
 
 		wch_link_command( dev, "\x81\x0d\x01\x02", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Ignored, 820d050900300500
 		if (rbuff[0] == 0x81 && rbuff[1] == 0x55 && rbuff[2] == 0x01 ) // && rbuff[3] == 0x01 )
@@ -382,26 +387,13 @@ static int LESetupInterface( void * d )
 	enum RiscVChip chip = (enum RiscVChip)rbuff[3];
 	printChipInfo(chip);
 
-	int result = checkChip(chip);
-	if( result == 1 ) // Using blob write
-	{
-		fprintf( stderr, "Using binary blob write for operation.\n" );
-		MCF.WriteBinaryBlob = LEWriteBinaryBlob;
-
-		iss->sector_size = 256;
-
-		wch_link_command( dev, "\x81\x0d\x01\x03", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Ignored, 820d050900300500
-	} else if( result < 0 ) {
-		fprintf( stderr, "Chip type not supported. Aborting...\n" );
-		return -1;
-	}
-
 	iss->target_chip_type = chip;
 
 	// For some reason, if we don't do this sometimes the programmer starts in a hosey mode.
 	MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
 	MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // Initiate a halt request.
-	MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // No, really make sure.
+	MCF.WriteReg32( d, DMCONTROL, 0x80000003 ); // No, really make sure, and also super halt processor.
+	MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // Un-super-halt processor.
 	MCF.WriteReg32( d, DMABSTRACTCS, 0x00000700 ); // Ignore any pending errors.
 	MCF.WriteReg32( d, DMABSTRACTAUTO, 0 );
 	MCF.WriteReg32( d, DMCOMMAND, 0x00221000 ); // Read x0 (Null command) with nopostexec (to fix v307 read issues)
@@ -428,10 +420,33 @@ static int LESetupInterface( void * d )
 		fprintf( stderr, "Error: could not get part status\n" );
 		return -1;
 	}
-	fprintf( stderr, "Flash Storage: %d kB\n", (rbuff[2]<<8) | rbuff[3] );  // Is this Flash size?
+	int flash_size = (rbuff[2]<<8) | rbuff[3];
+	fprintf( stderr, "Flash Storage: %d kB\n", flash_size );  // Is this Flash size?
 	fprintf( stderr, "Part UUID    : %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n", rbuff[4], rbuff[5], rbuff[6], rbuff[7], rbuff[8], rbuff[9], rbuff[10], rbuff[11] );
 	fprintf( stderr, "PFlags       : %02x-%02x-%02x-%02x\n", rbuff[12], rbuff[13], rbuff[14], rbuff[15] );
 	fprintf( stderr, "Part Type (B): %02x-%02x-%02x-%02x\n", rbuff[16], rbuff[17], rbuff[18], rbuff[19] );
+
+	if( iss->target_chip_type == CHIP_CH32V10x && flash_size == 62 )
+	{
+		fprintf( stderr, "While the debugger reports this as a CH32V10x, it's probably a CH32X03x\n" );
+		chip = iss->target_chip_type = CHIP_CH32X03x;
+		iss->sector_size = 256;
+	}
+
+	int result = checkChip(chip);
+	if( result == 1 ) // Using blob write
+	{
+		fprintf( stderr, "Using binary blob write for operation.\n" );
+		MCF.WriteBinaryBlob = LEWriteBinaryBlob;
+
+		iss->sector_size = 256;
+
+		wch_link_command( dev, "\x81\x0d\x01\x03", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Ignored, 820d050900300500
+	} else if( result < 0 ) {
+		fprintf( stderr, "Chip type not supported. Aborting...\n" );
+		return -1;
+	}
+
 
 	// Check for read protection
 	wch_link_command( dev, "\x81\x06\x01\x01", 4, (int*)&transferred, rbuff, 1024 );
@@ -790,6 +805,13 @@ static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len,
 			WCHCHECK( libusb_bulk_transfer( (libusb_device_handle *)dev, 0x02, blob+pplace, iss->sector_size, &transferred, WCHTIMEOUT ) );
 		}
 	}
+
+	uint32_t rr;
+	int r = MCF.ReadReg32( d, DMABSTRACTCS, &rr );
+	printf( "PLX HALT %08x %d\n", rr, r );
+
+	r = MCF.ReadReg32( d, DMSTATUS, &rr );
+	printf( "PLX HALT %08x %d\n", rr, r );
 	return 0;
 }
 
