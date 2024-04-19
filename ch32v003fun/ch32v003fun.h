@@ -11710,7 +11710,20 @@ typedef struct
 	__IO uint64_t CMP;
 } SysTick_Type;
 
-#elif defined(CH32V10x) || defined(CH32X03x)
+#elif defined(CH32X03x)
+
+/* memory mapped structure for SysTick */
+typedef struct
+{
+  __IO uint32_t CTLR;
+  __IO uint32_t SR;
+  __IO uint32_t CNTL;
+  __IO uint32_t CNTH;
+  __IO uint32_t CMPL;
+  __IO uint32_t CMPH;
+} SysTick_Type;
+
+#elif defined(CH32V10x)
 
 /* memory mapped structure for SysTick */
 typedef struct

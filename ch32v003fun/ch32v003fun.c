@@ -1015,7 +1015,6 @@ asm volatile(
 #endif
 );
 
-
 #if defined( FUNCONF_SYSTICK_USE_HCLK ) && FUNCONF_SYSTICK_USE_HCLK
 	SysTick->CTLR = 5;
 #else
