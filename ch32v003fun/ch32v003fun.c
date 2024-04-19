@@ -840,7 +840,7 @@ void DMA2_Channel10_IRQHandler( void ) 	__attribute__((section(".text.vector_han
 void DMA2_Channel11_IRQHandler( void ) 	__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 #endif
 
-#if defined( CH32X03X )
+#if defined( CH32X03x)
 void USART2_IRQHandler( void )        __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void EXTI15_8_IRQHandler( void )      __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void EXTI25_16_IRQHandler( void )     __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
@@ -940,23 +940,23 @@ void InterruptVectorDefault()
 	.word   TIM1_TRG_COM_IRQHandler   /* TIM1 Trigger and Commutation */   \n\
 	.word   TIM1_CC_IRQHandler        /* TIM1 Capture Compare */           \n\
 	.word   TIM2_IRQHandler           /* TIM2 */                           \n"
-#if defined( CH32X03X )
-"	.word	USART2_IRQn = 39,          /* UART2 Interrupt                          */ \n\
-	.word	EXTI15_8_IRQn = 40,        /* External Line[8:15] Interrupt            */ \n\
-	.word	EXTI25_16_IRQn = 41,       /* External Line[25:16] Interrupt           */ \n\
-	.word	USART3_IRQn = 42,          /* UART2 Interrupt                          */ \n\
-	.word	USART4_IRQn = 43,          /* UART2 Interrupt                          */ \n\
-	.word	DMA1_Channel8_IRQn = 44,   /* DMA1 Channel 8 global Interrupt          */ \n\
-	.word	USBFS_IRQn = 45,           /* USB Full-Speed Interrupt                 */ \n\
-	.word	USBFS_WakeUp_IRQn = 46,    /* USB Full-Speed Wake-Up Interrupt         */ \n\
-	.word	PIOC_IRQn = 47,            /* Programmable IO Controller Interrupt     */ \n\
-	.word	OPA_IRQn = 48,             /* Op Amp Interrupt                         */ \n\
-	.word	USBPD_IRQn = 49,           /* USB Power Delivery Interrupt             */ \n\
-	.word	USBPD_WKUP_IRQn = 50,      /* USB Power Delivery Wake-Up Interrupt     */ \n\
-	.word	TIM2_CC_IRQn = 51,         /* Timer 2 Compare Global Interrupt         */ \n\
-	.word	TIM2_TRG_IRQn = 52,        /* Timer 2 Trigger Global Interrupt         */ \n\
-	.word	TIM2_BRK_IRQn = 53,        /* Timer 2 Brk Global Interrupt             */ \n\
-	.word	TIM3_IRQn = 54,            /* Timer 3 Global Interrupt                 */"
+#if defined( CH32X03x )
+"	.word	USART2_IRQHandler         /* UART2 Interrupt                          */ \n\
+	.word	EXTI15_8_IRQHandler       /* External Line[8:15] Interrupt            */ \n\
+	.word	EXTI25_16_IRQHandler      /* External Line[25:16] Interrupt           */ \n\
+	.word	USART3_IRQHandler         /* UART2 Interrupt                          */ \n\
+	.word	USART4_IRQHandler         /* UART2 Interrupt                          */ \n\
+	.word	DMA1_Channel8_IRQHandler  /* DMA1 Channel 8 global Interrupt          */ \n\
+	.word	USBFS_IRQHandler          /* USB Full-Speed Interrupt                 */ \n\
+	.word	USBFS_WakeUp_IRQHandler   /* USB Full-Speed Wake-Up Interrupt         */ \n\
+	.word	PIOC_IRQHandler           /* Programmable IO Controller Interrupt     */ \n\
+	.word	OPA_IRQHandler            /* Op Amp Interrupt                         */ \n\
+	.word	USBPD_IRQHandler          /* USB Power Delivery Interrupt             */ \n\
+	.word	USBPD_WKUP_IRQHandler     /* USB Power Delivery Wake-Up Interrupt     */ \n\
+	.word	TIM2_CC_IRQHandler        /* Timer 2 Compare Global Interrupt         */ \n\
+	.word	TIM2_TRG_IRQHandler       /* Timer 2 Trigger Global Interrupt         */ \n\
+	.word	TIM2_BRK_IRQHandler       /* Timer 2 Brk Global Interrupt             */ \n\
+	.word	TIM3_IRQHandler           /* Timer 3 Global Interrupt                 */"
 #endif
 	);
 #endif

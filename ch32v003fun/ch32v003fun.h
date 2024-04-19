@@ -1700,8 +1700,8 @@ typedef struct
 /* USB Full Speed Device Mode */
 typedef struct
 {
-	__IO uint8_t BASE_CTLR;
-	__IO uint8_t UDEV_CTLR; // or host ctlr
+	__IO uint8_t BASE_CTRL; //XXX (spelling)
+	__IO uint8_t UDEV_CTRL; // or host ctlr
 	__IO uint8_t INT_EN;
 	__IO uint8_t DEV_ADDR;
 	__IO uint8_t RESERVED0;
@@ -1720,25 +1720,25 @@ typedef struct
 	__IO uint32_t UEP2_DMA; // Also HOST_RX_DMA
 	__IO uint32_t UEP3_DMA; // Also HOST_TX_DMA
 
-	//__IO uint32_t UEP0_CTLR;
+	//__IO uint32_t UEP0_CTRL;
 	__IO uint16_t UEP0_TX_LEN;
-	__IO uint16_t UEP0_CTLR_H;
+	__IO uint16_t UEP0_CTRL_H;
 
-	//__IO uint32_t UEP1_CTLR;
+	//__IO uint32_t UEP1_CTRL;
 	__IO uint16_t UEP1_TX_LEN;
-	__IO uint16_t UEP1_CTLR_H; // Also HOST_SETUP
+	__IO uint16_t UEP1_CTRL_H; // Also HOST_SETUP
 
-	//__IO uint32_t UEP2_CTLR;
+	//__IO uint32_t UEP2_CTRL;
 	__IO uint16_t UEP2_TX_LEN; // Also HOST_PID
-	__IO uint16_t UEP2_CTLR_H; // Also HOST_RX_CTL
+	__IO uint16_t UEP2_CTRL_H; // Also HOST_RX_CTL
 
-	//__IO uint32_t UEP3_CTLR;
+	//__IO uint32_t UEP3_CTRL;
 	__IO uint16_t UEP3_TX_LEN; // Also HOST_TX_LEN
-	__IO uint16_t UEP3_CTLR_H; // Also HOST_TX_CTL
+	__IO uint16_t UEP3_CTRL_H; // Also HOST_TX_CTL
 
-	//__IO uint32_t UEP4_CTLR;
+	//__IO uint32_t UEP4_CTRL;
 	__IO uint16_t UEP4_TX_LEN;
-	__IO uint16_t UEP4_CTLR_H;
+	__IO uint16_t UEP4_CTRL_H;
 
 	__IO uint32_t RESERVED3[8];
 
@@ -1748,27 +1748,39 @@ typedef struct
 
 	__IO uint32_t RESERVED4;
 
-	//__IO uint32_t UEP5_CTLR;
+	//__IO uint32_t UEP5_CTRL;
 	__IO uint16_t UEP5_TX_LEN;
-	__IO uint16_t UEP5_CTLR_H;
+	__IO uint16_t UEP5_CTRL_H;
 
-	//__IO uint32_t UEP6_CTLR;
+	//__IO uint32_t UEP6_CTRL;
 	__IO uint16_t UEP6_TX_LEN;
-	__IO uint16_t UEP6_CTLR_H;
+	__IO uint16_t UEP6_CTRL_H;
 
-	//__IO uint32_t UEP7_CTLR;
+	//__IO uint32_t UEP7_CTRL;
 	__IO uint16_t UEP7_TX_LEN;
-	__IO uint16_t UEP7_CTLR_H;
+	__IO uint16_t UEP7_CTRL_H;
 
 	__IO uint32_t UEPX_MOD;
 } USBFS_TypeDef;
+
+#define USB_PHY_V33 (1<<6)
+#define USB_IOEN (1<<7)
+
+#define UDP_PUE_00 (0b00<<2)
+#define UDP_PUE_01 (0b01<<2)
+#define UDP_PUE_10 (0b10<<2)
+#define UDP_PUE_11 (0b11<<2)
+#define UDM_PUE_00 (0b00<<0)
+#define UDM_PUE_01 (0b01<<0)
+#define UDM_PUE_10 (0b10<<0)
+#define UDM_PUE_11 (0b11<<0)
 
 /* USB Host Mode */
 
 typedef struct
 {
 	__IO uint8_t RESERVED0;
-	__IO uint8_t HOST_CTLR; // or host ctlr
+	__IO uint8_t HOST_CTRL;
 	__IO uint8_t RESERVED1;
 	__IO uint8_t RESERVED2;
 	__IO uint8_t RESERVED3;
@@ -1778,14 +1790,14 @@ typedef struct
 	__IO uint16_t RESERVED7;
 	__IO uint16_t RESERVED8;
 	__IO uint8_t RESERVED9;
-	__IO uint8_t HOST_EP_MOD; // Also HOST_EP_MOD
+	__IO uint8_t HOST_EP_MOD;
 	__IO uint8_t RESERVED10;
 	__IO uint8_t RESERVED11;
 
 	__IO uint32_t RESERVED12;
 	__IO uint32_t RESERVED13;
-	__IO uint32_t HOST_RX_DMA; // Also HOST_RX_DMA
-	__IO uint32_t HOST_TX_DMA; // Also HOST_TX_DMA
+	__IO uint32_t HOST_RX_DMA;
+	__IO uint32_t HOST_TX_DMA;
 
 	__IO uint16_t RESERVED14;
 	__IO uint16_t RESERVED15;
@@ -5517,6 +5529,8 @@ typedef struct
 #define RCC_FLITFEN                             ((uint16_t)0x0010) /* FLITF clock enable */
 #define RCC_CRCEN                               ((uint16_t)0x0040) /* CRC clock enable */
 #define RCC_USBHD                               ((uint16_t)0x1000)
+#define RCC_USBFS                               ((uint16_t)0x1000)
+#define RCC_USBPD                               ((uint16_t)0x20000)
 
 /******************  Bit definition for RCC_APB2PCENR register  *****************/
 #define RCC_AFIOEN                              ((uint32_t)0x00000001) /* Alternate Function I/O clock enable */
@@ -11077,7 +11091,8 @@ typedef struct
 #define USART_FLAG_FE                        ((uint16_t)0x0002)
 #define USART_FLAG_PE                        ((uint16_t)0x0001)
 
-#if defined(CH32V10x)
+// While not truly CH32X035, we can re-use some of the USB register defs.
+#if defined(CH32V10x) | defined(CH32X03x)
 /* ch32v10x_usb.h ------------------------------------------------------------*/
 
 #ifndef NULL

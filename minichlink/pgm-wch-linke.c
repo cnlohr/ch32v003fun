@@ -421,7 +421,7 @@ static int LESetupInterface( void * d )
 		return -1;
 	}
 	int flash_size = (rbuff[2]<<8) | rbuff[3];
-	fprintf( stderr, "Flash Storage: %d kB\n", flash_size );  // Is this Flash size?
+	fprintf( stderr, "Flash Storage: %d kB\n", flash_size );
 	fprintf( stderr, "Part UUID    : %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n", rbuff[4], rbuff[5], rbuff[6], rbuff[7], rbuff[8], rbuff[9], rbuff[10], rbuff[11] );
 	fprintf( stderr, "PFlags       : %02x-%02x-%02x-%02x\n", rbuff[12], rbuff[13], rbuff[14], rbuff[15] );
 	fprintf( stderr, "Part Type (B): %02x-%02x-%02x-%02x\n", rbuff[16], rbuff[17], rbuff[18], rbuff[19] );
@@ -806,12 +806,6 @@ static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len,
 		}
 	}
 
-	uint32_t rr;
-	int r = MCF.ReadReg32( d, DMABSTRACTCS, &rr );
-	printf( "PLX HALT %08x %d\n", rr, r );
-
-	r = MCF.ReadReg32( d, DMSTATUS, &rr );
-	printf( "PLX HALT %08x %d\n", rr, r );
 	return 0;
 }
 
