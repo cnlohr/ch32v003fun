@@ -1504,7 +1504,7 @@ void SystemInit()
 		#define BASE_CFGR0 RCC_HPRE_DIV1 | RCC_PPRE2_DIV1 | RCC_PPRE1_DIV2 | PLL_MULTIPLICATION
 	#endif
 #else
-	#if defined(CH32V003)
+	#if defined(CH32V003) || defined(CH32X03x)
 		#define BASE_CFGR0 RCC_HPRE_DIV1     					  // HCLK = SYSCLK = APB1 And, no pll.
 	#else
 		#define BASE_CFGR0 RCC_HPRE_DIV1 | RCC_PPRE2_DIV1 | RCC_PPRE1_DIV1
@@ -1514,6 +1514,17 @@ void SystemInit()
 // HSI always ON - needed for the Debug subsystem
 #define BASE_CTLR	(((FUNCONF_HSITRIM) << 3) | RCC_HSION | HSEBYP | RCC_CSS)
 //#define BASE_CTLR	(((FUNCONF_HSITRIM) << 3) | HSEBYP | RCC_CSS)	// disable HSI in HSE modes
+
+	// CH32V003 flash latency
+#if defined(CH32X03x)
+	FLASH->ACTLR = FLASH_ACTLR_LATENCY_2;                   // +2 Cycle Latency (Recommended per TRM)
+#elif defined(CH32V003)
+	#if FUNCONF_SYSTEM_CORE_CLOCK > 25000000
+		FLASH->ACTLR = FLASH_ACTLR_LATENCY_1;               // +1 Cycle Latency
+	#else
+		FLASH->ACTLR = FLASH_ACTLR_LATENCY_0;               // +0 Cycle Latency
+	#endif
+#endif
 
 #if defined(FUNCONF_USE_HSI) && FUNCONF_USE_HSI
 	#if defined(CH32V30x) || defined(CH32V20x) || defined(CH32V10x)
@@ -1555,15 +1566,6 @@ void SystemInit()
 #if defined(CH32V10x)
 	// Enable Prefetch Buffer
 	FLASH->ACTLR |= FLASH_ACTLR_PRFTBE;
-#endif
-
-	// CH32V003 flash latency
-#if defined(CH32V003)
-	#if FUNCONF_SYSTEM_CORE_CLOCK > 25000000
-		FLASH->ACTLR = FLASH_ACTLR_LATENCY_1;               // +1 Cycle Latency
-	#else
-		FLASH->ACTLR = FLASH_ACTLR_LATENCY_0;               // +0 Cycle Latency
-	#endif
 #endif
 
 	// CH32V10x flash latency

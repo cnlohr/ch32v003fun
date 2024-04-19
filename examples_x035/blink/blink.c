@@ -3,7 +3,7 @@
 
 int main()
 {
-	//SystemInit();
+	SystemInit();
 
 	funGpioInitAll();
 

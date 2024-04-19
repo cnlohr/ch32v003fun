@@ -4466,7 +4466,7 @@ typedef struct
 /*                      FLASH and Option Bytes Registers                      */
 /******************************************************************************/
 
-#if defined(CH32V003) || defined(CH32V10x)
+#if defined(CH32V003) || defined(CH32V10x) || defined(CH32X03x)
 /*******************  Bit definition for FLASH_ACTLR register  ******************/
 #define FLASH_ACTLR_LATENCY                     ((uint8_t)0x03) /* LATENCY[2:0] bits (Latency) */
 #define FLASH_ACTLR_LATENCY_0                   ((uint8_t)0x00) /* Bit 0 */
