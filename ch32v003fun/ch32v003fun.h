@@ -1676,7 +1676,6 @@ typedef struct
 /* Touch Sensor, Mirrors Analog to Digital Converter */
 typedef struct
 {
-	//XXX TODO: CHECK THIS
 	__IO uint32_t RESERVED0[3];
 	__IO uint32_t CHARGE1;
 	__IO uint32_t CHARGE2;
@@ -1689,7 +1688,6 @@ typedef struct
 /* Op amp / comparator */
 typedef struct
 {
-	//XXX TODO: CHECK THIS
 	__IO uint16_t CFGR1;
 	__IO uint16_t CFGR2;
 	__IO uint32_t CTLR1;
@@ -1699,6 +1697,7 @@ typedef struct
 	__IO uint32_t POLL_KEY;
 } OPACMP_TypeDef;
 
+/* USB Full Speed Device Mode */
 typedef struct
 {
 	__IO uint8_t BASE_CTLR;
@@ -1747,6 +1746,8 @@ typedef struct
 	__IO uint32_t UEP6_DMA;
 	__IO uint32_t UEP7_DMA;
 
+	__IO uint32_t RESERVED4;
+
 	//__IO uint32_t UEP5_CTLR;
 	__IO uint16_t UEP5_TX_LEN;
 	__IO uint16_t UEP5_CTLR_H;
@@ -1762,7 +1763,63 @@ typedef struct
 	__IO uint32_t UEPX_MOD;
 } USBFS_TypeDef;
 
-// TODO: Break host host-mode.
+/* USB Host Mode */
+
+typedef struct
+{
+	__IO uint8_t RESERVED0;
+	__IO uint8_t HOST_CTLR; // or host ctlr
+	__IO uint8_t RESERVED1;
+	__IO uint8_t RESERVED2;
+	__IO uint8_t RESERVED3;
+	__IO uint8_t RESERVED4;
+	__IO uint8_t RESERVED5;
+	__IO uint8_t RESERVED6;
+	__IO uint16_t RESERVED7;
+	__IO uint16_t RESERVED8;
+	__IO uint8_t RESERVED9;
+	__IO uint8_t HOST_EP_MOD; // Also HOST_EP_MOD
+	__IO uint8_t RESERVED10;
+	__IO uint8_t RESERVED11;
+
+	__IO uint32_t RESERVED12;
+	__IO uint32_t RESERVED13;
+	__IO uint32_t HOST_RX_DMA; // Also HOST_RX_DMA
+	__IO uint32_t HOST_TX_DMA; // Also HOST_TX_DMA
+
+	__IO uint16_t RESERVED14;
+	__IO uint16_t RESERVED15;
+	__IO uint16_t RESERVED16;
+
+	__IO uint16_t HOST_SETUP;
+	__IO uint16_t HOST_EP_PID;
+	__IO uint16_t HOST_RX_CTL;
+	__IO uint16_t HOST_TX_LEN;
+	__IO uint16_t HOST_TX_CTL;
+
+	__IO uint16_t RESERVED20;
+	__IO uint16_t RESERVED21;
+
+	__IO uint32_t RESERVED22[8];
+
+	__IO uint32_t RESERVED23;
+	__IO uint32_t RESERVED24;
+	__IO uint32_t RESERVED25;
+
+	__IO uint32_t RESERVED26;
+
+	__IO uint16_t RESERVED27;
+	__IO uint16_t RESERVED28;
+
+	__IO uint16_t RESERVED29;
+	__IO uint16_t RESERVED30;
+
+	__IO uint16_t RESERVED31;
+	__IO uint16_t RESERVED32;
+
+	__IO uint32_t RESERVED33;
+} USBDH_TypeDef;
+
 
 /* USB Power Delivery */
 typedef struct
@@ -2060,6 +2117,7 @@ typedef struct
 #define OPA										((OPACMP_TypeDef *)OPA_BASE)
 #define USBFS									((USBFS_TypeDef *)USBFS_BASE)
 #define USBPD									((USBPD_TypeDef *)USBPD_BASE)
+#define USBDH									((USBDH_TypeDef *)USBFS_BASE)
 
 #endif
 #if defined(CH32V20x) || defined(CH32V30x)
