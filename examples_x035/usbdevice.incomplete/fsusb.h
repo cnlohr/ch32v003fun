@@ -60,7 +60,6 @@ extern volatile uint8_t  USBFS_Endp_Busy[ ];
 #define USBFSD_UEP_BUF( N )         ((uint8_t *)(*((volatile uint32_t *)( USBFSD_UEP_DMA_BASE + N * 0x04 ))) + 0x20000000)
 #define USBFSD_UEP_TLEN( N )        (*((volatile uint16_t *)( USBFSD_UEP_LEN_BASE + N * 0x04 )))
 
-#define pUSBFS_SetupReqPak                 ((PUSB_SETUP_REQ)USBFS_EP0_4Buf)
 
 
 /* R8_UEPn_TX_CTRL */
