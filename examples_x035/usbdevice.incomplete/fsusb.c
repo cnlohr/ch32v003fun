@@ -103,7 +103,8 @@ volatile uint8_t  USBFS_DevEnumStatus;
 __attribute__ ((aligned(4))) uint8_t USBFS_EP0_Buf[64];
 __attribute__ ((aligned(4))) uint8_t USBFS_EP1_Buf[64];
 __attribute__ ((aligned(4))) uint8_t USBFS_EP2_Buf[64];
-__attribute__ ((aligned(4))) uint8_t USBFS_EP0_4Buf[ DEF_USBD_UEP0_SIZE*2 ];  //ep0_4(64)
+#define pUSBFS_SetupReqPak                 ((PUSB_SETUP_REQ)USBFS_EP0_Buf)
+
 
 int USBFS_HidIdle[2];
 int USBFS_HidProtocol[2];
@@ -238,7 +239,6 @@ void USBFS_IRQHandler()
 		/* Setup stage processing */
 		case CUIS_TOKEN_SETUP:
 			USBFS->UEP0_CTRL_H = USBFS_UEP_T_TOG|USBFS_UEP_T_RES_NAK|USBFS_UEP_R_TOG|USBFS_UEP_R_RES_NAK;
-
 
 			/* Store All Setup Values */
 			USBFS_SetupReqType  = pUSBFS_SetupReqPak->bRequestType;
@@ -432,6 +432,7 @@ void USBFS_IRQHandler()
 						}
 						len = ( USBFS_SetupReqLen >= DEF_USBD_UEP0_SIZE ) ? DEF_USBD_UEP0_SIZE : USBFS_SetupReqLen;
 						memcpy( USBFS_EP0_Buf, pUSBFS_Descr, len );
+USBDEBUG0 = USBFS_EP0_Buf[3];
 						pUSBFS_Descr += len;
 						break;
 
