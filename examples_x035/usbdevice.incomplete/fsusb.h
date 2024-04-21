@@ -9,7 +9,6 @@
 extern uint32_t USBDEBUG0, USBDEBUG1, USBDEBUG2;
 
 int FSUSBSetup();
-void USBFS_Poll();
 uint8_t USBFS_Endp_DataUp(uint8_t endp, uint8_t *pbuf, uint16_t len, uint8_t mod);
 
 
@@ -28,19 +27,18 @@ struct _USBState
 	volatile uint8_t  USBFS_DevEnumStatus;
 
 	/* Endpoint Buffer */
-	__attribute__ ((aligned(4))) uint8_t USBFS_EP0_Buf[64];
-	__attribute__ ((aligned(4))) uint8_t USBFS_EP1_Buf[64];
-	__attribute__ ((aligned(4))) uint8_t USBFS_EP2_Buf[64];
-	#define pUSBFS_SetupReqPak                 ((tusb_control_request_t*)ctx->USBFS_EP0_Buf)
+	__attribute__ ((aligned(4))) uint8_t USBFS_EP_Buf[FUSB_CONFIG_EPS][64];
+
+	#define pUSBFS_SetupReqPak                 ((tusb_control_request_t*)ctx->USBFS_EP_Buf[0])
 
 
-	int USBFS_HidIdle[2];
-	int USBFS_HidProtocol[2];
+	uint8_t USBFS_HidIdle[FUSB_HID_INTERFACES];
+	uint8_t USBFS_HidProtocol[FUSB_HID_INTERFACES];
 
 	const uint8_t  *pUSBFS_Descr;
 
 	/* USB IN Endpoint Busy Flag */
-	volatile uint8_t  USBFS_Endp_Busy[UNUM_EP];
+	volatile uint8_t  USBFS_Endp_Busy[FUSB_CONFIG_EPS];
 };
 
 extern struct _USBState FSUSBCTX;
