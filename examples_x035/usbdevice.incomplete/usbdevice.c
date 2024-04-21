@@ -47,7 +47,7 @@ USBDEBUG0+= 100;
 	//			USBFS_Endp_Busy[i] = 1;
 
 				char pbuf[16] = { 0 };
-				uint8_t r = USBFS_Endp_DataUp( i, pbuf, 8, DEF_UEP_CPY_LOAD);
+				uint8_t r = USBFS_Endp_DataUp( i, pbuf, (i==1)?8:4, DEF_UEP_CPY_LOAD);
 //USBDEBUG1+=r;
 			}
 		}
