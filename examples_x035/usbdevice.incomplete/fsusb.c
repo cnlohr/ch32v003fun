@@ -7,22 +7,6 @@ uint32_t USBDEBUG0, USBDEBUG1, USBDEBUG2;
 
 // based on https://github.com/openwch/ch32x035/tree/main/EVT/EXAM/USB/USBFS/DEVICE/CompositeKM/User
 
-#define DEF_USBD_UEP0_SIZE		   64	 /* usb hs/fs device end-point 0 size */
-#define EP_SIZE 64
-
-#define DEF_UEP_IN                    0x80
-#define DEF_UEP_OUT                   0x00
-
-#define DEF_UEP0 0
-#define DEF_UEP1 1
-#define DEF_UEP2 2
-#define DEF_UEP3 3
-#define DEF_UEP4 4
-#define DEF_UEP5 5
-#define DEF_UEP6 6
-#define DEF_UEP7 7
-#define NUM_EP 8
-
 // Mask for the combined USBFSD->INT_FG + USBFSD->INT_ST
 #define CRB_U_IS_NAK     (1<<7)
 #define CTOG_MATCH_SYNC  (1<<6)
@@ -36,8 +20,6 @@ uint32_t USBDEBUG0, USBDEBUG1, USBDEBUG2;
 #define CRB_UIS_TOG_OK   (1<<14)
 #define CMASK_UIS_TOKEN  (3<<12)
 #define CMASK_UIS_ENDP   (0xf<<8)
-
-#define CUSBFS_UIS_ENDP_MASK		 0x0
 
 #define CUIS_TOKEN_OUT		0x0
 #define CUIS_TOKEN_SOF		0x1
@@ -136,62 +118,68 @@ void USBFS_IRQHandler()
 	if( intfgst & CRB_UIF_TRANSFER )
 	{
 		int token = ( intfgst & CMASK_UIS_TOKEN) >> 12;
-		int ep = intfgst & CUSBFS_UIS_ENDP_MASK;
+		int ep = ( intfgst & CMASK_UIS_ENDP ) >> 8;
+
+		if( ep == 2 )
+				USBDEBUG1++;
+
 		switch ( token )
 		{
 		case CUIS_TOKEN_IN:
 			switch( ep )
 			{
-				/* end-point 0 data in interrupt */
-				case DEF_UEP0:
-					if( USBFS_SetupReqLen == 0 )
+			/* end-point 0 data in interrupt */
+			case DEF_UEP0:
+				if( USBFS_SetupReqLen == 0 )
+				{
+					USBFS->UEP0_CTRL_H = USBFS_UEP_R_TOG | USBFS_UEP_R_RES_ACK;
+				}
+
+				if ( ( USBFS_SetupReqType & USB_REQ_TYP_MASK ) != USB_REQ_TYP_STANDARD )
+				{
+					/* Non-standard request endpoint 0 Data upload, noted by official docs, but I don't think this would ever really be used. */
+				}
+				else
+				{
+					switch( USBFS_SetupReqCode )
 					{
-						USBFS->UEP0_CTRL_H = USBFS_UEP_R_TOG | USBFS_UEP_R_RES_ACK;
+						case USB_GET_DESCRIPTOR:
+							len = USBFS_SetupReqLen >= DEF_USBD_UEP0_SIZE ? DEF_USBD_UEP0_SIZE : USBFS_SetupReqLen;
+							memcpy( USBFS_EP0_Buf, pUSBFS_Descr, len );
+							USBFS_SetupReqLen -= len;
+							pUSBFS_Descr += len;
+							USBFS->UEP0_TX_LEN = len;
+							USBFS->UEP0_CTRL_H ^= USBFS_UEP_T_TOG;
+							break;
+
+						case USB_SET_ADDRESS:
+							USBFS->DEV_ADDR = ( USBFS->DEV_ADDR & USBFS_UDA_GP_BIT ) | USBFS_DevAddr;
+							break;
+
+						default:
+							break;
 					}
+				}
+				break;
 
-					if ( ( USBFS_SetupReqType & USB_REQ_TYP_MASK ) != USB_REQ_TYP_STANDARD )
-					{
-						/* Non-standard request endpoint 0 Data upload */
-					}
-					else
-					{
-						switch( USBFS_SetupReqCode )
-						{
-							case USB_GET_DESCRIPTOR:
-								len = USBFS_SetupReqLen >= DEF_USBD_UEP0_SIZE ? DEF_USBD_UEP0_SIZE : USBFS_SetupReqLen;
-								memcpy( USBFS_EP0_Buf, pUSBFS_Descr, len );
-								USBFS_SetupReqLen -= len;
-								pUSBFS_Descr += len;
-								USBFS->UEP0_TX_LEN = len;
-								USBFS->UEP0_CTRL_H ^= USBFS_UEP_T_TOG;
-								break;
+			/* end-point 1 data in interrupt */
+			case DEF_UEP1:
+				USBFS->UEP1_CTRL_H = ( USBFS->UEP1_CTRL_H & ~USBFS_UEP_T_RES_MASK ) | USBFS_UEP_T_RES_NAK;
+				USBFS->UEP1_CTRL_H ^= USBFS_UEP_T_TOG;
+				USBFS_Endp_Busy[ DEF_UEP1 ] = 0;
+				USBDEBUG0++;
+				break;
 
-							case USB_SET_ADDRESS:
-								USBFS->DEV_ADDR = ( USBFS->DEV_ADDR & USBFS_UDA_GP_BIT ) | USBFS_DevAddr;
-								break;
+			/* end-point 2 data in interrupt */
+			case DEF_UEP2:
+				USBFS->UEP2_CTRL_H = ( USBFS->UEP2_CTRL_H & ~USBFS_UEP_T_RES_MASK ) | USBFS_UEP_T_RES_NAK;
+				USBFS->UEP2_CTRL_H ^= USBFS_UEP_T_TOG;
+				USBFS_Endp_Busy[ DEF_UEP2 ] = 0;
+				USBDEBUG0++;
+				break;
 
-							default:
-								break;
-						}
-					}
-					break;
-
-				/* end-point 1 data in interrupt */
-				case DEF_UEP1:
-					USBFS->UEP1_CTRL_H = ( USBFS->UEP1_CTRL_H & ~USBFS_UEP_T_RES_MASK ) | USBFS_UEP_T_RES_NAK;
-					USBFS->UEP1_CTRL_H ^= USBFS_UEP_T_TOG;
-					USBFS_Endp_Busy[ DEF_UEP1 ] = 0;
-					break;
-
-				/* end-point 2 data in interrupt */
-				case DEF_UEP2:
-					USBFS->UEP2_CTRL_H = ( USBFS->UEP2_CTRL_H & ~USBFS_UEP_T_RES_MASK ) | USBFS_UEP_T_RES_NAK;
-					USBFS->UEP2_CTRL_H ^= USBFS_UEP_T_TOG;
-					USBFS_Endp_Busy[ DEF_UEP2 ] = 0;
-					break;
-
-				default :
-					break;
+			default :
+				break;
 			}
 			break;
 
@@ -261,67 +249,36 @@ void USBFS_IRQHandler()
 							break;
 
 						case HID_SET_IDLE:
-							if( USBFS_SetupReqIndex == 0x00 )
-							{
-								USBFS_HidIdle[ 0 ] = (uint8_t)( USBFS_SetupReqValue >> 8 );
-							}
-							else if( USBFS_SetupReqIndex == 0x01 )
-							{
-								USBFS_HidIdle[ 1 ] = (uint8_t)( USBFS_SetupReqValue >> 8 );
-							}
+							if( USBFS_SetupReqIndex < 0x02 )
+								USBFS_HidIdle[ USBFS_SetupReqIndex ] = (uint8_t)( USBFS_SetupReqValue >> 8 );
 							else
-							{
 								errflag = 0xFF;
-							}
 							break;
-
 						case HID_SET_PROTOCOL:
-							if( USBFS_SetupReqIndex == 0x00 )
-							{
-								USBFS_HidProtocol[ 0 ] = (uint8_t)USBFS_SetupReqValue;
-							}
-							else if( USBFS_SetupReqIndex == 0x01 )
-							{
-								USBFS_HidProtocol[ 1 ] = (uint8_t)USBFS_SetupReqValue;
-							}
+							if ( USBFS_SetupReqIndex < 0x02 )
+								USBFS_HidProtocol[USBFS_SetupReqIndex] = (uint8_t)USBFS_SetupReqValue;
 							else
-							{
 								errflag = 0xFF;
-							}
 							break;
 
 						case HID_GET_IDLE:
-							if( USBFS_SetupReqIndex == 0x00 )
+							if( USBFS_SetupReqIndex < 0x02 )
 							{
-								USBFS_EP0_Buf[ 0 ] = USBFS_HidIdle[ 0 ];
-								len = 1;
-							}
-							else if( USBFS_SetupReqIndex == 0x01 )
-							{
-								USBFS_EP0_Buf[ 0 ] = USBFS_HidIdle[ 1 ];
+								USBFS_EP0_Buf[ 0 ] = USBFS_HidIdle[ USBFS_SetupReqIndex ];
 								len = 1;
 							}
 							else
-							{
 								errflag = 0xFF;
-							}
 							break;
 
 						case HID_GET_PROTOCOL:
-							if( USBFS_SetupReqIndex == 0x00 )
+							if( USBFS_SetupReqIndex < 0x02 )
 							{
-								USBFS_EP0_Buf[ 0 ] = USBFS_HidProtocol[ 0 ];
-								len = 1;
-							}
-							else if( USBFS_SetupReqIndex == 0x01 )
-							{
-								USBFS_EP0_Buf[ 0 ] = USBFS_HidProtocol[ 1 ];
+								USBFS_EP0_Buf[ 0 ] = USBFS_HidProtocol[ USBFS_SetupReqIndex ];
 								len = 1;
 							}
 							else
-							{
 								errflag = 0xFF;
-							}
 							break;
 
 						default:
@@ -433,7 +390,6 @@ void USBFS_IRQHandler()
 						}
 						len = ( USBFS_SetupReqLen >= DEF_USBD_UEP0_SIZE ) ? DEF_USBD_UEP0_SIZE : USBFS_SetupReqLen;
 						memcpy( USBFS_EP0_Buf, pUSBFS_Descr, len );
-USBDEBUG0 = USBFS_EP0_Buf[3];
 						pUSBFS_Descr += len;
 						break;
 
@@ -699,8 +655,8 @@ USBDEBUG0 = USBFS_EP0_Buf[3];
 
 void USBFS_Device_Endp_Init()
 {
-	USBFS->UEP4_1_MOD = EP_SIZE;
-	USBFS->UEP2_3_MOD = EP_SIZE;
+    USBFS->UEP4_1_MOD = RB_UEP1_TX_EN;
+    USBFS->UEP2_3_MOD = RB_UEP2_TX_EN;
 	USBFS->UEP567_MOD = 0;
 
 	USBFS->UEP0_DMA = (intptr_t)USBFS_EP0_Buf;
@@ -721,8 +677,8 @@ void USBFS_Device_Endp_Init()
 
 void USBFS_Poll()
 {
-	USBDEBUG2 = USBFS->INT_ST;//EP0_DATA[1];
-	USBDEBUG1 = USBFS->MIS_ST;
+	//USBDEBUG2 = USBFS->INT_ST;//EP0_DATA[1];
+	//USBDEBUG1 = USBFS->MIS_ST;
 }
 
 int FSUSBSetup()
@@ -735,15 +691,16 @@ int FSUSBSetup()
 	AFIO->CTLR |= USB_PHY_V33;
 
 	USBFS->BASE_CTRL = RB_UC_RESET_SIE | RB_UC_CLR_ALL;
-	USBFS->BASE_CTRL = RB_UC_DEV_PU_EN | RB_UC_INT_BUSY | RB_UC_DMA_EN;
+	USBFS->BASE_CTRL = 0x00;
+
+	USBFS_Device_Endp_Init();
 
 	// Enter device mode.
 	USBFS->INT_EN = RB_UIE_SUSPEND | RB_UIE_TRANSFER | RB_UIE_BUS_RST;
 	USBFS->DEV_ADDR = 0x00;
+	USBFS->BASE_CTRL = RB_UC_DEV_PU_EN | RB_UC_INT_BUSY | RB_UC_DMA_EN;
+	USBFS->INT_FG = 0xff;
 	USBFS->UDEV_CTRL = RB_UD_PD_DIS | RB_UD_PORT_EN;
-
-	USBFS_Device_Endp_Init();
-
 
 	// Go on-bus.
 
@@ -763,18 +720,142 @@ int FSUSBSetup()
 	// GPIOC_OUTDR selects the up pull, and PC16
 	// corresponding to CNF=01 selects the floating input.
 
+	// XXX TODO: Handle for 5V VDD.
 
 	AFIO->CTLR = (AFIO->CTLR & ~(UDP_PUE_11 | UDM_PUE_11 )) | USB_PHY_V33 | USB_IOEN | UDP_PUE_11; //1.5k pullup
 
 	// Enable PC16/17 Alternate Function (USB)
 	// According to EVT, GPIO16 = GPIO_Mode_IN_FLOATING, GPIO17 = GPIO_Mode_IPU
 	GPIOC->CFGXR = 	( GPIOC->CFGXR & ~( (0xf<<(4*0)) | (0xf<<(4*1)) ) )  |
-					(((GPIO_CFGLR_IN_FLOAT)<<(4*0)) | ((GPIO_CFGLR_IN_PUPD)<<(4*1)); // MSBs are CNF, LSBs are MODE
+					(((GPIO_CFGLR_IN_FLOAT)<<(4*0)) | (((GPIO_CFGLR_IN_PUPD)<<(4*1)))); // MSBs are CNF, LSBs are MODE
 	GPIOC->BSXR = 1<<1; // PC17 on.
-
-	USBFS->UDEV_CTRL = RB_UD_PORT_EN;
 
 	// Go on-bus.
 	return 0;
 }
+
+
+
+
+
+uint8_t USBFS_Endp_DataUp(uint8_t endp, uint8_t *pbuf, uint16_t len, uint8_t mod)
+{
+    uint8_t endp_mode;
+    uint8_t buf_load_offset;
+
+    /* DMA config, endp_ctrl config, endp_len config */
+    if( ( endp >= DEF_UEP1 ) && ( endp <= DEF_UEP7 ) )
+    {
+        if( USBFS_Endp_Busy[ endp ] == 0 )
+        {
+            if( (endp == DEF_UEP1) || (endp == DEF_UEP4) )
+            {
+                /* endp1/endp4 */
+                endp_mode = USBFSD_UEP_MOD( 0 );
+                if( endp == DEF_UEP1 )
+                {
+                    endp_mode = (uint8_t)( endp_mode >> 4 );
+                }
+            }
+            else if( ( endp == DEF_UEP2 ) || ( endp == DEF_UEP3 ) )
+            {
+                /* endp2/endp3 */
+                endp_mode = USBFSD_UEP_MOD( 1 );
+                if( endp == DEF_UEP3 )
+                {
+                    endp_mode = (uint8_t)( endp_mode >> 4 );
+                }
+            }
+            else if( ( endp == DEF_UEP5 ) || ( endp == DEF_UEP6 ) )
+            {
+                /* endp5/endp6 */
+                endp_mode = USBFSD_UEP_MOD( 2 );
+                if( endp == DEF_UEP6 )
+                {
+                    endp_mode = (uint8_t)( endp_mode >> 4 );
+                }
+            }
+            else
+            {
+                /* endp7 */
+                endp_mode = USBFSD_UEP_MOD( 3 );
+            }
+
+            if( endp_mode & USBFSD_UEP_TX_EN )
+            {
+                if( endp_mode & USBFSD_UEP_RX_EN )
+                {
+                    if( endp_mode & USBFSD_UEP_BUF_MOD )
+                    {
+                        if( USBFSD_UEP_TX_CTRL(endp) & USBFS_UEP_T_TOG )
+                        {
+                            buf_load_offset = 192;
+                        }
+                        else
+                        {
+                            buf_load_offset = 128;
+                        }
+                    }
+                    else
+                    {
+                        buf_load_offset = 64;
+                    }
+                }
+                else
+                {
+                    if( endp_mode & USBFSD_UEP_BUF_MOD )
+                    {
+                        /* double tx buffer */
+                        if( USBFSD_UEP_TX_CTRL( endp ) & USBFS_UEP_T_TOG )
+                        {
+                            buf_load_offset = 64;
+                        }
+                        else
+                        {
+                            buf_load_offset = 0;
+                        }
+                    }
+                    else
+                    {
+                        buf_load_offset = 0;
+                    }
+                }
+                if( buf_load_offset == 0 )
+                {
+                    if( mod == DEF_UEP_DMA_LOAD )
+                    {
+                        /* DMA mode */
+                        USBFSD_UEP_DMA( endp ) = (uint16_t)(uint32_t)pbuf;
+                    }
+                    else
+                    {
+                        /* copy mode */
+                        memcpy( USBFSD_UEP_BUF( endp ), pbuf, len );
+                    }
+                }
+                else
+                {
+                    memcpy( USBFSD_UEP_BUF( endp ) + buf_load_offset, pbuf, len );
+                }
+
+                /* tx length */
+                USBFSD_UEP_TLEN( endp ) = len;
+                /* response ack */
+                USBFSD_UEP_TX_CTRL( endp ) = ( USBFSD_UEP_TX_CTRL( endp ) & ~USBFS_UEP_T_RES_MASK ) | USBFS_UEP_T_RES_ACK;
+                /* Set end-point busy */
+                USBFS_Endp_Busy[ endp ] = 0x01;
+            }
+        }
+        else
+        {
+            return 1;
+        }
+    }
+    else
+    {
+        return 1;
+    }
+    return 0;
+}
+
 
