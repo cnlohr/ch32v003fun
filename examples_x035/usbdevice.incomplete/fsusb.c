@@ -6,6 +6,7 @@ uint8_t  EP0_DATA[64] __attribute__((aligned(32)));
 
 void USBFS_IRQHandler() __attribute__((section(".text.vector_handler")))  __attribute__((interrupt));
 
+// Mask for the combined USBFSD->INT_FG + USBFSD->INT_ST
 #define CRB_U_IS_NAK     (1<<7)
 #define CTOG_MATCH_SYNC  (1<<6)
 #define CRB_U_SIE_FREE   (1<<5)
@@ -113,10 +114,8 @@ int FSUSBSetup()
 
 	// Enable PC16/17 Alternate Function (USB)
 	// According to EVT, GPIO16 = GPIO_Mode_IN_FLOATING, GPIO17 = GPIO_Mode_IPU
-	GPIOC->CFGXR &= ~(0xf<<(4*0));
-	GPIOC->CFGXR |= (GPIO_CFGLR_IN_FLOAT)<<(4*0); // MSBs are CNF, LSBs are MODE
-	GPIOC->CFGXR &= ~(0xf<<(4*1));
-	GPIOC->CFGXR |= (GPIO_CFGLR_IN_PUPD)<<(4*1);
+	GPIOC->CFGXR = 	( GPIOC->CFGXR & ~( (0xf<<(4*0)) | (0xf<<(4*1)) ) )  |
+					(((GPIO_CFGLR_IN_FLOAT)<<(4*0)) | ((GPIO_CFGLR_IN_PUPD)<<(4*1)); // MSBs are CNF, LSBs are MODE
 	GPIOC->BSXR = 1<<1; // PC17 on.
 
 	USBFS->UDEV_CTRL = RB_UD_PORT_EN;
