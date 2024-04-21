@@ -1435,6 +1435,7 @@ typedef struct  __attribute__((packed))
     __IO uint8_t  RESERVED52;
     __IO uint16_t HOST_SPLIT_DATA;
 } USBHSH_TypeDef;
+
 #endif	// #if defined(CH32V30x)
 
 /* USBFS Registers */
@@ -1774,6 +1775,133 @@ typedef struct
 #define UDM_PUE_01 (0b01<<0)
 #define UDM_PUE_10 (0b10<<0)
 #define UDM_PUE_11 (0b11<<0)
+
+
+#define USBFSD_UEP_MOD_BASE         0x4002340C
+#define USBFSD_UEP_DMA_BASE         0x40023410
+#define USBFSD_UEP_LEN_BASE         0x40023420
+#define USBFSD_UEP_CTL_BASE         0x40023422
+#define USBFSD_UEP_RX_EN            0x08
+#define USBFSD_UEP_TX_EN            0x04
+#define USBFSD_UEP_BUF_MOD          0x01
+#define DEF_UEP_DMA_LOAD            0 /* Direct the DMA address to the data to be processed */
+#define DEF_UEP_CPY_LOAD            1 /* Use memcpy to move data to a buffer */
+#define USBFSD_UEP_MOD( N )         (*((volatile uint8_t *)( USBFSD_UEP_MOD_BASE + N )))
+#define USBFSD_UEP_TX_CTRL( N )     (*((volatile uint8_t *)( USBFSD_UEP_CTL_BASE + N * 0x04 )))
+#define USBFSD_UEP_RX_CTRL( N )     (*((volatile uint8_t *)( USBFSD_UEP_CTL_BASE + N * 0x04 )))
+#define USBFSD_UEP_DMA( N )         (*((volatile uint32_t *)( USBFSD_UEP_DMA_BASE + N * 0x04 )))
+#define USBFSD_UEP_BUF( N )         ((uint8_t *)(*((volatile uint32_t *)( USBFSD_UEP_DMA_BASE + N * 0x04 ))) + 0x20000000)
+#define USBFSD_UEP_TLEN( N )        (*((volatile uint16_t *)( USBFSD_UEP_LEN_BASE + N * 0x04 )))
+
+/* R8_UEPn_TX_CTRL */
+#define USBFS_UEP_T_AUTO_TOG        (1<<4)      // enable automatic toggle after successful transfer completion on endpoint 1/2/3: 0=manual toggle, 1=automatic toggle
+#define USBFS_UEP_T_TOG             (1<<6)      // prepared data toggle flag of USB endpoint X transmittal (IN): 0=DATA0, 1=DATA1
+#define USBFS_UEP_T_RES_MASK        (3<<0)      // bit mask of handshake response type for USB endpoint X transmittal (IN)
+#define USBFS_UEP_T_RES_ACK         (0<<1)
+#define USBFS_UEP_T_RES_NONE        (1<<0)
+#define USBFS_UEP_T_RES_NAK         (1<<1)
+#define USBFS_UEP_T_RES_STALL       (3<<0)
+// bUEP_T_RES1 & bUEP_T_RES0: handshake response type for USB endpoint X transmittal (IN)
+//   00: DATA0 or DATA1 then expecting ACK (ready)
+//   01: DATA0 or DATA1 then expecting no response, time out from host, for non-zero endpoint isochronous transactions
+//   10: NAK (busy)
+//   11: STALL (error)
+// host aux setup
+
+/* R8_UEPn_RX_CTRL, n=0-7 */
+#define USBFS_UEP_R_AUTO_TOG        (1<<4)      // enable automatic toggle after successful transfer completion on endpoint 1/2/3: 0=manual toggle, 1=automatic toggle
+#define USBFS_UEP_R_TOG             (1<<7)      // expected data toggle flag of USB endpoint X receiving (OUT): 0=DATA0, 1=DATA1
+#define USBFS_UEP_R_RES_MASK        (3<<2)      // bit mask of handshake response type for USB endpoint X receiving (OUT)
+#define USBFS_UEP_R_RES_ACK         (0<<3)
+#define USBFS_UEP_R_RES_NONE        (1<<2)
+#define USBFS_UEP_R_RES_NAK         (1<<3)
+#define USBFS_UEP_R_RES_STALL       (3<<2)
+
+
+#define EP1_T_EN					(1<<6)
+#define EP2_T_EN					(1<<2)
+#define EP3_T_EN					(1<<6)
+#define EP4_T_EN					(1<<2)
+#define EP1_R_EN					(1<<7)
+#define EP2_R_EN					(1<<3)
+#define EP3_R_EN					(1<<7)
+#define EP4_R_EN					(1<<3)
+
+
+/* R8_USB_CTRL */
+#define USBFS_UC_HOST_MODE          0x80
+#define USBFS_UC_LOW_SPEED          0x40
+#define USBFS_UC_DEV_PU_EN          0x20
+#define USBFS_UC_SYS_CTRL_MASK      0x30
+#define USBFS_UC_SYS_CTRL0          0x00
+#define USBFS_UC_SYS_CTRL1          0x10
+#define USBFS_UC_SYS_CTRL2          0x20
+#define USBFS_UC_SYS_CTRL3          0x30
+#define USBFS_UC_INT_BUSY           0x08
+#define USBFS_UC_RESET_SIE          0x04
+#define USBFS_UC_CLR_ALL            0x02
+#define USBFS_UC_DMA_EN             0x01
+
+/* R8_USB_INT_EN */
+#define USBFS_UIE_DEV_SOF           0x80
+#define USBFS_UIE_DEV_NAK           0x40
+#define USBFS_UIE_FIFO_OV           0x10
+#define USBFS_UIE_HST_SOF           0x08
+#define USBFS_UIE_SUSPEND           0x04
+#define USBFS_UIE_TRANSFER          0x02
+#define USBFS_UIE_DETECT            0x01
+#define USBFS_UIE_BUS_RST           0x01
+
+/* R8_USB_DEV_AD */
+#define USBFS_UDA_GP_BIT            0x80
+#define USBFS_USB_ADDR_MASK         0x7F
+
+/* R8_USB_MIS_ST */
+#define USBFS_UMS_SOF_PRES          0x80
+#define USBFS_UMS_SOF_ACT           0x40
+#define USBFS_UMS_SIE_FREE          0x20
+#define USBFS_UMS_R_FIFO_RDY        0x10
+#define USBFS_UMS_BUS_RESET         0x08
+#define USBFS_UMS_SUSPEND           0x04
+#define USBFS_UMS_DM_LEVEL          0x02
+#define USBFS_UMS_DEV_ATTACH        0x01
+
+
+
+
+#define USBFS_UDA_GP_BIT            0x80
+#define USBFS_USB_ADDR_MASK         0x7F
+
+#define DEF_USBD_UEP0_SIZE		   64	 /* usb hs/fs device end-point 0 size */
+#define UEP_SIZE 64
+
+#define DEF_UEP_IN                  0x80
+#define DEF_UEP_OUT                 0x00
+#define DEF_UEP_BUSY                0x01
+#define DEF_UEP_FREE                0x00
+
+#define DEF_UEP0 0
+#define DEF_UEP1 1
+#define DEF_UEP2 2
+#define DEF_UEP3 3
+#define DEF_UEP4 4
+#define DEF_UEP5 5
+#define DEF_UEP6 6
+#define DEF_UEP7 7
+#define UNUM_EP 8
+
+
+#define UDP_PUE_MASK                0x0000000C
+#define UDP_PUE_DISABLE             0x00000000
+#define UDP_PUE_35UA                0x00000004
+#define UDP_PUE_10K                 0x00000008
+#define UDP_PUE_1K5                 0x0000000C
+
+#define UDM_PUE_MASK                0x00000003
+#define UDM_PUE_DISABLE             0x00000000
+#define UDM_PUE_35UA                0x00000001
+#define UDM_PUE_10K                 0x00000002
+#define UDM_PUE_1K5                 0x00000003
 
 /* USB Host Mode */
 
