@@ -4,11 +4,12 @@
 #define FUSB_5V_OPERATION 0
 #define FUSB_CONFIG_EPS   3 // Include EP0 in this count
 #define FUSB_SUPPORTS_SLEEP 0
-
 #define FUSB_HID_INTERFACES 2
-
-
 #define FUSB_CURSED_TURBO_DMA 1
+#define FUSB_HID_NONSTANDARD 1
+
+
+#include "usb_defines.h"
 
 //Taken from http://www.usbmadesimple.co.uk/ums_ms_desc_dev.htm
 static const uint8_t device_descriptor[] = {
@@ -136,6 +137,22 @@ static const uint8_t KeyRepDesc[ ] =
     0x29, 0x91,                                             // Usage Maximum (145)
     0x81, 0x00,                                             // Input(Data,Array,Absolute)
     0xC0                                                    // End Collection
+,
+	// TODO - Figure out how to work this in.
+	HID_USAGE_PAGE ( 0xff ), // Vendor-defined page.
+	HID_USAGE      ( 0x00 ),
+	HID_REPORT_SIZE ( 8 ),
+	HID_COLLECTION ( HID_COLLECTION_LOGICAL ),
+		HID_REPORT_COUNT   ( 254 ),
+		HID_REPORT_ID      ( 0xaa )
+		HID_USAGE          ( 0x01 ),
+		HID_FEATURE        ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE ) ,
+		HID_REPORT_COUNT   ( 63 ), // For use with `hidapitester --vidpid 1209/D003 --open --read-feature 171`
+		HID_REPORT_ID      ( 0xab )
+		HID_USAGE          ( 0x01 ),	
+		HID_FEATURE        ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE ) ,
+	HID_COLLECTION_END,
+
 };
 
 /* Mouse Report Descriptor */
@@ -171,8 +188,8 @@ static const uint8_t MouseRepDesc[ ] =
 };
 
 
-#define STR_MANUFACTURER u"WCH"
-#define STR_PRODUCT      u"CH32X035 Custom Device"
+#define STR_MANUFACTURER u"WCH-TEST"
+#define STR_PRODUCT      u"ch32v003fun ch32x035 test"
 #define STR_SERIAL       u"CUSTOMDEVICE000"
 
 struct usb_string_descriptor_struct {

@@ -25,11 +25,23 @@
 
 extern uint32_t USBDEBUG0, USBDEBUG1, USBDEBUG2;
 
+struct _USBState;
+
 int FSUSBSetup();
 uint8_t USBFS_Endp_DataUp(uint8_t endp, const uint8_t *pbuf, uint16_t len, uint8_t mod);
 
 static inline uint8_t * USBFS_GetEPBufferIfAvailable( int endp );
 static inline void USBFS_SendEndpoint( int endp, int len );
+
+
+// Implement the following:
+#if FUSB_HID_NONSTANDARD
+int HandleHidUserReportSetup( struct _USBState * ctx, tusb_control_request_t * req );
+int HandleHidUserReportOut( struct _USBState * ctx, uint8_t * data, int len );
+void HandleHidUserReportIn( struct _USBState * ctx, uint8_t * data, int len );
+#endif
+
+
 
 
 struct _USBState

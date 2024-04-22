@@ -115,7 +115,7 @@ void USBFS_IRQHandler()
 
 				if ( ( ctx->USBFS_SetupReqType & USB_REQ_TYP_MASK ) != USB_REQ_TYP_STANDARD )
 				{
-					/* Non-standard request endpoint 0 Data upload, noted by official docs, but I don't think this would ever really be used. */
+					// Handle other control requests here.
 				}
 				else
 				{
@@ -136,6 +136,17 @@ void USBFS_IRQHandler()
 							break;
 
 						default:
+#if FUSB_HID_USER_REPORTS
+							len = ctx->USBFS_SetupReqLen >= DEF_USBD_UEP0_SIZE ? DEF_USBD_UEP0_SIZE : ctx->USBFS_SetupReqLen;
+							if( len )
+							{
+								HandleHidUserReportDataIn( ctx, CTRL0BUFF, len );
+								USBFS->UEP0_TX_LEN = len;
+								USBFS->UEP0_CTRL_H ^= USBFS_UEP_T_TOG;
+								ctx->USBFS_SetupReqLen -= len;
+								ctx->pUSBFS_Descr += len;
+							}	
+#endif
 							break;
 					}
 				}
@@ -150,31 +161,21 @@ void USBFS_IRQHandler()
 				case DEF_UEP0:
 					if( intfgst & CRB_UIS_TOG_OK )
 					{
-						if( ( FSUSBCTX.USBFS_SetupReqType & USB_REQ_TYP_MASK ) != USB_REQ_TYP_STANDARD )
+
+#if FUSB_HID_USER_REPORTS
+						int r = HandleHidUserReportDataOut( ctx, CTRL0BUFF, USBFS->RX_LEN );
+						if( r >= 0 )
 						{
-							if( ( FSUSBCTX.USBFS_SetupReqType & USB_REQ_TYP_MASK ) == USB_REQ_TYP_CLASS )
-							{
-								switch( FSUSBCTX.USBFS_SetupReqCode )
-								{
-									case HID_SET_REPORT:
-										//KB_LED_Cur_Status = USBFS_EP0_Buf[ 0 ];
-										FSUSBCTX.USBFS_SetupReqLen = 0;
-										break;
-									default:
-										break;
-								}
-							}
+							USBFS->UEP0_TX_LEN  = r;
+							USBFS->UEP0_CTRL_H = USBFS_UEP_T_TOG | USBFS_UEP_T_RES_ACK;
 						}
 						else
+#endif
+						if( FSUSBCTX.USBFS_SetupReqLen == 0 )
 						{
-							/* Standard request end-point 0 Data download */
-							/* Add your code here */
+							USBFS->UEP0_TX_LEN  = 0;
+							USBFS->UEP0_CTRL_H = USBFS_UEP_T_TOG | USBFS_UEP_T_RES_ACK;
 						}
-					}
-					if( FSUSBCTX.USBFS_SetupReqLen == 0 )
-					{
-						USBFS->UEP0_TX_LEN  = 0;
-						USBFS->UEP0_CTRL_H = USBFS_UEP_T_TOG | USBFS_UEP_T_RES_ACK;
 					}
 					break;
 
@@ -197,6 +198,10 @@ void USBFS_IRQHandler()
 
 			if( ( USBFS_SetupReqType & USB_REQ_TYP_MASK ) != USB_REQ_TYP_STANDARD )
 			{
+#if FUSB_HID_USER_REPORTS
+				len = HandleHidUserReportSetup( ctx, pUSBFS_SetupReqPak );
+				if( len < 0 ) goto sendstall;
+#endif
 #if FUSB_HID_INTERFACES > 0 
 				if( ( USBFS_SetupReqType & USB_REQ_TYP_MASK ) == USB_REQ_TYP_CLASS )
 				{
