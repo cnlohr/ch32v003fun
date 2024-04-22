@@ -54,20 +54,20 @@ static inline void fastcopy( uint8_t * dest, const uint8_t * src, int len )
 static inline void fastcopy( uint8_t * dest, const uint8_t * src, int len )
 {
 	DMA1_Channel7->CFGR = 0;
-	DMA1_Channel7->MADDR = src;
-	DMA1_Channel7->PADDR = dest;
+	DMA1_Channel7->MADDR = (uintptr_t)src;
+	DMA1_Channel7->PADDR = (uintptr_t)dest;
 	DMA1_Channel7->CNTR  = (len+3)/4;
 	DMA1_Channel7->CFGR  =
 		DMA_M2M_Enable | 
 		DMA_DIR_PeripheralDST |
-		DMA_Priority_High |
+		DMA_Priority_Low |
 		DMA_MemoryDataSize_Word |
 		DMA_PeripheralDataSize_Word |
 		DMA_MemoryInc_Enable |
 		DMA_PeripheralInc_Enable |
 		DMA_Mode_Normal | DMA_CFGR1_EN;
-//XXX TODO: It seems to work (unsafely) without this guard.
-	while( DMA1_Channel7->CNTR );
+	//XXX TODO: Somehow, it seems to work (unsafely) without this.
+	//while( DMA1_Channel7->CNTR );
 }
 #endif
 
@@ -78,7 +78,6 @@ void USBFS_InternalFinishSetup();
 void USBFS_IRQHandler()
 {
 	// Based on https://github.com/openwch/ch32x035/blob/main/EVT/EXAM/USB/USBFS/DEVICE/CompositeKM/User/ch32x035_usbfs_device.c
-
 	// Combined FG + ST flag.
 	uint16_t intfgst = *(uint16_t*)(&USBFS->INT_FG);
 	int len = 0;
@@ -267,12 +266,10 @@ void USBFS_IRQHandler()
 						}
 						len = ( USBFS_SetupReqLen >= DEF_USBD_UEP0_SIZE ) ? DEF_USBD_UEP0_SIZE : USBFS_SetupReqLen;
 						fastcopy( CTRL0BUFF, ctx->pUSBFS_Descr, len ); //memcpy( CTRL0BUFF, ctx->pUSBFS_Descr, len );
-						//memcpy( CTRL0BUFF, ctx->pUSBFS_Descr, len );
+						USBFS->UEP0_TX_LEN = len;
+						USBFS->UEP0_CTRL_H = USBFS_UEP_T_TOG | USBFS_UEP_T_RES_ACK;
 						ctx->pUSBFS_Descr += len;
-//						USBFS_SetupReqLen -= len;
-//						USBFS->UEP0_TX_LEN = len;
-//						USBFS->UEP0_CTRL_H = USBFS_UEP_T_TOG | USBFS_UEP_T_RES_ACK;
-//						goto replycomplete;
+						goto replycomplete;
 						break;
 					}
 
@@ -434,8 +431,8 @@ void USBFS_IRQHandler()
 			}
 			break;
 
-		// This might look a little weird, for error handling but it saves a nontrivial amount of storage, and simplifies
-		// control flow to hard-abort here.
+			// This might look a little weird, for error handling but it saves a nontrivial amount of storage, and simplifies
+			// control flow to hard-abort here.
 		sendstall:
 			// if one request not support, return stall.  Stall means permanent error.
 			USBFS->UEP0_CTRL_H = USBFS_UEP_T_TOG | USBFS_UEP_T_RES_STALL|USBFS_UEP_R_TOG | USBFS_UEP_R_RES_STALL;
@@ -493,7 +490,10 @@ void USBFS_InternalFinishSetup()
     USBFS->UEP4_1_MOD = RB_UEP1_TX_EN;
     USBFS->UEP2_3_MOD = RB_UEP2_TX_EN;
 	USBFS->UEP567_MOD = 0;
-	USBFS->UEP0_DMA = FSUSBCTX.EP0DMABuffer;
+
+	// This is really cursed.  Somehow it doesn't explode.
+	// But, normally the USB wants a separate buffer here.
+	USBFS->UEP0_DMA = (uintptr_t)CTRL0BUFF;
 
 	UEP_CTRL_H(0) = USBFS_UEP_R_RES_ACK | USBFS_UEP_T_RES_NAK;
 	int i;
@@ -526,14 +526,6 @@ int FSUSBSetup()
 	USBFS->BASE_CTRL = RB_UC_DEV_PU_EN | RB_UC_INT_BUSY | RB_UC_DMA_EN;
 	USBFS->INT_FG = 0xff;
 	USBFS->UDEV_CTRL = RB_UD_PD_DIS | RB_UD_PORT_EN;
-
-	char abuff[64];
-	memset( abuff, 0xaa, 64 );
-	char bbuff[64] = { 0 };
-	//fastcopy( bbuff, abuff, 35 );
-	USBDEBUG1 = bbuff[30];
-
-//USBDEBUG0, USBDEBUG1, USBDEBUG2
 
 	// Go on-bus.
 

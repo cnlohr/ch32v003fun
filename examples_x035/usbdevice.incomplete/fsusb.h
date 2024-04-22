@@ -34,25 +34,17 @@ static inline void USBFS_SendEndpoint( int endp, int len );
 
 struct _USBState
 {
-	/* Setup Request */
+	// Setup Request
 	volatile uint8_t  USBFS_SetupReqCode;
 	volatile uint8_t  USBFS_SetupReqType;
 	volatile uint16_t USBFS_SetupReqLen;
 	volatile uint32_t USBFS_IndexValue;
 
-	/* USB Device Status */
+	// USB Device Status
 	volatile uint8_t  USBFS_DevConfig;
 	volatile uint8_t  USBFS_DevAddr;
 	volatile uint8_t  USBFS_DevSleepStatus;
 	volatile uint8_t  USBFS_DevEnumStatus;
-
-//	Endpoint buffers, only useful if using DMA.
-//	__attribute__ ((aligned(4))) uint8_t USBFS_EP_Buf[FUSB_CONFIG_EPS][64];
-//	__attribute__ ((aligned(4))) uint8_t USBFS_EP_Buf[3][64];
-//	#define pUSBFS_SetupReqPak			((tusb_control_request_t*)ctx->USBFS_EP_Buf[0])
-//	#define CTRL0BUFF					 (FSUSBCTX.USBFS_EP_Buf[0])
-
-	uint8_t EP0DMABuffer[64];
 
 	#define pUSBFS_SetupReqPak			((tusb_control_request_t*)USBFSD_UEP_BUF(0))
 	#define CTRL0BUFF					USBFSD_UEP_BUF(0)
@@ -62,8 +54,8 @@ struct _USBState
 	uint8_t USBFS_HidProtocol[FUSB_HID_INTERFACES];
 #endif
 
-	const uint8_t  *pUSBFS_Descr;
 	volatile uint8_t  USBFS_Endp_Busy[FUSB_CONFIG_EPS];
+	const uint8_t  *pUSBFS_Descr;
 };
 
 extern struct _USBState FSUSBCTX;
