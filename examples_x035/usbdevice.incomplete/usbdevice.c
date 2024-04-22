@@ -3,6 +3,7 @@
 
 #include "ch32v003fun.h"
 #include <stdio.h>
+#include <string.h>
 #include "fsusb.h"
 
 uint32_t count;
@@ -14,7 +15,7 @@ void handle_debug_input( int numbytes, uint8_t * data )
 	count += numbytes;
 }
 
-int HandleHidNonStandardSetup( struct _USBState * ctx, tusb_control_request_t * req )
+int HandleHidUserReportSetup( struct _USBState * ctx, tusb_control_request_t * req )
 {
 
 /*
@@ -45,7 +46,7 @@ int HandleHidNonStandardSetup( struct _USBState * ctx, tusb_control_request_t * 
 	return 0;
 }
 
-int HandleHidNonStandardDataOut( struct _USBState * ctx, uint8_t * data, int len )
+int HandleHidUserReportDataOut( struct _USBState * ctx, uint8_t * data, int len )
 {
 	int i;
 	for( i = 0; i < len; i++ )
@@ -57,7 +58,7 @@ int HandleHidNonStandardDataOut( struct _USBState * ctx, uint8_t * data, int len
 	return 0;
 }
 
-void HandleHidNonStandardDataIn( struct _USBState * ctx, uint8_t * data, int len )
+void HandleHidUserReportDataIn( struct _USBState * ctx, uint8_t * data, int len )
 {
 	memset( data, 0xcc, len );
 }

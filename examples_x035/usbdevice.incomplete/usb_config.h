@@ -6,7 +6,7 @@
 #define FUSB_SUPPORTS_SLEEP 0
 #define FUSB_HID_INTERFACES 2
 #define FUSB_CURSED_TURBO_DMA 1
-#define FUSB_HID_NONSTANDARD 1
+#define FUSB_HID_USER_REPORTS 1
 
 
 #include "usb_defines.h"
