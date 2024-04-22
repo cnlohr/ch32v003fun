@@ -24,59 +24,20 @@ int main()
 
 	FSUSBSetup();
 
-
-void USBFS_IRQHandler();
-//extern int USBFS_IRQHandler;
 	while(1)
 	{
-		printf( "%lu %08x %lu %d %d\n", USBDEBUG0, USBDEBUG1, USBDEBUG2, 0, 0 );
+		printf( "%lu %08lx %lu %d %d\n", USBDEBUG0, USBDEBUG1, USBDEBUG2, 0, 0 );
 		int i;
-		//printf( "!! %d %d %d\n", NUM_EP, USBFS_Endp_Busy[0], USBFS_Endp_Busy[1] );
 		for( i = 1; i < 3; i++ )
 		{
-			if( !FSUSBCTX.USBFS_Endp_Busy[i] )
+
+			uint32_t * buffer = (uint32_t*)USBFS_GetEPBufferIfAvailable( i );
+			if( buffer )
 			{
-
-/*
-USBDEBUG0+= 100;
-                /* tx length */
-				//memset( USBFSD_UEP_BUF( i ), 0xaa, 16 );
-//                USBFSD_UEP_TLEN( i ) = 16;
-  //              USBFSD_UEP_TX_CTRL( i ) = ( USBFSD_UEP_TX_CTRL( i ) & ~USBFS_UEP_T_RES_MASK ) | USBFS_UEP_T_RES_ACK;
-	//			USBFS_Endp_Busy[i] = 1;
-
-				char pbuf[16] = { 0xaa, 1, 1 };
-/*				static iter;
-				if( i == 2 )
-				{
-					iter++;
-					switch( (iter>>3) & 3 )
-					{
-					case 0: pbuf[1] = 1; break;
-					case 1: pbuf[2] = 1; break;
-					case 2: pbuf[1] = -1; break;
-					case 3: pbuf[2] = -1; break;
-					}
-				}*/
-				uint8_t r = USBFS_Endp_DataUp( i, pbuf, (i==1)?8:4, DEF_UEP_CPY_LOAD);
-//USBDEBUG1+=r;
+				buffer[0] = 0x000101aa;
+				USBFS_SendEndpoint( i, (i==1)?8:4 );
 			}
 		}
 	}
-
-#if 0
-	while(1)
-	{
-		GPIOA->BSHR = 1;	 // Turn on GPIOs
-		printf( "+%lu %lu\n", count++ );
-		Delay_Ms(100);
-		int i;
-		for( i = 0; i < 10000; i++ )
-			poll_input();
-		GPIOA->BSHR = (1<<16); // Turn off GPIODs
-		printf( "-%lu[%c]\n", count++, last );
-		Delay_Ms(100);
-	}
-#endif
 }
 

@@ -1,6 +1,23 @@
 #ifndef _FSUSB_H
 #define _FSUSB_H
 
+/*	Full speed USB infrastructure for CH32X035.
+	Based off of the official USB stack, but, with significant perf and space
+	reductions.
+
+	Limitations:
+	 * Limited to EPs 0..4.
+	 * By default, functions are using dedicated buffers, not DMA (but there is no reason DMA could not be used instead)
+	 * 
+
+
+	General Notes:
+	 * They seem to be using DMA->RX but TX via non-DMA (the opposite of what they should have done)
+
+	*/
+
+
+
 #include <stdint.h>
 #include "ch32v003fun.h"
 #include "usb_defines.h"
@@ -9,7 +26,10 @@
 extern uint32_t USBDEBUG0, USBDEBUG1, USBDEBUG2;
 
 int FSUSBSetup();
-uint8_t USBFS_Endp_DataUp(uint8_t endp, uint8_t *pbuf, uint16_t len, uint8_t mod);
+uint8_t USBFS_Endp_DataUp(uint8_t endp, const uint8_t *pbuf, uint16_t len, uint8_t mod);
+
+static inline uint8_t * USBFS_GetEPBufferIfAvailable( int endp );
+static inline void USBFS_SendEndpoint( int endp, int len );
 
 
 struct _USBState
@@ -26,45 +46,42 @@ struct _USBState
 	volatile uint8_t  USBFS_DevSleepStatus;
 	volatile uint8_t  USBFS_DevEnumStatus;
 
-	/* Endpoint Buffer */
-	__attribute__ ((aligned(4))) uint8_t USBFS_EP_Buf[FUSB_CONFIG_EPS][64];
+//	Endpoint buffers, only useful if using DMA.
+//	__attribute__ ((aligned(4))) uint8_t USBFS_EP_Buf[FUSB_CONFIG_EPS][64];
+//	__attribute__ ((aligned(4))) uint8_t USBFS_EP_Buf[3][64];
+//	#define pUSBFS_SetupReqPak			((tusb_control_request_t*)ctx->USBFS_EP_Buf[0])
+//	#define CTRL0BUFF					 (FSUSBCTX.USBFS_EP_Buf[0])
 
-	#define pUSBFS_SetupReqPak                 ((tusb_control_request_t*)ctx->USBFS_EP_Buf[0])
+	uint8_t EP0DMABuffer[64];
 
+	#define pUSBFS_SetupReqPak			((tusb_control_request_t*)USBFSD_UEP_BUF(0))
+	#define CTRL0BUFF					USBFSD_UEP_BUF(0)
 
+#if FUSB_HID_INTERFACES > 0
 	uint8_t USBFS_HidIdle[FUSB_HID_INTERFACES];
 	uint8_t USBFS_HidProtocol[FUSB_HID_INTERFACES];
+#endif
 
 	const uint8_t  *pUSBFS_Descr;
-
-	/* USB IN Endpoint Busy Flag */
 	volatile uint8_t  USBFS_Endp_Busy[FUSB_CONFIG_EPS];
 };
 
 extern struct _USBState FSUSBCTX;
 
+// To TX, you can use USBFS_GetEPBufferIfAvailable or USBFSD_UEP_DMA( endp )
 
-#if 0
-extern const    uint8_t  *pUSBFS_Descr;
+static inline uint8_t * USBFS_GetEPBufferIfAvailable( int endp )
+{
+	if( FSUSBCTX.USBFS_Endp_Busy[ endp ] ) return 0;
+	return USBFSD_UEP_BUF( endp );
+}
 
-/* USB Device Status */
-extern volatile uint8_t  USBFS_DevConfig;
-extern volatile uint8_t  USBFS_DevAddr;
-extern volatile uint8_t  USBFS_DevSleepStatus;
-extern volatile uint8_t  USBFS_DevEnumStatus;
-
-/* Endpoint Buffer */
-extern __attribute__ ((aligned(4))) uint8_t USBFS_EP0_Buf[];
-extern __attribute__ ((aligned(4))) uint8_t USBFS_EP2_Buf[];
-
-
-/* USB IN Endpoint Busy Flag */
-extern volatile uint8_t  USBFS_Endp_Busy[ ];
-
-
-// ABOVE: TOOD: REWRITE!
-#endif
-
+static inline void USBFS_SendEndpoint( int endp, int len )
+{
+	USBFSD_UEP_TLEN( endp ) = len;
+	USBFSD_UEP_TX_CTRL( endp ) = ( USBFSD_UEP_TX_CTRL( endp ) & ~USBFS_UEP_T_RES_MASK ) | USBFS_UEP_T_RES_ACK;
+	FSUSBCTX.USBFS_Endp_Busy[ endp ] = 0x01;
+}
 
 #endif
 
