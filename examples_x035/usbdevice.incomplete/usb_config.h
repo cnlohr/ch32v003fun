@@ -8,6 +8,8 @@
 #define FUSB_HID_INTERFACES 2
 
 
+#define FUSB_CURSED_TURBO_DMA 1
+
 //Taken from http://www.usbmadesimple.co.uk/ums_ms_desc_dev.htm
 static const uint8_t device_descriptor[] = {
 	18, //Length

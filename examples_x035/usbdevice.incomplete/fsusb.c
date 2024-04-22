@@ -67,7 +67,10 @@ static inline void fastcopy( uint8_t * dest, const uint8_t * src, int len )
 		DMA_PeripheralInc_Enable |
 		DMA_Mode_Normal | DMA_CFGR1_EN;
 	//XXX TODO: Somehow, it seems to work (unsafely) without this.
-	//while( DMA1_Channel7->CNTR );
+#if !( FUSB_CURSED_TURBO_DMA == 1 )
+	while( DMA1_Channel7->CNTR );
+#endif
+
 }
 #endif
 
