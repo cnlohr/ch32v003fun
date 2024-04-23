@@ -717,7 +717,7 @@ void NMI_Handler( void ) 				 __attribute__((section(".text.vector_handler"))) _
 void NMI_Handler( void )                 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 #endif
 void HardFault_Handler( void )           __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
-#if defined(CH32V20x) || defined(CH32V30x)
+#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32X03x)
 void Ecall_M_Mode_Handler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void Ecall_U_Mode_Handler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void Break_Point_Handler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
