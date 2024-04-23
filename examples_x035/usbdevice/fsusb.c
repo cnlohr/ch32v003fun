@@ -30,29 +30,9 @@ struct _USBState FSUSBCTX;
 #define CUIS_TOKEN_IN    0x2
 #define CUIS_TOKEN_SETUP 0x3
 
-#if 0
-static inline void fastcopy( uint8_t * dest, const uint8_t * src, int len )
+static inline void DMA7FastCopy( uint8_t * dest, const uint8_t * src, int len )
 {
-	src = ((intptr_t)src) & ~3;
-	asm volatile( "\
-		add a3, %[src], %[len]\n\
-1:\n\
-		lw a4, 0(%[src])\n\
-		lw a5, 4(%[src])\n\
-		lw s1, 8(%[src])\n\
-		lw s2, 12(%[src])\n\
-		addi %[src],%[src],16\n\
-		sw a4, 0(%[dest])\n\
-		sw a5, 4(%[dest])\n\
-		sw s1, 8(%[dest])\n\
-		sw s2, 12(%[dest])\n\
-		addi %[dest],%[dest],16\n\
-		bgtu a3,%[src],1b\n\
-	" : [dest]"+r"(dest), [src]"+r"(src) : [len]"r"(len) : "memory", "a3", "a4", "a5", "s1", "s2" );
-}
-#else
-static inline void fastcopy( uint8_t * dest, const uint8_t * src, int len )
-{
+	while( DMA1_Channel7->CNTR );
 	DMA1_Channel7->CFGR = 0;
 	DMA1_Channel7->MADDR = (uintptr_t)src;
 	DMA1_Channel7->PADDR = (uintptr_t)dest;
@@ -66,26 +46,35 @@ static inline void fastcopy( uint8_t * dest, const uint8_t * src, int len )
 		DMA_MemoryInc_Enable |
 		DMA_PeripheralInc_Enable |
 		DMA_Mode_Normal | DMA_CFGR1_EN;
-	//XXX TODO: Somehow, it seems to work (unsafely) without this.
 #if !( FUSB_CURSED_TURBO_DMA == 1 )
+	// Somehow, it seems to work (unsafely) without this.
+	// Really, though, it's probably fine.
 	while( DMA1_Channel7->CNTR );
 #endif
-
 }
-#endif
 
-void USBFS_IRQHandler() __attribute__((section(".text.vector_handler")))  __attribute__((interrupt));
+static inline void DMA7FastCopyComplete() { while( DMA1_Channel7->CNTR ); }
+
+#if FUSB_USE_HPE
+void USBFS_IRQHandler() __attribute__((section(".text.vector_handler")))  __attribute((naked));
+#else
+void USBFS_IRQHandler() __attribute__((section(".text.vector_handler")))  __attribute((interrupt));
+#endif
 
 void USBFS_InternalFinishSetup();
 
 void USBFS_IRQHandler()
 {
+#if FUSB_IO_PROFILE
+	GPIOA->BSHR = 1;
+#endif
+
 	// Based on https://github.com/openwch/ch32x035/blob/main/EVT/EXAM/USB/USBFS/DEVICE/CompositeKM/User/ch32x035_usbfs_device.c
 	// Combined FG + ST flag.
 	uint16_t intfgst = *(uint16_t*)(&USBFS->INT_FG);
 	int len = 0;
 	struct _USBState * ctx = &FSUSBCTX;
-	GPIOA->BSHR = 1;
+	uint8_t * ctrl0buff = CTRL0BUFF;
 
 	// TODO: Check if needs to be do-while to re-check.
 	if( intfgst & CRB_UIF_TRANSFER )
@@ -113,22 +102,40 @@ void USBFS_IRQHandler()
 					USBFS->UEP0_CTRL_H = USBFS_UEP_R_TOG | USBFS_UEP_R_RES_ACK;
 				}
 
-				if ( ( ctx->USBFS_SetupReqType & USB_REQ_TYP_MASK ) != USB_REQ_TYP_STANDARD )
+				if( ctx->pCtrlPayloadPtr )
 				{
-					// Handle other control requests here.
+					// Shortcut mechanism, for descriptors or if the user wants it.
+					len = ctx->USBFS_SetupReqLen >= DEF_USBD_UEP0_SIZE ? DEF_USBD_UEP0_SIZE : ctx->USBFS_SetupReqLen;
+					DMA7FastCopy( ctrl0buff, ctx->pCtrlPayloadPtr, len ); // FYI -> Would need to do this if using DMA
+					ctx->USBFS_SetupReqLen -= len;
+					if( ctx->USBFS_SetupReqLen > 0 )
+						ctx->pCtrlPayloadPtr += len;
+					else
+						ctx->pCtrlPayloadPtr = 0;
+
+					USBFS->UEP0_TX_LEN = len;
+					USBFS->UEP0_CTRL_H ^= USBFS_UEP_T_TOG;
+				}
+				else if ( ( ctx->USBFS_SetupReqType & USB_REQ_TYP_MASK ) != USB_REQ_TYP_STANDARD )
+				{
+
+#if FUSB_HID_USER_REPORTS
+					len = ctx->USBFS_SetupReqLen >= DEF_USBD_UEP0_SIZE ? DEF_USBD_UEP0_SIZE : ctx->USBFS_SetupReqLen;
+					if( len && FSUSBCTX.USBFS_SetupReqCode == HID_GET_REPORT )
+					{
+						len = HandleHidUserReportDataIn( ctx, ctrl0buff, len );
+						USBFS->UEP0_TX_LEN = len;
+						USBFS->UEP0_CTRL_H ^= USBFS_UEP_T_TOG;
+						ctx->USBFS_SetupReqLen -= len;
+						ctx->pCtrlPayloadPtr += len;
+					}	
+#endif
 				}
 				else
 				{
 					switch( FSUSBCTX.USBFS_SetupReqCode )
 					{
 						case USB_GET_DESCRIPTOR:
-							len = ctx->USBFS_SetupReqLen >= DEF_USBD_UEP0_SIZE ? DEF_USBD_UEP0_SIZE : ctx->USBFS_SetupReqLen;
-							//memcpy( CTRL0BUFF, ctx->pUSBFS_Descr, len ); // FYI -> IS IT POSSIBLE TO DO THIS WITH DMA????
-							fastcopy( CTRL0BUFF, ctx->pUSBFS_Descr, len ); // FYI -> Would need to do this if using DMA
-							USBFS->UEP0_TX_LEN = len;
-							USBFS->UEP0_CTRL_H ^= USBFS_UEP_T_TOG;
-							ctx->USBFS_SetupReqLen -= len;
-							ctx->pUSBFS_Descr += len;
 							break;
 
 						case USB_SET_ADDRESS:
@@ -136,17 +143,6 @@ void USBFS_IRQHandler()
 							break;
 
 						default:
-#if FUSB_HID_USER_REPORTS
-							len = ctx->USBFS_SetupReqLen >= DEF_USBD_UEP0_SIZE ? DEF_USBD_UEP0_SIZE : ctx->USBFS_SetupReqLen;
-							if( len )
-							{
-								HandleHidUserReportDataIn( ctx, CTRL0BUFF, len );
-								USBFS->UEP0_TX_LEN = len;
-								USBFS->UEP0_CTRL_H ^= USBFS_UEP_T_TOG;
-								ctx->USBFS_SetupReqLen -= len;
-								ctx->pUSBFS_Descr += len;
-							}	
-#endif
 							break;
 					}
 				}
@@ -161,20 +157,42 @@ void USBFS_IRQHandler()
 				case DEF_UEP0:
 					if( intfgst & CRB_UIS_TOG_OK )
 					{
-
 #if FUSB_HID_USER_REPORTS
-						int r = HandleHidUserReportDataOut( ctx, CTRL0BUFF, USBFS->RX_LEN );
-						if( r >= 0 )
+						int len = USBFS->RX_LEN;
+						uint8_t * cptr = ctx->pCtrlPayloadPtr;
+						if( !cptr )
 						{
-							USBFS->UEP0_TX_LEN  = r;
-							USBFS->UEP0_CTRL_H = USBFS_UEP_T_TOG | USBFS_UEP_T_RES_ACK;
+							HandleHidUserReportDataOut( ctx, ctrl0buff, len );
 						}
 						else
-#endif
-						if( FSUSBCTX.USBFS_SetupReqLen == 0 )
 						{
-							USBFS->UEP0_TX_LEN  = 0;
+							int remain = ctx->USBFS_SetupReqLen - len;
+							if( remain < 0 )
+							{
+								len += remain;
+								remain = 0;
+							}
+							DMA7FastCopy( cptr, ctrl0buff, len );
+							ctx->USBFS_SetupReqLen = remain;
+							if( remain > 0 )
+								ctx->pCtrlPayloadPtr = cptr + len;
+							else
+								ctx->pCtrlPayloadPtr = 0;
+						}
+#endif
+
+						if( ctx->USBFS_SetupReqLen == 0 )
+						{
+							USBFS->UEP0_TX_LEN = 0;
 							USBFS->UEP0_CTRL_H = USBFS_UEP_T_TOG | USBFS_UEP_T_RES_ACK;
+#if FUSB_HID_USER_REPORTS
+							DMA7FastCopyComplete();
+							HandleHidUserReportOutComplete( ctx );
+#endif
+						}
+						else
+						{
+							USBFS->UEP0_CTRL_H ^= USBFS_UEP_R_TOG;
 						}
 					}
 					break;
@@ -186,22 +204,19 @@ void USBFS_IRQHandler()
 
 		/* Setup stage processing */
 		case CUIS_TOKEN_SETUP:
+
 			USBFS->UEP0_CTRL_H = USBFS_UEP_T_TOG|USBFS_UEP_T_RES_NAK|USBFS_UEP_R_TOG|USBFS_UEP_R_RES_NAK;
 
 			/* Store All Setup Values */
 			int USBFS_SetupReqType = FSUSBCTX.USBFS_SetupReqType  = pUSBFS_SetupReqPak->bmRequestType;
 			int USBFS_SetupReqCode = FSUSBCTX.USBFS_SetupReqCode  = pUSBFS_SetupReqPak->bRequest;
-			int USBFS_SetupReqLen = FSUSBCTX.USBFS_SetupReqLen   = pUSBFS_SetupReqPak->wLength;
+			int USBFS_SetupReqLen = FSUSBCTX.USBFS_SetupReqLen    = pUSBFS_SetupReqPak->wLength;
 			int USBFS_SetupReqIndex = pUSBFS_SetupReqPak->wIndex;
 			int USBFS_IndexValue = FSUSBCTX.USBFS_IndexValue = ( pUSBFS_SetupReqPak->wIndex << 16 ) | pUSBFS_SetupReqPak->wValue;
 			len = 0;
 
 			if( ( USBFS_SetupReqType & USB_REQ_TYP_MASK ) != USB_REQ_TYP_STANDARD )
 			{
-#if FUSB_HID_USER_REPORTS
-				len = HandleHidUserReportSetup( ctx, pUSBFS_SetupReqPak );
-				if( len < 0 ) goto sendstall;
-#endif
 #if FUSB_HID_INTERFACES > 0 
 				if( ( USBFS_SetupReqType & USB_REQ_TYP_MASK ) == USB_REQ_TYP_CLASS )
 				{
@@ -209,7 +224,35 @@ void USBFS_IRQHandler()
 					switch( USBFS_SetupReqCode )
 					{
 						case HID_SET_REPORT:
+#if FUSB_HID_USER_REPORTS
+							len = HandleHidUserSetReportSetup( ctx, pUSBFS_SetupReqPak );
+							if( len < 0 ) goto sendstall;
+							ctx->USBFS_SetupReqLen = len;
+							USBFS->UEP0_TX_LEN = 0;
+							USBFS->UEP0_CTRL_H = USBFS_UEP_R_TOG | USBFS_UEP_R_RES_ACK | USBFS_UEP_T_TOG;
+							goto replycomplete;
+						case HID_GET_REPORT:
+							len = HandleHidUserGetReportSetup( ctx, pUSBFS_SetupReqPak );
+							len = 255;
+							if( len < 0 ) goto sendstall;
+							ctx->USBFS_SetupReqLen = len;
+							len = len >= DEF_USBD_UEP0_SIZE ? DEF_USBD_UEP0_SIZE : len;
+							if( !ctx->pCtrlPayloadPtr )
+							{
+								len = HandleHidUserReportDataIn( ctx, ctrl0buff, len );
+							}
+							else
+							{
+								DMA7FastCopy( ctrl0buff, ctx->pCtrlPayloadPtr, len );
+								ctx->pCtrlPayloadPtr += len;
+							}
+							USBFS->UEP0_TX_LEN = len;
+							USBFS->UEP0_CTRL_H = USBFS_UEP_T_TOG | USBFS_UEP_T_RES_ACK;
+							ctx->USBFS_SetupReqLen -= len;
+							goto replycomplete;
+#endif
 							break;
+
 
 						case HID_SET_IDLE:
 							if( USBFS_SetupReqIndex < FUSB_HID_INTERFACES )
@@ -223,7 +266,7 @@ void USBFS_IRQHandler()
 						case HID_GET_IDLE:
 							if( USBFS_SetupReqIndex < FUSB_HID_INTERFACES )
 							{
-								CTRL0BUFF[0] = FSUSBCTX.USBFS_HidIdle[ USBFS_SetupReqIndex ];
+								ctrl0buff[0] = FSUSBCTX.USBFS_HidIdle[ USBFS_SetupReqIndex ];
 								len = 1;
 							}
 							break;
@@ -231,7 +274,7 @@ void USBFS_IRQHandler()
 						case HID_GET_PROTOCOL:
 							if( USBFS_SetupReqIndex < FUSB_HID_INTERFACES )
 							{
-								CTRL0BUFF[0] = FSUSBCTX.USBFS_HidProtocol[ USBFS_SetupReqIndex ];
+								ctrl0buff[0] = FSUSBCTX.USBFS_HidProtocol[ USBFS_SetupReqIndex ];
 								len = 1;
 							}
 							break;
@@ -241,6 +284,8 @@ void USBFS_IRQHandler()
 							break;
 					}
 				}
+#else
+				;
 #endif
 			}
 			else
@@ -257,7 +302,7 @@ void USBFS_IRQHandler()
 						{
 							if( e->lIndexValue == USBFS_IndexValue )
 							{
-								ctx->pUSBFS_Descr = e->addr;
+								ctx->pCtrlPayloadPtr = (uint8_t*)e->addr;
 								len = e->length;
 								break;
 							}
@@ -267,18 +312,20 @@ void USBFS_IRQHandler()
 							goto sendstall;
 						}
 
+
 						/* Copy Descriptors to Endp0 DMA buffer */
-						if( USBFS_SetupReqLen > len )
+						int totalLen = USBFS_SetupReqLen;
+						if( totalLen > len )
 						{
-							USBFS_SetupReqLen = len;
+							totalLen = len;
 						}
-						len = ( USBFS_SetupReqLen >= DEF_USBD_UEP0_SIZE ) ? DEF_USBD_UEP0_SIZE : USBFS_SetupReqLen;
-						fastcopy( CTRL0BUFF, ctx->pUSBFS_Descr, len ); //memcpy( CTRL0BUFF, ctx->pUSBFS_Descr, len );
+						len = ( totalLen >= DEF_USBD_UEP0_SIZE ) ? DEF_USBD_UEP0_SIZE : totalLen;
+						DMA7FastCopy( ctrl0buff, ctx->pCtrlPayloadPtr, len ); //memcpy( CTRL0BUFF, ctx->pCtrlPayloadPtr, len );
+						ctx->USBFS_SetupReqLen = totalLen - len;
+						ctx->pCtrlPayloadPtr += len;
 						USBFS->UEP0_TX_LEN = len;
 						USBFS->UEP0_CTRL_H = USBFS_UEP_T_TOG | USBFS_UEP_T_RES_ACK;
-						ctx->pUSBFS_Descr += len;
 						goto replycomplete;
-						break;
 					}
 
 					/* Set usb address */
@@ -288,7 +335,7 @@ void USBFS_IRQHandler()
 
 					/* Get usb configuration now set */
 					case USB_GET_CONFIGURATION:
-						CTRL0BUFF[0] = ctx->USBFS_DevConfig;
+						ctrl0buff[0] = ctx->USBFS_DevConfig;
 						if( ctx->USBFS_SetupReqLen > 1 )
 							ctx->USBFS_SetupReqLen = 1;
 						break;
@@ -376,7 +423,7 @@ void USBFS_IRQHandler()
 
 					/* This request allows the host to select another setting for the specified interface  */
 					case USB_GET_INTERFACE:
-						CTRL0BUFF[0] = 0x00;
+						ctrl0buff[0] = 0x00;
 						if( USBFS_SetupReqLen > 1 ) USBFS_SetupReqLen = 1;
 						break;
 
@@ -385,20 +432,20 @@ void USBFS_IRQHandler()
 
 					/* host get status of specified device/interface/end-points */
 					case USB_GET_STATUS:
-						CTRL0BUFF[0] = 0x00;
-						CTRL0BUFF[1] = 0x00;
+						ctrl0buff[0] = 0x00;
+						ctrl0buff[1] = 0x00;
 						if( ( USBFS_SetupReqType & USB_REQ_RECIP_MASK ) == USB_REQ_RECIP_DEVICE )
 						{
 #if FUSB_SUPPORTS_SLEEP
-							CTRL0BUFF[0] = (ctx->USBFS_DevSleepStatus & 0x01)<<1;
+							ctrl0buff[0] = (ctx->USBFS_DevSleepStatus & 0x01)<<1;
 #else
-							CTRL0BUFF[0] = 0x00;
+							ctrl0buff[0] = 0x00;
 #endif
 						}
 						else if( ( USBFS_SetupReqType & USB_REQ_RECIP_MASK ) == USB_REQ_RECIP_ENDP )
 						{
 							if( ( USBFS_SetupReqIndex & DEF_UEP_IN ) && ep < FUSB_CONFIG_EPS )
-								CTRL0BUFF[0] = ( UEP_CTRL_H(ep) & USBFS_UEP_T_RES_MASK ) == USBFS_UEP_T_RES_STALL;
+								ctrl0buff[0] = ( UEP_CTRL_H(ep) & USBFS_UEP_T_RES_MASK ) == USBFS_UEP_T_RES_STALL;
 							else
 								goto sendstall;
 						}
@@ -489,19 +536,51 @@ void USBFS_IRQHandler()
 	// Handle any other interrupts and just clear them out.
 	*(uint16_t*)(&USBFS->INT_FG) = intfgst;
 
-	//intfgst = *(uint16_t*)(&USBFS->INT_FG);
+#if FUSB_IO_PROFILE
 	GPIOA->BSHR = 1<<16;
+#endif
+
+#if FUSB_USE_HPE
+	asm volatile( "mret" );
+#endif
 }
 
 void USBFS_InternalFinishSetup()
 {
-    USBFS->UEP4_1_MOD = RB_UEP1_TX_EN;
+#if FUSB_CONFIG_EPS > 4
+    USBFS->UEP4_1_MOD = RB_UEP1_TX_EN | RB_UEP4_TX_EN;
+#elif FUSB_CONFIG_EPS > 1
+    USBFS->UEP4_1_MOD = RB_UEP1_TX_EN | RB_UEP4_TX_EN;
+#endif
+
+#if FUSB_CONFIG_EPS > 3
+    USBFS->UEP2_3_MOD = RB_UEP2_TX_EN | RB_UEP3_TX_EN;
+#elif FUSB_CONFIG_EPS > 2
     USBFS->UEP2_3_MOD = RB_UEP2_TX_EN;
+#endif
+
 	USBFS->UEP567_MOD = 0;
 
 	// This is really cursed.  Somehow it doesn't explode.
 	// But, normally the USB wants a separate buffer here.
-	USBFS->UEP0_DMA = (uintptr_t)CTRL0BUFF;
+
+#if FUSB_CONFIG_EPS > 4
+	USBFS->UEP4_DMA = (uintptr_t)FSUSBCTX.ENDPOINTS[4];
+#endif
+#if FUSB_CONFIG_EPS > 3
+	USBFS->UEP3_DMA = (uintptr_t)FSUSBCTX.ENDPOINTS[3];
+#endif
+#if FUSB_CONFIG_EPS > 2
+	USBFS->UEP2_DMA = (uintptr_t)FSUSBCTX.ENDPOINTS[2];
+#endif
+#if FUSB_CONFIG_EPS > 1
+	USBFS->UEP1_DMA = (uintptr_t)FSUSBCTX.ENDPOINTS[1];
+#endif
+#if FUSB_CONFIG_EPS > 0
+	USBFS->UEP0_DMA = (uintptr_t)FSUSBCTX.ENDPOINTS[0];
+#else
+#error You must have at least EP0!
+#endif
 
 	UEP_CTRL_H(0) = USBFS_UEP_R_RES_ACK | USBFS_UEP_T_RES_NAK;
 	int i;
@@ -571,6 +650,22 @@ int FSUSBSetup()
 	// Go on-bus.
 	return 0;
 }
+
+// To TX, you can use USBFS_GetEPBufferIfAvailable or USBFSD_UEP_DMA( endp )
+
+static inline uint8_t * USBFS_GetEPBufferIfAvailable( int endp )
+{
+	if( FSUSBCTX.USBFS_Endp_Busy[ endp ] ) return 0;
+	return USBFSD_UEP_BUF( endp );
+}
+
+static inline void USBFS_SendEndpoint( int endp, int len )
+{
+	USBFSD_UEP_TLEN( endp ) = len;
+	USBFSD_UEP_TX_CTRL( endp ) = ( USBFSD_UEP_TX_CTRL( endp ) & ~USBFS_UEP_T_RES_MASK ) | USBFS_UEP_T_RES_ACK;
+	FSUSBCTX.USBFS_Endp_Busy[ endp ] = 0x01;
+}
+
 
 
 

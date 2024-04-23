@@ -38,7 +38,7 @@ int main()
 
 		// But we can fill in random for the rest.
 		for( i = 1; i < sizeof( buffer0 ); i ++ )
-			buffer0[i] = 0xbb;//rand(); 
+			buffer0[i] = i;//rand(); 
 
 		if( buffer0[1] == 0xa4 ) buffer0[1]++;
 

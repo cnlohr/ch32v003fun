@@ -896,7 +896,7 @@ void InterruptVectorDefault()
 	.word   NMI_Handler               /* NMI Handler */                    \n\
 	.word   HardFault_Handler         /* Hard Fault Handler */             \n\
 	.word   0\n"
-#if !defined(CH32X03x)
+#if defined(CH32X03x)
 "	.word   Ecall_M_Mode_Handler       /* Ecall M Mode */ \n\
 	.word   0 \n\
 	.word   0 \n\
@@ -975,9 +975,17 @@ void handle_reset()
 ".option arch, +zicsr\n"
 #endif
 	// Setup the interrupt vector, processor status and INTSYSCR.
+
+#if FUNCONF_ENABLE_HPE	// Enabled nested and hardware (HPE) stack, since it's really good on the x035.
+"	li t0, 0x88\n\
+	csrs mstatus, t0\n"
+"	li t0, 0x0b\n\
+	csrw 0x804, t0\n"
+#else
 "	li a0, 0x80\n\
-	csrw mstatus, a0\n\
-	li a3, 0x3\n\
+	csrw mstatus, a0\n"
+#endif
+"	li a3, 0x3\n\
 	la a0, InterruptVector\n\
 	or a0, a0, a3\n\
 	csrw mtvec, a0\n" 
@@ -1255,14 +1263,19 @@ void handle_reset( void )
 	asm volatile(
 "	li t0, 0x1f\n\
 	csrw 0xbc0, t0\n"
-#if defined(CH32V20x) || defined(CH32X03x)
-	// Enabled nested and hardware stack
+
+//XXX TODO: CHECKME - TEST ON 203!!!
+#if FUNCONF_ENABLE_HPE	// Enabled nested and hardware (HPE) stack, since it's really good on the x035.
 "	li t0, 0x88\n\
 	csrs mstatus, t0\n"
-#elif defined(CH32V30x)
-	// Enable nested and hardware stack
 "	li t0, 0x0b\n\
 	csrw 0x804, t0\n"
+#else
+"	li a0, 0x80\n\
+	csrw mstatus, a0\n"
+#endif
+
+#if defined(CH32V30x)
 	// Enable floating point and interrupt
 "	li t0, 0x688\n\
 	csrs mstatus, t0\n"

@@ -5,9 +5,10 @@
 #define FUSB_CONFIG_EPS   3 // Include EP0 in this count
 #define FUSB_SUPPORTS_SLEEP 0
 #define FUSB_HID_INTERFACES 2
-#define FUSB_CURSED_TURBO_DMA 1
+#define FUSB_CURSED_TURBO_DMA 0 // Hacky, but seems fine, shaves 2.5us off filling 64-byte buffers.
 #define FUSB_HID_USER_REPORTS 1
-
+#define FUSB_USE_HPE          1 // Use hardware stack.
+#define FUSB_IO_PROFILE       1
 
 #include "usb_defines.h"
 
