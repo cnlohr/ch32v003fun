@@ -2,7 +2,7 @@
 #define _USB_CONFIG_H
 
 #define FUSB_5V_OPERATION 0
-#define FUSB_CONFIG_EPS   3 // Include EP0 in this count
+#define FUSB_CONFIG_EPS   4 // Include EP0 in this count
 #define FUSB_SUPPORTS_SLEEP 0
 #define FUSB_HID_INTERFACES 2
 #define FUSB_CURSED_TURBO_DMA 0 // Hacky, but seems fine, shaves 2.5us off filling 64-byte buffers.
@@ -21,87 +21,14 @@ static const uint8_t device_descriptor[] = {
 	0x0, //Device Subclass
 	0x0, //Device Protocol  (000 = use config descriptor)
 	64, //Max packet size for EP0 (This has to be 8 because of the USB Low-Speed Standard)
-	0xaa, 0xaa, //ID Vendor
-	0x04, 0xd0, //ID Product
+	0x09, 0x12, //ID Vendor
+	0x35, 0xd0, //ID Product
 	0x03, 0x00, //ID Rev
 	1, //Manufacturer string
 	2, //Product string
 	3, //Serial string
 	1, //Max number of configurations
 };
-
-
-
-/* Configuration Descriptor Set */
-static const uint8_t config_descriptor[ ] =
-{
-    /* Configuration Descriptor */
-    0x09,                                                   // bLength
-    0x02,                                                   // bDescriptorType
-    0x3B, 0x00,                                             // wTotalLength
-    0x02,                                                   // bNumInterfaces
-    0x01,                                                   // bConfigurationValue
-    0x00,                                                   // iConfiguration
-    0xA0,                                                   // bmAttributes: Bus Powered; Remote Wakeup
-    0x32,                                                   // MaxPower: 100mA
-
-    /* Interface Descriptor (Keyboard) */
-    0x09,                                                   // bLength
-    0x04,                                                   // bDescriptorType
-    0x00,                                                   // bInterfaceNumber
-    0x00,                                                   // bAlternateSetting
-    0x01,                                                   // bNumEndpoints
-    0x03,                                                   // bInterfaceClass
-    0x01,                                                   // bInterfaceSubClass
-    0x01,                                                   // bInterfaceProtocol: Keyboard
-    0x00,                                                   // iInterface
-
-    /* HID Descriptor (Keyboard) */
-    0x09,                                                   // bLength
-    0x21,                                                   // bDescriptorType
-    0x11, 0x01,                                             // bcdHID
-    0x00,                                                   // bCountryCode
-    0x01,                                                   // bNumDescriptors
-    0x22,                                                   // bDescriptorType
-    0x3E, 0x00,                                             // wDescriptorLength
-
-    /* Endpoint Descriptor (Keyboard) */
-    0x07,                                                   // bLength
-    0x05,                                                   // bDescriptorType
-    0x81,                                                   // bEndpointAddress: IN Endpoint 1
-    0x03,                                                   // bmAttributes
-    0x08, 0x00,                                             // wMaxPacketSize
-    0x0A,                                                   // bInterval: 10mS
-
-    /* Interface Descriptor (Mouse) */
-    0x09,                                                   // bLength
-    0x04,                                                   // bDescriptorType
-    0x01,                                                   // bInterfaceNumber
-    0x00,                                                   // bAlternateSetting
-    0x01,                                                   // bNumEndpoints
-    0x03,                                                   // bInterfaceClass
-    0x01,                                                   // bInterfaceSubClass
-    0x02,                                                   // bInterfaceProtocol: Mouse
-    0x00,                                                   // iInterface
-
-    /* HID Descriptor (Mouse) */
-    0x09,                                                   // bLength
-    0x21,                                                   // bDescriptorType
-    0x10, 0x01,                                             // bcdHID
-    0x00,                                                   // bCountryCode
-    0x01,                                                   // bNumDescriptors
-    0x22,                                                   // bDescriptorType
-    0x34, 0x00,                                             // wDescriptorLength
-
-    /* Endpoint Descriptor (Mouse) */
-    0x07,                                                   // bLength
-    0x05,                                                   // bDescriptorType
-    0x82,                                                   // bEndpointAddress: IN Endpoint 2
-    0x03,                                                   // bmAttributes
-    0x08, 0x00,                                             // wMaxPacketSize
-    0x01                                                    // bInterval: 1mS
-};
-
 
 
 /* Keyboard Report Descriptor */
@@ -138,27 +65,12 @@ static const uint8_t KeyRepDesc[ ] =
     0x29, 0x91,                                             // Usage Maximum (145)
     0x81, 0x00,                                             // Input(Data,Array,Absolute)
     0xC0                                                    // End Collection
-,
-	// TODO - Figure out how to work this in.
-	HID_USAGE_PAGE ( 0xff ), // Vendor-defined page.
-	HID_USAGE      ( 0x00 ),
-	HID_REPORT_SIZE ( 8 ),
-	HID_COLLECTION ( HID_COLLECTION_LOGICAL ),
-		HID_REPORT_COUNT   ( 254 ),
-		HID_REPORT_ID      ( 0xaa )
-		HID_USAGE          ( 0x01 ),
-		HID_FEATURE        ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE ) ,
-		HID_REPORT_COUNT   ( 63 ), // For use with `hidapitester --vidpid 1209/D003 --open --read-feature 171`
-		HID_REPORT_ID      ( 0xab )
-		HID_USAGE          ( 0x01 ),	
-		HID_FEATURE        ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE ) ,
-	HID_COLLECTION_END,
-
 };
 
 /* Mouse Report Descriptor */
 static const uint8_t MouseRepDesc[ ] =
 {
+
     0x05, 0x01,                                             // Usage Page (Generic Desktop)
     0x09, 0x02,                                             // Usage (Mouse)
     0xA1, 0x01,                                             // Collection (Application)
@@ -188,8 +100,126 @@ static const uint8_t MouseRepDesc[ ] =
     0xC0                                                    // End Collection
 };
 
+static const uint8_t HIDAPIRepDesc[ ] =
+{
+	HID_USAGE_PAGE ( 0xff ), // Vendor-defined page.
+	HID_USAGE      ( 0x00 ),
+	HID_REPORT_SIZE ( 8 ),
+	HID_COLLECTION ( HID_COLLECTION_LOGICAL ),
+		HID_REPORT_COUNT   ( 254 ),
+		HID_REPORT_ID      ( 0xaa )
+		HID_USAGE          ( 0x01 ),
+		HID_FEATURE        ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE ) ,
+		HID_REPORT_COUNT   ( 63 ), // For use with `hidapitester --vidpid 1209/D003 --open --read-feature 171`
+		HID_REPORT_ID      ( 0xab )
+		HID_USAGE          ( 0x01 ),	
+		HID_FEATURE        ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE ) ,
+	HID_COLLECTION_END,
+};
 
-#define STR_MANUFACTURER u"WCH-TEST"
+/* Configuration Descriptor Set */
+static const uint8_t config_descriptor[ ] =
+{
+    /* Configuration Descriptor */
+    0x09,                                                   // bLength
+    0x02,                                                   // bDescriptorType
+    0x54, 0x00,                                             // wTotalLength
+    0x03,                                                   // bNumInterfaces (2)
+    0x01,                                                   // bConfigurationValue
+    0x00,                                                   // iConfiguration
+    0xA0,                                                   // bmAttributes: Bus Powered; Remote Wakeup
+    0x32,                                                   // MaxPower: 100mA
+
+    /* Interface Descriptor (Keyboard) */
+    0x09,                                                   // bLength
+    0x04,                                                   // bDescriptorType
+    0x00,                                                   // bInterfaceNumber
+    0x00,                                                   // bAlternateSetting
+    0x01,                                                   // bNumEndpoints
+    0x03,                                                   // bInterfaceClass
+    0x01,                                                   // bInterfaceSubClass
+    0x01,                                                   // bInterfaceProtocol: Keyboard
+    0x00,                                                   // iInterface
+
+    /* HID Descriptor (Keyboard) */
+    0x09,                                                   // bLength
+    0x21,                                                   // bDescriptorType
+    0x11, 0x01,                                             // bcdHID
+    0x00,                                                   // bCountryCode
+    0x01,                                                   // bNumDescriptors
+    0x22,                                                   // bDescriptorType
+    sizeof(KeyRepDesc), 0x00,                               // wDescriptorLength
+
+    /* Endpoint Descriptor (Keyboard) */
+    0x07,                                                   // bLength
+    0x05,                                                   // bDescriptorType
+    0x81,                                                   // bEndpointAddress: IN Endpoint 1
+    0x03,                                                   // bmAttributes
+    0x08, 0x00,                                             // wMaxPacketSize
+    0x0A,                                                   // bInterval: 10mS
+
+    /* Interface Descriptor (Mouse) */
+    0x09,                                                   // bLength
+    0x04,                                                   // bDescriptorType
+    0x01,                                                   // bInterfaceNumber
+    0x00,                                                   // bAlternateSetting
+    0x01,                                                   // bNumEndpoints
+    0x03,                                                   // bInterfaceClass
+    0x01,                                                   // bInterfaceSubClass
+    0x02,                                                   // bInterfaceProtocol: Mouse
+    0x00,                                                   // iInterface
+
+    /* HID Descriptor (Mouse) */
+    0x09,                                                   // bLength
+    0x21,                                                   // bDescriptorType
+    0x10, 0x01,                                             // bcdHID
+    0x00,                                                   // bCountryCode
+    0x01,                                                   // bNumDescriptors
+    0x22,                                                   // bDescriptorType
+    sizeof(MouseRepDesc), 0x00,                             // wDescriptorLength
+
+    /* Endpoint Descriptor (Mouse) */
+    0x07,                                                   // bLength
+    0x05,                                                   // bDescriptorType
+    0x82,                                                   // bEndpointAddress: IN Endpoint 2
+    0x03,                                                   // bmAttributes
+    0x08, 0x00,                                             // wMaxPacketSize
+    0x01,                                                   // bInterval: 1mS
+
+
+    /* Interface Descriptor (Mouse) */
+    0x09,                                                   // bLength
+    0x04,                                                   // bDescriptorType
+    0x02,                                                   // bInterfaceNumber
+    0x00,                                                   // bAlternateSetting
+    0x01,                                                   // bNumEndpoints
+    0x03,                                                   // bInterfaceClass
+    0x00,                                                   // bInterfaceSubClass
+    0xff,                                                   // bInterfaceProtocol: OTher
+    0x00,                                                   // iInterface
+
+    /* HID Descriptor (Mouse) */
+    0x09,                                                   // bLength
+    0x21,                                                   // bDescriptorType
+    0x10, 0x01,                                             // bcdHID
+    0x00,                                                   // bCountryCode
+    0x01,                                                   // bNumDescriptors
+    0x22,                                                   // bDescriptorType
+    sizeof(HIDAPIRepDesc), 0x00,                             // wDescriptorLength
+
+    /* Endpoint Descriptor (Mouse) */
+    0x07,                                                   // bLength
+    0x05,                                                   // bDescriptorType
+    0x83,                                                   // bEndpointAddress: IN Endpoint 2
+    0x03,                                                   // bmAttributes
+    0x08, 0x00,                                             // wMaxPacketSize
+    0x0a,                                                   // bInterval: 1mS
+
+};
+
+
+
+#define STR_MANUFACTURER u"CNLohr"
 #define STR_PRODUCT      u"ch32v003fun ch32x035 test"
 #define STR_SERIAL       u"CUSTOMDEVICE000"
 
@@ -231,6 +261,8 @@ const static struct descriptor_list_struct {
 	// interface number // 2200 for hid descriptors.
 	{0x00002200, KeyRepDesc, sizeof(KeyRepDesc)},
 	{0x00012200, MouseRepDesc, sizeof(MouseRepDesc)},
+	{0x00022200, HIDAPIRepDesc, sizeof(HIDAPIRepDesc)},
+
 	{0x00002100, config_descriptor + 18, 9 }, // Not sure why, this seems to be useful for Windows + Android.
 
 	{0x00000300, (const uint8_t *)&string0, 4},

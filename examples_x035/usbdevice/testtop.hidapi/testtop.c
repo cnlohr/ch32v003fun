@@ -12,7 +12,7 @@
 
 int main()
 {
-	hid_device * hd = hid_open( 0xaaaa, 0xd004, L"CUSTOMDEVICE000"); // third parameter is "serial"
+	hid_device * hd = hid_open( 0x1206, 0xd035, L"CUSTOMDEVICE000"); // third parameter is "serial"
 	if( !hd )
 	{
 		fprintf( stderr, "Error: Failed to open device.\n" );
