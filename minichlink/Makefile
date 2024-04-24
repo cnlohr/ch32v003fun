@@ -42,7 +42,7 @@ minichlink.dll : $(C_S)
 
 install_udev_rules :
 	cp 99-minichlink.rules /etc/udev/rules.d/
-	udevadm --reload
+	udevadm control --reload
 	udevadm trigger
 
 inspect_bootloader : minichlink

@@ -178,6 +178,14 @@ SECTIONS
 	PROVIDE( end = . );
 
 	PROVIDE( _eusrstack = ORIGIN(RAM) + LENGTH(RAM));	
+
+    /DISCARD/ : {
+      *(.note .note.*)
+      *(.eh_frame .eh_frame.*)
+      *(.comment .comment.*)
+      *(.ARM.extab* .gnu.linkonce.armextab.*)
+      *(.ARM.exidx*)
+    }
 }
 
 
