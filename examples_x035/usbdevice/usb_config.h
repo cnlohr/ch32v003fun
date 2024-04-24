@@ -1,14 +1,17 @@
 #ifndef _USB_CONFIG_H
 #define _USB_CONFIG_H
 
-#define FUSB_5V_OPERATION 0
-#define FUSB_CONFIG_EPS   4 // Include EP0 in this count
-#define FUSB_SUPPORTS_SLEEP 0
-#define FUSB_HID_INTERFACES 2
+#include "funconfig.h"
+#include "ch32v003fun.h"
+
+#define FUSB_CONFIG_EPS       4 // Include EP0 in this count
+#define FUSB_SUPPORTS_SLEEP   0
+#define FUSB_HID_INTERFACES   2
 #define FUSB_CURSED_TURBO_DMA 0 // Hacky, but seems fine, shaves 2.5us off filling 64-byte buffers.
 #define FUSB_HID_USER_REPORTS 1
-#define FUSB_USE_HPE          1 // Use hardware stack.
 #define FUSB_IO_PROFILE       1
+#define FUSB_USE_HPE          FUNCONF_ENABLE_HPE
+#define FUSB_5V_OPERATION     FUNCONF_5V_OPERATION
 
 #include "usb_defines.h"
 
@@ -213,8 +216,7 @@ static const uint8_t config_descriptor[ ] =
     0x83,                                                   // bEndpointAddress: IN Endpoint 2
     0x03,                                                   // bmAttributes
     0x08, 0x00,                                             // wMaxPacketSize
-    0x0a,                                                   // bInterval: 1mS
-
+    0x0a,                                                   // bInterval: 10mS
 };
 
 

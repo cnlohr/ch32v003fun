@@ -4,6 +4,7 @@
 // Though this should be on by default we can extra force it on.
 #define FUNCONF_USE_DEBUGPRINTF 1
 #define FUNCONF_DEBUGPRINTF_TIMEOUT (1<<31) // Wait for a very very long time.
+#define FUNCONF_5V_OPERATION 1
 
 #endif
 
