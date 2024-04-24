@@ -127,7 +127,7 @@ static const uint8_t config_descriptor[ ] =
     0x09,                                                   // bLength
     0x02,                                                   // bDescriptorType
     0x54, 0x00,                                             // wTotalLength
-    0x03,                                                   // bNumInterfaces (2)
+    0x03,                                                   // bNumInterfaces (3)
     0x01,                                                   // bConfigurationValue
     0x00,                                                   // iConfiguration
     0xA0,                                                   // bmAttributes: Bus Powered; Remote Wakeup
