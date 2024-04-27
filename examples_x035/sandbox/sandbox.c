@@ -7,6 +7,7 @@
 uint32_t count;
 
 int last = 0;
+
 void handle_debug_input( int numbytes, uint8_t * data )
 {
 	last = data[0];
@@ -21,23 +22,8 @@ int main()
 
 	funPinMode( PA0, GPIO_CFGLR_OUT_10Mhz_PP );
 
-	printf( "%08x\n", &USBPD->DMA );
+	printf( "Hello\n" );
 
 	while(1);
-
-#if 0
-	while(1)
-	{
-		GPIOA->BSHR = 1;	 // Turn on GPIOs
-		printf( "+%lu %lu\n", count++ );
-		Delay_Ms(100);
-		int i;
-		for( i = 0; i < 10000; i++ )
-			poll_input();
-		GPIOA->BSHR = (1<<16); // Turn off GPIODs
-		printf( "-%lu[%c]\n", count++, last );
-		Delay_Ms(100);
-	}
-#endif
 }
 
