@@ -1,3 +1,7 @@
+# WARNING
+
+This gets the official EVT.  This is only for reference by mainatiners of ch32v003fun.  Not for use.
+
 # General Tooling Notes For Using Official EVT With GCC but without Moun River
 
 This shows how to build the CH32V003 demo binaries without the horrifying MounRiver Studio.
