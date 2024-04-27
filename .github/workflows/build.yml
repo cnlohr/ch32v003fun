@@ -23,7 +23,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Install Dependencies
-      run: sudo apt-get update && sudo apt-get install -y build-essential make libnewlib-dev gcc-riscv64-unknown-elf libusb-1.0-0-dev
+      run: sudo apt-get update && sudo apt-get install -y build-essential make libnewlib-dev gcc-riscv64-unknown-elf libusb-1.0-0-dev libudev-dev
     - name: Build ${{ matrix.example }}
       run: cd ${{ matrix.example }} && make V=1 -j3 $(basename ${{ matrix.example }}.elf) && riscv64-unknown-elf-size $(basename ${{ matrix.example }}.elf)
   # Build using PlatformIO

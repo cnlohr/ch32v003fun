@@ -56,6 +56,30 @@ else
 		endif
 
 		TARGET_MCU_LD:=1
+	else ifeq ($(findstring CH32X03,$(TARGET_MCU)),CH32X03) # CH32X033, X035
+		TARGET_MCU_PACKAGE?=CH32X035F8U6
+		CFLAGS_ARCH+=-march=rv32imac \
+			-mabi=ilp32 \
+			-DCH32X03x=1
+
+		# MCU Flash/RAM split
+		ifeq ($(findstring F8, $(TARGET_MCU_PACKAGE)), F8)
+			MCU_PACKAGE:=1
+		else ifeq ($(findstring R8, $(TARGET_MCU_PACKAGE)), R8)
+			MCU_PACKAGE:=1
+		else ifeq ($(findstring K8, $(TARGET_MCU_PACKAGE)), K8)
+			MCU_PACKAGE:=1
+		else ifeq ($(findstring C8, $(TARGET_MCU_PACKAGE)), C8)
+			MCU_PACKAGE:=1
+		else ifeq ($(findstring G8, $(TARGET_MCU_PACKAGE)), G8)
+			MCU_PACKAGE:=1
+		else ifeq ($(findstring G6, $(TARGET_MCU_PACKAGE)), G6)
+			MCU_PACKAGE:=1
+		else ifeq ($(findstring F7, $(TARGET_MCU_PACKAGE)), F7)
+			MCU_PACKAGE:=1
+		endif
+
+		TARGET_MCU_LD:=4		
 	else ifeq ($(findstring CH32V20,$(TARGET_MCU)),CH32V20) # CH32V203
 		TARGET_MCU_PACKAGE?=CH32V203F8P6
 		CFLAGS_ARCH+=	-march=rv32imac \
@@ -63,7 +87,14 @@ else
 			-DCH32V20x=1
 
 		# MCU Flash/RAM split
-		ifeq ($(findstring F8, $(TARGET_MCU_PACKAGE)), F8)
+
+
+		# Package
+		ifeq ($(findstring 203RB, $(TARGET_MCU_PACKAGE)), 203RB)
+			CFLAGS+=-DCH32V20x_D8
+		else ifeq ($(findstring 208, $(TARGET_MCU_PACKAGE)), 208)
+			CFLAGS+=-DCH32V20x_D8W
+		else ifeq ($(findstring F8, $(TARGET_MCU_PACKAGE)), F8)
 			MCU_PACKAGE:=1
 		else ifeq ($(findstring G8, $(TARGET_MCU_PACKAGE)), G8)
 			MCU_PACKAGE:=1
@@ -87,13 +118,6 @@ else
 			MCU_PACKAGE:=3
 		else ifeq ($(findstring WB, $(TARGET_MCU_PACKAGE)), WB)
 			MCU_PACKAGE:=3
-		endif
-
-		# Package
-		ifeq ($(findstring 203RB, $(TARGET_MCU_PACKAGE)), 203RB)
-			CFLAGS+=-DCH32V20x_D8
-		else ifeq ($(findstring 208, $(TARGET_MCU_PACKAGE)), 208)
-			CFLAGS+=-DCH32V20x_D8W
 		else
 			CFLAGS+=-DCH32V20x_D6
 		endif
@@ -200,6 +224,6 @@ cv_flash : $(TARGET).bin
 	$(FLASH_COMMAND)
 
 cv_clean :
-	rm -rf $(TARGET).elf $(TARGET).bin $(TARGET).hex $(TARGET).lst $(TARGET).map $(TARGET).hex || true
+	rm -rf $(TARGET).elf $(TARGET).bin $(TARGET).hex $(TARGET).lst $(TARGET).map $(TARGET).hex $(GENERATED_LD_FILE) || true
 
 build : $(TARGET).bin

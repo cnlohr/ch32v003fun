@@ -37,6 +37,9 @@ static void printChipInfo(enum RiscVChip chip) {
 		case CHIP_CH58x:
 			fprintf(stderr, "Detected: CH58x\n");
 			break;
+		case CHIP_CH32X03x:
+			fprintf(stderr, "Detected: CH32X03x\n");
+			break;
 		case CHIP_CH32V003:
 			fprintf(stderr, "Detected: CH32V003\n");
 			break;
@@ -46,6 +49,7 @@ static void printChipInfo(enum RiscVChip chip) {
 static int checkChip(enum RiscVChip chip) {
 	switch(chip) {
 		case CHIP_CH32V003:
+		case CHIP_CH32X03x:
 			return 0; // Use direct mode
 		case CHIP_CH32V10x:
 		case CHIP_CH32V20x:
@@ -322,15 +326,31 @@ static int LESetupInterface( void * d )
 
 	// This puts the processor on hold to allow the debugger to run.
 	int already_tried_reset = 0;
+	int is_already_connected = 0;
 	do
 	{
+		// Read DMSTATUS - in case we are a ch32x035, or other chip that does not respond to \x81\x0d\x01\x02.
+		wch_link_command( dev, "\x81\x08\x06\x05\x11\x00\x00\x00\x00\x01", 11, (int*)&transferred, rbuff, 1024 ); // Reply: Ignored, 820d050900300500
+		if( transferred == 9 && rbuff[8] != 0x02 && rbuff[8] != 0x03 )
+		{
+			// Already connected.
+			if( is_already_connected )
+			{
+				printf( "Already Connected\n" );
+				// Still need to read in the data so we can select the correct chip.
+				wch_link_command( dev, "\x81\x0d\x01\x02", 4, (int*)&transferred, rbuff, 1024 ); // ?? this seems to work?
+				break;
+			}
+			is_already_connected = 1;
+		}
+
 		wch_link_command( dev, "\x81\x0d\x01\x02", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Ignored, 820d050900300500
 		if (rbuff[0] == 0x81 && rbuff[1] == 0x55 && rbuff[2] == 0x01 ) // && rbuff[3] == 0x01 )
 		{
 			// The following code may try to execute a few times to get the processor to actually reset.
 			// This code could likely be much better.
-
-			fprintf(stderr, "link error, nothing connected to linker (%d = [%02x %02x %02x %02x]).  Trying to put processor in hold and retrying.\n", transferred, rbuff[0], rbuff[1], rbuff[2], rbuff[3]);
+			if( already_tried_reset > 1)
+				fprintf(stderr, "link error, nothing connected to linker (%d = [%02x %02x %02x %02x]).  Trying to put processor in hold and retrying.\n", transferred, rbuff[0], rbuff[1], rbuff[2], rbuff[3]);
 
 			// Give up if too long
 			if( already_tried_reset > 10 )
@@ -360,12 +380,72 @@ static int LESetupInterface( void * d )
 	} while( 1 );
 
 	if(rbuff[3] == 0x08 || rbuff[3] > 0x09) {
-		fprintf( stderr, "Chip Type unknown. Aborting...\n" );
+		fprintf( stderr, "Chip Type unknown [%02x]. Aborting...\n", rbuff[3] );
 		return -1;
 	}
 
 	enum RiscVChip chip = (enum RiscVChip)rbuff[3];
 	printChipInfo(chip);
+
+	iss->target_chip_type = chip;
+
+	// For some reason, if we don't do this sometimes the programmer starts in a hosey mode.
+	MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
+	MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // Initiate a halt request.
+	MCF.WriteReg32( d, DMCONTROL, 0x80000003 ); // No, really make sure, and also super halt processor.
+	MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // Un-super-halt processor.
+
+	int r = 0;
+
+
+	int timeout = 0;
+retry_DoneOp:
+	MCF.WriteReg32( d, DMABSTRACTCS, 0x00000700 ); // Ignore any pending errors.
+	MCF.WriteReg32( d, DMABSTRACTAUTO, 0 );
+	MCF.WriteReg32( d, DMCOMMAND, 0x00221000 ); // Read x0 (Null command) with nopostexec (to fix v307 read issues)
+	r = MCF.WaitForDoneOp( d, 0 );
+	if( r )
+	{
+		fprintf( stderr, "Retrying\n" );
+		if( timeout++ < 10 ) goto retry_DoneOp;
+		fprintf( stderr, "Fault on setup %d\n", r );
+		return -4;
+	}
+	else
+	{
+		fprintf( stderr, "Setup success\n" );
+	}
+
+	// This puts the processor on hold to allow the debugger to run.
+	// Recommended to switch to 05 from 09 by Alexander M
+	//	wch_link_command( dev, "\x81\x11\x01\x09", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Chip ID + Other data (see below)
+retry_ID:
+	wch_link_command( dev, "\x81\x11\x01\x05", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Chip ID + Other data (see below)
+
+	if( rbuff[0] == 0x00 )
+	{
+		if( timeout++ < 10 ) goto retry_ID;
+		fprintf( stderr, "Failed to get chip ID\n" );
+		return -4;
+	}
+
+	if( transferred != 20 )
+	{
+		fprintf( stderr, "Error: could not get part status\n" );
+		return -1;
+	}
+	int flash_size = (rbuff[2]<<8) | rbuff[3];
+	fprintf( stderr, "Flash Storage: %d kB\n", flash_size );
+	fprintf( stderr, "Part UUID    : %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n", rbuff[4], rbuff[5], rbuff[6], rbuff[7], rbuff[8], rbuff[9], rbuff[10], rbuff[11] );
+	fprintf( stderr, "PFlags       : %02x-%02x-%02x-%02x\n", rbuff[12], rbuff[13], rbuff[14], rbuff[15] );
+	fprintf( stderr, "Part Type (B): %02x-%02x-%02x-%02x\n", rbuff[16], rbuff[17], rbuff[18], rbuff[19] );
+
+	if( iss->target_chip_type == CHIP_CH32V10x && flash_size == 62 )
+	{
+		fprintf( stderr, "While the debugger reports this as a CH32V10x, it's probably a CH32X03x\n" );
+		chip = iss->target_chip_type = CHIP_CH32X03x;
+		iss->sector_size = 256;
+	}
 
 	int result = checkChip(chip);
 	if( result == 1 ) // Using blob write
@@ -381,42 +461,6 @@ static int LESetupInterface( void * d )
 		return -1;
 	}
 
-	iss->target_chip_type = chip;
-
-	// For some reason, if we don't do this sometimes the programmer starts in a hosey mode.
-	MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
-	MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // Initiate a halt request.
-	MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // No, really make sure.
-	MCF.WriteReg32( d, DMABSTRACTCS, 0x00000700 ); // Ignore any pending errors.
-	MCF.WriteReg32( d, DMABSTRACTAUTO, 0 );
-	MCF.WriteReg32( d, DMCOMMAND, 0x00221000 ); // Read x0 (Null command) with nopostexec (to fix v307 read issues)
-
-	int r = 0;
-
-	r |= MCF.WaitForDoneOp( d, 0 );
-	if( r )
-	{
-		fprintf( stderr, "Fault on setup\n" );
-	}
-	else
-	{
-		fprintf( stderr, "Setup success\n" );
-	}
-
-	// This puts the processor on hold to allow the debugger to run.
-	// Recommended to switch to 05 from 09 by Alexander M
-	//	wch_link_command( dev, "\x81\x11\x01\x09", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Chip ID + Other data (see below)
-	wch_link_command( dev, "\x81\x11\x01\x05", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Chip ID + Other data (see below)
-
-	if( transferred != 20 )
-	{
-		fprintf( stderr, "Error: could not get part status\n" );
-		return -1;
-	}
-	fprintf( stderr, "Flash Storage: %d kB\n", (rbuff[2]<<8) | rbuff[3] );  // Is this Flash size?
-	fprintf( stderr, "Part UUID    : %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n", rbuff[4], rbuff[5], rbuff[6], rbuff[7], rbuff[8], rbuff[9], rbuff[10], rbuff[11] );
-	fprintf( stderr, "PFlags       : %02x-%02x-%02x-%02x\n", rbuff[12], rbuff[13], rbuff[14], rbuff[15] );
-	fprintf( stderr, "Part Type (B): %02x-%02x-%02x-%02x\n", rbuff[16], rbuff[17], rbuff[18], rbuff[19] );
 
 	// Check for read protection
 	wch_link_command( dev, "\x81\x06\x01\x01", 4, (int*)&transferred, rbuff, 1024 );
@@ -775,6 +819,7 @@ static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len,
 			WCHCHECK( libusb_bulk_transfer( (libusb_device_handle *)dev, 0x02, blob+pplace, iss->sector_size, &transferred, WCHTIMEOUT ) );
 		}
 	}
+
 	return 0;
 }
 

@@ -111,7 +111,8 @@ enum RiscVChip {
 	CHIP_CH32V20x = 0x05,
 	CHIP_CH32V30x = 0x06,
 	CHIP_CH58x = 0x07,
-	CHIP_CH32V003 = 0x09
+	CHIP_CH32V003 = 0x09,
+	CHIP_CH32X03x = 0x1000, // TODO: Figure out how to get the programmer to really tell us what this is.
 };
 
 struct InternalState

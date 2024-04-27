@@ -717,7 +717,7 @@ void NMI_Handler( void ) 				 __attribute__((section(".text.vector_handler"))) _
 void NMI_Handler( void )                 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 #endif
 void HardFault_Handler( void )           __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
-#if defined(CH32V20x) || defined(CH32V30x)
+#if defined(CH32V20x) || defined(CH32V30x) || defined(CH32X03x)
 void Ecall_M_Mode_Handler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void Ecall_U_Mode_Handler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void Break_Point_Handler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
@@ -732,7 +732,7 @@ void RTC_IRQHandler( void )				 __attribute__((section(".text.vector_handler")))
 #endif // defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 void FLASH_IRQHandler( void )            __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void RCC_IRQHandler( void )              __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
-#ifdef CH32V003
+#if defined(CH32V003) || defined(CH32X03x)
 void EXTI7_0_IRQHandler( void )          __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void AWU_IRQHandler( void )              __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 #elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
@@ -749,7 +749,7 @@ void DMA1_Channel4_IRQHandler( void )    __attribute__((section(".text.vector_ha
 void DMA1_Channel5_IRQHandler( void )    __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void DMA1_Channel6_IRQHandler( void )    __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void DMA1_Channel7_IRQHandler( void )    __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
-#ifdef CH32V003
+#if defined( CH32V003 ) || defined(CH32X03x)
 void ADC1_IRQHandler( void )             __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 #elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 void ADC1_2_IRQHandler( void ) 			 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
@@ -774,7 +774,7 @@ void TIM4_IRQHandler( void ) 			 __attribute__((section(".text.vector_handler"))
 #endif // defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 void I2C1_EV_IRQHandler( void )          __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void I2C1_ER_IRQHandler( void )          __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
-#ifdef CH32V003
+#if defined( CH32V003 ) || defined( CH32X03x )
 void USART1_IRQHandler( void )           __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void SPI1_IRQHandler( void )             __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 #elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
@@ -840,7 +840,26 @@ void DMA2_Channel10_IRQHandler( void ) 	__attribute__((section(".text.vector_han
 void DMA2_Channel11_IRQHandler( void ) 	__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 #endif
 
-#ifdef CH32V003
+#if defined( CH32X03x)
+void USART2_IRQHandler( void )        __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void EXTI15_8_IRQHandler( void )      __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void EXTI25_16_IRQHandler( void )     __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void USART3_IRQHandler( void ) 		  __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void USART4_IRQHandler( void ) 		  __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void DMA1_Channel8_IRQHandler( void ) __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void USBFS_IRQHandler( void )         __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void USBFS_WakeUp_IRQHandler( void )  __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void PIOC_IRQHandler( void )          __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void OPA_IRQHandler( void )           __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void USBPD_IRQHandler( void )         __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void USBPD_WKUP_IRQHandler( void )    __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void TIM2_CC_IRQHandler( void )       __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void TIM2_TRG_IRQHandler( void )      __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void TIM2_BRK_IRQHandler( void )      __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void TIM3_IRQHandler( void )          __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+#endif
+
+#if defined( CH32V003 ) || defined( CH32X03x )
 
 void InterruptVector()         __attribute__((naked)) __attribute((section(".init"))) __attribute((weak,alias("InterruptVectorDefault")));
 void InterruptVectorDefault()  __attribute__((naked)) __attribute((section(".init")));
@@ -852,18 +871,46 @@ void InterruptVectorDefault()
 	.option   push;\n\
 	.option   norvc;\n\
 	j handle_reset\n" );
+#if 0 // What is this for?  I don't see any reason to have it.
+#ifdef CH32X03x
+	asm volatile( "\n\
+	.word 0x00000013 \n\
+	.word 0x00000013 \n\
+	.word 0x00000013 \n\
+	.word 0x00000013 \n\
+	.word 0x00000013 \n\
+	.word 0x00000013 \n\
+	.word 0x00000013 \n\
+	.word 0x00000013 \n\
+	.word 0x00000013 \n\
+	.word 0x00000013 \n\
+	.word 0x00000013 \n\
+	.word 0x00000013 \n\
+	.word 0x00100073" );
+#endif
+#endif
+
 #if !defined(FUNCONF_TINYVECTOR) || !FUNCONF_TINYVECTOR
 	asm volatile( "\n\
 	.word   0\n\
 	.word   NMI_Handler               /* NMI Handler */                    \n\
 	.word   HardFault_Handler         /* Hard Fault Handler */             \n\
+	.word   0\n"
+#if defined(CH32X03x)
+"	.word   Ecall_M_Mode_Handler       /* Ecall M Mode */ \n\
+	.word   0 \n\
+	.word   0 \n\
+	.word   Ecall_U_Mode_Handler       /* Ecall U Mode */ \n\
+	.word   Break_Point_Handler        /* Break Point */ \n\
+"
+#else
+"	.word   0\n\
 	.word   0\n\
 	.word   0\n\
 	.word   0\n\
-	.word   0\n\
-	.word   0\n\
-	.word   0\n\
-	.word   0\n\
+	.word   0\n"
+#endif
+"	.word   0\n\
 	.word   0\n\
 	.word   SysTick_Handler           /* SysTick Handler */                \n\
 	.word   0\n\
@@ -892,8 +939,26 @@ void InterruptVectorDefault()
 	.word   TIM1_UP_IRQHandler        /* TIM1 Update */                    \n\
 	.word   TIM1_TRG_COM_IRQHandler   /* TIM1 Trigger and Commutation */   \n\
 	.word   TIM1_CC_IRQHandler        /* TIM1 Capture Compare */           \n\
-	.word   TIM2_IRQHandler           /* TIM2 */                           \n\
-");
+	.word   TIM2_IRQHandler           /* TIM2 */                           \n"
+#if defined( CH32X03x )
+"	.word	USART2_IRQHandler         /* UART2 Interrupt                          */ \n\
+	.word	EXTI15_8_IRQHandler       /* External Line[8:15] Interrupt            */ \n\
+	.word	EXTI25_16_IRQHandler      /* External Line[25:16] Interrupt           */ \n\
+	.word	USART3_IRQHandler         /* UART2 Interrupt                          */ \n\
+	.word	USART4_IRQHandler         /* UART2 Interrupt                          */ \n\
+	.word	DMA1_Channel8_IRQHandler  /* DMA1 Channel 8 global Interrupt          */ \n\
+	.word	USBFS_IRQHandler          /* USB Full-Speed Interrupt                 */ \n\
+	.word	USBFS_WakeUp_IRQHandler   /* USB Full-Speed Wake-Up Interrupt         */ \n\
+	.word	PIOC_IRQHandler           /* Programmable IO Controller Interrupt     */ \n\
+	.word	OPA_IRQHandler            /* Op Amp Interrupt                         */ \n\
+	.word	USBPD_IRQHandler          /* USB Power Delivery Interrupt             */ \n\
+	.word	USBPD_WKUP_IRQHandler     /* USB Power Delivery Wake-Up Interrupt     */ \n\
+	.word	TIM2_CC_IRQHandler        /* Timer 2 Compare Global Interrupt         */ \n\
+	.word	TIM2_TRG_IRQHandler       /* Timer 2 Trigger Global Interrupt         */ \n\
+	.word	TIM2_BRK_IRQHandler       /* Timer 2 Brk Global Interrupt             */ \n\
+	.word	TIM3_IRQHandler           /* Timer 3 Global Interrupt                 */"
+#endif
+	);
 #endif
 	asm volatile( ".option   pop;\n");
 }
@@ -910,9 +975,17 @@ void handle_reset()
 ".option arch, +zicsr\n"
 #endif
 	// Setup the interrupt vector, processor status and INTSYSCR.
+
+#if FUNCONF_ENABLE_HPE	// Enabled nested and hardware (HPE) stack, since it's really good on the x035.
+"	li t0, 0x88\n\
+	csrs mstatus, t0\n"
+"	li t0, 0x0b\n\
+	csrw 0x804, t0\n"
+#else
 "	li a0, 0x80\n\
-	csrw mstatus, a0\n\
-	li a3, 0x3\n\
+	csrw mstatus, a0\n"
+#endif
+"	li a3, 0x3\n\
 	la a0, InterruptVector\n\
 	or a0, a0, a3\n\
 	csrw mtvec, a0\n" 
@@ -949,7 +1022,6 @@ asm volatile(
 : : : "a0", "a1", "a2", "a3", "memory"
 #endif
 );
-
 
 #if defined( FUNCONF_SYSTICK_USE_HCLK ) && FUNCONF_SYSTICK_USE_HCLK
 	SysTick->CTLR = 5;
@@ -1137,7 +1209,8 @@ void InterruptVectorDefault()
     .word   DMA2_Channel10_IRQHandler  /* DMA2 Channel 10 */ \n\
     .word   DMA2_Channel11_IRQHandler  /* DMA2 Channel 11 */ \n"
 #endif
-#endif
+
+#endif // !defined(FUNCONF_TINYVECTOR) || !FUNCONF_TINYVECTOR
 "	.option rvc; \n");
 
 }
@@ -1190,14 +1263,19 @@ void handle_reset( void )
 	asm volatile(
 "	li t0, 0x1f\n\
 	csrw 0xbc0, t0\n"
-#if defined(CH32V20x)
-	// Enabled nested and hardware stack
+
+//XXX TODO: CHECKME - TEST ON 203!!!
+#if FUNCONF_ENABLE_HPE	// Enabled nested and hardware (HPE) stack, since it's really good on the x035.
 "	li t0, 0x88\n\
 	csrs mstatus, t0\n"
-#elif defined(CH32V30x)
-	// Enable nested and hardware stack
 "	li t0, 0x0b\n\
 	csrw 0x804, t0\n"
+#else
+"	li a0, 0x80\n\
+	csrw mstatus, a0\n"
+#endif
+
+#if defined(CH32V30x)
 	// Enable floating point and interrupt
 "	li t0, 0x688\n\
 	csrs mstatus, t0\n"
@@ -1232,6 +1310,12 @@ void SetupUART( int uartBRR )
 	// Push-Pull, 10MHz Output, GPIO D5, with AutoFunction
 	GPIOD->CFGLR &= ~(0xf<<(4*5));
 	GPIOD->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP_AF)<<(4*5);
+#elif defined(CH32X03x)
+	RCC->APB2PCENR |= RCC_APB2Periph_GPIOB | RCC_APB2Periph_USART1;
+
+	// Push-Pull, 10MHz Output, GPIO A9, with AutoFunction
+	GPIOB->CFGHR &= ~(0xf<<(4*2));
+	GPIOB->CFGHR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP_AF)<<(4*2);
 #else
 	RCC->APB2PCENR |= RCC_APB2Periph_GPIOA | RCC_APB2Periph_USART1;
 
@@ -1403,9 +1487,11 @@ void DelaySysTick( uint32_t n )
 #elif defined(CH32V20x) || defined(CH32V30x)
 	uint64_t targend = SysTick->CNT + n;
 	while( ((int64_t)( SysTick->CNT - targend )) < 0 );
-#elif defined(CH32V10x)
+#elif defined(CH32V10x) || defined(CH32X03x)
 	uint32_t targend = SysTick->CNTL + n;
 	while( ((int32_t)( SysTick->CNTL - targend )) < 0 );
+#else
+	#error DelaySysTick not defined.
 #endif
 }
 
@@ -1430,7 +1516,7 @@ void SystemInit()
 		#define BASE_CFGR0 RCC_HPRE_DIV1 | RCC_PPRE2_DIV1 | RCC_PPRE1_DIV2 | PLL_MULTIPLICATION
 	#endif
 #else
-	#if defined(CH32V003)
+	#if defined(CH32V003) || defined(CH32X03x)
 		#define BASE_CFGR0 RCC_HPRE_DIV1     					  // HCLK = SYSCLK = APB1 And, no pll.
 	#else
 		#define BASE_CFGR0 RCC_HPRE_DIV1 | RCC_PPRE2_DIV1 | RCC_PPRE1_DIV1
@@ -1440,6 +1526,17 @@ void SystemInit()
 // HSI always ON - needed for the Debug subsystem
 #define BASE_CTLR	(((FUNCONF_HSITRIM) << 3) | RCC_HSION | HSEBYP | RCC_CSS)
 //#define BASE_CTLR	(((FUNCONF_HSITRIM) << 3) | HSEBYP | RCC_CSS)	// disable HSI in HSE modes
+
+	// CH32V003 flash latency
+#if defined(CH32X03x)
+	FLASH->ACTLR = FLASH_ACTLR_LATENCY_2;                   // +2 Cycle Latency (Recommended per TRM)
+#elif defined(CH32V003)
+	#if FUNCONF_SYSTEM_CORE_CLOCK > 25000000
+		FLASH->ACTLR = FLASH_ACTLR_LATENCY_1;               // +1 Cycle Latency
+	#else
+		FLASH->ACTLR = FLASH_ACTLR_LATENCY_0;               // +0 Cycle Latency
+	#endif
+#endif
 
 #if defined(FUNCONF_USE_HSI) && FUNCONF_USE_HSI
 	#if defined(CH32V30x) || defined(CH32V20x) || defined(CH32V10x)
@@ -1481,15 +1578,6 @@ void SystemInit()
 #if defined(CH32V10x)
 	// Enable Prefetch Buffer
 	FLASH->ACTLR |= FLASH_ACTLR_PRFTBE;
-#endif
-
-	// CH32V003 flash latency
-#if defined(CH32V003)
-	#if FUNCONF_SYSTEM_CORE_CLOCK > 25000000
-		FLASH->ACTLR = FLASH_ACTLR_LATENCY_1;               // +1 Cycle Latency
-	#else
-		FLASH->ACTLR = FLASH_ACTLR_LATENCY_0;               // +0 Cycle Latency
-	#endif
 #endif
 
 	// CH32V10x flash latency
