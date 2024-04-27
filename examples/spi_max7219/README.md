@@ -16,4 +16,4 @@ The example expects you to connect a MAX7219 based 7 segment 8 character display
 You can choose which examples will be shown on the display by changing the `spi_max7219.c` file in the marked demo selection section. All examples are enabled by default.
 
 Once running, you'll see one of the many examples being displayed like so:
-![Demo of the MAX7219 based 8 digit 7 segment display connected to a CH32V003 dev board, in operation](demo_pic.jpg)
+![Demo of the MAX7219 based 8 digit 7 segment display connected to a CH32V003 dev board, in operation](https://github.com/cnlohr/ch32v003fun_attic/blob/master/media/demo_pic_max7219.jpg?raw=true)
