@@ -3,37 +3,53 @@
 	"tasks": [
 		{
 			"type": "shell",
-			"label": "flash",
+			"label": "build",
 			"presentation": {
 				"echo": true,
 				"focus": false,
 				"group": "build",
 				"panel": "shared",
-				"showReuseMessage" : false
+				"showReuseMessage": false
 			},
-			"command": "make closechlink flash",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"command": "make closechlink clean; make",
+			"problemMatcher": { // https://code.visualstudio.com/docs/editor/tasks#_defining-a-problem-matcher
+				"owner": "cpp",
+				"fileLocation": [
+					"relative",
+					"${workspaceFolder}"
+				],
+				"pattern": {
+					"regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+					"file": 1,
+					"line": 2,
+					"column": 3,
+					"severity": 4,
+					"message": 5
+				},
+			},
 		},
 		{
 			"type": "shell",
 			"label": "run_flash_and_gdbserver",
 			"command": "make closechlink flash gdbserver",
-
 			"presentation": {
 				"echo": true,
 				"focus": false,
 				"group": "build",
 				"panel": "shared",
-				"close": true,
-				"showReuseMessage" : false
+				"showReuseMessage": false
 			},
-
 			"isBackground": true,
 			"options": {
 				"cwd": "${workspaceFolder}",
 			},
 			"runOptions": {
 				"instanceLimit": 2,
-			},			 
+			},
 			"group": "build",
 			"problemMatcher": {
 				"pattern": [
@@ -44,13 +60,12 @@
 						"message": 3
 					}
 				],
-
 				"background": {
 					"activeOnStart": false,
 					"beginsPattern": "^.*Image written.*",
 					"endsPattern": "^.*GDBServer*"
 				}
 			},
-		}
+		},
 	]
 }

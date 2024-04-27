@@ -1,18 +1,23 @@
 {
     "configurations": [
         {
-            "name": "Linux",
+            "name": "RISCV32EC",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/../../ch32v003fun"
+                "${workspaceFolder}../../ch32v003fun",
+                "/usr/include/newlib" //why? the configurationProvider ought to find this
             ],
-            "defines": [],
-            "compilerPath": "/usr/bin/clang",
-            "cppStandard": "c++14",
-            "intelliSenseMode": "linux-clang-x64",
-            "compilerArgs": [
-                "-DCH32V003FUN_BASE"
+            "defines": [
+                "CH32V003",
+                "__riscv",
+                "USE_SIGNALS",
+                "CH32V003FUN_BASE"
             ],
+            "compilerPath": "/usr/bin/riscv64-unknown-elf-gcc",
+            "cStandard": "gnu11",
+            "cppStandard": "gnu++17",
+            "intelliSenseMode": "gcc-x86", //works. Someday, intellisense might get riscv modes
+            "compilerArgs": [],
             "configurationProvider": "ms-vscode.makefile-tools"
         }
     ],
