@@ -42,7 +42,7 @@ be done by accessing the user option byte in flash memory.
 For this case I went off of the WCH EVT board and lashed up a "raw" CH32V003
 on a breadboard using the PA1 and PA2 pins.
 
-![breadboard lashup](breadboard.png)
+![breadboard lashup](https://github.com/cnlohr/ch32v003fun_attic/blob/master/media/breadboard-adc_dma_opamp.png?raw=true)
 ![op-amp schematic](adc_opamp.png)
 
 ## Use
