@@ -87,7 +87,14 @@ else
 			-DCH32V20x=1
 
 		# MCU Flash/RAM split
-		ifeq ($(findstring F8, $(TARGET_MCU_PACKAGE)), F8)
+
+
+		# Package
+		ifeq ($(findstring 203RB, $(TARGET_MCU_PACKAGE)), 203RB)
+			CFLAGS+=-DCH32V20x_D8
+		else ifeq ($(findstring 208, $(TARGET_MCU_PACKAGE)), 208)
+			CFLAGS+=-DCH32V20x_D8W
+		else ifeq ($(findstring F8, $(TARGET_MCU_PACKAGE)), F8)
 			MCU_PACKAGE:=1
 		else ifeq ($(findstring G8, $(TARGET_MCU_PACKAGE)), G8)
 			MCU_PACKAGE:=1
@@ -111,13 +118,6 @@ else
 			MCU_PACKAGE:=3
 		else ifeq ($(findstring WB, $(TARGET_MCU_PACKAGE)), WB)
 			MCU_PACKAGE:=3
-		endif
-
-		# Package
-		ifeq ($(findstring 203RB, $(TARGET_MCU_PACKAGE)), 203RB)
-			CFLAGS+=-DCH32V20x_D8
-		else ifeq ($(findstring 208, $(TARGET_MCU_PACKAGE)), 208)
-			CFLAGS+=-DCH32V20x_D8W
 		else
 			CFLAGS+=-DCH32V20x_D6
 		endif
@@ -224,6 +224,6 @@ cv_flash : $(TARGET).bin
 	$(FLASH_COMMAND)
 
 cv_clean :
-	rm -rf $(TARGET).elf $(TARGET).bin $(TARGET).hex $(TARGET).lst $(TARGET).map $(TARGET).hex || true
+	rm -rf $(TARGET).elf $(TARGET).bin $(TARGET).hex $(TARGET).lst $(TARGET).map $(TARGET).hex $(GENERATED_LD_FILE) || true
 
 build : $(TARGET).bin

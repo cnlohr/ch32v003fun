@@ -394,16 +394,22 @@ static int LESetupInterface( void * d )
 	MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // Initiate a halt request.
 	MCF.WriteReg32( d, DMCONTROL, 0x80000003 ); // No, really make sure, and also super halt processor.
 	MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // Un-super-halt processor.
-	MCF.WriteReg32( d, DMABSTRACTCS, 0x00000700 ); // Ignore any pending errors.
-	MCF.WriteReg32( d, DMABSTRACTAUTO, 0 );
-	MCF.WriteReg32( d, DMCOMMAND, 0x00221000 ); // Read x0 (Null command) with nopostexec (to fix v307 read issues)
 
 	int r = 0;
 
-	r |= MCF.WaitForDoneOp( d, 0 );
+
+	int timeout = 0;
+retry_DoneOp:
+	MCF.WriteReg32( d, DMABSTRACTCS, 0x00000700 ); // Ignore any pending errors.
+	MCF.WriteReg32( d, DMABSTRACTAUTO, 0 );
+	MCF.WriteReg32( d, DMCOMMAND, 0x00221000 ); // Read x0 (Null command) with nopostexec (to fix v307 read issues)
+	r = MCF.WaitForDoneOp( d, 0 );
 	if( r )
 	{
-		fprintf( stderr, "Fault on setup\n" );
+		fprintf( stderr, "Retrying\n" );
+		if( timeout++ < 10 ) goto retry_DoneOp;
+		fprintf( stderr, "Fault on setup %d\n", r );
+		return -4;
 	}
 	else
 	{
@@ -413,7 +419,15 @@ static int LESetupInterface( void * d )
 	// This puts the processor on hold to allow the debugger to run.
 	// Recommended to switch to 05 from 09 by Alexander M
 	//	wch_link_command( dev, "\x81\x11\x01\x09", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Chip ID + Other data (see below)
+retry_ID:
 	wch_link_command( dev, "\x81\x11\x01\x05", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Chip ID + Other data (see below)
+
+	if( rbuff[0] == 0x00 )
+	{
+		if( timeout++ < 10 ) goto retry_ID;
+		fprintf( stderr, "Failed to get chip ID\n" );
+		return -4;
+	}
 
 	if( transferred != 20 )
 	{
