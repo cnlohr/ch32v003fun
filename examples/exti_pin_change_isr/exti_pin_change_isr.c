@@ -35,11 +35,11 @@ void EXTI7_0_IRQHandler( void ) __attribute__((interrupt));
 void EXTI7_0_IRQHandler( void ) 
 {
 	// Flash just a little blip.
-	GPIOC->BSHR = 2;
-	GPIOC->BSHR = (2<<16);
+	funDigitalWrite( PC1, FUN_HIGH );
+	funDigitalWrite( PC1, FUN_LOW );
 
 	// Acknowledge the interrupt
-	EXTI->INTFR = 1<<3;
+	EXTI->INTFR = EXTI_Line3;
 }
 
 int main()
@@ -50,14 +50,12 @@ int main()
 	RCC->APB2PCENR = RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOC | RCC_APB2Periph_AFIO;
 
 	// GPIO D3 for input pin change.
-	GPIOD->CFGLR =
-		(GPIO_CNF_IN_PUPD)<<(4*1) |  // Keep SWIO enabled.
-		(GPIO_Speed_In | GPIO_CNF_IN_PUPD)<<(4*3);  //PD4 = GPIOD IN
+	funPinMode( PD3, GPIO_CFGLR_IN_FLOAT );
+	// funPinMode( PD4, GPIO_CFGLR_IN_PUPD ); // Keep SWIO enabled / seems to be unnecessary
 
-	// GPIO C0 Push-Pull (our output) 
-	GPIOC->CFGLR =
-		(GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*0) |
-		(GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*1);
+	// GPIO C0 Push-Pull (our output)
+	funPinMode( PC0,  GPIO_CFGLR_OUT_10Mhz_PP );
+	funPinMode( PC1,  GPIO_CFGLR_OUT_10Mhz_PP );
 
 	// Ugh this is tricky.
 	// This is how we set (INTSYSCR) to enable hardware interrupt nesting
@@ -84,9 +82,9 @@ int main()
 		 : : :  "t1" );
 
 	// Configure the IO as an interrupt.
-	AFIO->EXTICR = 3<<(3*2); //PORTD.3 (3 out front says PORTD, 3 in back says 3)
-	EXTI->INTENR = 1<<3; // Enable EXT3
-	EXTI->RTENR = 1<<3;  // Rising edge trigger
+	AFIO->EXTICR = AFIO_EXTICR_EXTI3_PD;
+	EXTI->INTENR = EXTI_INTENR_MR3; // Enable EXT3
+	EXTI->RTENR = EXTI_RTENR_TR3;  // Rising edge trigger
 
 	// enable interrupt
 	NVIC_EnableIRQ( EXTI7_0_IRQn );
