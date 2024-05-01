@@ -2,7 +2,7 @@
 
 A free, open mechanism to use the CH-LinkE $4 programming dongle for the CH32V003.
 
-If on Linux, be sure to type make sure to install the `99-WCH-LinkE.rules` build rule to `/etc/udev/rules.d/`
+If on Linux, make sure to install the `99-WCH-LinkE.rules` build rule to `/etc/udev/rules.d/`
 
 On Windows, if you need to you can install the WinUSB driver over the WCH interface 1.
 
