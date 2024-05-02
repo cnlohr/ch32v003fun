@@ -1,9 +1,9 @@
 // DMA GPIO Output Example - this example shows
 // how you can output 8 pins all simultaneously
-// with a planned bit pattern at 4MSamples/s.
+// with a planned bit pattern at 2MSamples/s.
 //
-// It outputs a pattern of repeating 010101 and
-// 00000 alternating "frames".
+// It outputs a pattern of repeating 01010101 and
+// 000000 alternating "frames".
 //
 // The interrupt fires once at the beginning and
 // once at the end.
@@ -77,6 +77,7 @@ int main()
 		(GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*4);
 
 	// GPIO C All output.
+	// This is where our bitstream will be outputted to.
 	GPIOC->CFGLR =
 		(GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*0) |
 		(GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*1) |
@@ -96,9 +97,11 @@ int main()
 
 	// DMA2 can be configured to attach to T1CH1
 	// The system can only DMA out at ~2.2MSPS.  2MHz is stable.
+	// The idea here is that this copies, byte-at-a-time from the memory
+	// into the peripheral addres.
 	DMA1_Channel2->CNTR = sizeof(memory_buffer) / sizeof(memory_buffer[0]);
 	DMA1_Channel2->MADDR = (uint32_t)memory_buffer;
-	DMA1_Channel2->PADDR = (uint32_t)&GPIOC->OUTDR;
+	DMA1_Channel2->PADDR = (uint32_t)&GPIOC->OUTDR; // This is the output register for out buffer.
 	DMA1_Channel2->CFGR = 
 		DMA_CFGR1_DIR |                      // MEM2PERIPHERAL
 		DMA_CFGR1_PL |                       // High priority.
@@ -123,6 +126,7 @@ int main()
 	RCC->APB2PRSTR = 0;
 
 	// Timer 1 setup.
+	// Timer 1 is what will trigger the DMA, Channel 2 engine.
 	TIM1->PSC = 0x0000;                      // Prescaler 
 	TIM1->ATRLR = 11;                        // Auto Reload - sets period (48MHz / (11+1) = 4MHz)
 	TIM1->SWEVGR = TIM_UG | TIM_TG;          // Reload immediately + Trigger DMA
