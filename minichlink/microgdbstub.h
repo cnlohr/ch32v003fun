@@ -769,7 +769,7 @@ void MicroGDBStubSendReply( const void * data, int len, int docs )
 	if( len < 0 ) len = strlen( data );
 	if( docs )
 	{
-		uint8_t * localbuffer = alloca( len ) + 5;
+		uint8_t * localbuffer = alloca( len + 5 );
 		localbuffer[0] = '$';
 		uint8_t checksum = 0;
 		int i;
