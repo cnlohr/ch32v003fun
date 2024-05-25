@@ -7,7 +7,7 @@ The goal of this project is to develop the tooling and environment for efficient
 ch32v003fun contains:
 1. Examples using ch32v003fun, but not as many as using the HAL.
 2. "minichlink" which uses the WCH CH-Link with libusb, for cross-platform use.
-  * An STM32F042 Programmer, the NHC-Link042
+  * An STM32F042 Programmer, the [NHC-Link042](https://github.com/NgoHungCuong/NHC-Link042)
   * An ESP32S2 Programmer, the [esp32s2-funprog](https://github.com/cnlohr/esp32s2-cookbook/tree/master/ch32v003programmer)
   * The official WCH Link-E Programmer.
   * An Arduino-based interface, [Ardulink](https://gitlab.com/BlueSyncLine/arduino-ch32v003-swio).
