@@ -1387,7 +1387,8 @@ void poll_input()
 //   b7 = is a "printf" waiting?
 //   b0..b3 = # of bytes in printf (+4).  (5 or higher indicates a print of some kind)
 //     note: if b7 is 0 in reply, but b0..b3 have >=4 then we received data from host.
-
+// declare as weak to allow overriding.
+int _write(int fd, const char *buf, int size) __attribute__((weak));
 int _write(int fd, const char *buf, int size)
 {
 	char buffer[4] = { 0 };
