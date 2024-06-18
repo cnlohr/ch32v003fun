@@ -199,7 +199,7 @@ void DMA1_Channel3_IRQHandler( void )
 			WS2812FillBuffSec( WS2812dmabuff + DMA_BUFFER_LEN / 2, DMA_BUFFER_LEN / 2, 0 );
 		}
 		intfr = DMA1->INTFR;
-	} while( intfr );
+	} while( intfr & DMA1_IT_GL3 );
 
 	//GPIOD->BSHR = 1<<16; // Turn off GPIOD0 for profiling
 }
