@@ -14,7 +14,7 @@
 #define SSD1306_PSZ 32
 
 // characteristics of each type
-#if !defined (SSD1306_64X32) && !defined (SSD1306_128X32) && !defined (SSD1306_128X64)
+#if !defined (SSD1306_64X32) && !defined (SSD1306_128X32) && !defined (SSD1306_128X64) && !defined (SH1107_128x128)
 	#error "Please define the SSD1306_WXH resolution used in your application"
 #endif
 
@@ -34,6 +34,15 @@
 #ifdef SSD1306_128X64
 #define SSD1306_W 128
 #define SSD1306_H 64
+#define SSD1306_FULLUSE
+#define SSD1306_OFFSET 0
+#endif
+
+#ifdef SH1107_128x128
+#define SH1107
+#define SSD1306_FULLUSE
+#define SSD1306_W 128
+#define SSD1306_H 128
 #define SSD1306_FULLUSE
 #define SSD1306_OFFSET 0
 #endif
@@ -92,6 +101,29 @@ uint8_t ssd1306_data(uint8_t *data, uint8_t sz)
 // OLED initialization commands for 128x32
 const uint8_t ssd1306_init_array[] =
 {
+#ifdef SH1107
+	SSD1306_DISPLAYOFF,               // Turn OLED off
+	0x00,                             // Low column
+	0x10,                             // High column
+	0xb0,                             // Page address
+	0xdc, 0x00,                       // Set Display Start Line  (Where in memory it reads from)
+	SSD1306_SETCONTRAST, 0x6f,        // Set constrast
+	SSD1306_COLUMNADDR,               // Set memory addressing mode
+	SSD1306_DISPLAYALLON_RESUME,      // normal (as opposed to invert colors, always on or off.)
+	SSD1306_SETMULTIPLEX, (SSD1306_H-1), // Iterate over all 128 rows (Multiplex Ratio)
+	SSD1306_SETDISPLAYOFFSET, 0x00,   // Set display offset // Where this appears on-screen  (Some displays will be different)
+	SSD1306_SETDISPLAYCLOCKDIV, 0xf0, // Set precharge properties.  THIS IS A LIE  This has todo with timing.  <<< This makes it go brrrrrrrrr
+	SSD1306_SETPRECHARGE, 0x1d,       // Set pre-charge period  (This controls brightness)
+	SSD1306_SETVCOMDETECT, 0x35,      // Set vcomh
+	SSD1306_SETSTARTLINE | 0x0,            // 0x40 | line
+	0xad, 0x80,                       // Set Charge pump
+	SSD1306_SEGREMAP, 0x01,           // Default mapping
+	SSD1306_SETPRECHARGE, 0x06,       // ???? No idea what this does, but this looks best.
+	SSD1306_SETCONTRAST, 0xfe,        // Set constrast
+	SSD1306_SETVCOMDETECT, 0xfe,      // Set vcomh
+	SSD1306_SETMULTIPLEX, (SSD1306_H-1), // 128-wide.
+	SSD1306_DISPLAYON, // Display on.
+#else
     SSD1306_DISPLAYOFF,                    // 0xAE
     SSD1306_SETDISPLAYCLOCKDIV,            // 0xD5
     0x80,                                  // the suggested ratio 0x80
@@ -121,6 +153,7 @@ const uint8_t ssd1306_init_array[] =
     SSD1306_DISPLAYALLON_RESUME,           // 0xA4
     SSD1306_NORMALDISPLAY,                 // 0xA6
 	SSD1306_DISPLAYON,	                   // 0xAF --turn on oled panel
+#endif
 	SSD1306_TERMINATE_CMDS                 // 0xFF --fake command to mark end
 };
 
@@ -155,6 +188,21 @@ void ssd1306_refresh(void)
 {
 	uint16_t i;
 	
+#ifdef SH1107
+
+	ssd1306_cmd(SSD1306_MEMORYMODE); // vertical addressing mode.
+
+	for(i=0;i<SSD1306_H/8;i++)
+	{
+		ssd1306_cmd(0xb0 | i);
+		ssd1306_cmd( 0x00 | (0&0xf) ); 
+		ssd1306_cmd( 0x10 | (0>>4) );
+		ssd1306_data(&ssd1306_buffer[i*4*SSD1306_PSZ+0*SSD1306_PSZ], SSD1306_PSZ);
+		ssd1306_data(&ssd1306_buffer[i*4*SSD1306_PSZ+1*SSD1306_PSZ], SSD1306_PSZ);
+		ssd1306_data(&ssd1306_buffer[i*4*SSD1306_PSZ+2*SSD1306_PSZ], SSD1306_PSZ);
+		ssd1306_data(&ssd1306_buffer[i*4*SSD1306_PSZ+3*SSD1306_PSZ], SSD1306_PSZ);
+	}
+#else
 	ssd1306_cmd(SSD1306_COLUMNADDR);
 	ssd1306_cmd(SSD1306_OFFSET);   // Column start address (0 = reset)
 	ssd1306_cmd(SSD1306_OFFSET+SSD1306_W-1); // Column end address (127 = reset)
@@ -196,6 +244,8 @@ void ssd1306_refresh(void)
 		}
 	}
 #endif
+#endif
+
 }
 
 /*

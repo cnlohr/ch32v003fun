@@ -321,9 +321,19 @@ uint8_t ssd1306_pkt_send(uint8_t *data, uint8_t sz, uint8_t cmd)
 uint8_t ssd1306_i2c_init(void)
 {
 	// Enable GPIOC and I2C
-	RCC->APB2PCENR |= RCC_APB2Periph_GPIOC;
 	RCC->APB1PCENR |= RCC_APB1Periph_I2C1;
+
+#ifdef CH32V20x
+	RCC->APB2PCENR |= RCC_APB2Periph_GPIOB;
+	// PB7 is SDA, 10MHz Output, alt func, open-drain
+	GPIOB->CFGLR &= ~(0xf<<(4*7));
+	GPIOB->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_OD_AF)<<(4*7);
 	
+	// PB6 is SCL, 10MHz Output, alt func, open-drain
+	GPIOB->CFGLR &= ~(0xf<<(4*6));
+	GPIOB->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_OD_AF)<<(4*6);
+#else
+	RCC->APB2PCENR |= RCC_APB2Periph_GPIOC;
 	// PC1 is SDA, 10MHz Output, alt func, open-drain
 	GPIOC->CFGLR &= ~(0xf<<(4*1));
 	GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_OD_AF)<<(4*1);
@@ -331,7 +341,8 @@ uint8_t ssd1306_i2c_init(void)
 	// PC2 is SCL, 10MHz Output, alt func, open-drain
 	GPIOC->CFGLR &= ~(0xf<<(4*2));
 	GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_OD_AF)<<(4*2);
-	
+#endif
+
 #ifdef IRQ_DIAG
 	// GPIO diags on PC3/PC4
 	GPIOC->CFGLR &= ~(0xf<<(4*3));
