@@ -24,7 +24,7 @@ int main()
 	while(1)
 	{
 		GPIOA->BSHR = 1;	 // Turn on GPIOs
-		printf( "+%lu %lu\n", count++ );
+		printf( "+%lu[%c]\n", count++, last );
 		Delay_Ms(100);
 		int i;
 		for( i = 0; i < 10000; i++ )
