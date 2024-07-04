@@ -14,16 +14,16 @@
 
 int errno;
 
-int mini_vsnprintf(char *buffer, unsigned int buffer_len, const char *fmt, va_list va);
-int mini_vpprintf(int (*puts)(char* s, int len, void* buf), void* buf, const char *fmt, va_list va);
+int mini_vsnprintf( char *buffer, unsigned int buffer_len, const char *fmt, va_list va );
+int mini_vpprintf( int (*puts)(char* s, int len, void* buf), void* buf, const char *fmt, va_list va );
 
-static int __puts_uart(char *s, int len, void *buf)
+static int __puts_uart( char *s, int len, void *buf )
 {
 	_write( 0, s, len );
 	return len;
 }
 
-int printf(const char* format, ...)
+int printf( const char* format, ... )
 {
 	va_list args;
 	va_start( args, format );
@@ -37,11 +37,20 @@ int vprintf(const char* format, va_list args)
 	return mini_vpprintf(__puts_uart, 0, format, args);
 }
 
-int snprintf(char * buffer, unsigned int buffer_len, const char* format, ...)
+int snprintf( char * buffer, unsigned int buffer_len, const char* format, ... )
 {
 	va_list args;
 	va_start( args, format );
 	int ret = mini_vsnprintf( buffer, buffer_len, format, args );
+	va_end( args );
+	return ret;
+}
+
+int sprintf( char * buffer, const char * format, ... )
+{
+	va_list args;
+	va_start( args, format );
+	int ret = mini_vsnprintf( buffer, INT_MAX, format, args );
 	va_end( args );
 	return ret;
 }
