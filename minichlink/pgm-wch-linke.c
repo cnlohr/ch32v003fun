@@ -345,7 +345,7 @@ static int LESetupInterface( void * d )
 		}
 
 		wch_link_command( dev, "\x81\x0d\x01\x02", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Ignored, 820d050900300500
-		if (rbuff[0] == 0x81 && rbuff[1] == 0x55 && rbuff[2] == 0x01 ) // && rbuff[3] == 0x01 )
+		if (transferred == 4 || (rbuff[0] == 0x81 && rbuff[1] == 0x55 && rbuff[2] == 0x01) ) // && rbuff[3] == 0x01 )
 		{
 			// The following code may try to execute a few times to get the processor to actually reset.
 			// This code could likely be much better.
@@ -379,12 +379,14 @@ static int LESetupInterface( void * d )
 		}
 	} while( 1 );
 
-	if(rbuff[3] == 0x08 || rbuff[3] > 0x09) {
-		fprintf( stderr, "Chip Type unknown [%02x]. Aborting...\n", rbuff[3] );
+	printf( "Full Chip Type Reply: [%d] %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n", transferred, rbuff[0], rbuff[1], rbuff[2], rbuff[3], rbuff[4], rbuff[5], rbuff[6], rbuff[7] );
+
+	enum RiscVChip chip = (enum RiscVChip)rbuff[3];
+	if( ( chip == 0x08 || chip > 0x09 ) && chip != CHIP_CH32X03x ) {
+		fprintf( stderr, "Chip Type unknown [%02x]. Aborting...\n", chip );
 		return -1;
 	}
 
-	enum RiscVChip chip = (enum RiscVChip)rbuff[3];
 	printChipInfo(chip);
 
 	iss->target_chip_type = chip;
@@ -440,10 +442,15 @@ retry_ID:
 	fprintf( stderr, "PFlags       : %02x-%02x-%02x-%02x\n", rbuff[12], rbuff[13], rbuff[14], rbuff[15] );
 	fprintf( stderr, "Part Type (B): %02x-%02x-%02x-%02x\n", rbuff[16], rbuff[17], rbuff[18], rbuff[19] );
 
+	// Quirk, was fixed in LinkE version 2.12.
 	if( iss->target_chip_type == CHIP_CH32V10x && flash_size == 62 )
 	{
 		fprintf( stderr, "While the debugger reports this as a CH32V10x, it's probably a CH32X03x\n" );
 		chip = iss->target_chip_type = CHIP_CH32X03x;
+	}
+
+	if( iss->target_chip_type = CHIP_CH32X03x )
+	{
 		iss->sector_size = 256;
 	}
 
@@ -456,6 +463,7 @@ retry_ID:
 		iss->sector_size = 256;
 
 		wch_link_command( dev, "\x81\x0d\x01\x03", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Ignored, 820d050900300500
+
 	} else if( result < 0 ) {
 		fprintf( stderr, "Chip type not supported. Aborting...\n" );
 		return -1;
@@ -475,7 +483,7 @@ retry_ID:
 		fprintf(stderr, "Read protection: disabled\n");
 	}
 
-	iss->flash_size = ((rbuff[2]<<8) | rbuff[3])*1024;
+	iss->flash_size = flash_size*1024;
 
 	return 0;
 }
