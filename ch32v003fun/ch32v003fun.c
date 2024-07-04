@@ -871,24 +871,6 @@ void InterruptVectorDefault()
 	.option   push;\n\
 	.option   norvc;\n\
 	j handle_reset\n" );
-#if 0 // What is this for?  I don't see any reason to have it.
-#ifdef CH32X03x
-	asm volatile( "\n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00100073" );
-#endif
-#endif
 
 #if !defined(FUNCONF_TINYVECTOR) || !FUNCONF_TINYVECTOR
 	asm volatile( "\n\
