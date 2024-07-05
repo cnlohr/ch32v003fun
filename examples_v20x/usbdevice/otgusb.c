@@ -77,6 +77,8 @@ void OTG_FS_IRQHandler()
 	struct _USBState * ctx = &USBOTGCTX;
 	uint8_t * ctrl0buff = CTRL0BUFF;
 
+	printf( "%02x\n", intfgst );
+
 	// TODO: Check if needs to be do-while to re-check.
 	if( intfgst & CRB_UIF_TRANSFER )
 	{
@@ -622,6 +624,14 @@ int USBOTGSetup()
 	// Go on-bus.
 	funPinMode( PA11, GPIO_CFGLR_OUT_50Mhz_AF_PP );
 	funPinMode( PA12, GPIO_CFGLR_OUT_50Mhz_AF_PP );
+
+
+	extern int InterruptVector();
+	int i;
+	for( i = 0; i < 100; i++ )
+	{
+		printf( "ON-BUS %08x / %d: %08x\n", ((uintptr_t)&OTG_FS_IRQHandler)/4, i, *((uint32_t*)(((uint32_t*)&InterruptVector) + i )) );
+	}
 
 	// Go on-bus.
 	return 0;
