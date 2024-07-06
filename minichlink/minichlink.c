@@ -124,7 +124,7 @@ int main( int argc, char ** argv )
 		}
 	}
 
-#if !defined(WINDOWS) && !defined(WIN32) && !defined(_WIN32)
+#if !defined(WINDOWS) && !defined(WIN32) && !defined(_WIN32) && !defined(__APPLE__)
 	{
 		uid_t uid = getuid();
 		struct passwd* pw = getpwuid(uid);
