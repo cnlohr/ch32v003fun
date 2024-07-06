@@ -69,7 +69,7 @@ void OTG_FS_IRQHandler()
 #if FUSB_IO_PROFILE
 	GPIOA->BSHR = 1;
 #endif
-
+while(1) printf( "!!" );
 	// Based on https://github.com/openwch/ch32x035/blob/main/EVT/EXAM/USB/USBFS/DEVICE/CompositeKM/User/ch32x035_USBOTG_device.c
 	// Combined FG + ST flag.
 	uint16_t intfgst = *(uint16_t*)(&USBOTG_FS->INT_FG);
@@ -604,7 +604,7 @@ void USBOTG_InternalFinishSetup()
 
 int USBOTGSetup()
 {
-	RCC->APB2PCENR |= RCC_APB2Periph_AFIO | RCC_APB2Periph_GPIOC;
+	RCC->APB2PCENR |= RCC_APB2Periph_AFIO | RCC_APB2Periph_GPIOA;
 	RCC->AHBPCENR |= RCC_USBFS | RCC_AHBPeriph_DMA1;
 
 	NVIC_EnableIRQ( OTG_FS_IRQn );
@@ -619,20 +619,14 @@ int USBOTGSetup()
 	USBOTG_FS->DEV_ADDR = 0x00;
 	USBOTG_FS->BASE_CTRL = USBOTG_UC_DEV_PU_EN | USBOTG_UC_INT_BUSY | USBOTG_UC_DMA_EN;
 	USBOTG_FS->INT_FG = 0xff;
-	USBOTG_FS->UDEV_CTRL = USBOTG_UD_PD_DIS | USBOTG_UD_PORT_EN;
+	USBOTG_FS->UDEV_CTRL = USBOTG_UD_PORT_EN;
+	USBOTG_FS->OTG_CR = 0; //Note says only valid on 205, 207, 305, 307. 
 
 	// Go on-bus.
 	funPinMode( PA11, GPIO_CFGLR_OUT_50Mhz_AF_PP );
 	funPinMode( PA12, GPIO_CFGLR_OUT_50Mhz_AF_PP );
 
-
-	extern int InterruptVector();
-	int i;
-	for( i = 0; i < 100; i++ )
-	{
-		printf( "ON-BUS %08x / %d: %08x\n", ((uintptr_t)&OTG_FS_IRQHandler)/4, i, *((uint32_t*)(((uint32_t*)&InterruptVector) + i )) );
-	}
-
+	printf( "Lets gooo\n" );
 	// Go on-bus.
 	return 0;
 }

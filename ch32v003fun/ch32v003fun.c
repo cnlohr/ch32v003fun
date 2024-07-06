@@ -1047,7 +1047,7 @@ void InterruptVectorDefault()
 	asm volatile( "\n\
 	.align	1 \n\
 	.option norvc; \n\
-	.word 0\n"
+	.word   0 \n"
 #if !defined(FUNCONF_TINYVECTOR) || !FUNCONF_TINYVECTOR
 "	.word   0 \n\
 	.word   NMI_Handler                /* NMI */ \n\
