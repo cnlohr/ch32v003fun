@@ -11,7 +11,6 @@
 #define FUSB_HID_USER_REPORTS 1
 #define FUSB_IO_PROFILE       1
 #define FUSB_USE_HPE          FUNCONF_ENABLE_HPE
-#define FUSB_5V_OPERATION     FUNCONF_5V_OPERATION
 
 #include "usb_defines.h"
 

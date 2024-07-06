@@ -10,26 +10,23 @@ uint32_t USBDEBUG0, USBDEBUG1, USBDEBUG2;
 
 struct _USBState USBOTGCTX;
 
-// based on https://github.com/openwch/ch32x035/tree/main/EVT/EXAM/USB/USBFS/DEVICE/CompositeKM/User
-
 // Mask for the combined USBFSD->INT_FG + USBFSD->INT_ST
-#define CRB_U_IS_NAK     (1<<7)
-#define CTOG_MATCH_SYNC  (1<<6)
-#define CRB_U_SIE_FREE   (1<<5)
-#define CRB_UIF_FIFO_OV  (1<<4)
-#define CRB_UIF_HST_SOF  (1<<3)
-#define CRB_UIF_SUSPEND  (1<<2)
-#define CRB_UIF_TRANSFER (1<<1)
-#define CRB_UIF_BUS_RST  (1<<0)
-#define CSETUP_ACT	     (1<<15)
-#define CRB_UIS_TOG_OK   (1<<14)
-#define CMASK_UIS_TOKEN  (3<<12)
-#define CMASK_UIS_ENDP   (0xf<<8)
+#define CRB_UIF_ISO_ACT   (1<<6)
+#define CRB_UIF_SETUP_ACT (1<<5)
+#define CRB_UIF_FIFO_OV   (1<<4)
+#define CRB_UIF_HST_SOF   (1<<3)
+#define CRB_UIF_SUSPEND   (1<<2)
+#define CRB_UIF_TRANSFER  (1<<1)
+#define CRB_UIF_BUS_RST   (1<<0)
+#define CRB_UIS_IS_NAK    (1<<15)
+#define CRB_UIS_TOG_OK    (1<<14)
+#define CMASK_UIS_TOKEN   (3<<12)
+#define CMASK_UIS_ENDP    (0xf<<8)
 
-#define CUIS_TOKEN_OUT	 0x0
-#define CUIS_TOKEN_SOF   0x1
-#define CUIS_TOKEN_IN    0x2
-#define CUIS_TOKEN_SETUP 0x3
+#define CUIS_TOKEN_OUT	   0x0
+#define CUIS_TOKEN_SOF     0x1
+#define CUIS_TOKEN_IN      0x2
+#define CUIS_TOKEN_SETUP   0x3
 
 static inline void DMA7FastCopy( uint8_t * dest, const uint8_t * src, int len )
 {
@@ -69,7 +66,7 @@ void OTG_FS_IRQHandler()
 #if FUSB_IO_PROFILE
 	GPIOA->BSHR = 1;
 #endif
-while(1) printf( "!!" );
+while(1) printf( "!!\n" );
 	// Based on https://github.com/openwch/ch32x035/blob/main/EVT/EXAM/USB/USBFS/DEVICE/CompositeKM/User/ch32x035_USBOTG_device.c
 	// Combined FG + ST flag.
 	uint16_t intfgst = *(uint16_t*)(&USBOTG_FS->INT_FG);
@@ -604,11 +601,14 @@ void USBOTG_InternalFinishSetup()
 
 int USBOTGSetup()
 {
-	RCC->APB2PCENR |= RCC_APB2Periph_AFIO | RCC_APB2Periph_GPIOA;
-	RCC->AHBPCENR |= RCC_USBFS | RCC_AHBPeriph_DMA1;
+	// USBPRE[1:0] = 10: Divided by 3 (when PLLCLK=144MHz);
+	// Must be done before enabling clock to USB OTG tree.
+	RCC->CFGR0 = (RCC->CFGR0 & ~(3<<22)) | (2<<22);
 
-	NVIC_EnableIRQ( OTG_FS_IRQn );
+	RCC->APB2PCENR |= RCC_APB2Periph_AFIO | RCC_APB2Periph_GPIOB;
+	RCC->AHBPCENR |= RCC_USBFS | RCC_AHBPeriph_DMA1; // USBFS === OTG_FSEN
 
+	// Force module to reset.
 	USBOTG_FS->BASE_CTRL = USBOTG_UC_RESET_SIE | USBOTG_UC_CLR_ALL;
 	USBOTG_FS->BASE_CTRL = 0x00;
 
@@ -617,16 +617,27 @@ int USBOTGSetup()
 	// Enter device mode.
 	USBOTG_FS->INT_EN = USBOTG_UIE_SUSPEND | USBOTG_UIE_TRANSFER | USBOTG_UIE_BUS_RST;
 	USBOTG_FS->DEV_ADDR = 0x00;
-	USBOTG_FS->BASE_CTRL = USBOTG_UC_DEV_PU_EN | USBOTG_UC_INT_BUSY | USBOTG_UC_DMA_EN;
+//	USBOTG_FS->BASE_CTRL = USBOTG_UC_DEV_PU_EN | USBOTG_UC_INT_BUSY | USBOTG_UC_DMA_EN;
 	USBOTG_FS->INT_FG = 0xff;
-	USBOTG_FS->UDEV_CTRL = USBOTG_UD_PORT_EN;
+//	USBOTG_FS->UDEV_CTRL = USBOTG_UD_PORT_EN;
+
+
+	USBOTG_FS->BASE_CTRL = USBOTG_UC_INT_BUSY | USBOTG_UC_DMA_EN | USBOTG_UC_DEV_PU_EN;
+	USBOTG_FS->UDEV_CTRL = USBOTG_UD_PD_DIS | USBOTG_UD_PORT_EN;
+
+	NVIC_EnableIRQ( OTG_FS_IRQn );
+
 	USBOTG_FS->OTG_CR = 0; //Note says only valid on 205, 207, 305, 307. 
 
-	// Go on-bus.
-	funPinMode( PA11, GPIO_CFGLR_OUT_50Mhz_AF_PP );
-	funPinMode( PA12, GPIO_CFGLR_OUT_50Mhz_AF_PP );
+	printf( "CFGR0: %08x / %08x / %08x\n", RCC->CFGR0, USBOTG_FS->BASE_CTRL, USBOTG_FS->INT_FG);
 
-	printf( "Lets gooo\n" );
+	// Go on-bus.
+//	funPinMode( PB6, GPIO_CFGLR_OUT_50Mhz_AF_PP );
+//	funPinMode( PB7, GPIO_CFGLR_OUT_50Mhz_AF_PP );
+
+	// Actually go on-bus.
+	//USBOTG_FS->BASE_CTRL |= USBOTG_UC_DEV_PU_EN;
+
 	// Go on-bus.
 	return 0;
 }

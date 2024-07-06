@@ -956,11 +956,10 @@ typedef struct
     __IO uint32_t APB1PCENR;
 #ifdef CH32V003
     __IO uint32_t RESERVED0;
-    __IO uint32_t RSTSCKR;
 #elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 	__IO uint32_t BDCTLR;
-	__IO uint32_t RSTSCKR;
 #endif
+	__IO uint32_t RSTSCKR;
 #if defined(CH32V20x) || defined(CH32V30x)
 	__IO uint32_t AHBRSTR;
 	__IO uint32_t CFGR2;
@@ -1408,7 +1407,93 @@ typedef struct  __attribute__((packed))
 
 #endif	// #if defined(CH32V30x)
 
-/* USBFS Registers */
+/* USBD Full-Speed Device, Chapter 21.
+ NOTE: USBD and CAN controller share a dedicated 512-byte SRAM area for data
+ transmission and reception in the design, so when using USBD and CAN functions
+ at the same time, this shared area needs to be allocated reasonably to prevent
+ data conflicts. */
+
+typedef struct 
+{
+	__IO uint32_t ADDn_TX;
+	__IO uint32_t COUNTn_TX;
+	__IO uint32_t ADDn_RX;
+	__IO uint32_t COUNTn_RX;
+} USBD_BTABLE_TypeDef;
+
+typedef struct
+{
+	__IO uint32_t EPR[8];
+	__IO uint32_t RESERVED[8];
+	__IO uint32_t CNTR;
+	__IO uint32_t ISTR;
+	__IO uint32_t FNR;
+	__IO uint32_t DADDR;
+	__IO uint32_t BTABLE;
+} USBD_TypeDef;
+
+#define CAN_USBD_SHARED_BASE   ((PERIPH_BASE + 0x6000))
+#define USBD_BASE              ((PERIPH_BASE + 0x5C00))
+
+/* USBD_CNTR */
+#define USBD_CTRM      (1<<15)
+#define USBD_PMAOVRM   (1<<14)
+#define USBD_ERRM      (1<<13)
+#define USBD_WKUPM     (1<<12)
+#define USBD_SUSPM     (1<<11)
+#define USBD_RESETM    (1<<10)
+#define USBD_SOFM      (1<<9)
+#define USBD_ESOFM     (1<<8)
+#define USBD_RESUME    (1<<4)
+#define USBD_FSUP      (1<<3)
+#define USBD_LPMODE    (1<<2)
+#define USBD_PDWN      (1<<1)
+#define USBD_FRES      (1<<0)
+
+/* USBD_ISTR */
+#define USBD_CTR       (1<<15)
+#define USBD_PMAOVR    (1<<14)
+#define USBD_ERR       (1<<13)
+#define USBD_WKUP      (1<<12)
+#define USBD_SUSP      (1<<11)
+#define USBD_RESET     (1<<10)
+#define USBD_SOF       (1<<9)
+#define USBD_ESOF      (1<<8)
+#define USBD_DIR       (1<<4)
+#define USBD_EP_ID     (0xf)
+
+/* USBD_FNR */
+#define USBD_RXDP      (1<<15)
+#define USBD_RXDM      (1<<14)
+#define USBD_LCK       (1<<13)
+#define USBD_LSOF      (3<<11)
+#define USBD_FN        (0x7ff)
+
+/* USBD_DADDR */
+#define USBD_EF        (1<<7)
+#define USBD_ADD       (0x7f)
+
+/* USBD_EPRx */
+#define USBD_CTR_RX    (1<<15)
+#define USBD_DTOG_RX   (1<<14)
+#define USBD_STAT_RX   (3<<12)
+#define USBD_SETUP     (1<<11)
+#define USBD_EPTYPE    (3<<9)
+#define USBD_EPKIND    (1<<8)
+#define USBD_CTR_TX    (1<<7)
+#define USBD_DTOG_TX   (1<<6)
+#define USBD_STAT_TX   (3<<4)
+#define USBD_EA        (0xf)
+
+/* USBD_COUNTx_RX */
+#define USBD_BLSIZE    (1<<15)
+#define USBD_NUM_BLOCK (0x1f<<10)
+#define USBD_COUNTx_RX 0x2ff
+
+
+#define USBD           ((USBD_TypeDef *) USBD_BASE)
+
+/* USB-FS-OTG Registers, Chapter 23. */
 typedef struct
 {
 	__IO uint8_t  BASE_CTRL;
@@ -1417,7 +1502,7 @@ typedef struct
 	__IO uint8_t  DEV_ADDR;
 	__IO uint8_t  Reserve0;
 	__IO uint8_t  MIS_ST;
-	__IO uint8_t  INT_FG;
+	__IO uint8_t  INT_FG; // "Combined" register in some situations. (ST_FG)
 	__IO uint8_t  INT_ST;
 	__IO uint32_t RX_LEN;
 	__IO uint8_t  UEP4_1_MOD;

@@ -70,6 +70,7 @@ int main()
 
 	while(1)
 	{
+		//printf( "A" );
 		//printf( "%lu %08lx %lu %d %d\n", USBDEBUG0, USBDEBUG1, USBDEBUG2, 0, 0 );
 		int i;
 		for( i = 1; i < 3; i++ )

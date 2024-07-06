@@ -1094,7 +1094,7 @@ void InterruptVectorDefault()
 	.word   DMA1_Channel6_IRQHandler   /* 32: DMA1 Channel 6 */ \n\
 	.word   DMA1_Channel7_IRQHandler   /* 33: DMA1 Channel 7 */ \n\
 	.word   ADC1_2_IRQHandler          /* 34: ADC1_2 */ \n"
-#if !defined(CH32V10x)
+#if defined(CH32V20x) || defined(CH32V30x)
 "	.word   USB_HP_CAN1_TX_IRQHandler  /* 35: USB HP and CAN1 TX */ \n\
 	.word   USB_LP_CAN1_RX0_IRQHandler /* 36: USB LP and CAN1RX0 */ \n\
 	.word   CAN1_RX1_IRQHandler        /* 37: CAN1 RX1 */ \n\
