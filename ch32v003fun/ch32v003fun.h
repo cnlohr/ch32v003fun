@@ -362,93 +362,49 @@ typedef enum IRQn
 #elif defined(CH32V30x)
 
 #ifdef CH32V30x_D8
-  TIM8_BRK_IRQn               = 59,      /* TIM8 Break Interrupt                                 */
-  TIM8_UP_IRQn                = 60,      /* TIM8 Update Interrupt                                */
-  TIM8_TRG_COM_IRQn           = 61,      /* TIM8 Trigger and Commutation Interrupt               */
-  TIM8_CC_IRQn                = 62,      /* TIM8 Capture Compare Interrupt                       */
-  RNG_IRQn                    = 63,      /* RNG global Interrupt                                 */
-  FSMC_IRQn                   = 64,      /* FSMC global Interrupt                                */
-  SDIO_IRQn                   = 65,      /* SDIO global Interrupt                                */
-  TIM5_IRQn                   = 66,      /* TIM5 global Interrupt                                */
-  SPI3_IRQn                   = 67,      /* SPI3 global Interrupt                                */
-  UART4_IRQn                  = 68,      /* UART4 global Interrupt                               */
-  UART5_IRQn                  = 69,      /* UART5 global Interrupt                               */
-  TIM6_IRQn                   = 70,      /* TIM6 global Interrupt                                */
-  TIM7_IRQn                   = 71,      /* TIM7 global Interrupt                                */
-  DMA2_Channel1_IRQn          = 72,      /* DMA2 Channel 1 global Interrupt                      */
-  DMA2_Channel2_IRQn          = 73,      /* DMA2 Channel 2 global Interrupt                      */
-  DMA2_Channel3_IRQn          = 74,      /* DMA2 Channel 3 global Interrupt                      */
-  DMA2_Channel4_IRQn          = 75,      /* DMA2 Channel 4 global Interrupt                      */
-  DMA2_Channel5_IRQn          = 76,      /* DMA2 Channel 5 global Interrupt                      */
-  OTG_FS_IRQn                 = 83,      /* OTGFS global Interrupt                               */
-  UART6_IRQn                  = 87,      /* UART6 global Interrupt                               */
-  UART7_IRQn                  = 88,      /* UART7 global Interrupt                               */
-  UART8_IRQn                  = 89,      /* UART8 global Interrupt                               */
-  TIM9_BRK_IRQn               = 90,      /* TIM9 Break Interrupt                                 */
-  TIM9_UP_IRQn                = 91,      /* TIM9 Update Interrupt                                */
-  TIM9_TRG_COM_IRQn           = 92,      /* TIM9 Trigger and Commutation Interrupt               */
-  TIM9_CC_IRQn                = 93,      /* TIM9 Capture Compare Interrupt                       */
-  TIM10_BRK_IRQn              = 94,      /* TIM10 Break Interrupt                                */
-  TIM10_UP_IRQn               = 95,      /* TIM10 Update Interrupt                               */
-  TIM10_TRG_COM_IRQn          = 96,      /* TIM10 Trigger and Commutation Interrupt              */
-  TIM10_CC_IRQn               = 97,      /* TIM10 Capture Compare Interrupt                      */
-  DMA2_Channel6_IRQn          = 98,      /* DMA2 Channel 6 global Interrupt                      */
-  DMA2_Channel7_IRQn          = 99,      /* DMA2 Channel 7 global Interrupt                      */
-  DMA2_Channel8_IRQn          = 100,     /* DMA2 Channel 8 global Interrupt                      */
-  DMA2_Channel9_IRQn          = 101,     /* DMA2 Channel 9 global Interrupt                      */
-  DMA2_Channel10_IRQn         = 102,     /* DMA2 Channel 10 global Interrupt                     */
-  DMA2_Channel11_IRQn         = 103,     /* DMA2 Channel 11 global Interrupt                     */
-
+	TIM8_BRK_IRQn               = 59,      /* TIM8 Break Interrupt                                 */
 #elif defined  (CH32V30x_D8C)
-  USBWakeUp_IRQn              = 58,      /* USB Device WakeUp from suspend through EXTI Line Interrupt */
-  TIM8_BRK_IRQn               = 59,      /* TIM8 Break Interrupt                                 */
-  TIM8_UP_IRQn                = 60,      /* TIM8 Update Interrupt                                */
-  TIM8_TRG_COM_IRQn           = 61,      /* TIM8 Trigger and Commutation Interrupt               */
-  TIM8_CC_IRQn                = 62,      /* TIM8 Capture Compare Interrupt                       */
-  RNG_IRQn                    = 63,      /* RNG global Interrupt                                 */
-  FSMC_IRQn                   = 64,      /* FSMC global Interrupt                                */
-  SDIO_IRQn                   = 65,      /* SDIO global Interrupt                                */
-  TIM5_IRQn                   = 66,      /* TIM5 global Interrupt                                */
-  SPI3_IRQn                   = 67,      /* SPI3 global Interrupt                                */
-  UART4_IRQn                  = 68,      /* UART4 global Interrupt                               */
-  UART5_IRQn                  = 69,      /* UART5 global Interrupt                               */
-  TIM6_IRQn                   = 70,      /* TIM6 global Interrupt                                */
-  TIM7_IRQn                   = 71,      /* TIM7 global Interrupt                                */
-  DMA2_Channel1_IRQn          = 72,      /* DMA2 Channel 1 global Interrupt                      */
-  DMA2_Channel2_IRQn          = 73,      /* DMA2 Channel 2 global Interrupt                      */
-  DMA2_Channel3_IRQn          = 74,      /* DMA2 Channel 3 global Interrupt                      */
-  DMA2_Channel4_IRQn          = 75,      /* DMA2 Channel 4 global Interrupt                      */
-  DMA2_Channel5_IRQn          = 76,      /* DMA2 Channel 5 global Interrupt                      */
-  ETH_IRQn                    = 77,      /* ETH global Interrupt                                 */
-  ETH_WKUP_IRQn               = 78,      /* ETH WakeUp Interrupt                                 */
-  CAN2_TX_IRQn                = 79,      /* CAN2 TX Interrupts                                   */
-  CAN2_RX0_IRQn               = 80,      /* CAN2 RX0 Interrupts                                  */
-  CAN2_RX1_IRQn               = 81,      /* CAN2 RX1 Interrupt                                   */
-  CAN2_SCE_IRQn               = 82,      /* CAN2 SCE Interrupt                                   */
-  OTG_FS_IRQn                 = 83,      /* OTGFS global Interrupt                               */
-  USBHSWakeup_IRQn            = 84,      /* USBHS WakeUp Interrupt                               */
-  USBHS_IRQn                  = 85,      /* USBHS global Interrupt                               */
-  DVP_IRQn                    = 86,      /* DVP global Interrupt                                 */
-  UART6_IRQn                  = 87,      /* UART6 global Interrupt                               */
-  UART7_IRQn                  = 88,      /* UART7 global Interrupt                               */
-  UART8_IRQn                  = 89,      /* UART8 global Interrupt                               */
-  TIM9_BRK_IRQn               = 90,      /* TIM9 Break Interrupt                                 */
-  TIM9_UP_IRQn                = 91,      /* TIM9 Update Interrupt                                */
-  TIM9_TRG_COM_IRQn           = 92,      /* TIM9 Trigger and Commutation Interrupt               */
-  TIM9_CC_IRQn                = 93,      /* TIM9 Capture Compare Interrupt                       */
-  TIM10_BRK_IRQn              = 94,      /* TIM10 Break Interrupt                                */
-  TIM10_UP_IRQn               = 95,      /* TIM10 Update Interrupt                               */
-  TIM10_TRG_COM_IRQn          = 96,      /* TIM10 Trigger and Commutation Interrupt              */
-  TIM10_CC_IRQn               = 97,      /* TIM10 Capture Compare Interrupt                      */
-  DMA2_Channel6_IRQn          = 98,      /* DMA2 Channel 6 global Interrupt                      */
-  DMA2_Channel7_IRQn          = 99,      /* DMA2 Channel 7 global Interrupt                      */
-  DMA2_Channel8_IRQn          = 100,     /* DMA2 Channel 8 global Interrupt                      */
-  DMA2_Channel9_IRQn          = 101,     /* DMA2 Channel 9 global Interrupt                      */
-  DMA2_Channel10_IRQn         = 102,     /* DMA2 Channel 10 global Interrupt                     */
-  DMA2_Channel11_IRQn         = 103,     /* DMA2 Channel 11 global Interrupt                     */
-
+	USBWakeUp_IRQn              = 58,      /* USB Device WakeUp from suspend through EXTI Line Interrupt */
+	TIM8_BRK_IRQn               = 59,      /* TIM8 Break Interrupt                                 */
+#endif
+	TIM8_UP_IRQn                = 60,      /* TIM8 Update Interrupt                                */
+	TIM8_TRG_COM_IRQn           = 61,      /* TIM8 Trigger and Commutation Interrupt               */
+	TIM8_CC_IRQn                = 62,      /* TIM8 Capture Compare Interrupt                       */
+	RNG_IRQn                    = 63,      /* RNG global Interrupt                                 */
+	FSMC_IRQn                   = 64,      /* FSMC global Interrupt                                */
+	SDIO_IRQn                   = 65,      /* SDIO global Interrupt                                */
+	TIM5_IRQn                   = 66,      /* TIM5 global Interrupt                                */
+	SPI3_IRQn                   = 67,      /* SPI3 global Interrupt                                */
+	UART4_IRQn                  = 68,      /* UART4 global Interrupt                               */
+	UART5_IRQn                  = 69,      /* UART5 global Interrupt                               */
 #endif
 
+#if defined(CH32V30x) || defined(CH32V20x)
+	TIM6_IRQn                   = 70,      /* TIM6 global Interrupt                                */
+	TIM7_IRQn                   = 71,      /* TIM7 global Interrupt                                */
+	DMA2_Channel1_IRQn          = 72,      /* DMA2 Channel 1 global Interrupt                      */
+	DMA2_Channel2_IRQn          = 73,      /* DMA2 Channel 2 global Interrupt                      */
+	DMA2_Channel3_IRQn          = 74,      /* DMA2 Channel 3 global Interrupt                      */
+	DMA2_Channel4_IRQn          = 75,      /* DMA2 Channel 4 global Interrupt                      */
+	DMA2_Channel5_IRQn          = 76,      /* DMA2 Channel 5 global Interrupt                      */
+	OTG_FS_IRQn                 = 83,      /* OTGFS global Interrupt NOTE: THIS APPEAR TO BE INCORRECT                */
+	UART6_IRQn                  = 87,      /* UART6 global Interrupt                               */
+	UART7_IRQn                  = 88,      /* UART7 global Interrupt                               */
+	UART8_IRQn                  = 89,      /* UART8 global Interrupt                               */
+	TIM9_BRK_IRQn               = 90,      /* TIM9 Break Interrupt                                 */
+	TIM9_UP_IRQn                = 91,      /* TIM9 Update Interrupt                                */
+	TIM9_TRG_COM_IRQn           = 92,      /* TIM9 Trigger and Commutation Interrupt               */
+	TIM9_CC_IRQn                = 93,      /* TIM9 Capture Compare Interrupt                       */
+	TIM10_BRK_IRQn              = 94,      /* TIM10 Break Interrupt                                */
+	TIM10_UP_IRQn               = 95,      /* TIM10 Update Interrupt                               */
+	TIM10_TRG_COM_IRQn          = 96,      /* TIM10 Trigger and Commutation Interrupt              */
+	TIM10_CC_IRQn               = 97,      /* TIM10 Capture Compare Interrupt                      */
+	DMA2_Channel6_IRQn          = 98,      /* DMA2 Channel 6 global Interrupt                      */
+	DMA2_Channel7_IRQn          = 99,      /* DMA2 Channel 7 global Interrupt                      */
+	DMA2_Channel8_IRQn          = 100,     /* DMA2 Channel 8 global Interrupt                      */
+	DMA2_Channel9_IRQn          = 101,     /* DMA2 Channel 9 global Interrupt                      */
+	DMA2_Channel10_IRQn         = 102,     /* DMA2 Channel 10 global Interrupt                     */
+	DMA2_Channel11_IRQn         = 103,     /* DMA2 Channel 11 global Interrupt                     */
 #endif
 
 } IRQn_Type;
@@ -1000,11 +956,10 @@ typedef struct
     __IO uint32_t APB1PCENR;
 #ifdef CH32V003
     __IO uint32_t RESERVED0;
-    __IO uint32_t RSTSCKR;
 #elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 	__IO uint32_t BDCTLR;
-	__IO uint32_t RSTSCKR;
 #endif
+	__IO uint32_t RSTSCKR;
 #if defined(CH32V20x) || defined(CH32V30x)
 	__IO uint32_t AHBRSTR;
 	__IO uint32_t CFGR2;
@@ -1452,7 +1407,93 @@ typedef struct  __attribute__((packed))
 
 #endif	// #if defined(CH32V30x)
 
-/* USBFS Registers */
+/* USBD Full-Speed Device, Chapter 21.
+ NOTE: USBD and CAN controller share a dedicated 512-byte SRAM area for data
+ transmission and reception in the design, so when using USBD and CAN functions
+ at the same time, this shared area needs to be allocated reasonably to prevent
+ data conflicts. */
+
+typedef struct 
+{
+	__IO uint32_t ADDn_TX;
+	__IO uint32_t COUNTn_TX;
+	__IO uint32_t ADDn_RX;
+	__IO uint32_t COUNTn_RX;
+} USBD_BTABLE_TypeDef;
+
+typedef struct
+{
+	__IO uint32_t EPR[8];
+	__IO uint32_t RESERVED[8];
+	__IO uint32_t CNTR;
+	__IO uint32_t ISTR;
+	__IO uint32_t FNR;
+	__IO uint32_t DADDR;
+	__IO uint32_t BTABLE;
+} USBD_TypeDef;
+
+#define CAN_USBD_SHARED_BASE   ((PERIPH_BASE + 0x6000))
+#define USBD_BASE              ((PERIPH_BASE + 0x5C00))
+
+/* USBD_CNTR */
+#define USBD_CTRM      (1<<15)
+#define USBD_PMAOVRM   (1<<14)
+#define USBD_ERRM      (1<<13)
+#define USBD_WKUPM     (1<<12)
+#define USBD_SUSPM     (1<<11)
+#define USBD_RESETM    (1<<10)
+#define USBD_SOFM      (1<<9)
+#define USBD_ESOFM     (1<<8)
+#define USBD_RESUME    (1<<4)
+#define USBD_FSUP      (1<<3)
+#define USBD_LPMODE    (1<<2)
+#define USBD_PDWN      (1<<1)
+#define USBD_FRES      (1<<0)
+
+/* USBD_ISTR */
+#define USBD_CTR       (1<<15)
+#define USBD_PMAOVR    (1<<14)
+#define USBD_ERR       (1<<13)
+#define USBD_WKUP      (1<<12)
+#define USBD_SUSP      (1<<11)
+#define USBD_RESET     (1<<10)
+#define USBD_SOF       (1<<9)
+#define USBD_ESOF      (1<<8)
+#define USBD_DIR       (1<<4)
+#define USBD_EP_ID     (0xf)
+
+/* USBD_FNR */
+#define USBD_RXDP      (1<<15)
+#define USBD_RXDM      (1<<14)
+#define USBD_LCK       (1<<13)
+#define USBD_LSOF      (3<<11)
+#define USBD_FN        (0x7ff)
+
+/* USBD_DADDR */
+#define USBD_EF        (1<<7)
+#define USBD_ADD       (0x7f)
+
+/* USBD_EPRx */
+#define USBD_CTR_RX    (1<<15)
+#define USBD_DTOG_RX   (1<<14)
+#define USBD_STAT_RX   (3<<12)
+#define USBD_SETUP     (1<<11)
+#define USBD_EPTYPE    (3<<9)
+#define USBD_EPKIND    (1<<8)
+#define USBD_CTR_TX    (1<<7)
+#define USBD_DTOG_TX   (1<<6)
+#define USBD_STAT_TX   (3<<4)
+#define USBD_EA        (0xf)
+
+/* USBD_COUNTx_RX */
+#define USBD_BLSIZE    (1<<15)
+#define USBD_NUM_BLOCK (0x1f<<10)
+#define USBD_COUNTx_RX 0x2ff
+
+
+#define USBD           ((USBD_TypeDef *) USBD_BASE)
+
+/* USB-FS-OTG Registers, Chapter 23. */
 typedef struct
 {
 	__IO uint8_t  BASE_CTRL;
@@ -1461,7 +1502,7 @@ typedef struct
 	__IO uint8_t  DEV_ADDR;
 	__IO uint8_t  Reserve0;
 	__IO uint8_t  MIS_ST;
-	__IO uint8_t  INT_FG;
+	__IO uint8_t  INT_FG; // "Combined" register in some situations. (ST_FG)
 	__IO uint8_t  INT_ST;
 	__IO uint32_t RX_LEN;
 	__IO uint8_t  UEP4_1_MOD;
@@ -1505,6 +1546,154 @@ typedef struct
 	__IO uint32_t OTG_SR;
 } USBOTG_FS_TypeDef;
 
+/* R8_USB_CTRL */
+#define USBOTG_UC_HOST_MODE         (1<<7)
+#define USBOTG_UC_LOW_SPEED         (1<<6)
+#define USBOTG_UC_DEV_PU_EN         (1<<5)
+#define USBOTG_UC_SYS_CTRL          (1<<4)
+#define USBOTG_UC_INT_BUSY          (1<<3)
+#define USBOTG_UC_RESET_SIE         (1<<2)
+#define USBOTG_UC_CLR_ALL           (1<<1)
+#define USBOTG_UC_DMA_EN            (1<<0)
+
+/* R8_USB_INT_EN */
+#define USBOTG_UIE_DEV_NAK          (1<<6)
+#define USBOTG_UIE_FIFO_OV          (1<<4)
+#define USBOTG_UIE_HST_SOF          (1<<3)
+#define USBOTG_UIE_SUSPEND          (1<<2)
+#define USBOTG_UIE_TRANSFER         (1<<1)
+#define USBOTG_UIE_DETECT           (1<<0)
+#define USBOTG_UIE_BUS_RST          (1<<0)
+
+/* R8_USB_DEV_AD */
+#define USBOTG_UDA_GP_BIT           (1<<7)
+#define USBOTG_USB_ADDR             (1<<6)
+
+/* R8_USB_MIS_ST */
+#define USBOTG_UMS_SOF_PRES         (1<<7)
+#define USBOTG_UMS_SOF_ACT          (1<<6)
+#define USBOTG_UMS_SIE_FREE         (1<<5)
+#define USBOTG_UMS_R_FIFO_RDY       (1<<4)
+#define USBOTG_UMS_BUS_RESET        (1<<3)
+#define USBOTG_UMS_SUSPEND          (1<<2)
+#define USBOTG_UMS_DM_LEVEL         (1<<1)
+#define USBOTG_UMS_DEV_ATTACH       (1<<0)
+
+/* R8_USB_INT_FG */
+#define USBOTG_U_IS_NAK             (1<<7)
+#define USBOTG_U_TOG_OK             (1<<6)
+#define USBOTG_U_SIE_FREE           (1<<5)
+#define USBOTG_UIF_FIFO_OV          (1<<4)
+#define USBOTG_UIF_HST_SOF          (1<<3)
+#define USBOTG_UIF_SUSPEND          (1<<2)
+#define USBOTG_UIF_TRANSFER         (1<<1)
+#define USBOTG_UIF_DETECT           (1<<0)
+#define USBOTG_UIF_BUS_RST          (1<<0)
+
+/* R8_USB_INT_ST */
+#define USBOTG_UIS_IS_NAK           (1<<7)
+#define USBOTG_UIS_TOG_OK           (1<<6)
+#define USBOTG_UIS_TOKEN            (3<<4)
+#define USBOTG_UIS_ENDP             0xf
+#define USBOTG_UIS_H_RES            0xf
+
+/* R32_USB_OTG_CR */
+#define USBOTG_CR_SESS_VTH          (1<<5)
+#define USBOTG_CR_VBUS_VTH          (1<<4)
+#define USBOTG_CR_OTG_EN            (1<<3)
+#define USBOTG_CR_IDPU              (1<<2)
+#define USBOTG_CR_CHARGE_VBUS       (1<<1)
+#define USBOTG_CR_DISCHAR_VBUS      (1<<0)
+
+/* R32_USB_OTG_SR */
+#define USBOTG_SR_ID_DIG            (1<<3)
+#define USBOTG_SR_SESS_END          (1<<2)
+#define USBOTG_SR_SESS_VLD          (1<<1)
+#define USBOTG_SR_VBUS_VLD          (1<<0)
+
+/* R8_UEPn_TX_CTRL */
+#define USBOTG_UEP_T_AUTO_TOG       (1<<3)
+#define USBOTG_UEP_T_TOG            (1<<2)
+#define USBOTG_UEP_T_RES_MASK       (3<<0)      // bit mask of handshake response type for USB endpoint X transmittal (IN)
+#define USBOTG_UEP_T_RES_ACK        (0<<1)
+#define USBOTG_UEP_T_RES_NONE       (1<<0)
+#define USBOTG_UEP_T_RES_NAK        (1<<1)
+#define USBOTG_UEP_T_RES_STALL      (3<<0)
+
+#define USBOTG_UEP_R_AUTO_TOG       (1<<3)      // enable automatic toggle after successful transfer completion on endpoint 1/2/3: 0=manual toggle, 1=automatic toggle
+#define USBOTG_UEP_R_TOG            (1<<2)      // expected data toggle flag of USB endpoint X receiving (OUT): 0=DATA0, 1=DATA1
+#define USBOTG_UEP_R_RES_MASK       (3<<0)      // bit mask of handshake response type for USB endpoint X receiving (OUT)
+#define USBOTG_UEP_R_RES_ACK        (0<<1)
+#define USBOTG_UEP_R_RES_NONE       (1<<0)
+#define USBOTG_UEP_R_RES_NAK        (1<<1)
+#define USBOTG_UEP_R_RES_STALL      (3<<0)
+
+
+
+/* R8_UEPn_ RX_CTRL */
+#define USBOTG_UEP_R_AUTO_TOG       (1<<3)
+#define USBOTG_UEP_R_TOG            (1<<2)
+#define USBOTG_UEP_R_RES            (3<<0)
+
+/* R8_UEP7_MOD */
+#define USBOTG_UEP7_RX_EN           (1<<3)
+#define USBOTG_UEP7_TX_EN           (1<<2)
+#define USBOTG_UEP7_BUF_MOD         (1<<0)
+
+/* R8_UEP5_6_MOD */
+#define USBOTG_UEP6_RX_EN           (1<<7)
+#define USBOTG_UEP6_TX_EN           (1<<6)
+#define USBOTG_UEP6_BUF_MOD         (1<<4)
+#define USBOTG_UEP5_RX_EN           (1<<3)
+#define USBOTG_UEP5_TX_EN           (1<<2)
+#define USBOTG_UEP5_BUF_MOD         (1<<0)
+
+/* R8_UEP2_3_MOD */
+#define USBOTG_UEP3_RX_EN           (1<<7)
+#define USBOTG_UEP3_TX_EN           (1<<6)
+#define USBOTG_UEP3_BUF_MOD         (1<<4)
+#define USBOTG_UEP2_RX_EN           (1<<3)
+#define USBOTG_UEP2_TX_EN           (1<<2)
+#define USBOTG_UEP2_BUF_MOD         (1<<0)
+
+/* R8_UEP4_1_MOD */
+#define USBOTG_UEP1_RX_EN           (1<<7)
+#define USBOTG_UEP1_TX_EN           (1<<6)
+#define USBOTG_UEP1_BUF_MOD         (1<<4)
+#define USBOTG_UEP4_RX_EN           (1<<3)
+#define USBOTG_UEP4_TX_EN           (1<<2)
+#define USBOTG_UEP4_BUF_MOD         (1<<0)
+
+/* R8_UDEV_CTRL */
+#define USBOTG_UD_PD_DIS            (1<<7)
+#define USBOTG_UD_DP_PIN            (1<<5)
+#define USBOTG_UD_DM_PIN            (1<<4)
+#define USBOTG_UD_LOW_SPEED         (1<<2)
+#define USBOTG_UD_GP_BIT            (1<<1)
+#define USBOTG_UD_PORT_EN           (1<<0)
+
+
+#define USBFS_UDA_GP_BIT            0x80
+#define USBFS_USB_ADDR_MASK         0x7F
+
+#define DEF_USBD_UEP0_SIZE		   64	 /* usb hs/fs device end-point 0 size */
+#define UEP_SIZE 64
+
+#define DEF_UEP_IN                  0x80
+#define DEF_UEP_OUT                 0x00
+#define DEF_UEP_BUSY                0x01
+#define DEF_UEP_FREE                0x00
+
+#define DEF_UEP0 0
+#define DEF_UEP1 1
+#define DEF_UEP2 2
+#define DEF_UEP3 3
+#define DEF_UEP4 4
+#define DEF_UEP5 5
+#define DEF_UEP6 6
+#define DEF_UEP7 7
+#define UNUM_EP 8
+
 typedef struct
 {
 	__IO uint8_t   BASE_CTRL;
@@ -1546,6 +1735,40 @@ typedef struct
 	__IO uint32_t  OTG_CR;
 	__IO uint32_t  OTG_SR;
 } USBOTG_FS_HOST_TypeDef;
+
+/* R8_UHOST_CTRL */
+#define USBOTG_UH_PD_DIS       (1<<7)
+#define USBOTG_UH_DP_PIN       (1<<5)
+#define USBOTG_UH_DM_PIN       (1<<4)
+#define USBOTG_UH_LOW_SPEED    (1<<2)
+#define USBOTG_UH_BUS_RESET    (1<<1)
+#define USBOTG_UH_PORT_EN      (1<<0)
+
+/* R32_UH_EP_MOD */
+#define USBOTG_UH_EP_TX_EN     (1<<6)
+#define USBOTG_UH_EP_TBUF_MOD  (1<<4)
+#define USBOTG_UH_EP_RX_EN     (1<<3)
+#define USBOTG_UH_EP_RBUF_MOD  (1<<0)
+
+/* R16_UH_SETUP */
+#define USBOTG_UH_PRE_PID_EN   (1<<10)
+#define USBOTG_UH_SOF_EN       (1<<2)
+
+/* R8_UH_EP_PID */
+#define USBOTG_UH_TOKEN        (0xf<<4)
+#define USBOTG_UH_ENDP         (0xf<<0)
+
+/* R8_UH_RX_CTRL */
+#define USBOTG_UH_R_AUTO_TOG   (1<<3)
+#define USBOTG_UH_R_TOG        (1<<2)
+#define USBOTG_UH_R_RES        (1<<0)
+
+/* R8_UH_TX_CTRL */
+#define USBOTG_UH_T_AUTO_TOG   (1<<3)
+#define USBOTG_UH_T_TOG        (1<<2)
+#define USBOTG_UH_T_RES        (1<<0)
+
+
 
 #if defined(CH32V30x)
 /* Ethernet MAC */
