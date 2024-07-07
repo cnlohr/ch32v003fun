@@ -8,6 +8,9 @@
 
 #include <string.h>
 
+// For the CH32V203, we support remapping, if so,
+// #define SSD1306_REMAP_I2C
+
 // SSD1306 I2C address
 #define SSD1306_I2C_ADDR 0x3c
 
@@ -324,16 +327,19 @@ uint8_t ssd1306_i2c_init(void)
 	RCC->APB1PCENR |= RCC_APB1Periph_I2C1;
 
 #ifdef CH32V20x
-	RCC->APB2PCENR |= RCC_APB2Periph_GPIOB;
-	// PB7 is SDA, 10MHz Output, alt func, open-drain
-	GPIOB->CFGLR &= ~(0xf<<(4*7));
-	GPIOB->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_OD_AF)<<(4*7);
-	
-	// PB6 is SCL, 10MHz Output, alt func, open-drain
-	GPIOB->CFGLR &= ~(0xf<<(4*6));
-	GPIOB->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_OD_AF)<<(4*6);
+	RCC->APB2PCENR |= RCC_APB2Periph_GPIOB | RCC_APB2Periph_AFIO;
+
+#ifdef SSD1306_REMAP_I2C
+	AFIO->PCFR1 |= AFIO_PCFR1_I2C1_REMAP;
+	funPinMode( PB8, GPIO_CFGLR_OUT_10Mhz_AF_OD );
+	funPinMode( PB9, GPIO_CFGLR_OUT_10Mhz_AF_OD );
 #else
-	RCC->APB2PCENR |= RCC_APB2Periph_GPIOC;
+	funPinMode( PB6, GPIO_CFGLR_OUT_10Mhz_AF_OD );
+	funPinMode( PB7, GPIO_CFGLR_OUT_10Mhz_AF_OD );
+#endif
+
+#else
+	RCC->APB2PCENR |= RCC_APB2Periph_GPIOC | RCC_APB2Periph_AFIO;
 	// PC1 is SDA, 10MHz Output, alt func, open-drain
 	GPIOC->CFGLR &= ~(0xf<<(4*1));
 	GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_OD_AF)<<(4*1);
