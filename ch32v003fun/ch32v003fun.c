@@ -787,9 +787,9 @@ void USART2_IRQHandler( void ) 			 __attribute__((section(".text.vector_handler"
 void USART3_IRQHandler( void ) 			 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void EXTI15_10_IRQHandler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void RTCAlarm_IRQHandler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void USBWakeUp_IRQHandler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 #endif
 #if defined(CH32V10x) || defined(CH32V20x)
-void USBWakeUp_IRQHandler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void USBHD_IRQHandler( void ) 			 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 #endif // defined(CH32V10x) || defined(CH32V20x)
 #if defined(CH32V20x) || defined(CH32V30x)
