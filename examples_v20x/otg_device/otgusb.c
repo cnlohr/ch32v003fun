@@ -8,8 +8,8 @@ uint32_t USBDEBUG0, USBDEBUG1, USBDEBUG2;
 #define UEP_CTRL_TX(n)  (((uint8_t*)&USBOTG_FS->UEP0_TX_CTRL)[n*4])
 #define UEP_CTRL_RX(n)  (((uint8_t*)&USBOTG_FS->UEP0_RX_CTRL)[n*4])
 
-#define CHECK_USBOTG_UEP_T_AUTO_TOG 0
-#define CHECK_USBOTG_UEP_R_AUTO_TOG 0
+#define CHECK_USBOTG_UEP_T_AUTO_TOG USBOTG_UEP_T_AUTO_TOG
+#define CHECK_USBOTG_UEP_R_AUTO_TOG USBOTG_UEP_R_AUTO_TOG
 struct _USBState USBOTGCTX;
 
 // Mask for the combined USBFSD->INT_FG + USBFSD->INT_ST
@@ -56,7 +56,9 @@ static inline void DMA7FastCopy( uint8_t * dest, const uint8_t * src, int len )
 static inline void DMA7FastCopyComplete() { while( DMA1_Channel7->CNTR ); }
 
 #if FUSB_USE_HPE
-void USBHD_IRQHandler() __attribute__((section(".text.vector_handler")))  __attribute((naked));
+// There is an issue with some registers apparently getting lost with HPE, just do it the slow way.
+void USBHD_IRQHandler() __attribute__((section(".text.vector_handler")))  __attribute((interrupt));
+//void USBHD_IRQHandler() __attribute__((section(".text.vector_handler")))  __attribute((naked));
 #else
 void USBHD_IRQHandler() __attribute__((section(".text.vector_handler")))  __attribute((interrupt));
 #endif
@@ -76,10 +78,6 @@ void USBHD_IRQHandler()
 	int len = 0;
 	struct _USBState * ctx = &USBOTGCTX;
 	uint8_t * ctrl0buff = CTRL0BUFF;
-
-	// Handle any other interrupts and just clear them out.
-	USBOTG_FS->INT_FG = intfgst & 0x3f;
-
 
 	// TODO: Check if needs to be do-while to re-check.
 	if( intfgst & CRB_UIF_TRANSFER )
@@ -519,6 +517,7 @@ void USBHD_IRQHandler()
 		}
 
 
+		USBOTG_FS->INT_FG = CRB_UIF_TRANSFER;
 	}
 	else if( intfgst & CRB_UIF_BUS_RST )
 	{
@@ -530,6 +529,7 @@ void USBHD_IRQHandler()
 
 		USBOTG_FS->DEV_ADDR = 0;
 		USBOTG_InternalFinishSetup( );
+		USBOTG_FS->INT_FG = CRB_UIF_BUS_RST;
 	}
 	else if( intfgst & CRB_UIF_SUSPEND )
 	{
@@ -547,15 +547,16 @@ void USBHD_IRQHandler()
 		{
 			ctx->USBOTG_DevSleepStatus &= ~0x02;
 		}
+		USBOTG_FS->INT_FG = USBOTG_UMS_SUSPEND;
 	}
 
 #if FUSB_IO_PROFILE
 	GPIOB->BSHR = 1<<16;
 #endif
 
-#if FUSB_USE_HPE
-	asm volatile( "mret" );
-#endif
+//#if FUSB_USE_HPE
+//	asm volatile( "mret" );
+//#endif
 }
 
 void USBOTG_InternalFinishSetup()

@@ -82,7 +82,6 @@ struct _USBState
 
 extern struct _USBState USBOTGCTX;
 
-
 #include "otgusb.c"
 
 #endif
