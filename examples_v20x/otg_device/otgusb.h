@@ -31,7 +31,7 @@ struct _USBState;
 int USBOTGSetup();
 uint8_t USBOTG_Endp_DataUp(uint8_t endp, const uint8_t *pbuf, uint16_t len, uint8_t mod);
 static inline uint8_t * USBOTG_GetEPBufferIfAvailable( int endp );
-static inline void USBOTG_SendEndpoint( int endp, int len );
+static inline int USBOTG_SendEndpoint( int endp, int len );
 
 static inline void DMA7FastCopy( uint8_t * dest, const uint8_t * src, int len );
 static inline void DMA7FastCopyComplete();
@@ -76,7 +76,8 @@ struct _USBState
 	uint8_t USBOTG_HidIdle[FUSB_HID_INTERFACES];
 	uint8_t USBOTG_HidProtocol[FUSB_HID_INTERFACES];
 #endif
-	volatile uint8_t  USBOTG_Endp_Busy[FUSB_CONFIG_EPS];
+	volatile uint8_t USBOTG_Endp_Busy[FUSB_CONFIG_EPS];
+	volatile uint8_t USBOTG_errata_dont_send_endpoint_in_window;
 };
 
 extern struct _USBState USBOTGCTX;

@@ -61,21 +61,25 @@ void USBHD_IRQHandler() __attribute__((section(".text.vector_handler")))  __attr
 void USBHD_IRQHandler() __attribute__((section(".text.vector_handler")))  __attribute((interrupt));
 #endif
 
-volatile uint32_t FIRE_INTERRUPT;
 void USBOTG_InternalFinishSetup();
 
 void USBHD_IRQHandler()
 {
 #if FUSB_IO_PROFILE
-	GPIOA->BSHR = 1;
+	GPIOB->BSHR = 1;
 #endif
-	FIRE_INTERRUPT = 1;
+
+	int tries = 0;
 
 	// Combined FG + ST flag.
 	uint16_t intfgst = *(uint16_t*)(&USBOTG_FS->INT_FG);
 	int len = 0;
 	struct _USBState * ctx = &USBOTGCTX;
 	uint8_t * ctrl0buff = CTRL0BUFF;
+
+	// Handle any other interrupts and just clear them out.
+	USBOTG_FS->INT_FG = intfgst & 0x3f;
+
 
 	// TODO: Check if needs to be do-while to re-check.
 	if( intfgst & CRB_UIF_TRANSFER )
@@ -100,9 +104,10 @@ void USBHD_IRQHandler()
 				/* end-point 0 data in interrupt */
 				if( ctx->USBOTG_SetupReqLen == 0 )
 				{
-					//UEP_CTRL_TX(0) = ( UEP_CTRL_TX(ep) & ~USBOTG_UEP_T_RES_MASK ) | USBOTG_UEP_T_RES_ACK;
-					UEP_CTRL_RX(0) = ( UEP_CTRL_TX(ep) & ~USBOTG_UEP_R_RES_MASK ) | USBOTG_UEP_R_RES_ACK | USBOTG_UEP_R_TOG;
+					UEP_CTRL_RX(0) = USBOTG_UEP_R_RES_ACK | USBOTG_UEP_R_TOG;
 				}
+
+				ctx->USBOTG_errata_dont_send_endpoint_in_window = 0;
 
 				if( ctx->pCtrlPayloadPtr )
 				{
@@ -185,12 +190,14 @@ void USBHD_IRQHandler()
 
 						if( ctx->USBOTG_SetupReqLen == 0 )
 						{
-							UEP_CTRL_LEN(0) = 0;
-							UEP_CTRL_TX(0) = USBOTG_UEP_T_TOG | CHECK_USBOTG_UEP_T_AUTO_TOG | USBOTG_UEP_T_RES_ACK;
 #if FUSB_HID_USER_REPORTS
 							DMA7FastCopyComplete();
 							HandleHidUserReportOutComplete( ctx );
 #endif
+
+							ctx->USBOTG_errata_dont_send_endpoint_in_window = 1;
+							UEP_CTRL_LEN(0) = 0;
+							UEP_CTRL_TX(0) = USBOTG_UEP_T_TOG | CHECK_USBOTG_UEP_T_AUTO_TOG | USBOTG_UEP_T_RES_ACK;
 						}
 						else
 						{
@@ -232,8 +239,9 @@ void USBHD_IRQHandler()
 							if( len < 0 ) goto sendstall;
 							ctx->USBOTG_SetupReqLen = len;
 							UEP_CTRL_LEN(0) = 0;
-							UEP_CTRL_RX(0) = CHECK_USBOTG_UEP_R_AUTO_TOG | USBOTG_UEP_R_TOG;
-							UEP_CTRL_TX(0) = CHECK_USBOTG_UEP_T_AUTO_TOG | USBOTG_UEP_T_RES_ACK | USBOTG_UEP_T_TOG;
+							// Previously would have been a CTRL_RX = ACK && TOG, but not here on the 203.
+							UEP_CTRL_RX(0) = CHECK_USBOTG_UEP_R_AUTO_TOG | USBOTG_UEP_R_RES_ACK | USBOTG_UEP_R_TOG;
+							UEP_CTRL_TX(0) = CHECK_USBOTG_UEP_T_AUTO_TOG | USBOTG_UEP_T_TOG;
 							goto replycomplete;
 						case HID_GET_REPORT:
 							len = HandleHidUserGetReportSetup( ctx, pUSBOTG_SetupReqPak );
@@ -335,7 +343,7 @@ void USBHD_IRQHandler()
 					/* Set usb address */
 					case USB_SET_ADDRESS:
 						ctx->USBOTG_DevAddr = (uint8_t)( ctx->USBOTG_IndexValue & 0xFF );
-						//USBOTG_FS->DEV_ADDR = ctx->USBOTG_DevAddr;
+						// NOTE: Do not actually set addres here!  If we do, we won't get the PID_IN associated with this SETUP.
 						break;
 
 					/* Get usb configuration now set */
@@ -495,6 +503,7 @@ void USBHD_IRQHandler()
 			// This might look a little weird, for error handling but it saves a nontrivial amount of storage, and simplifies
 			// control flow to hard-abort here.
 		sendstall:
+
 			// if one request not support, return stall.  Stall means permanent error.
 			UEP_CTRL_TX(0) = USBOTG_UEP_T_TOG | USBOTG_UEP_T_RES_STALL;
 			UEP_CTRL_RX(0) = USBOTG_UEP_R_TOG | USBOTG_UEP_R_RES_STALL;
@@ -502,8 +511,8 @@ void USBHD_IRQHandler()
 			break;
 
 		/* Sof pack processing */
-		case CUIS_TOKEN_SOF:
-			break;
+		//case CUIS_TOKEN_SOF:
+		//	break;
 
 		default :
 			break;
@@ -540,11 +549,8 @@ void USBHD_IRQHandler()
 		}
 	}
 
-	// Handle any other interrupts and just clear them out.
-	*(uint16_t*)(&USBOTG_FS->INT_FG) = intfgst;
-
 #if FUSB_IO_PROFILE
-	GPIOA->BSHR = 1<<16;
+	GPIOB->BSHR = 1<<16;
 #endif
 
 #if FUSB_USE_HPE
@@ -635,6 +641,10 @@ int USBOTGSetup()
 	// Actually go on-bus.
 	USBOTG_FS->BASE_CTRL |= USBOTG_UC_DEV_PU_EN;
 
+#if FUSB_IO_PROFILE
+	funPinMode( PB0, GPIO_CFGLR_OUT_50Mhz_PP );
+#endif
+
 	// Go on-bus.
 	return 0;
 }
@@ -647,11 +657,13 @@ static inline uint8_t * USBOTG_GetEPBufferIfAvailable( int endp )
 	return USBOTGCTX.ENDPOINTS[ endp ];
 }
 
-static inline void USBOTG_SendEndpoint( int endp, int len )
+static inline int USBOTG_SendEndpoint( int endp, int len )
 {
+	if( USBOTGCTX.USBOTG_errata_dont_send_endpoint_in_window || USBOTGCTX.USBOTG_Endp_Busy[ endp ] ) return -1;
 	UEP_CTRL_LEN( endp ) = len;
 	UEP_CTRL_TX( endp ) = ( UEP_CTRL_TX( endp ) & ~USBOTG_UEP_T_RES_MASK ) | USBOTG_UEP_T_RES_ACK;
 	USBOTGCTX.USBOTG_Endp_Busy[ endp ] = 0x01;
+	return 0;
 }
 
 

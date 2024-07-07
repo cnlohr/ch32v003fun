@@ -23,7 +23,7 @@ int HandleHidUserSetReportSetup( struct _USBState * ctx, tusb_control_request_t 
 	if( id == 0xaa )
 	{
 	//	memset( scratchpad, 0x55, sizeof(scratchpad) );
-	//	printf( "SET REPORT! %d [%02x]\n", req->wLength, scratchpad[200] );
+		//printf( "SET REPORT! %d [%02x]\n", req->wLength, scratchpad[200] );
 		ctx->pCtrlPayloadPtr = scratchpad;
 		return req->wLength;
 	}
@@ -79,7 +79,10 @@ int main()
 			if( buffer )
 			{
 				buffer[0] = 0x000000aa;
-				USBOTG_SendEndpoint( i, (i==1)?8:4 );
+				if( USBOTG_SendEndpoint( i, (i==1)?8:4 ) == 0 )
+				{
+					// Success
+				}
 			}
 		}
 	}

@@ -221,7 +221,7 @@ static const uint8_t config_descriptor[ ] =
 
 
 #define STR_MANUFACTURER u"CNLohr"
-#define STR_PRODUCT      u"ch32v003fun ch32x035 test"
+#define STR_PRODUCT      u"ch32v003fun ch32x203 test"
 #define STR_SERIAL       u"CUSTOMDEVICE000"
 
 struct usb_string_descriptor_struct {
