@@ -20,7 +20,7 @@ uint8_t scratchpad[256];
 int HandleHidUserSetReportSetup( struct _USBState * ctx, tusb_control_request_t * req )
 {
 	int id = req->wValue & 0xff;
-	if( id == 0xaa )
+	if( id == 0xaa && req->wLength <= sizeof(scratchpad) )
 	{
 	//	memset( scratchpad, 0x55, sizeof(scratchpad) );
 	//	printf( "SET REPORT! %d [%02x]\n", req->wLength, scratchpad[200] );
@@ -37,7 +37,7 @@ int HandleHidUserGetReportSetup( struct _USBState * ctx, tusb_control_request_t 
 	{
 		//printf( "GET REPORT! %d\n", req->wLength );
 		ctx->pCtrlPayloadPtr = scratchpad;
-		return 255;
+		return sizeof(scratchpad) - 1;
 	}
 	return 0;
 }

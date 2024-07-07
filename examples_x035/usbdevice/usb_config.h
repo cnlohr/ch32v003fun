@@ -190,7 +190,7 @@ static const uint8_t config_descriptor[ ] =
     0x01,                                                   // bInterval: 1mS
 
 
-    /* Interface Descriptor (Mouse) */
+    /* Interface Descriptor (HIDAPI) */
     0x09,                                                   // bLength
     0x04,                                                   // bDescriptorType
     0x02,                                                   // bInterfaceNumber
@@ -201,7 +201,7 @@ static const uint8_t config_descriptor[ ] =
     0xff,                                                   // bInterfaceProtocol: OTher
     0x00,                                                   // iInterface
 
-    /* HID Descriptor (Mouse) */
+    /* HID Descriptor (HIDAPI) */
     0x09,                                                   // bLength
     0x21,                                                   // bDescriptorType
     0x10, 0x01,                                             // bcdHID
@@ -210,7 +210,7 @@ static const uint8_t config_descriptor[ ] =
     0x22,                                                   // bDescriptorType
     sizeof(HIDAPIRepDesc), 0x00,                             // wDescriptorLength
 
-    /* Endpoint Descriptor (Mouse) */
+    /* Endpoint Descriptor (HIDAPI) */
     0x07,                                                   // bLength
     0x05,                                                   // bDescriptorType
     0x83,                                                   // bEndpointAddress: IN Endpoint 2
