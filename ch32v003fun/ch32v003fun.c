@@ -799,6 +799,7 @@ void ETHWakeUp_IRQHandler( void ) 		 __attribute__((section(".text.vector_handle
 void OSC32KCal_IRQHandler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void OSCWakeUp_IRQHandler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void DMA1_Channel8_IRQHandler( void ) 	 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+// This appears to be masked to USBHD
 void TIM8_BRK_IRQHandler( void ) 		__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void TIM8_UP_IRQHandler( void ) 		__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void TIM8_TRG_COM_IRQHandler( void ) 	__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
@@ -1127,8 +1128,13 @@ void InterruptVectorDefault()
 #if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 "	.word   USBWakeUp_IRQHandler       /* 58: USB Wake up from suspend */ \n"
 #if defined(CH32V20x) || defined(CH32V30x)
-"   .word   TIM8_BRK_IRQHandler        /* 59: TIM8 Break */ \n\
-    .word   TIM8_UP_IRQHandler         /* 60: TIM8 Update */ \n\
+
+#if defined(CH32V30x)
+"   .word   TIM8_BRK_IRQHandler        /* 59: TIM8 Break == masked to USBHD? */ \n"
+#else
+"	.word   USBHD_IRQHandler           /* 59: USBHD Break */ \n"
+#endif
+"   .word   TIM8_UP_IRQHandler         /* 60: TIM8 Update */ \n\
     .word   TIM8_TRG_COM_IRQHandler    /* 61: TIM8 Trigger and Commutation */ \n\
     .word   TIM8_CC_IRQHandler         /* 62: TIM8 Capture Compare */ \n\
     .word   RNG_IRQHandler             /* 63: RNG */ \n\
@@ -1174,9 +1180,6 @@ void InterruptVectorDefault()
     .word   DMA2_Channel11_IRQHandler  /* 103: DMA2 Channel 11 */ \n"
 #endif
 #endif
-
-//	.word   USBHD_IRQHandler           /* 59: USBHD Break */ \n"
-
 
 #endif // !defined(FUNCONF_TINYVECTOR) || !FUNCONF_TINYVECTOR
 "	.option rvc; \n");

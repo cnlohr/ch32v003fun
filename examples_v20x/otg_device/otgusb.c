@@ -8,6 +8,8 @@ uint32_t USBDEBUG0, USBDEBUG1, USBDEBUG2;
 #define UEP_CTRL_TX(n)  (((uint8_t*)&USBOTG_FS->UEP0_TX_CTRL)[n*4])
 #define UEP_CTRL_RX(n)  (((uint8_t*)&USBOTG_FS->UEP0_RX_CTRL)[n*4])
 
+#define CHECK_USBOTG_UEP_T_AUTO_TOG 0
+#define CHECK_USBOTG_UEP_R_AUTO_TOG 0
 struct _USBState USBOTGCTX;
 
 // Mask for the combined USBFSD->INT_FG + USBFSD->INT_ST
@@ -54,27 +56,26 @@ static inline void DMA7FastCopy( uint8_t * dest, const uint8_t * src, int len )
 static inline void DMA7FastCopyComplete() { while( DMA1_Channel7->CNTR ); }
 
 #if FUSB_USE_HPE
-void OTG_FS_IRQHandler() __attribute__((section(".text.vector_handler")))  __attribute((naked));
+void USBHD_IRQHandler() __attribute__((section(".text.vector_handler")))  __attribute((naked));
 #else
-void OTG_FS_IRQHandler() __attribute__((section(".text.vector_handler")))  __attribute((interrupt));
+void USBHD_IRQHandler() __attribute__((section(".text.vector_handler")))  __attribute((interrupt));
 #endif
 
+volatile uint32_t FIRE_INTERRUPT;
 void USBOTG_InternalFinishSetup();
 
-void OTG_FS_IRQHandler()
+void USBHD_IRQHandler()
 {
 #if FUSB_IO_PROFILE
 	GPIOA->BSHR = 1;
 #endif
-while(1) printf( "!!\n" );
-	// Based on https://github.com/openwch/ch32x035/blob/main/EVT/EXAM/USB/USBFS/DEVICE/CompositeKM/User/ch32x035_USBOTG_device.c
+	FIRE_INTERRUPT = 1;
+
 	// Combined FG + ST flag.
 	uint16_t intfgst = *(uint16_t*)(&USBOTG_FS->INT_FG);
 	int len = 0;
 	struct _USBState * ctx = &USBOTGCTX;
 	uint8_t * ctrl0buff = CTRL0BUFF;
-
-	printf( "%02x\n", intfgst );
 
 	// TODO: Check if needs to be do-while to re-check.
 	if( intfgst & CRB_UIF_TRANSFER )
@@ -99,11 +100,8 @@ while(1) printf( "!!\n" );
 				/* end-point 0 data in interrupt */
 				if( ctx->USBOTG_SetupReqLen == 0 )
 				{
-					UEP_CTRL_TX(0) = ( UEP_CTRL_TX(ep) & ~USBOTG_UEP_T_RES_MASK ) | USBOTG_UEP_T_RES_NAK;
-				}
-				else
-				{
-					UEP_CTRL_TX(0) = ( UEP_CTRL_TX(ep) & ~USBOTG_UEP_T_RES_MASK ) | USBOTG_UEP_T_RES_ACK;
+					//UEP_CTRL_TX(0) = ( UEP_CTRL_TX(ep) & ~USBOTG_UEP_T_RES_MASK ) | USBOTG_UEP_T_RES_ACK;
+					UEP_CTRL_RX(0) = ( UEP_CTRL_TX(ep) & ~USBOTG_UEP_R_RES_MASK ) | USBOTG_UEP_R_RES_ACK | USBOTG_UEP_R_TOG;
 				}
 
 				if( ctx->pCtrlPayloadPtr )
@@ -188,7 +186,7 @@ while(1) printf( "!!\n" );
 						if( ctx->USBOTG_SetupReqLen == 0 )
 						{
 							UEP_CTRL_LEN(0) = 0;
-							UEP_CTRL_TX(0) = USBOTG_UEP_T_TOG | USBOTG_UEP_T_RES_ACK;
+							UEP_CTRL_TX(0) = USBOTG_UEP_T_TOG | CHECK_USBOTG_UEP_T_AUTO_TOG | USBOTG_UEP_T_RES_ACK;
 #if FUSB_HID_USER_REPORTS
 							DMA7FastCopyComplete();
 							HandleHidUserReportOutComplete( ctx );
@@ -208,8 +206,8 @@ while(1) printf( "!!\n" );
 
 		/* Setup stage processing */
 		case CUIS_TOKEN_SETUP:
-
-			UEP_CTRL_TX(0) = USBOTG_UEP_T_TOG|USBOTG_UEP_T_RES_NAK|USBOTG_UEP_R_TOG|USBOTG_UEP_R_RES_NAK;
+			UEP_CTRL_TX(0) = USBOTG_UEP_T_RES_NAK | CHECK_USBOTG_UEP_T_AUTO_TOG | USBOTG_UEP_T_TOG;
+			UEP_CTRL_RX(0) = USBOTG_UEP_R_RES_NAK | CHECK_USBOTG_UEP_R_AUTO_TOG | USBOTG_UEP_R_TOG;
 
 			/* Store All Setup Values */
 			int USBOTG_SetupReqType = USBOTGCTX.USBOTG_SetupReqType  = pUSBOTG_SetupReqPak->bmRequestType;
@@ -217,6 +215,7 @@ while(1) printf( "!!\n" );
 			int USBOTG_SetupReqLen = USBOTGCTX.USBOTG_SetupReqLen    = pUSBOTG_SetupReqPak->wLength;
 			int USBOTG_SetupReqIndex = pUSBOTG_SetupReqPak->wIndex;
 			int USBOTG_IndexValue = USBOTGCTX.USBOTG_IndexValue = ( pUSBOTG_SetupReqPak->wIndex << 16 ) | pUSBOTG_SetupReqPak->wValue;
+//printf( "SETUP: %02x %02x %02d %02x %04x\n", USBOTG_SetupReqType, USBOTG_SetupReqCode, USBOTG_SetupReqLen, USBOTG_SetupReqIndex, USBOTG_IndexValue );
 			len = 0;
 
 			if( ( USBOTG_SetupReqType & USB_REQ_TYP_MASK ) != USB_REQ_TYP_STANDARD )
@@ -233,8 +232,8 @@ while(1) printf( "!!\n" );
 							if( len < 0 ) goto sendstall;
 							ctx->USBOTG_SetupReqLen = len;
 							UEP_CTRL_LEN(0) = 0;
-							UEP_CTRL_RX(0) = USBOTG_UEP_R_TOG | USBOTG_UEP_R_RES_ACK;
-							UEP_CTRL_TX(0) = USBOTG_UEP_T_TOG;
+							UEP_CTRL_RX(0) = CHECK_USBOTG_UEP_R_AUTO_TOG | USBOTG_UEP_R_TOG;
+							UEP_CTRL_TX(0) = CHECK_USBOTG_UEP_T_AUTO_TOG | USBOTG_UEP_T_RES_ACK | USBOTG_UEP_T_TOG;
 							goto replycomplete;
 						case HID_GET_REPORT:
 							len = HandleHidUserGetReportSetup( ctx, pUSBOTG_SetupReqPak );
@@ -252,7 +251,7 @@ while(1) printf( "!!\n" );
 								ctx->pCtrlPayloadPtr += len;
 							}
 							UEP_CTRL_LEN(0) = len;
-							UEP_CTRL_TX(0) = USBOTG_UEP_T_TOG | USBOTG_UEP_T_RES_ACK;
+							UEP_CTRL_TX(0) = CHECK_USBOTG_UEP_T_AUTO_TOG | USBOTG_UEP_T_RES_ACK | USBOTG_UEP_T_TOG;
 							ctx->USBOTG_SetupReqLen -= len;
 							goto replycomplete;
 #endif
@@ -329,13 +328,14 @@ while(1) printf( "!!\n" );
 						ctx->USBOTG_SetupReqLen = totalLen - len;
 						ctx->pCtrlPayloadPtr += len;
 						UEP_CTRL_LEN(0) = len;
-						UEP_CTRL_TX(0) = USBOTG_UEP_T_TOG | USBOTG_UEP_T_RES_ACK;
+						UEP_CTRL_TX(0) = CHECK_USBOTG_UEP_T_AUTO_TOG | USBOTG_UEP_T_RES_ACK | USBOTG_UEP_T_TOG;
 						goto replycomplete;
 					}
 
 					/* Set usb address */
 					case USB_SET_ADDRESS:
 						ctx->USBOTG_DevAddr = (uint8_t)( ctx->USBOTG_IndexValue & 0xFF );
+						//USBOTG_FS->DEV_ADDR = ctx->USBOTG_DevAddr;
 						break;
 
 					/* Get usb configuration now set */
@@ -376,7 +376,7 @@ while(1) printf( "!!\n" );
 								/* Clear End-point Feature */
 								if( ( USBOTG_SetupReqIndex & DEF_UEP_IN ) && ep < FUSB_CONFIG_EPS ) 
 								{
-									UEP_CTRL_TX(ep) = USBOTG_UEP_T_RES_NAK;
+									UEP_CTRL_TX(ep) = USBOTG_UEP_T_RES_STALL | CHECK_USBOTG_UEP_T_AUTO_TOG;
 								}
 								else
 								{
@@ -474,20 +474,21 @@ while(1) printf( "!!\n" );
 					len = ( USBOTG_SetupReqLen > DEF_USBD_UEP0_SIZE )? DEF_USBD_UEP0_SIZE : USBOTG_SetupReqLen;
 					USBOTG_SetupReqLen -= len;
 					UEP_CTRL_LEN(0) = len;
-					UEP_CTRL_TX(0) = USBOTG_UEP_T_TOG | USBOTG_UEP_T_RES_ACK;
+					UEP_CTRL_TX(0) = CHECK_USBOTG_UEP_T_AUTO_TOG | USBOTG_UEP_T_RES_ACK;
 				}
 				else
 				{
 					if( USBOTG_SetupReqLen == 0 )
 					{
 						UEP_CTRL_LEN(0) = 0;
-						UEP_CTRL_TX(0) = USBOTG_UEP_T_TOG | USBOTG_UEP_T_RES_ACK;
+						UEP_CTRL_TX(0) = CHECK_USBOTG_UEP_T_AUTO_TOG | USBOTG_UEP_T_RES_ACK | USBOTG_UEP_T_TOG;
 					}
 					else
 					{
-						UEP_CTRL_RX(0) = USBOTG_UEP_R_TOG | USBOTG_UEP_R_RES_ACK;
+						UEP_CTRL_RX(0) = CHECK_USBOTG_UEP_R_AUTO_TOG | USBOTG_UEP_R_RES_ACK | USBOTG_UEP_R_TOG;
 					}
 				}
+
 			}
 			break;
 
@@ -588,10 +589,14 @@ void USBOTG_InternalFinishSetup()
 #error You must have at least EP0!
 #endif
 
-	UEP_CTRL_TX(0) = USBOTG_UEP_R_RES_ACK | USBOTG_UEP_T_RES_NAK;
+	UEP_CTRL_TX(0) = USBOTG_UEP_T_RES_NAK | CHECK_USBOTG_UEP_T_AUTO_TOG;
+	UEP_CTRL_RX(0) = USBOTG_UEP_R_RES_ACK | CHECK_USBOTG_UEP_R_AUTO_TOG;
 	int i;
 	for( i = 1; i < FUSB_CONFIG_EPS; i++ )
-		UEP_CTRL_TX(i) = USBOTG_UEP_T_RES_NAK;
+	{
+		UEP_CTRL_TX(i) = USBOTG_UEP_T_RES_NAK | CHECK_USBOTG_UEP_T_AUTO_TOG;
+		UEP_CTRL_RX(i) = USBOTG_UEP_R_RES_NAK | CHECK_USBOTG_UEP_R_AUTO_TOG;
+	}
                                                                     
     for(uint8_t i=0; i< sizeof(USBOTGCTX.USBOTG_Endp_Busy)/sizeof(USBOTGCTX.USBOTG_Endp_Busy[0]); i++ )
     {
@@ -615,28 +620,20 @@ int USBOTGSetup()
 	USBOTG_InternalFinishSetup();
 
 	// Enter device mode.
-	USBOTG_FS->INT_EN = USBOTG_UIE_SUSPEND | USBOTG_UIE_TRANSFER | USBOTG_UIE_BUS_RST;
-	USBOTG_FS->DEV_ADDR = 0x00;
-//	USBOTG_FS->BASE_CTRL = USBOTG_UC_DEV_PU_EN | USBOTG_UC_INT_BUSY | USBOTG_UC_DMA_EN;
-	USBOTG_FS->INT_FG = 0xff;
-//	USBOTG_FS->UDEV_CTRL = USBOTG_UD_PORT_EN;
-
-
+	USBOTG_FS->DEV_ADDR  = 0x00;
+	USBOTG_FS->INT_FG    = 0xff;
+	USBOTG_FS->INT_EN    = USBOTG_UIE_SUSPEND | USBOTG_UIE_TRANSFER | USBOTG_UIE_BUS_RST;
 	USBOTG_FS->BASE_CTRL = USBOTG_UC_INT_BUSY | USBOTG_UC_DMA_EN | USBOTG_UC_DEV_PU_EN;
 	USBOTG_FS->UDEV_CTRL = USBOTG_UD_PD_DIS | USBOTG_UD_PORT_EN;
 
-	NVIC_EnableIRQ( OTG_FS_IRQn );
+	NVIC_EnableIRQ( USBHD_IRQn );
 
 	USBOTG_FS->OTG_CR = 0; //Note says only valid on 205, 207, 305, 307. 
 
-	printf( "CFGR0: %08x / %08x / %08x\n", RCC->CFGR0, USBOTG_FS->BASE_CTRL, USBOTG_FS->INT_FG);
-
-	// Go on-bus.
-//	funPinMode( PB6, GPIO_CFGLR_OUT_50Mhz_AF_PP );
-//	funPinMode( PB7, GPIO_CFGLR_OUT_50Mhz_AF_PP );
+	//printf( "CFGR0: %08x / %08x / %08x\n", RCC->CFGR0, USBOTG_FS->BASE_CTRL, USBOTG_FS->INT_FG);
 
 	// Actually go on-bus.
-	//USBOTG_FS->BASE_CTRL |= USBOTG_UC_DEV_PU_EN;
+	USBOTG_FS->BASE_CTRL |= USBOTG_UC_DEV_PU_EN;
 
 	// Go on-bus.
 	return 0;

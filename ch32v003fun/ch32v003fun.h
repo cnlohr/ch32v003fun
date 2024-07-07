@@ -387,7 +387,7 @@ typedef enum IRQn
 	DMA2_Channel3_IRQn          = 74,      /* DMA2 Channel 3 global Interrupt                      */
 	DMA2_Channel4_IRQn          = 75,      /* DMA2 Channel 4 global Interrupt                      */
 	DMA2_Channel5_IRQn          = 76,      /* DMA2 Channel 5 global Interrupt                      */
-	OTG_FS_IRQn                 = 83,      /* OTGFS global Interrupt                               */
+	OTG_FS_IRQn                 = 83,      /* OTGFS global Interrupt NOTE: THIS APPEAR TO BE INCORRECT                */
 	UART6_IRQn                  = 87,      /* UART6 global Interrupt                               */
 	UART7_IRQn                  = 88,      /* UART7 global Interrupt                               */
 	UART8_IRQn                  = 89,      /* UART8 global Interrupt                               */
