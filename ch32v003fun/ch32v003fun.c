@@ -870,8 +870,7 @@ void InterruptVectorDefault()
 	.option   norvc;\n\
 	.word 0\n"
 #if !defined(FUNCONF_TINYVECTOR) || !FUNCONF_TINYVECTOR
-	asm volatile( "\n\
-	.word   0\n\
+"	.word   0\n\
 	.word   NMI_Handler               /* NMI Handler */                    \n\
 	.word   HardFault_Handler         /* Hard Fault Handler */             \n\
 	.word   0\n"
