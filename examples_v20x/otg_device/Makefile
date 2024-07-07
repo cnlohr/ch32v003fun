@@ -1,6 +1,6 @@
 all : flash
 
-TARGET:=usbdevice
+TARGET:=otg_device
 TARGET_MCU:=CH32V203
 ADDITIONAL_C_FILES:=
 include ../../ch32v003fun/ch32v003fun.mk
