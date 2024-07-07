@@ -936,8 +936,8 @@ void InterruptVectorDefault()
 	.word	TIM2_BRK_IRQHandler       /* Timer 2 Brk Global Interrupt             */ \n\
 	.word	TIM3_IRQHandler           /* Timer 3 Global Interrupt                 */"
 #endif
-	);
 #endif
+	);
 	asm volatile( ".option   pop;\n");
 }
 
