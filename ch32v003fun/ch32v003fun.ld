@@ -57,7 +57,6 @@ SECTIONS
       _sinit = .;
       . = ALIGN(4);
       KEEP(*(SORT_NONE(.init)))
-      KEEP(*(SORT_NONE(.vector)))
       . = ALIGN(4);
       _einit = .;
     } >FLASH AT>FLASH

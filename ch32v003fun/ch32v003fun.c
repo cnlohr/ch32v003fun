@@ -866,10 +866,11 @@ void TIM2_BRK_IRQHandler( void )      __attribute__((section(".text.vector_handl
 void TIM3_IRQHandler( void )          __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 #endif
 
-#if defined( CH32V003 ) || defined( CH32X03x )
+void InterruptVector()         __attribute__((naked)) __attribute((section(".init"))) __attribute((weak,alias("InterruptVectorDefault"))) __attribute((naked));
+void InterruptVectorDefault()  __attribute__((naked)) __attribute((section(".init"))) __attribute((naked));
+void handle_reset( void ) __attribute__((section(".text.handle_reset")));
 
-void InterruptVector()         __attribute__((naked)) __attribute((section(".init"))) __attribute((weak,alias("InterruptVectorDefault")));
-void InterruptVectorDefault()  __attribute__((naked)) __attribute((section(".init")));
+#if defined( CH32V003 ) || defined( CH32X03x )
 
 void InterruptVectorDefault()
 {
@@ -877,7 +878,7 @@ void InterruptVectorDefault()
 	.align  2\n\
 	.option   push;\n\
 	.option   norvc;\n\
-	.word 0\n"
+	j handle_reset\n"
 #if !defined(FUNCONF_TINYVECTOR) || !FUNCONF_TINYVECTOR
 "	.word   0\n\
 	.word   NMI_Handler               /* NMI Handler */                    \n\
@@ -1024,39 +1025,12 @@ asm volatile(
 
 #elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 
-void Init() 				   __attribute((section(".init"))) __attribute((used)) __attribute((naked));
-void InterruptVector()         __attribute__((naked)) __attribute((section(".vector"))) __attribute((weak,alias("InterruptVectorDefault"))) __attribute((naked));
-void InterruptVectorDefault()  __attribute__((naked)) __attribute((section(".vector"))) __attribute((naked));
-
-void handle_reset( void ) __attribute__((section(".text.handle_reset")));
-
-void Init()
-{
-	asm volatile( "\n\
-	.align	1 \n\
-_start: \n\
-	j handle_reset \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00100073 \n" );
-}
-
 void InterruptVectorDefault()
 {
 	asm volatile( "\n\
 	.align	1 \n\
 	.option norvc; \n\
-	.word   Init \n"
+	j handle_reset \n"
 #if !defined(FUNCONF_TINYVECTOR) || !FUNCONF_TINYVECTOR
 "	.word   0 \n\
 	.word   NMI_Handler                /* NMI */ \n\
