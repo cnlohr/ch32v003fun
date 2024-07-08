@@ -1,5 +1,7 @@
 # Demonstration of a 3-phase gimbal motor controller
 
+![gimbal working](https://github.com/cnlohr/ch32v003fun/blob/master/examples/bldc_gimbal/gimbal_working.jpg?raw=true)
+
 This demo uses:
  * TIM2 PWM
  * ADC triggered from PWM (to comb-filter any timer aligned noise)
