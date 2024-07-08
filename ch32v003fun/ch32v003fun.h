@@ -12145,6 +12145,15 @@ typedef struct
 
 #endif
 
+
+/* some bit definitions for systick regs */
+#define SYSTICK_SR_CNTIF (1<<0)
+#define SYSTICK_CTLR_STE (1<<0)
+#define SYSTICK_CTLR_STIE (1<<1)
+#define SYSTICK_CTLR_STCLK (1<<2)
+#define SYSTICK_CTLR_STRE (1<<3)
+#define SYSTICK_CTLR_SWIE (1<<31)
+
 #define PFIC            ((PFIC_Type *) PFIC_BASE )
 #define NVIC            PFIC
 #define NVIC_KEY1       ((uint32_t)0xFA050000)
