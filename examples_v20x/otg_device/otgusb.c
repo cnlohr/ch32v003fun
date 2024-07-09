@@ -68,7 +68,7 @@ void USBOTG_InternalFinishSetup();
 void USBHD_IRQHandler()
 {
 #if FUSB_IO_PROFILE
-	GPIOB->BSHR = 1;
+	funDigitalWrite( PB0, 1 );
 #endif
 
 	int tries = 0;
@@ -550,7 +550,7 @@ void USBHD_IRQHandler()
 	}
 
 #if FUSB_IO_PROFILE
-	GPIOB->BSHR = 1<<16;
+	funDigitalWrite( PB0, 0 );
 #endif
 
 //#if FUSB_USE_HPE
