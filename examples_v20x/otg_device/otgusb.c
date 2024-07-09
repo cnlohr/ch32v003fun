@@ -243,7 +243,6 @@ void USBHD_IRQHandler()
 							goto replycomplete;
 						case HID_GET_REPORT:
 							len = HandleHidUserGetReportSetup( ctx, pUSBOTG_SetupReqPak );
-							len = 255;
 							if( len < 0 ) goto sendstall;
 							ctx->USBOTG_SetupReqLen = len;
 							len = len >= DEF_USBD_UEP0_SIZE ? DEF_USBD_UEP0_SIZE : len;
