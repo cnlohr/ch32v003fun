@@ -1,4 +1,5 @@
-// This contains a copy of ch32v00x.h and core_riscv.h ch32v00x_conf.h and other misc functions See copyright explaination at the end of the file.
+/* SPDX-License-Identifier: MIT */
+// This contains a copy of ch32v00x.h and core_riscv.h ch32v00x_conf.h and other misc functions See copyright explanation at the end of the file.
 
 #ifndef __CH32V00x_H
 #define __CH32V00x_H
@@ -13197,7 +13198,7 @@ Examples:
  *
  * While originally under a restrictive copyright, WCH has approved use
  * under MIT-licensed use, because of inclusion in Zephyr, as well as other
- * open-soruce licnsed projects.
+ * open-source licensed projects.
  *
  * These copies of the headers from WCH are available now under:
  *
