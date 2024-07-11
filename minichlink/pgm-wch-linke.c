@@ -449,7 +449,7 @@ retry_ID:
 		chip = iss->target_chip_type = CHIP_CH32X03x;
 	}
 
-	if( iss->target_chip_type = CHIP_CH32X03x )
+	if( iss->target_chip_type == CHIP_CH32X03x )
 	{
 		iss->sector_size = 256;
 	}
