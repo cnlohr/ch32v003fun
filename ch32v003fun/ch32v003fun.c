@@ -19,6 +19,8 @@ int mini_vpprintf( int (*puts)(char* s, int len, void* buf), void* buf, const ch
 
 static int __puts_uart( char *s, int len, void *buf )
 {
+	(void)buf;
+
 	_write( 0, s, len );
 	return len;
 }
@@ -134,7 +136,7 @@ int wctomb(char *s, wchar_t wc)
 }
 #endif
 size_t strlen(const char *s) { const char *a = s;for (; *s; s++);return s-a; }
-size_t strnlen(const char *s, size_t n) { const char *p = memchr(s, 0, n); return p ? p-s : n;}
+size_t strnlen(const char *s, size_t n) { const char *p = memchr(s, 0, n); return p ? (size_t)(p-s) : n;}
 void *memset(void *dest, int c, size_t n) { unsigned char *s = dest; for (; n; n--, s++) *s = c; return dest; }
 char *strcpy(char *d, const char *s) { for (; (*d=*s); s++, d++); return d; }
 char *strncpy(char *d, const char *s, size_t n) { for (; n && (*d=*s); n--, s++, d++); return d; }
@@ -245,13 +247,13 @@ static char *twoway_strstr(const unsigned char *h, const unsigned char *n)
 	/* Search loop */
 	for (;;) {
 		/* Update incremental end-of-haystack pointer */
-		if (z-h < l) {
+		if ((size_t)(z-h) < l) {
 			/* Fast estimate for MAX(l,63) */
 			size_t grow = l | 63;
 			const unsigned char *z2 = memchr(z, 0, grow);
 			if (z2) {
 				z = z2;
-				if (z-h < l) return 0;
+				if ((size_t)(z-h) < l) return 0;
 			} else z += grow;
 		}
 
@@ -1309,7 +1311,7 @@ int putchar(int c)
 
 
 void handle_debug_input( int numbytes, uint8_t * data ) __attribute__((weak));
-void handle_debug_input( int numbytes, uint8_t * data ) { }
+void handle_debug_input( int numbytes, uint8_t * data ) { (void)numbytes; (void)data; }
 
 static void internal_handle_input( volatile uint32_t * dmdata0 )
 {
@@ -1344,6 +1346,8 @@ void poll_input()
 int _write(int fd, const char *buf, int size) __attribute__((weak));
 int _write(int fd, const char *buf, int size)
 {
+	(void)fd;
+
 	char buffer[4] = { 0 };
 	int place = 0;
 	uint32_t lastdmd;
