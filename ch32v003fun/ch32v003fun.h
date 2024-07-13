@@ -12156,13 +12156,13 @@ RV_STATIC_INLINE void __enable_irq()
 {
   uint32_t result;
 
-    __asm volatile(
+    __ASM volatile(
 #if __GNUC__ > 10
 		".option arch, +zicsr\n"
 #endif
 		"csrr %0," "mstatus": "=r"(result));
   result |= 0x88;
-  __asm volatile ("csrw mstatus, %0" : : "r" (result) );
+  __ASM volatile ("csrw mstatus, %0" : : "r" (result) );
 }
 
 /*********************************************************************
@@ -12176,13 +12176,13 @@ RV_STATIC_INLINE void __disable_irq()
 {
   uint32_t result;
 
-    __asm volatile(
+    __ASM volatile(
 #if __GNUC__ > 10
 		".option arch, +zicsr\n"
 #endif
 		"csrr %0," "mstatus": "=r"(result));
   result &= ~0x88;
-  __asm volatile ("csrw mstatus, %0" : : "r" (result) );
+  __ASM volatile ("csrw mstatus, %0" : : "r" (result) );
 }
 
 /*********************************************************************
@@ -12196,7 +12196,7 @@ RV_STATIC_INLINE uint8_t __isenabled_irq(void)
 {
     uint32_t result;
 
-    __asm volatile(
+    __ASM volatile(
 #if __GNUC__ > 10
     ".option arch, +zicsr\n"
 #endif
@@ -12216,7 +12216,7 @@ RV_STATIC_INLINE uint32_t __get_cpu_sp(void)
 {
   uint32_t result;
 
-  __asm volatile(
+  __ASM volatile(
 #if __GNUC__ > 10
     ".option arch, +zicsr\n"
 #endif
@@ -12233,7 +12233,7 @@ RV_STATIC_INLINE uint32_t __get_cpu_sp(void)
  */
 RV_STATIC_INLINE void __NOP()
 {
-  __asm volatile ("nop");
+  __ASM volatile ("nop");
 }
 
 /*********************************************************************
@@ -12405,7 +12405,7 @@ RV_STATIC_INLINE void NVIC_restore_IRQs(uint32_t old_state)
 __attribute__( ( always_inline ) ) RV_STATIC_INLINE void __WFI(void)
 {
   NVIC->SCTLR &= ~(1<<3);   // wfi
-  asm volatile ("wfi");
+  __ASM volatile ("wfi");
 }
 
 /*********************************************************************
@@ -12422,8 +12422,8 @@ __attribute__( ( always_inline ) ) RV_STATIC_INLINE void __WFE(void)
   t = NVIC->SCTLR;
   NVIC->SCTLR |= (1<<3)|(1<<5);     // (wfi->wfe)+(__sev)
   NVIC->SCTLR = (NVIC->SCTLR & ~(1<<5)) | ( t & (1<<5));
-  asm volatile ("wfi");
-  asm volatile ("wfi");
+  __ASM volatile ("wfi");
+  __ASM volatile ("wfi");
 }
 
 /*********************************************************************
@@ -12468,13 +12468,13 @@ RV_STATIC_INLINE void NVIC_SystemReset(void)
 static inline uint32_t __get_INTSYSCR(void)
 {
     uint32_t result;
-    asm volatile("csrr %0, 0x804": "=r"(result));
+    __ASM volatile("csrr %0, 0x804": "=r"(result));
     return (result);
 }
 
 static inline void __set_INTSYSCR( uint32_t value )
 {
-    asm volatile("csrw 0x804, %0" : : "r"(value));
+    __ASM volatile("csrw 0x804, %0" : : "r"(value));
 }
 
 #if defined(CH32V30x)
@@ -12846,7 +12846,7 @@ static inline uint32_t __get_SP(void)
 // **DO NOT send it zero or less.**
 #ifndef __MACOSX__
 static inline void Delay_Tiny( int n ) {
-	asm volatile( "\
+	__ASM volatile( "\
 		mv a5, %[n]\n\
 		1: \
 		c.addi a5, -1\n\
