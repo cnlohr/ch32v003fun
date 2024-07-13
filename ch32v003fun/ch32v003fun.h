@@ -12990,7 +12990,7 @@ void DelaySysTick( uint32_t n );
 #ifndef __DELAY_TINY_DEFINED__
 #define __DELAY_TINY_DEFINED__
 static inline void Delay_Tiny( int n ) {
-	asm volatile( "\
+	__ASM volatile( "\
 		mv a5, %[n]\n\
 		1: \
 		c.addi a5, -1\n\
