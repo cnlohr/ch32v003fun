@@ -74,15 +74,24 @@ int main()
 		int i;
 		for( i = 1; i < 3; i++ )
 		{
-
 			uint32_t * buffer = (uint32_t*)USBOTG_GetEPBufferIfAvailable( i );
 			if( buffer )
 			{
-				buffer[0] = 0x000000aa;
-				if( USBOTG_SendEndpoint( i, (i==1)?8:4 ) == 0 )
+				int tickDown =  ((SysTick->CNT)&0x800000);
+				static int wasTickMouse, wasTickKeyboard;
+				if( i == 1 )
 				{
-					// Success
+					// Keyboard
+					buffer[0] = (tickDown && !wasTickKeyboard)?0x00250000:0x00000000;
+					buffer[1] = 0x00000000;
+					wasTickKeyboard = tickDown;
 				}
+				else
+				{
+					buffer[0] = (tickDown && !wasTickMouse)?0x0010100:0x00000000;
+					wasTickMouse = tickDown;
+				}
+				USBOTG_SendEndpoint( i, (i==1)?8:4 );
 			}
 		}
 	}
