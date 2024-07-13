@@ -28,13 +28,23 @@
 	5. printf
 		printf, _write may be semihosted, or printed to UART.
 
-		poll_input, handle_debug_input may be used with semihsoting.
+		poll_input, handle_debug_input may be used with semihsoting to accept input from host.
 
-	For UART printf, on:
-		CH32V003, Port D5, 115200 8n1
-		CH32V203, Port A9, 115200 8n1
+		For UART printf, on:
+			CH32V003, Port D5, 115200 8n1
+			CH32V203, Port A9, 115200 8n1
 
-	Modifications can be made to SetupUart, or your own version as desired.
+		Modifications can be made to SetupUart, or your own version as desired.
+
+    6. ISR Control Routines
+		__enable_irq();    // For global interrupt enable
+		__disable_irq();   // For global interrupt disable
+		__isenabled_irq(); // For seeing if interrupts are enabled.
+		NVIC_EnableIRQ(IRQn_Type IRQn) // To enable a specific interrupt
+
+	7. Hardware MMIO structs, i.e.
+		SysTick->CNT = current system tick counter (can be Hclk or Hclk/8)
+		TIM2->CH1CVR = direct control over a PWM output
 */
 
 
