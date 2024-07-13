@@ -1,9 +1,85 @@
 // Mixture of embedlibc, and ch32v00x_startup.c
-
-
-
 // Use with newlib headers.
 // Mixture of weblibc, mini-printf and ???
+/* This file contains the following functions:
+
+// libc (via musl) mixture and miniprintf
+
+int printf( const char* format, ... )
+int vprintf(const char* format, va_list args)
+int snprintf( char * buffer, unsigned int buffer_len, const char* format, ... )
+int sprintf( char * buffer, const char * format, ... )
+size_t wcrtomb(char *restrict s, wchar_t wc, mbstate_t *restrict st)
+int wctomb(char *s, wchar_t wc)
+size_t strlen(const char *s)
+size_t strnlen(const char *s, size_t n)
+void *memset(void *dest, int c, size_t n)
+char *strcpy(char *d, const char *s)
+char *strncpy(char *d, const char *s, size_t n)
+int strcmp(const char *l, const char *r)
+int strncmp(const char *_l, const char *_r, size_t n)
+static char *twobyte_strstr(const unsigned char *h, const unsigned char *n)
+static char *threebyte_strstr(const unsigned char *h, const unsigned char *n)
+static char *fourbyte_strstr(const unsigned char *h, const unsigned char *n)
+static char *twoway_strstr(const unsigned char *h, const unsigned char *n)
+char *strstr(const char *h, const char *n)
+char *strchr(const char *s, int c)
+void *__memrchr(const void *m, int c, size_t n)
+char *strrchr(const char *s, int c)
+void *memcpy(void *dest, const void *src, size_t n)
+int memcmp(const void *vl, const void *vr, size_t n)
+void *memmove(void *dest, const void *src, size_t n)
+void *memchr(const void *src, int c, size_t n)
+int puts(const char *s)
+int mini_itoa(long value, unsigned int radix, int uppercase, int unsig,
+	 char *buffer)
+int mini_vsnprintf(char *buffer, unsigned int buffer_len, const char *fmt, va_list va)
+int mini_vpprintf(int (*puts)(char* s, int len, void* buf), void* buf, const char *fmt, va_list va)
+int mini_snprintf(char* buffer, unsigned int buffer_len, const char *fmt, ...)
+int mini_pprintf(int (*puts)(char*s, int len, void* buf), void* buf, const char *fmt, ...)
+
+// IRQ Handling Code
+void DefaultIRQHandler( void )
+void NMI_RCC_CSS_IRQHandler( void )
+
+// Startup Code
+void InterruptVectorDefault()
+void handle_reset()
+
+// Configuration-specific I/O
+
+#if defined( FUNCONF_USE_UARTPRINTF ) && FUNCONF_USE_UARTPRINTF
+void SetupUART( int uartBRR )
+int _write(int fd, const char *buf, int size)
+int putchar(int c)
+#endif
+
+#if defined( FUNCONF_USE_DEBUGPRINTF ) && FUNCONF_USE_DEBUGPRINTF
+void handle_debug_input( int numbytes, uint8_t * data ) // You can override this!
+void poll_input()
+int _write(int fd, const char *buf, int size)
+int putchar(int c)
+void SetupDebugPrintf()
+void WaitForDebuggerToAttach()
+#endif
+
+#if (defined( FUNCONF_USE_DEBUGPRINTF ) && !FUNCONF_USE_DEBUGPRINTF) && \
+    (defined( FUNCONF_USE_UARTPRINTF ) && !FUNCONF_USE_UARTPRINTF) && \
+    (defined( FUNCONF_NULL_PRINTF ) && FUNCONF_NULL_PRINTF)
+
+int _write(int fd, const char *buf, int size)
+int putchar(int c)
+#endif
+
+void DelaySysTick( uint32_t n )
+void SystemInit()
+
+#ifdef CPLUSPLUS
+extern void __cxa_pure_virtual()
+void __libc_init_array(void)
+#endif
+
+*/
 
 #include <stdio.h>
 #include <string.h>

@@ -39,8 +39,8 @@
 
 
 
-/*****************************************************************************
-	CH32V003 Fun Configs:
+/******************************************************************************
+ * CH32V003 Fun Configs; please define any non-default options in funconfig.h *
 
 #define FUNCONF_USE_PLL 1               // Use built-in 2x PLL 
 #define FUNCONF_USE_HSI 1               // Use HSI Internal Oscillator
@@ -210,6 +210,7 @@
 
 #ifndef __ASSEMBLER__  // Things before this can be used in assembly.
 
+#include <stdint.h>
 
 #ifdef __cplusplus
   #define     __I     volatile                /*!< defines 'read only' permissions      */
@@ -410,8 +411,59 @@ typedef enum IRQn
 
 } IRQn_Type;
 
-#include <stdint.h>
+
+#if defined (CH32V003) 
+
+/* memory mapped structure for SysTick */
+typedef struct
+{
+    __IO uint32_t CTLR;
+    __IO uint32_t SR;
+    __IO uint32_t CNT;
+    uint32_t RESERVED0;
+    __IO uint32_t CMP;
+    uint32_t RESERVED1;
+} SysTick_Type;
+
+#elif defined(CH32V20x) || defined(CH32V30x)
+
+/* memory mapped structure for SysTick */
+typedef struct
+{
+	__IO uint32_t CTLR;
+	__IO uint32_t SR;
+	__IO uint64_t CNT;
+	__IO uint64_t CMP;
+} SysTick_Type;
+
+#elif defined(CH32X03x)
+
+/* memory mapped structure for SysTick */
+typedef struct
+{
+  __IO uint32_t CTLR;
+  __IO uint32_t SR;
+  __IO uint32_t CNTL;
+  __IO uint32_t CNTH;
+  __IO uint32_t CMPL;
+  __IO uint32_t CMPH;
+} SysTick_Type;
+
+#elif defined(CH32V10x)
+
+/* memory mapped structure for SysTick */
+typedef struct
+{
+  __IO uint32_t CTLR;
+  __IO uint32_t CNTL;
+  __IO uint32_t CNTH;
+  __IO uint32_t CMPL;
+  __IO uint32_t CMPH;
+} SysTick_Type;
+
 #endif
+
+#endif /* __ASSEMBLER__*/
 
 #define HardFault_IRQn    EXC_IRQn
 
@@ -11963,6 +12015,7 @@ typedef volatile unsigned long *PUINT32V;
 	
 ///////////////////////////////////////////////////////////////////////////////////////////////	
 ///////////////////////////////////////////////////////////////////////////////////////////////
+// Code in this section was originally from __CORE_RISCV_H__
 
 #ifndef __CORE_RISCV_H__
 #define __CORE_RISCV_H__
@@ -11985,6 +12038,7 @@ typedef volatile unsigned long *PUINT32V;
   #define __INLINE    inline  /*!< inline keyword for TASKING Compiler   */
 
 #endif
+
 
 #ifdef __cplusplus
  extern "C" {
@@ -12071,60 +12125,7 @@ typedef struct{
     __IO uint32_t SCTLR;
 }PFIC_Type;
 
-#if defined (CH32V003) 
-
-/* memory mapped structure for SysTick */
-typedef struct
-{
-    __IO uint32_t CTLR;
-    __IO uint32_t SR;
-    __IO uint32_t CNT;
-    uint32_t RESERVED0;
-    __IO uint32_t CMP;
-    uint32_t RESERVED1;
-} SysTick_Type;
-
-#elif defined(CH32V20x) || defined(CH32V30x)
-
-/* memory mapped structure for SysTick */
-typedef struct
-{
-	__IO uint32_t CTLR;
-	__IO uint32_t SR;
-	__IO uint64_t CNT;
-	__IO uint64_t CMP;
-} SysTick_Type;
-
-#elif defined(CH32X03x)
-
-/* memory mapped structure for SysTick */
-typedef struct
-{
-  __IO uint32_t CTLR;
-  __IO uint32_t SR;
-  __IO uint32_t CNTL;
-  __IO uint32_t CNTH;
-  __IO uint32_t CMPL;
-  __IO uint32_t CMPH;
-} SysTick_Type;
-
-#elif defined(CH32V10x)
-
-/* memory mapped structure for SysTick */
-typedef struct
-{
-  __IO uint32_t CTLR;
-  __IO uint32_t CNTL;
-  __IO uint32_t CNTH;
-  __IO uint32_t CMPL;
-  __IO uint32_t CMPH;
-} SysTick_Type;
-
 #endif
-
-
-#endif
-
 
 /* some bit definitions for systick regs */
 #define SYSTICK_SR_CNTIF (1<<0)
@@ -12154,49 +12155,45 @@ typedef struct
  */
 RV_STATIC_INLINE void __enable_irq()
 {
-  uint32_t result;
+	uint32_t result;
 
-    __asm volatile(
+	asm volatile(
 #if __GNUC__ > 10
 		".option arch, +zicsr\n"
 #endif
 		"csrr %0," "mstatus": "=r"(result));
-  result |= 0x88;
-  __asm volatile ("csrw mstatus, %0" : : "r" (result) );
+	result |= 0x88;
+	asm volatile ("csrw mstatus, %0" : : "r" (result) );
 }
 
 /*********************************************************************
  * @fn      __disable_irq
- *
  * @brief   Disable Global Interrupt
- *
  * @return  none
  */
 RV_STATIC_INLINE void __disable_irq()
 {
   uint32_t result;
 
-    __asm volatile(
+    asm volatile(
 #if __GNUC__ > 10
 		".option arch, +zicsr\n"
 #endif
 		"csrr %0," "mstatus": "=r"(result));
   result &= ~0x88;
-  __asm volatile ("csrw mstatus, %0" : : "r" (result) );
+  asm volatile ("csrw mstatus, %0" : : "r" (result) );
 }
 
 /*********************************************************************
  * @fn      __isenabled_irq
- *
  * @brief   Is Global Interrupt enabled
- *
  * @return  1: yes, 0: no
  */
 RV_STATIC_INLINE uint8_t __isenabled_irq(void)
 {
     uint32_t result;
 
-    __asm volatile(
+    asm volatile(
 #if __GNUC__ > 10
     ".option arch, +zicsr\n"
 #endif
@@ -12206,9 +12203,7 @@ RV_STATIC_INLINE uint8_t __isenabled_irq(void)
 
 /*********************************************************************
  * @fn      __get_cpu_sp
- *
  * @brief   Get stack pointer
- *
  * @return  stack pointer
  */
 RV_STATIC_INLINE uint32_t __get_cpu_sp(void);
@@ -12216,7 +12211,7 @@ RV_STATIC_INLINE uint32_t __get_cpu_sp(void)
 {
   uint32_t result;
 
-  __asm volatile(
+  asm volatile(
 #if __GNUC__ > 10
     ".option arch, +zicsr\n"
 #endif
@@ -12226,115 +12221,91 @@ RV_STATIC_INLINE uint32_t __get_cpu_sp(void)
 
 /*********************************************************************
  * @fn      __NOP
- *
  * @brief   nop
- *
  * @return  none
  */
 RV_STATIC_INLINE void __NOP()
 {
-  __asm volatile ("nop");
+	asm volatile ("nop");
 }
 
 /*********************************************************************
  * @fn       NVIC_EnableIRQ
- *
  * @brief   Disable Interrupt
- *
  * @param   IRQn - Interrupt Numbers
- *
  * @return  none
  */
 RV_STATIC_INLINE void NVIC_EnableIRQ(IRQn_Type IRQn)
 {
-  NVIC->IENR[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F));
+	NVIC->IENR[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F));
 }
 
 /*********************************************************************
  * @fn       NVIC_DisableIRQ
- *
  * @brief   Disable Interrupt
- *
  * @param   IRQn - Interrupt Numbers
- *
  * @return  none
  */
 RV_STATIC_INLINE void NVIC_DisableIRQ(IRQn_Type IRQn)
 {
-  NVIC->IRER[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F));
+	NVIC->IRER[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F));
 }
 
 /*********************************************************************
  * @fn       NVIC_GetStatusIRQ
- *
  * @brief   Get Interrupt Enable State
- *
  * @param   IRQn - Interrupt Numbers
- *
  * @return  1 - 1: Interrupt Pending Enable
  *                0 - Interrupt Pending Disable
  */
 RV_STATIC_INLINE uint32_t NVIC_GetStatusIRQ(IRQn_Type IRQn)
 {
-  return((uint32_t) ((NVIC->ISR[(uint32_t)(IRQn) >> 5] & (1 << ((uint32_t)(IRQn) & 0x1F)))?1:0));
+	return((uint32_t) ((NVIC->ISR[(uint32_t)(IRQn) >> 5] & (1 << ((uint32_t)(IRQn) & 0x1F)))?1:0));
 }
 
 /*********************************************************************
  * @fn      NVIC_GetPendingIRQ
- *
  * @brief   Get Interrupt Pending State
- *
  * @param   IRQn - Interrupt Numbers
- *
  * @return  1 - 1: Interrupt Pending Enable
  *                0 - Interrupt Pending Disable
  */
 RV_STATIC_INLINE uint32_t NVIC_GetPendingIRQ(IRQn_Type IRQn)
 {
-  return((uint32_t) ((NVIC->IPR[(uint32_t)(IRQn) >> 5] & (1 << ((uint32_t)(IRQn) & 0x1F)))?1:0));
+	return((uint32_t) ((NVIC->IPR[(uint32_t)(IRQn) >> 5] & (1 << ((uint32_t)(IRQn) & 0x1F)))?1:0));
 }
 
 /*********************************************************************
  * @fn      NVIC_SetPendingIRQ
- *
  * @brief   Set Interrupt Pending
- *
  * @param   IRQn - Interrupt Numbers
- *
  * @return  none
  */
 RV_STATIC_INLINE void NVIC_SetPendingIRQ(IRQn_Type IRQn)
 {
-  NVIC->IPSR[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F));
+	NVIC->IPSR[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F));
 }
 
 /*********************************************************************
  * @fn      NVIC_ClearPendingIRQ
- *
  * @brief   Clear Interrupt Pending
- *
  * @param   IRQn - Interrupt Numbers
- *
  * @return  none
  */
 RV_STATIC_INLINE void NVIC_ClearPendingIRQ(IRQn_Type IRQn)
 {
-  NVIC->IPRR[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F));
+	NVIC->IPRR[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F));
 }
 
 /*********************************************************************
  * @fn      NVIC_GetActive
- *
  * @brief   Get Interrupt Active State
- *
  * @param   IRQn - Interrupt Numbers
- *
  * @return  1 - Interrupt Active
- *                0 - Interrupt No Active
  */
 RV_STATIC_INLINE uint32_t NVIC_GetActive(IRQn_Type IRQn)
 {
-  return((uint32_t)((NVIC->IACTR[(uint32_t)(IRQn) >> 5] & (1 << ((uint32_t)(IRQn) & 0x1F)))?1:0));
+	return((uint32_t)((NVIC->IACTR[(uint32_t)(IRQn) >> 5] & (1 << ((uint32_t)(IRQn) & 0x1F)))?1:0));
 }
 
 /*********************************************************************
@@ -12397,9 +12368,7 @@ RV_STATIC_INLINE void NVIC_restore_IRQs(uint32_t old_state)
 
 /*********************************************************************
  * @fn       __WFI
- *
  * @brief   Wait for Interrupt
- *
  * @return  none
  */
 __attribute__( ( always_inline ) ) RV_STATIC_INLINE void __WFI(void)
@@ -12410,9 +12379,7 @@ __attribute__( ( always_inline ) ) RV_STATIC_INLINE void __WFI(void)
 
 /*********************************************************************
  * @fn       __WFE
- *
  * @brief   Wait for Events
- *
  * @return  none
  */
 __attribute__( ( always_inline ) ) RV_STATIC_INLINE void __WFE(void)
@@ -12428,9 +12395,7 @@ __attribute__( ( always_inline ) ) RV_STATIC_INLINE void __WFE(void)
 
 /*********************************************************************
  * @fn      SetVTFIRQ
- *
  * @brief   Set VTF Interrupt
- *
  * @param   addr - VTF interrupt service function base address.
  *                  IRQn - Interrupt Numbers
  *                  num - VTF Interrupt Numbers
@@ -12454,9 +12419,7 @@ RV_STATIC_INLINE void SetVTFIRQ(uint32_t addr, IRQn_Type IRQn, uint8_t num, Func
 
 /*********************************************************************
  * @fn       NVIC_SystemReset
- *
  * @brief   Initiate a system reset request
- *
  * @return  none
  */
 RV_STATIC_INLINE void NVIC_SystemReset(void)
@@ -12487,141 +12450,114 @@ static inline void __set_INTSYSCR( uint32_t value )
  */
 static inline uint32_t __get_FFLAGS(void)
 {
-  uint32_t result;
-
-  __ASM volatile ( "csrr %0," "fflags" : "=r" (result) );
-  return (result);
+	uint32_t result;
+	__ASM volatile ( "csrr %0," "fflags" : "=r" (result) );
+	return (result);
 }
 
 /*********************************************************************
  * @fn      __set_FFLAGS
- *
  * @brief   Set the Floating-Point Accrued Exceptions
- *
  * @param   value  - set FFLAGS value
- *
  * @return  none
  */
 static inline void __set_FFLAGS(uint32_t value)
 {
-  __ASM volatile ("csrw fflags, %0" : : "r" (value) );
+	__ASM volatile ("csrw fflags, %0" : : "r" (value) );
 }
 
 /*********************************************************************
  * @fn      __get_FRM
- *
  * @brief   Return the Floating-Point Dynamic Rounding Mode
- *
  * @return  frm value
  */
 static inline uint32_t __get_FRM(void)
 {
-  uint32_t result;
-
-  __ASM volatile ( "csrr %0," "frm" : "=r" (result) );
-  return (result);
+	uint32_t result;
+	__ASM volatile ( "csrr %0," "frm" : "=r" (result) );
+	return (result);
 }
 
 /*********************************************************************
  * @fn      __set_FRM
- *
  * @brief   Set the Floating-Point Dynamic Rounding Mode
- *
  * @param   value  - set frm value
- *
  * @return  none
  */
 static inline void __set_FRM(uint32_t value)
 {
-  __ASM volatile ("csrw frm, %0" : : "r" (value) );
+	__ASM volatile ("csrw frm, %0" : : "r" (value) );
 }
 
 /*********************************************************************
  * @fn      __get_FCSR
- *
  * @brief   Return the Floating-Point Control and Status Register
- *
  * @return  fcsr value
  */
 static inline uint32_t __get_FCSR(void)
 {
-  uint32_t result;
-
-  __ASM volatile ( "csrr %0," "fcsr" : "=r" (result) );
-  return (result);
+	uint32_t result;
+	__ASM volatile ( "csrr %0," "fcsr" : "=r" (result) );
+	return (result);
 }
 
 /*********************************************************************
  * @fn      __set_FCSR
- *
  * @brief   Set the Floating-Point Dynamic Rounding Mode
- *
  * @param   value  - set fcsr value
- *
  * @return  none
  */
 static inline void __set_FCSR(uint32_t value)
 {
-  __ASM volatile ("csrw fcsr, %0" : : "r" (value) );
+	__ASM volatile ("csrw fcsr, %0" : : "r" (value) );
 }
-#endif
+
+#endif // CH32V30x
 
 /*********************************************************************
  * @fn      __get_MSTATUS
- *
  * @brief   Return the Machine Status Register
- *
  * @return  mstatus value
  */
 static inline uint32_t __get_MSTATUS(void)
 {
-    uint32_t result;
-
-    __ASM volatile("csrr %0," "mstatus": "=r"(result));
-    return (result);
+	uint32_t result;
+	__ASM volatile("csrr %0," "mstatus": "=r"(result));
+	return (result);
 }
 
 /*********************************************************************
  * @fn      __set_MSTATUS
- *
  * @brief   Set the Machine Status Register
- *
  * @param   value  - set mstatus value
- *
  * @return  none
  */
 static inline void __set_MSTATUS(uint32_t value)
 {
-    __ASM volatile("csrw mstatus, %0" : : "r"(value));
+	__ASM volatile("csrw mstatus, %0" : : "r"(value));
 }
 
 /*********************************************************************
  * @fn      __get_MISA
- *
  * @brief   Return the Machine ISA Register
- *
  * @return  misa value
  */
 static inline uint32_t __get_MISA(void)
 {
-    uint32_t result;
-
-    __ASM volatile("csrr %0,""misa" : "=r"(result));
-    return (result);
+	uint32_t result;
+	__ASM volatile("csrr %0,""misa" : "=r"(result));
+	return (result);
 }
 
 /*********************************************************************
  * @fn      __set_MISA
- *
  * @brief   Set the Machine ISA Register
- *
  * @param   value  - set misa value
- *
  * @return  none
  */
 static inline void __set_MISA(uint32_t value)
 {
-    __ASM volatile("csrw misa, %0" : : "r"(value));
+	__ASM volatile("csrw misa, %0" : : "r"(value));
 }
 
 /*********************************************************************
@@ -12633,116 +12569,96 @@ static inline void __set_MISA(uint32_t value)
  */
 static inline uint32_t __get_MTVEC(void)
 {
-    uint32_t result;
-
-    __ASM volatile("csrr %0," "mtvec": "=r"(result));
-    return (result);
+	uint32_t result;
+	__ASM volatile("csrr %0," "mtvec": "=r"(result));
+	return (result);
 }
 
 /*********************************************************************
  * @fn      __set_MTVEC
- *
  * @brief   Set the Machine Trap-Vector Base-Address Register
- *
  * @param   value  - set mtvec value
- *
  * @return  none
  */
 static inline void __set_MTVEC(uint32_t value)
 {
-    __ASM volatile("csrw mtvec, %0":: "r"(value));
+	__ASM volatile("csrw mtvec, %0":: "r"(value));
 }
 
 /*********************************************************************
  * @fn      __get_MSCRATCH
- *
  * @brief   Return the Machine Seratch Register
- *
  * @return  mscratch value
  */
 static inline uint32_t __get_MSCRATCH(void)
 {
-    uint32_t result;
-
-    __ASM volatile("csrr %0," "mscratch" : "=r"(result));
-    return (result);
+	uint32_t result;
+	__ASM volatile("csrr %0," "mscratch" : "=r"(result));
+	return (result);
 }
 
 /*********************************************************************
  * @fn      __set_MSCRATCH
- *
  * @brief   Set the Machine Seratch Register
- *
  * @param   value  - set mscratch value
- *
  * @return  none
  */
 static inline void __set_MSCRATCH(uint32_t value)
 {
-    __ASM volatile("csrw mscratch, %0" : : "r"(value));
+	__ASM volatile("csrw mscratch, %0" : : "r"(value));
 }
 
 /*********************************************************************
  * @fn      __get_MEPC
- *
  * @brief   Return the Machine Exception Program Register
- *
  * @return  mepc value
  */
 static inline uint32_t __get_MEPC(void)
 {
     uint32_t result;
 
-    __ASM volatile("csrr %0," "mepc" : "=r"(result));
+	__ASM volatile("csrr %0," "mepc" : "=r"(result));
     return (result);
 }
 
 /*********************************************************************
  * @fn      __set_MEPC
- *
  * @brief   Set the Machine Exception Program Register
- *
  * @return  mepc value
  */
 static inline void __set_MEPC(uint32_t value)
 {
-    __ASM volatile("csrw mepc, %0" : : "r"(value));
+	__ASM volatile("csrw mepc, %0" : : "r"(value));
 }
 
 /*********************************************************************
  * @fn      __get_MCAUSE
- *
  * @brief   Return the Machine Cause Register
- *
  * @return  mcause value
  */
 static inline uint32_t __get_MCAUSE(void)
 {
     uint32_t result;
 
-    __ASM volatile("csrr %0," "mcause": "=r"(result));
+	__ASM volatile("csrr %0," "mcause": "=r"(result));
     return (result);
 }
 
 /*********************************************************************
  * @fn      __set_MCAUSE
- *
  * @brief   Set the Machine Cause Register
- *
  * @return  mcause value
  */
 static inline void __set_MCAUSE(uint32_t value)
 {
-    __ASM volatile("csrw mcause, %0":: "r"(value));
+	__ASM volatile("csrw mcause, %0":: "r"(value));
 }
 
 #if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 
 /*********************************************************************
  * @fn      __get_MTVAL
- *
  * @brief   Return the Machine Trap Value Register
- *
  * @return  mtval value
  */
 static inline uint32_t __get_MTVAL(void)
@@ -12755,9 +12671,7 @@ static inline uint32_t __get_MTVAL(void)
 
 /*********************************************************************
  * @fn      __set_MTVAL
- *
  * @brief   Set the Machine Trap Value Register
- *
  * @return  mtval value
  */
 static inline void __set_MTVAL(uint32_t value)
@@ -12769,90 +12683,64 @@ static inline void __set_MTVAL(uint32_t value)
 
 /*********************************************************************
  * @fn      __get_MVENDORID
- *
  * @brief   Return Vendor ID Register
- *
  * @return  mvendorid value
  */
 static inline uint32_t __get_MVENDORID(void)
 {
-    uint32_t result;
-
-    __ASM volatile("csrr %0,""mvendorid": "=r"(result));
-    return (result);
+	uint32_t result;
+	__ASM volatile("csrr %0,""mvendorid": "=r"(result));
+	return (result);
 }
 
 /*********************************************************************
  * @fn      __get_MARCHID
- *
  * @brief   Return Machine Architecture ID Register
- *
  * @return  marchid value
  */
 static inline uint32_t __get_MARCHID(void)
 {
-    uint32_t result;
+	uint32_t result;
 
-    __ASM volatile("csrr %0,""marchid": "=r"(result));
-    return (result);
+	__ASM volatile("csrr %0,""marchid": "=r"(result));
+	return (result);
 }
 
 /*********************************************************************
  * @fn      __get_MIMPID
- *
  * @brief   Return Machine Implementation ID Register
- *
  * @return  mimpid value
  */
 static inline uint32_t __get_MIMPID(void)
 {
-    uint32_t result;
-
-    __ASM volatile("csrr %0,""mimpid": "=r"(result));
-    return (result);
+	uint32_t result;
+	__ASM volatile("csrr %0,""mimpid": "=r"(result));
+	return (result);
 }
 
 /*********************************************************************
  * @fn      __get_MHARTID
- *
  * @brief   Return Hart ID Register
- *
  * @return  mhartid value
  */
 static inline uint32_t __get_MHARTID(void)
 {
-    uint32_t result;
-
-    __ASM volatile("csrr %0,""mhartid": "=r"(result));
-    return (result);
+	uint32_t result;
+	__ASM volatile("csrr %0,""mhartid": "=r"(result));
+	return (result);
 }
 
 /*********************************************************************
  * @fn      __get_SP
- *
  * @brief   Return SP Register
- *
  * @return  SP value
  */
 static inline uint32_t __get_SP(void)
 {
-    uint32_t result;
-
-    __ASM volatile("mv %0,""sp": "=r"(result):);
-    return (result);
+	uint32_t result;
+	__ASM volatile("mv %0,""sp": "=r"(result):);
+	return (result);
 }
-
-// Depending on a LOT of factors, it's about 6 cycles per n.
-// **DO NOT send it zero or less.**
-#ifndef __MACOSX__
-static inline void Delay_Tiny( int n ) {
-	asm volatile( "\
-		mv a5, %[n]\n\
-		1: \
-		c.addi a5, -1\n\
-		c.bnez a5, 1b" : : [n]"r"(n) : "a5" );
-}
-#endif
 
 #endif
 
@@ -13094,6 +12982,16 @@ void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) 
 #ifndef __ASSEMBLER__
 
 void DelaySysTick( uint32_t n );
+
+// Depending on a LOT of factors, it's about 6 cycles per n.
+// **DO NOT send it zero or less.**
+static inline void Delay_Tiny( int n ) {
+	asm volatile( "\
+		mv a5, %[n]\n\
+		1: \
+		c.addi a5, -1\n\
+		c.bnez a5, 1b" : : [n]"r"(n) : "a5" );
+}
 
 // Tricky: We need to make sure main and SystemInit() are preserved.
 int main() __attribute__((used));
