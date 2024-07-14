@@ -58,11 +58,22 @@ The generated .bin is used by minichlink and the .hex file is compatible with th
 
 ## VSCode +/- PlatformIO
 
-Note: With PlatformIO is genearlly used for CI on this repo.  However, note that this is **not** the path that allows for debugging on Windows (For that see [template project](https://github.com/cnlohr/ch32v003fun/tree/master/examples/template/.vscode))
+Note: With PlatformIO is genearlly used for CI on this repo. While PlatformIO can be used code and debug a ch32v003fun project inside VSCode, you can also do it completely without PlatformIO: For that, see [template project](https://github.com/cnlohr/ch32v003fun/tree/master/examples/template/.vscode).
 
-This project can also be built, uploaded and debugged with VSCode and the PlatformIO extension. Simply clone and open this project in VSCode and have the PlatformIO extension installed.
+This project can be built, uploaded and debugged with VSCode and the PlatformIO extension. Simply clone and open this project in VSCode and have the PlatformIO extension installed.
 
-See [here](https://github.com/Community-PIO-CH32V/platform-ch32v) for further details.
+To create a new PlatformIO firmware project based on ch32v003fun, you can either expand the available environments in the `platformio.ini` in this project [per instructions](https://github.com/cnlohr/ch32v003fun/blob/49640fbccf231191aa83c6a2bbe9d385535b2d1e/platformio.ini#L48-L53), or, simply use the [PlatformIO Home](https://docs.platformio.org/en/latest/home/index.html)'s "New Project" wizard and set "Framework" to "ch32v003fun". There are [various examples](https://github.com/Community-PIO-CH32V/platform-ch32v/tree/develop/examples/blinky-ch32v003fun).
+
+![pio_proj](.github/pio_project_creation.png)
+
+The equivalent [PlatformIO Core CLI](https://docs.platformio.org/en/latest/integration/ide/vscode.html#platformio-core-cli) command would be
+```sh
+pio init -b genericCH32V003F4P6 -O "framework = ch32v003fun"
+```
+
+Please also note that when you open this project inside PlatformIO, you can use the [project environment switcher](https://docs.platformio.org/en/latest/integration/ide/vscode.html#project-tasks) at the bottom of the VSCode taskbar to select a specific example folder. Otherwise, "Build" will by default build **all** examples.
+
+See [platform-ch32v](https://github.com/Community-PIO-CH32V/platform-ch32v) for further details and installation of the platform.
 
 ## clangd
 
