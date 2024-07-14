@@ -58,9 +58,9 @@ The generated .bin is used by minichlink and the .hex file is compatible with th
 
 ## VSCode +/- PlatformIO
 
-Note: With PlatformIO is genearlly used for CI on this repo. While PlatformIO can be used code and debug a ch32v003fun project inside VSCode, you can also do it completely without PlatformIO: For that, see [template project](https://github.com/cnlohr/ch32v003fun/tree/master/examples/template/.vscode).
+Note: PlatformIO is generally used for CI on this repo. While PlatformIO can be used to code and debug a ch32v003fun project inside VSCode, you can also do it completely without PlatformIO: For that, see [template project](https://github.com/cnlohr/ch32v003fun/tree/master/examples/template/.vscode).
 
-This project can be built, uploaded and debugged with VSCode and the PlatformIO extension. Simply clone and open this project in VSCode and have the PlatformIO extension installed.
+This project can be built, uploaded and debugged with VSCode and the PlatformIO extension. Simply clone and open this project in VSCode and have the PlatformIO extension installed. Use the [project environment switcher](https://docs.platformio.org/en/latest/integration/ide/vscode.html#project-tasks) to select a specific example, such as "blink".
 
 To create a new PlatformIO firmware project based on ch32v003fun, simply use the [PlatformIO Home](https://docs.platformio.org/en/latest/home/index.html)'s "New Project" wizard and set "Framework" to "ch32v003fun". There are [various examples](https://github.com/Community-PIO-CH32V/platform-ch32v/tree/develop/examples/blinky-ch32v003fun).
 
