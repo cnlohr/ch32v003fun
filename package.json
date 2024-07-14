@@ -1,0 +1,7 @@
+{
+  "description": "Most lightweight framework for CH32V003, CH32V10x, CH32V30x, CH32X035",
+  "name": "framework-ch32v003fun",
+  "system": "all",
+  "url": "https://github.com/cnlohr/ch32v003fun",
+  "version": "0.0.0"
+}

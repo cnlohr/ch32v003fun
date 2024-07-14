@@ -10,6 +10,9 @@ example_folder = ""
 for filter in src_filters:
    # cleanup unwanted characters
    f = filter.replace("<", "", 1).replace(">", "", 1)
+   # Some examples set a source filter to only build one file, in which case we need the base directory
+   if f.endswith(".c"):
+      f = os.path.dirname(f)
    # starts with "examples" and looks like a path?
    if f.startswith("examples") and ("/" in f or os.path.sep in f):
       example_folder = f
