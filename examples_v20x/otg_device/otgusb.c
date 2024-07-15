@@ -642,7 +642,7 @@ int USBOTGSetup()
 	USBOTG_FS->BASE_CTRL |= USBOTG_UC_DEV_PU_EN;
 
 #if FUSB_IO_PROFILE
-	funPinMode( PB0, GPIO_CFGLR_OUT_50Mhz_PP );
+	funPinMode( PB0, GPIO_CFGLR_OUT_50MHz_PP );
 #endif
 
 	// Go on-bus.

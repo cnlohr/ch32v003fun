@@ -7,7 +7,7 @@ int main()
 
 	funGpioInitAll();
 
-	funPinMode( PA15, GPIO_CFGLR_OUT_10Mhz_PP );
+	funPinMode( PA15, GPIO_CFGLR_OUT_10MHz_PP );
 
 	while(1)
 	{

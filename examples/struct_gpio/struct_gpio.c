@@ -17,9 +17,9 @@ int main()
 
     // GPIO D0, D4 Push-Pull, D1/SWIO floating, default analog input
 	DYN_GPIO_WRITE(GPIOD, CFGLR, (GPIO_CFGLR_t) { // (GPIO_CFGLR_t) is optional but helps vscode with completion
-		.PIN0 = GPIO_CFGLR_OUT_10Mhz_PP,
+		.PIN0 = GPIO_CFGLR_OUT_10MHz_PP,
 		.PIN1 = GPIO_CFGLR_IN_FLOAT,
-		.PIN4 = GPIO_CFGLR_OUT_10Mhz_PP,
+		.PIN4 = GPIO_CFGLR_OUT_10MHz_PP,
 	});
 
 	// all unconfigured pins are now 0b0000, aka analog inputs with TTL Schmitttrigger disabled
@@ -28,7 +28,7 @@ int main()
 	// GPIO C0 Push-Pull
 	// read modify write
 	GPIO_CFGLR_t ioc = DYN_GPIO_READ(GPIOC, CFGLR);
-	ioc.PIN0 = GPIO_CFGLR_OUT_10Mhz_PP,
+	ioc.PIN0 = GPIO_CFGLR_OUT_10MHz_PP,
 	ioc.PIN1 = GPIO_CFGLR_IN_ANALOG;
 	DYN_GPIO_WRITE(GPIOC, CFGLR, ioc);
 

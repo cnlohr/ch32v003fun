@@ -45,7 +45,7 @@ int MeasureTouch( int portno, int pin, int pu_mode )
 	uint32_t base = port->CFGLR & (~(0xf<<pinx4));
 
 	// Mode for CFGLR when asserted.
-	uint32_t setmode =     base | (GPIO_CFGLR_OUT_2Mhz_PP)<<(pinx4);
+	uint32_t setmode =     base | (GPIO_CFGLR_OUT_2MHz_PP)<<(pinx4);
 
 	// Mode for CFGLR when it drifts.
 	uint32_t releasemode = base | (pu_mode)<<(pinx4);

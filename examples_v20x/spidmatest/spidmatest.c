@@ -60,12 +60,12 @@ int main()
 	RCC->CFGR0 &= ~RCC_PPRE1_DIV16;
 
 // MCO for testing.
-//	funPinMode( PA8, GPIO_CFGLR_OUT_50Mhz_AF_PP );	RCC->CFGR0 |= RCC_CFGR0_MCO_PLL;
+//	funPinMode( PA8, GPIO_CFGLR_OUT_50MHz_AF_PP );	RCC->CFGR0 |= RCC_CFGR0_MCO_PLL;
 
-	funPinMode( PB12, GPIO_CFGLR_OUT_50Mhz_AF_PP );
-	funPinMode( PB13, GPIO_CFGLR_OUT_50Mhz_AF_PP );
-	funPinMode( PB14, GPIO_CFGLR_OUT_50Mhz_AF_PP );
-	funPinMode( PB15, GPIO_CFGLR_OUT_50Mhz_AF_PP );
+	funPinMode( PB12, GPIO_CFGLR_OUT_50MHz_AF_PP );
+	funPinMode( PB13, GPIO_CFGLR_OUT_50MHz_AF_PP );
+	funPinMode( PB14, GPIO_CFGLR_OUT_50MHz_AF_PP );
+	funPinMode( PB15, GPIO_CFGLR_OUT_50MHz_AF_PP );
 
 	memset( sendbuff, 0xac, sizeof(sendbuff) ); 
 

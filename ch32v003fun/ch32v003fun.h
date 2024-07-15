@@ -16,7 +16,7 @@
 
 	3. Arduino-like I/O
 		funGpioInitAll();
-		funPinMode( PA2, GPIO_CFGLR_OUT_10Mhz_PP );
+		funPinMode( PA2, GPIO_CFGLR_OUT_10MHz_PP );
 		funDigitalWrite( PA2, FUN_HIGH );
 		funDigitalWrite( PA2, FUN_HIGH );
 
@@ -748,33 +748,33 @@ typedef enum
 	GPIO_CFGLR_IN_ANALOG = 0,
 	GPIO_CFGLR_IN_FLOAT = 4,
 	GPIO_CFGLR_IN_PUPD = 8,
-	GPIO_CFGLR_OUT_10Mhz_PP = 1,
-	GPIO_CFGLR_OUT_2Mhz_PP = 2,
+	GPIO_CFGLR_OUT_10MHz_PP = 1,
+	GPIO_CFGLR_OUT_2MHz_PP = 2,
 #if defined(CH32V003)
-	GPIO_CFGLR_OUT_30Mhz_PP = 3,
+	GPIO_CFGLR_OUT_30MHz_PP = 3,
 #else
-	GPIO_CFGLR_OUT_50Mhz_PP = 3,
+	GPIO_CFGLR_OUT_50MHz_PP = 3,
 #endif
-	GPIO_CFGLR_OUT_10Mhz_OD = 5,
-	GPIO_CFGLR_OUT_2Mhz_OD = 6,
+	GPIO_CFGLR_OUT_10MHz_OD = 5,
+	GPIO_CFGLR_OUT_2MHz_OD = 6,
 #if defined(CH32V003)
-	GPIO_CFGLR_OUT_30Mhz_OD = 7,
+	GPIO_CFGLR_OUT_30MHz_OD = 7,
 #else
-	GPIO_CFGLR_OUT_50Mhz_OD = 7,
+	GPIO_CFGLR_OUT_50MHz_OD = 7,
 #endif
-	GPIO_CFGLR_OUT_10Mhz_AF_PP = 9,
-	GPIO_CFGLR_OUT_2Mhz_AF_PP = 10,
+	GPIO_CFGLR_OUT_10MHz_AF_PP = 9,
+	GPIO_CFGLR_OUT_2MHz_AF_PP = 10,
 #if defined(CH32V003)
-	GPIO_CFGLR_OUT_30Mhz_AF_PP = 11,
+	GPIO_CFGLR_OUT_30MHz_AF_PP = 11,
 #else
-	GPIO_CFGLR_OUT_50Mhz_AF_PP = 11,
+	GPIO_CFGLR_OUT_50MHz_AF_PP = 11,
 #endif
-	GPIO_CFGLR_OUT_10Mhz_AF_OD = 13,
-	GPIO_CFGLR_OUT_2Mhz_AF_OD = 14,
+	GPIO_CFGLR_OUT_10MHz_AF_OD = 13,
+	GPIO_CFGLR_OUT_2MHz_AF_OD = 14,
 #if defined(CH32V003)
-	GPIO_CFGLR_OUT_30Mhz_AF_OD = 15,
+	GPIO_CFGLR_OUT_30MHz_AF_OD = 15,
 #else
-	GPIO_CFGLR_OUT_50Mhz_AF_OD = 15,
+	GPIO_CFGLR_OUT_50MHz_AF_OD = 15,
 #endif
 } GPIO_CFGLR_PIN_MODE_Typedef;
 
@@ -12985,7 +12985,7 @@ extern "C" {
 
 
 // For pins, use things like PA8, PB15
-// For configuration, use things like GPIO_CFGLR_OUT_10Mhz_PP
+// For configuration, use things like GPIO_CFGLR_OUT_10MHz_PP
 
 #define funDigitalWrite( pin, value ) { GpioOf( pin )->BSHR = 1<<((!(value))*16 + ((pin) & 0xf)); }
 

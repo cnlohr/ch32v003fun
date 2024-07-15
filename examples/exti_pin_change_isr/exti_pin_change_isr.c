@@ -54,8 +54,8 @@ int main()
 	// funPinMode( PD4, GPIO_CFGLR_IN_PUPD ); // Keep SWIO enabled / seems to be unnecessary
 
 	// GPIO C0 Push-Pull (our output)
-	funPinMode( PC0,  GPIO_CFGLR_OUT_10Mhz_PP );
-	funPinMode( PC1,  GPIO_CFGLR_OUT_10Mhz_PP );
+	funPinMode( PC0,  GPIO_CFGLR_OUT_10MHz_PP );
+	funPinMode( PC1,  GPIO_CFGLR_OUT_10MHz_PP );
 
 	// Ugh this is tricky.
 	// This is how we set (INTSYSCR) to enable hardware interrupt nesting

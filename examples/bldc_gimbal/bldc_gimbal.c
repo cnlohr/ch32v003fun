@@ -63,9 +63,9 @@ void t2pwm_init( void )
 						RCC_APB2Periph_AFIO;
 	RCC->APB1PCENR |= RCC_APB1Periph_TIM2;
 
-	funPinMode( PD5, GPIO_CFGLR_OUT_2Mhz_AF_PP );
-	funPinMode( PD6, GPIO_CFGLR_OUT_2Mhz_AF_PP );
-	funPinMode( PC7, GPIO_CFGLR_OUT_2Mhz_AF_PP );
+	funPinMode( PD5, GPIO_CFGLR_OUT_2MHz_AF_PP );
+	funPinMode( PD6, GPIO_CFGLR_OUT_2MHz_AF_PP );
+	funPinMode( PC7, GPIO_CFGLR_OUT_2MHz_AF_PP );
 
 	/*
 		Timer 2 pin mappings by AFIO->PCFR1

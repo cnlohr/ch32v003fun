@@ -7,7 +7,7 @@ int main()
 
 	funGpioInitAll();
 
-	funPinMode( PA8, GPIO_CFGLR_OUT_50Mhz_AF_PP );
+	funPinMode( PA8, GPIO_CFGLR_OUT_50MHz_AF_PP );
 
 	RCC->CFGR0 = RCC_CFGR0_MCO_PLL;
 
