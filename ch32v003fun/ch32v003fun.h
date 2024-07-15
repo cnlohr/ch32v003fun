@@ -750,16 +750,32 @@ typedef enum
 	GPIO_CFGLR_IN_PUPD = 8,
 	GPIO_CFGLR_OUT_10Mhz_PP = 1,
 	GPIO_CFGLR_OUT_2Mhz_PP = 2,
+#if defined(CH32V003)
+	GPIO_CFGLR_OUT_30Mhz_PP = 3,
+#else
 	GPIO_CFGLR_OUT_50Mhz_PP = 3,
+#endif
 	GPIO_CFGLR_OUT_10Mhz_OD = 5,
 	GPIO_CFGLR_OUT_2Mhz_OD = 6,
+#if defined(CH32V003)
+	GPIO_CFGLR_OUT_30Mhz_OD = 7,
+#else
 	GPIO_CFGLR_OUT_50Mhz_OD = 7,
+#endif
 	GPIO_CFGLR_OUT_10Mhz_AF_PP = 9,
 	GPIO_CFGLR_OUT_2Mhz_AF_PP = 10,
+#if defined(CH32V003)
+	GPIO_CFGLR_OUT_30Mhz_AF_PP = 11,
+#else
 	GPIO_CFGLR_OUT_50Mhz_AF_PP = 11,
+#endif
 	GPIO_CFGLR_OUT_10Mhz_AF_OD = 13,
 	GPIO_CFGLR_OUT_2Mhz_AF_OD = 14,
+#if defined(CH32V003)
+	GPIO_CFGLR_OUT_30Mhz_AF_OD = 15,
+#else
 	GPIO_CFGLR_OUT_50Mhz_AF_OD = 15,
+#endif
 } GPIO_CFGLR_PIN_MODE_Typedef;
 
 typedef union {
