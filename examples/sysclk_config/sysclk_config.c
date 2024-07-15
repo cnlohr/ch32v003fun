@@ -190,7 +190,7 @@ int main()
 	GPIO_digitalWrite(GPIOv_from_PORT_PIN(GPIO_port_D, LED_PIN), low);	
 	// needed for MCO output
     GPIO_port_enable(GPIO_port_C);
-    GPIO_pinMode(GPIOv_from_PORT_PIN(GPIO_port_C, 4), GPIO_pinMode_O_pushPullMux, GPIO_Speed_50MHz);
+    GPIO_pinMode(GPIOv_from_PORT_PIN(GPIO_port_C, 4), GPIO_pinMode_O_pushPullMux, GPIO_Speed_30MHz);
 	MCO_cfg(MCO_OUT_SYSCLK);
 	print_sysclk_cfg();
 
