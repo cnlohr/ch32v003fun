@@ -9732,7 +9732,11 @@ typedef enum
 	GPIO_Speed_In,
 	GPIO_Speed_10MHz,
 	GPIO_Speed_2MHz,
+#if defined(CH32V003)
+	GPIO_Speed_30MHz
+#else
 	GPIO_Speed_50MHz
+#endif
 } GPIOSpeed_TypeDef;
 
 #endif
