@@ -9729,13 +9729,13 @@ typedef enum
 /* Output Maximum frequency selection */
 typedef enum
 {
-	GPIO_Speed_In,
-	GPIO_Speed_10MHz,
-	GPIO_Speed_2MHz,
+	GPIO_Speed_In = 0x00,
+	GPIO_Speed_10MHz = 0x01,
+	GPIO_Speed_2MHz = 0x02,
 #if defined(CH32V003)
-	GPIO_Speed_30MHz
+	GPIO_Speed_30MHz = 0x03
 #else
-	GPIO_Speed_50MHz
+	GPIO_Speed_50MHz = 0x03
 #endif
 } GPIOSpeed_TypeDef;
 
