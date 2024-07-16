@@ -80,7 +80,6 @@ int main()
 
 	// PC0 is Software NSS, 50MHz Output, GPIO, p-p
 	funPinMode( PC0, GPIO_CFGLR_OUT_50Mhz_PP );
-	funPinMode( PC1, GPIO_CFGLR_OUT_50Mhz_PP );
 	funDigitalWrite(PC0, FUN_HIGH);
 
 	RCC->APB2PRSTR = RCC_SPI1RST;
