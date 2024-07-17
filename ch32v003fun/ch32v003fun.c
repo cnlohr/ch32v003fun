@@ -1511,6 +1511,10 @@ void DelaySysTick( uint32_t n )
 
 void SystemInit()
 {
+#if defined(CH32V30x) 
+	FLASH->OBR = TARGET_MCU_MEMORY_SPLIT<<8;
+#endif
+
 #if FUNCONF_HSE_BYPASS
 	#define HSEBYP (1<<18)
 #else
