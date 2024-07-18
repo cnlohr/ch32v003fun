@@ -28,9 +28,6 @@ SOFTWARE.
 */
 
 #include "ch32v003fun.h"
-#include <stdio.h>
-#include <string.h>
-
 
 #define SENDBUFF_BYTES 8
 uint8_t sendbuff[] = {0, 1, 2, 3, 4, 5, 6, 7};
