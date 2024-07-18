@@ -1,10 +1,10 @@
 # DMA SPI TX example
 This example can be used as a baseline for implementing SPI using DMA.
 It uses a basic finite state machine to control the CS line, where it is
-set by the user before initiating a transfer and then cleared by the DMA ISR
-when the transfer is complete. Due to the DMA flagging Transfer Complete
-before the SPI has clocked out the last byte, I have implemented some code to check
-for the BSY (busy) flag before clearing the CS line.
+set by the user before initiating a transfer and then cleared by the DMA ISR. 
+Due to the DMA flagging Transfer Complete before the SPI has clocked out the 
+last byte, I have implemented some code to check for the BSY (busy) flag on SPI
+to clear before subsequently clearing the CS line.
 
 ![Screenshot_20240718_232950](https://github.com/user-attachments/assets/67d0bbe0-f40c-4aeb-bf76-60632292363a)
 
