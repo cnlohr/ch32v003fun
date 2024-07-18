@@ -65,6 +65,16 @@ void DMA1_Channel3_IRQHandler( void )
 	} while( intfr );
 }
 
+/* Starts a single transmission of sendbuff */
+void initiate_transfer()
+{
+	funDigitalWrite(PC0, FUN_LOW); // Set CS low
+	spi_state = TRANSMITTING;
+	DMA1_Channel3->CFGR &= ~DMA_CFGR1_EN; // Disable DMA in order to write to CNTR
+	DMA1_Channel3->CNTR  = SENDBUFF_BYTES; // Reload size of buffer
+	DMA1_Channel3->CFGR |= DMA_CFGR1_EN; // Initate DMA transfer
+}
+
 int main()
 {
 	SystemInit();
@@ -122,11 +132,7 @@ int main()
 			timestamp = SysTick->CNT;
 
 			// Send repeatedly
-			funDigitalWrite(PC0, FUN_LOW); // Set CS low
-			spi_state = TRANSMITTING;
-			DMA1_Channel3->CFGR &= ~DMA_CFGR1_EN; // Disable DMA in order to write to CNTR
-			DMA1_Channel3->CNTR  = SENDBUFF_BYTES; // Reload size of buffer
-			DMA1_Channel3->CFGR |= DMA_CFGR1_EN; // Initate DMA transfer
+			initiate_transfer();
 		}
 
 		// When DMA is done and last byte is clocked out, set CS high
