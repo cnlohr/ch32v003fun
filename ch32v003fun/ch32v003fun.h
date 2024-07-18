@@ -11161,7 +11161,7 @@ typedef struct
 #define SPI_Direction_1Line_Tx             ((uint16_t)0xC000)
 
 /* SPI_mode */
-#define SPI_Mode_Master                    ((uint16_t)0x0104)
+#define SPI_Mode_Master                    ((uint16_t)0x0104) /* Sets MSTR, as well as SSI, which is required for Master Mode */
 #define SPI_Mode_Slave                     ((uint16_t)0x0000)
 
 /* SPI_data_size */
