@@ -40,6 +40,7 @@ or logic analyzer to PC5 (SCK), PC6 (MOSI) and PC0 (CS). You should then see a
 continuous bursts of the sequence {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07}
 being transmitted over the SPI bus.
 
-To initiate a transfer the user must set the CS line low, set spi_state to TRANSMITTING,
+To initiate a transfer manually the user must set the CS line low, set spi_state to TRANSMITTING,
 disable the DMA for register access, load the data length into the DMA transfer counter and
-then re-enable the DMA. The DMA will then take care of the rest.
+then re-enable the DMA. The DMA will then take care of the rest. All of this is done in the
+initiate_transfer() function.
