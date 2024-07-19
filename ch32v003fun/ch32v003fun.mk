@@ -219,6 +219,9 @@ $(GENERATED_LD_FILE) :
 $(TARGET).elf : $(FILES_TO_COMPILE) $(LINKER_SCRIPT) $(EXTRA_ELF_DEPENDENCIES)
 	$(PREFIX)-gcc -o $@ $(FILES_TO_COMPILE) $(CFLAGS) $(LDFLAGS)
 
+ch32v003fun.o : $(SYSTEM_C)
+	$(PREFIX)-gcc -c -o $@ $(SYSTEM_C) $(CFLAGS)
+
 cv_flash : $(TARGET).bin
 	make -C $(MINICHLINK) all
 	$(FLASH_COMMAND)
