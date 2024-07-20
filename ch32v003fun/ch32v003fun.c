@@ -886,6 +886,9 @@ void DMA2_Channel3_IRQHandler( void ) 	__attribute__((section(".text.vector_hand
 void DMA2_Channel4_IRQHandler( void ) 	__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void DMA2_Channel5_IRQHandler( void ) 	__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void OTG_FS_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void USBHSWakeup_IRQHandler( void )		__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void USBHS_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void DVP_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void UART6_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void UART7_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void UART8_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
@@ -1197,11 +1200,17 @@ void InterruptVectorDefault()
     .word   0                          /* 80: CAN2_RX0 */ \n\
     .word   0                          /* 81: CAN2_RX1 */ \n\
     .word   0                          /* 82: CAN2_SCE */ \n\
-    .word   OTG_FS_IRQHandler          /* 83: OTGFS */ \n\
-    .word   0                          /* 84: USBHsWakeUp */ \n\
+    .word   OTG_FS_IRQHandler          /* 83: OTGFS */ \n"
+#if defined(CH32V30x)
+"   .word   USBHSWakeup_IRQHandler     /* 84: USBHsWakeUp */ \n\
+    .word   USBHS_IRQHandler           /* 85: USBHS */ \n\
+    .word   DVP_IRQHandler             /* 86: DVP */ \n"
+#else
+"   .word   0                          /* 84: USBHsWakeUp */ \n\
     .word   0                          /* 85: USBHS */ \n\
-    .word   0                          /* 86: DVP */ \n\
-    .word   UART6_IRQHandler           /* 87: UART6 */ \n\
+    .word   0                          /* 86: DVP */ \n"
+#endif
+"   .word   UART6_IRQHandler           /* 87: UART6 */ \n\
     .word   UART7_IRQHandler           /* 88: UART7 */ \n\
     .word   UART8_IRQHandler           /* 89: UART8 */ \n\
     .word   TIM9_BRK_IRQHandler        /* 90: TIM9 Break */ \n\
