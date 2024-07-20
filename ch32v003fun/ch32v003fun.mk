@@ -30,6 +30,7 @@ WRITE_SECTION?=flash
 SYSTEM_C?=$(CH32V003FUN)/ch32v003fun.c
 
 CFLAGS?=-g -Os -flto -ffunction-sections -fdata-sections -fmessage-length=0 -msmall-data-limit=8
+LDFLAGS+=-Wl,--print-memory-usage
 
 ifeq ($(TARGET_MCU),CH32V003)
 	CFLAGS_ARCH+=-march=rv32ec -mabi=ilp32e -DCH32V003=1
@@ -175,7 +176,6 @@ LDFLAGS+=-T $(LINKER_SCRIPT) -Wl,--gc-sections
 FILES_TO_COMPILE:=$(SYSTEM_C) $(TARGET).$(TARGET_EXT) $(ADDITIONAL_C_FILES) 
 
 $(TARGET).bin : $(TARGET).elf
-	$(PREFIX)-size $^
 	$(PREFIX)-objdump -S $^ > $(TARGET).lst
 	$(PREFIX)-objdump -t $^ > $(TARGET).map
 	$(PREFIX)-objcopy -O binary $< $(TARGET).bin
@@ -218,6 +218,11 @@ $(GENERATED_LD_FILE) :
 
 $(TARGET).elf : $(FILES_TO_COMPILE) $(LINKER_SCRIPT) $(EXTRA_ELF_DEPENDENCIES)
 	$(PREFIX)-gcc -o $@ $(FILES_TO_COMPILE) $(CFLAGS) $(LDFLAGS)
+
+# Rule for independently building ch32v003fun.o indirectly, instead of recompiling it from source every time.
+# Not used in the default 003fun toolchain, but used in more sophisticated toolchains.
+ch32v003fun.o : $(SYSTEM_C)
+	$(PREFIX)-gcc -c -o $@ $(SYSTEM_C) $(CFLAGS)
 
 cv_flash : $(TARGET).bin
 	make -C $(MINICHLINK) all
