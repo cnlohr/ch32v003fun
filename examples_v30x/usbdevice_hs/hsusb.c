@@ -52,11 +52,10 @@ static inline void DMA7FastCopy( uint8_t * dest, const uint8_t * src, int len )
 
 static inline void DMA7FastCopyComplete() { while( DMA1_Channel7->CNTR ); }
 
-void USBHS_IRQHandler() __attribute__((section(".text.vector_handler"))) __attribute((interrupt));
-
 void USBHS_InternalFinishSetup();
 
-void USBHS_IRQHandler()
+void USBHS_IRQHandler(void) __attribute((interrupt));
+void USBHS_IRQHandler(void)
 {
     // Based on https://github.com/openwch/ch32v307/blob/main/EVT/EXAM/USB/USBHS/DEVICE/CompositeKM/User/ch32v30x_usbhs_device.c
     // Combined FG + ST flag
@@ -601,7 +600,7 @@ int HSUSBSetup()
 
 	// Enable USB high-speed peripheral
 	RCC->CFGR2 |= (1 << 30);
-	RCC->AHBPCENR |= RCC_AHBPeriph_USBHS;
+	RCC->AHBPCENR |= RCC_AHBPeriph_USBHS | RCC_AHBPeriph_DMA1;
 
 	// Initialize USB module
 	USBHSD->CONTROL = USBHS_UC_CLR_ALL | USBHS_UC_RESET_SIE;
@@ -622,7 +621,7 @@ int HSUSBSetup()
 	return 0;
 }
 
-// To TX, you can use USBFS_GetEPBufferIfAvailable or USBFSD_UEP_DMA( endp )
+// To TX, you can use USBFS_GetEPBufferIfAvailable or USBHSD_UEP_TXBUF( endp )
 
 static inline uint8_t * USBHS_GetEPBufferIfAvailable( int endp )
 {
@@ -633,7 +632,7 @@ static inline uint8_t * USBHS_GetEPBufferIfAvailable( int endp )
 static inline void USBHS_SendEndpoint( int endp, int len )
 {
 	USBHSD_UEP_TLEN( endp ) = len;
-	USBHSD_UEP_TXCTRL( endp ) = ( USBHSD_UEP_TXCTRL( endp ) & ~USBFS_UEP_T_RES_MASK ) | USBFS_UEP_T_RES_ACK;
+	USBHSD_UEP_TXCTRL( endp ) = ( USBHSD_UEP_TXCTRL( endp ) & ~USBHS_UEP_T_RES_MASK ) | USBHS_UEP_T_RES_ACK;
 	HSUSBCTX.USBHS_Endp_Busy[ endp ] = 0x01;
 }
 

@@ -58,9 +58,11 @@ int main()
 
 	funGpioInitAll();
 
-	funPinMode( PA0, GPIO_CFGLR_OUT_10Mhz_PP );
+	funPinMode( PA3, GPIO_CFGLR_OUT_10Mhz_PP );
 
 	HSUSBSetup();
+
+	funDigitalWrite( PA3, FUN_LOW );
 
 	while(1)
 	{
