@@ -4,7 +4,8 @@
             "name": "RISCV32EC",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}../../ch32v003fun",
+                "${workspaceFolder}/../../ch32v003fun",
+                "${workspaceFolder}/../../extralibs",
                 "/usr/include/newlib" //why? the configurationProvider ought to find this
             ],
             "defines": [
