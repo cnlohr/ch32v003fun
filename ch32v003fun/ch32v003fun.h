@@ -2671,6 +2671,7 @@ typedef struct
 #define ADC2                                    ((ADC_TypeDef *)ADC2_BASE)
 #endif
 #ifdef CH32X03x
+#define TIM3                                    ((TIM_TypeDef *)TIM3_BASE)
 #define TKey                                    ((TKEY_TypeDef *)ADC1_BASE)
 #define OPA										((OPACMP_TypeDef *)OPA_BASE)
 #define USBFS									((USBFS_TypeDef *)USBFS_BASE)
@@ -10734,6 +10735,7 @@ typedef struct
 /* APB2_peripheral */
 #define RCC_APB2Periph_GPIOB             ((uint32_t)0x00000008)
 
+#define RCC_APB1Periph_TIM3              ((uint32_t)0x00000002)
 #define RCC_APB1Periph_USART2            ((uint32_t)0x00020000)
 #define RCC_APB1Periph_USART3            ((uint32_t)0x00040000)
 #define RCC_APB1Periph_UART4             ((uint32_t)0x00080000)
