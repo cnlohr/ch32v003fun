@@ -199,6 +199,10 @@ static inline libusb_device_handle * wch_link_base_setup( int inhibit_startup )
 	if( status )
 	{
 		fprintf( stderr, "Error: couldn't open wch link device (libusb_open() = %d)\n", status );
+		if( status == -5 )
+		{
+			fprintf( stderr, "Did you install the WCH Link E Drivers described here: https://github.com/cnlohr/ch32v003fun/wiki/Installation#windows\n" );
+		}
 		return 0;
 	}
 		

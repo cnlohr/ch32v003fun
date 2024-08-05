@@ -221,6 +221,11 @@ $(GENERATED_LD_FILE) :
 $(TARGET).elf : $(FILES_TO_COMPILE) $(LINKER_SCRIPT) $(EXTRA_ELF_DEPENDENCIES)
 	$(PREFIX)-gcc -o $@ $(FILES_TO_COMPILE) $(CFLAGS) $(LDFLAGS)
 
+# Rule for independently building ch32v003fun.o indirectly, instead of recompiling it from source every time.
+# Not used in the default 003fun toolchain, but used in more sophisticated toolchains.
+ch32v003fun.o : $(SYSTEM_C)
+	$(PREFIX)-gcc -c -o $@ $(SYSTEM_C) $(CFLAGS)
+
 cv_flash : $(TARGET).bin
 	make -C $(MINICHLINK) all
 	$(FLASH_COMMAND)
