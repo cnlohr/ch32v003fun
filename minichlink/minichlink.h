@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+enum RAMSplit;
+
 struct MiniChlinkFunctions
 {
 	// All functions return 0 if OK, negative number if fault, positive number as status code.
@@ -24,6 +26,7 @@ struct MiniChlinkFunctions
 	int (*HaltMode)( void * dev, int mode ); //0 for halt, 1 for reset, 2 for resume
 	int (*ConfigureNRSTAsGPIO)( void * dev, int one_if_yes_gpio );
 	int (*ConfigureReadProtection)( void * dev, int one_if_yes_protect );
+	int (*SetSplit)( void * dev, enum RAMSplit split );
 
 	// No boundary or limit rules.  Must support any combination of alignment and size.
 	int (*WriteBinaryBlob)( void * dev, uint32_t address_to_write, uint32_t blob_size, uint8_t * blob );
@@ -115,6 +118,21 @@ enum RiscVChip {
 	CHIP_CH32X03x = 0x0d,
 };
 
+enum RAMSplit {
+	// For supported V30x and some V20x devices
+	FLASH_192_RAM_128 = 0x00,
+	FLASH_224_RAM_96  = 0x01,
+	FLASH_256_RAM_64  = 0x02,
+	FLASH_288_RAM_32  = 0x03,
+
+	// For some V20x devices
+	FLASH_128_RAM_64  = 0x10,
+	FLASH_144_RAM_48  = 0x11,
+	FLASH_160_RAM_32  = 0x12,
+
+	FLASH_DEFAULT = 0xFF,
+};
+
 struct InternalState
 {
 	uint32_t statetag;
@@ -128,6 +146,8 @@ struct InternalState
 	int sector_size;
 	int flash_size;
 	enum RiscVChip target_chip_type;
+	uint32_t target_chip_id;
+	enum RAMSplit split;
 	uint8_t flash_sector_status[MAX_FLASH_SECTORS];  // 0 means unerased/unknown. 1 means erased.
 	int nr_registers_for_debug; // Updated by PostSetupConfigureInterface
 };
