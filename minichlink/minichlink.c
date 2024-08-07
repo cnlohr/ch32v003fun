@@ -304,6 +304,44 @@ keep_going:
 				else
 					goto unimplemented;
 				break;
+			case 'S':  //Erase whole chip.
+			{	
+				if( !MCF.SetSplit )
+					goto unimplemented;
+				enum RAMSplit split = FLASH_DEFAULT;
+
+				iarg+=2;
+				if( iarg >= argc )
+				{
+					fprintf( stderr, "FLASH/RAM split requires two values: flash size and RAM size (in kb)\n" );
+					goto unimplemented;
+				}
+
+				uint32_t flash_size = SimpleReadNumberInt( argv[iarg-1], 0);
+				uint32_t sram_size = SimpleReadNumberInt( argv[iarg], 0 );
+				
+				if (flash_size == 192 && sram_size == 128) {
+					split = FLASH_192_RAM_128;
+				} else if (flash_size == 224 && sram_size == 96) {
+					split = FLASH_224_RAM_96;
+				} else if (flash_size == 256 && sram_size == 64) {
+					split = FLASH_256_RAM_64;
+				} else if (flash_size == 288 && sram_size == 32) {
+					split = FLASH_288_RAM_32;
+				}else if (flash_size == 128 && sram_size == 64) {
+					split = FLASH_128_RAM_64;
+				} else if (flash_size == 144 && sram_size == 48) {
+					split = FLASH_144_RAM_48;
+				} else if (flash_size == 160 && sram_size == 32) {
+					split = FLASH_160_RAM_32;
+				} else {
+					fprintf( stderr, "Unknown split: %dk FLASH / %dk RAM\n", flash_size, sram_size );
+					goto unimplemented;
+				}
+
+				MCF.SetSplit(dev, split);
+				break;
+			}
 			case 'G':
 			case 'T':
 			{
@@ -692,6 +730,7 @@ help:
 	fprintf( stderr, " -G Terminal + GDB (must be last arg)\n" );
 	fprintf( stderr, " -P Enable Read Protection\n" );
 	fprintf( stderr, " -p Disable Read Protection\n" );
+	fprintf( stderr, " -S set FLASH/SRAM split [FLASH kbytes] [SRAM kbytes]\n" );
 	fprintf( stderr, " -w [binary image to write] [address, decimal or 0x, try0x08000000]\n" );
 	fprintf( stderr, " -r [output binary image] [memory address, decimal or 0x, try 0x08000000] [size, decimal or 0x, try 16384]\n" );
 	fprintf( stderr, "   Note: for memory addresses, you can use 'flash' 'launcher' 'bootloader' 'option' 'ram' and say \"ram+0x10\" for instance\n" );
