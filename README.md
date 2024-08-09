@@ -98,6 +98,10 @@ If the C/C++ language server clangd is unable to find `ch32v003fun.h`, the examp
 Other third party tools are adding lots of examples, etc.  See the following repos, for extra libraries, etc.
  * [ch32v003fun_wildwest](https://github.com/recallmenot/ch32v003fun_wildwest)
  * [ch32v003fun_libs](https://github.com/hexeguitar/ch32v003fun_libs)
+ * [CH32V003_lib_uart](https://github.com/ADBeta/CH32V003_lib_uart)
+ * [CH32Vxxx_lib_i2c](https://github.com/ADBeta/CH32Vxxx_lib_i2c)
+ * [CH32Vxxx_lib_swi2c](https://github.com/ADBeta/CH32Vxxx_lib_swi2c)
+ * [ch32v003fun_shenanigans](https://github.com/DeadBugEngineering/ch32v003fun_shenanigans)
 
 ## Support
 
