@@ -10,6 +10,12 @@ At 3.3v, it seems that for all speed configurations, the short drive current is 
 
 At 5v the peak current power application is 90-100mA for emitter and collector.
 
+## General notes about the CH32V003.
+
+CPI/Processor Speed:
+
+Ignoring branches and load/stores, compressed instructions run at 1 CPI. Non-compressed instructions run at 1 CPI for the first 2 instructions, then further ones take 2 CPI regardless of how many more you have.  Running from RAM and running from FLASH have slightly different performance characteristics depending on wait states that should be measured in-situation.
+
 ## Building libgcc.a from source.
 
 1. Install prerequisites (for Debian-based systems; similar steps for other systems):
