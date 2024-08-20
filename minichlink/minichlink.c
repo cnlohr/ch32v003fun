@@ -688,15 +688,15 @@ help:
 	fprintf( stderr, " -i Show chip info\n" );
 	fprintf( stderr, " -s [debug register] [value]\n" );
 	fprintf( stderr, " -m [debug register]\n" );
-	fprintf( stderr, " -T Terminal Only\n" );
-	fprintf( stderr, " -G Terminal + GDB\n" );
+	fprintf( stderr, " -T Terminal Only (must be last arg)\n" );
+	fprintf( stderr, " -G Terminal + GDB (must be last arg)\n" );
 	fprintf( stderr, " -P Enable Read Protection\n" );
 	fprintf( stderr, " -p Disable Read Protection\n" );
 	fprintf( stderr, " -w [binary image to write] [address, decimal or 0x, try0x08000000]\n" );
 	fprintf( stderr, " -r [output binary image] [memory address, decimal or 0x, try 0x08000000] [size, decimal or 0x, try 16384]\n" );
 	fprintf( stderr, "   Note: for memory addresses, you can use 'flash' 'launcher' 'bootloader' 'option' 'ram' and say \"ram+0x10\" for instance\n" );
 	fprintf( stderr, "   For filename, you can use - for raw (terminal) or + for hex (inline).\n" );
-	fprintf( stderr, " -T is a terminal. This MUST be the last argument. Also, will start a gdbserver.\n" );
+	fprintf( stderr, " -X [programmer-specific command, for esp32-s2 programmer, -X ECLK:1:0:0:8:3 for 24MHz clock out]\n" );
 
 	return -1;	
 
@@ -1824,6 +1824,7 @@ int DefaultPollTerminal( void * dev, uint8_t * buffer, int maxlen, uint32_t leav
 		iss->statetag = STTAG( "TERM" );
 	}
 	r = MCF.ReadReg32( dev, DMDATA0, &rr );
+
 	if( r < 0 ) return r;
 	if( maxlen < 8 ) return -9;
 

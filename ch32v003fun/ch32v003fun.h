@@ -5896,6 +5896,14 @@ typedef struct
 #define RCC_PLLON                               ((uint32_t)0x01000000) /* PLL enable */
 #define RCC_PLLRDY                              ((uint32_t)0x02000000) /* PLL clock ready flag */
 
+#if defined(CH32V30x)
+/* for CH32V307 */
+#define RCC_PLL3RDY								((uint32_t)(1<<29))
+#define RCC_PLL3ON								((uint32_t)(1<<28))
+#define RCC_PLL2RDY								((uint32_t)(1<<27))
+#define RCC_PLL2ON								((uint32_t)(1<<26))
+#endif
+
 /*******************  Bit definition for RCC_CFGR0 register  *******************/
 #define RCC_SW                                  ((uint32_t)0x00000003) /* SW[1:0] bits (System clock Switch) */
 #define RCC_SW_0                                ((uint32_t)0x00000001) /* Bit 0 */
@@ -6017,6 +6025,7 @@ typedef struct
 #endif
 
 #if defined(CH32V30x)
+
 /* for CH32V307 */
 #define  RCC_PLLMULL18_EXTEN             		((uint32_t)0x00000000) /* PLL input clock*18 */
 #define  RCC_PLLMULL3_EXTEN              		((uint32_t)0x00040000) /* PLL input clock*3 */
@@ -6048,6 +6057,32 @@ typedef struct
 #define RCC_CFGR0_MCO_HSI                       ((uint32_t)0x05000000) /* HSI clock selected as MCO source */
 #define RCC_CFGR0_MCO_HSE                       ((uint32_t)0x06000000) /* HSE clock selected as MCO source  */
 #define RCC_CFGR0_MCO_PLL                       ((uint32_t)0x07000000) /* PLL clock divided by 2 selected as MCO source */
+
+/*******************  Bit definition for RCC_CFGR2 register  *******************/
+#ifdef CH32V30x
+#define RCC_PREDIV1_OFFSET						(0)
+#define RCC_PREDIV1_MASK						((uint32_t)(0xf<<RCC_PREDIV1_OFFSET))
+#define RCC_PREDIV2_OFFSET						(4)
+#define RCC_PREDIV2_MASK						((uint32_t)(0xf<<RCC_PREDIV2_OFFSET))
+#define RCC_PLL2MUL_OFFSET						(8)
+#define RCC_PLL2MUL_MASK						((uint32_t)(0xf<<RCC_PLL2MUL_OFFSET))
+#define RCC_PLL3MUL_OFFSET						(12)
+#define RCC_PLL3MUL 							((uint32_t)(0xf<<RCC_PLL3MUL_OFFSET))
+#define RCC_PREDIV1SRC 							((uint32_t)(1<<16))
+#define RCC_I2S2SRC 							((uint32_t)(1<<17))
+#define RCC_I2S3SRC 							((uint32_t)(1<<18))
+#define RCC_RNG_SRC 							((uint32_t)(1<<19))
+#define RCC_ETH1GSRC_OFFSET						(20)
+#define RCC_ETH1GSRC_MASK						((uint32_t)(3<<RCC_ETH1GSRC_OFFSET))
+#define RCC_ETH1G_125M_EN						((uint32_t)(1<<22))
+#define RCC_USBHSDIV_OFFSET						(24)
+#define RCC_USBHSDIV_MASK						((uint32_t)(7<<RCC_USBHSDIV_OFFSET))
+#define RCC_USBHSPLLSRC							((uint32_t)(1<<27))
+#define RCC_USBHSCLK_OFFSET						(3)
+#define RCC_USBHSCLK_MASK						((uint32_t)(3<<RCC_USBHSCLK))
+#define RCC_USBHSPLL							((uint32_t)(1<<30))
+#define RCC_USBHSSRC							((uint32_t)(1<<31))
+#endif
 
 /*******************  Bit definition for RCC_INTR register  ********************/
 #define RCC_LSIRDYF                             ((uint32_t)0x00000001) /* LSI Ready Interrupt flag */
@@ -6104,13 +6139,27 @@ typedef struct
 #define RCC_USBRST                              ((uint32_t)0x00800000) /* USB Device reset */
 
 /******************  Bit definition for RCC_AHBPCENR register  ******************/
-#define RCC_DMA1EN                              ((uint16_t)0x0001) /* DMA1 clock enable */
-#define RCC_SRAMEN                              ((uint16_t)0x0004) /* SRAM interface clock enable */
-#define RCC_FLITFEN                             ((uint16_t)0x0010) /* FLITF clock enable */
-#define RCC_CRCEN                               ((uint16_t)0x0040) /* CRC clock enable */
-#define RCC_USBHD                               ((uint16_t)0x1000)
-#define RCC_USBFS                               ((uint16_t)0x1000)
-#define RCC_USBPD                               ((uint16_t)0x20000)
+#define RCC_DMA1EN                              ((uint32_t)0x0001) /* DMA1 clock enable */
+#define RCC_SRAMEN                              ((uint32_t)0x0004) /* SRAM interface clock enable */
+#define RCC_FLITFEN                             ((uint32_t)0x0010) /* FLITF clock enable */
+#define RCC_CRCEN                               ((uint32_t)0x0040) /* CRC clock enable */
+#define RCC_USBHD                               ((uint32_t)0x1000)
+#define RCC_USBFS                               ((uint32_t)0x1000)
+#define RCC_USBPD                               ((uint32_t)0x20000)
+#ifdef CH32V30x
+#define RCC_DMA2EN								((uint32_t)0x00000002)
+#define RCC_FSMCEN								((uint32_t)0x00000100)
+#define RCC_RNGEN								((uint32_t)0x00000200)
+#define RCC_SDIOEN								((uint32_t)0x00000400)
+#define RCC_USBHSEN								((uint32_t)0x00000800)
+#define RCC_OTG_FSEN							((uint32_t)0x00001000)
+#define RCC_DVPEN								((uint32_t)0x00002000)
+#define RCC_ETHMACEN							((uint32_t)0x00004000)
+#define RCC_ETHMACTXEN							((uint32_t)0x00008000)
+#define RCC_ETHMACRXEN							((uint32_t)0x00010000)
+#define RCC_BLEC								((uint32_t)0x00020000)
+#define RCC_DBLES								((uint32_t)0x00040000)
+#endif
 
 /******************  Bit definition for RCC_APB2PCENR register  *****************/
 #define RCC_AFIOEN                              ((uint32_t)0x00000001) /* Alternate Function I/O clock enable */
@@ -6167,6 +6216,14 @@ typedef struct
 #define RCC_IWDGRSTF                            ((uint32_t)0x20000000) /* Independent Watchdog reset flag */
 #define RCC_WWDGRSTF                            ((uint32_t)0x40000000) /* Window watchdog reset flag */
 #define RCC_LPWRRSTF                            ((uint32_t)0x80000000) /* Low-Power reset flag */
+
+/******************  Bit definition for RCC_AHBRSTR register  *****************/
+#if defined(CH32V30x)
+#define RCC_ETHMACRST							((uint32_t)(1<<14))
+#define RCC_DVPRST								((uint32_t)(1<<13))
+#define RCC_OTGFSRST							((uint32_t)(1<<12))
+#endif
+
 
 #if defined(CH32V30x)
 /******************************************************************************/

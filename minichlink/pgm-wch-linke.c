@@ -403,9 +403,9 @@ static int LESetupInterface( void * d )
 
 	int r = 0;
 
-
 	int timeout = 0;
 retry_DoneOp:
+	MCF.DelayUS( iss, 4000 );
 	MCF.WriteReg32( d, DMABSTRACTCS, 0x00000700 ); // Ignore any pending errors.
 	MCF.WriteReg32( d, DMABSTRACTAUTO, 0 );
 	MCF.WriteReg32( d, DMCOMMAND, 0x00221000 ); // Read x0 (Null command) with nopostexec (to fix v307 read issues)
