@@ -88,7 +88,9 @@ void __libc_init_array(void)
 #include <stdint.h>
 #include <ch32v003fun.h>
 
-int errno;
+#define WEAK __attribute__((weak))
+
+WEAK int errno;
 
 int mini_vsnprintf( char *buffer, unsigned int buffer_len, const char *fmt, va_list va );
 int mini_vpprintf( int (*puts)(char* s, int len, void* buf), void* buf, const char *fmt, va_list va );
@@ -101,7 +103,7 @@ static int __puts_uart( char *s, int len, void *buf )
 	return len;
 }
 
-int printf( const char* format, ... )
+WEAK int printf( const char* format, ... )
 {
 	va_list args;
 	va_start( args, format );
@@ -110,12 +112,12 @@ int printf( const char* format, ... )
 	return ret_status;
 }
 
-int vprintf(const char* format, va_list args)
+WEAK int vprintf(const char* format, va_list args)
 {
 	return mini_vpprintf(__puts_uart, 0, format, args);
 }
 
-int snprintf( char * buffer, unsigned int buffer_len, const char* format, ... )
+WEAK int snprintf( char * buffer, unsigned int buffer_len, const char* format, ... )
 {
 	va_list args;
 	va_start( args, format );
@@ -124,7 +126,7 @@ int snprintf( char * buffer, unsigned int buffer_len, const char* format, ... )
 	return ret;
 }
 
-int sprintf( char * buffer, const char * format, ... )
+WEAK int sprintf( char * buffer, const char * format, ... )
 {
 	va_list args;
 	va_start( args, format );
@@ -173,7 +175,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 typedef void * mbstate_t;
 
 #ifdef UNICODE
-size_t wcrtomb(char *restrict s, wchar_t wc, mbstate_t *restrict st)
+WEAK size_t wcrtomb(char *restrict s, wchar_t wc, mbstate_t *restrict st)
 {
 	if (!s) return 1;
 	if ((unsigned)wc < 0x80) {
@@ -205,23 +207,23 @@ size_t wcrtomb(char *restrict s, wchar_t wc, mbstate_t *restrict st)
 	errno = 0x02;//EILSEQ;
 	return -1;
 }
-int wctomb(char *s, wchar_t wc)
+WEAK int wctomb(char *s, wchar_t wc)
 {
 	if (!s) return 0;
 	return wcrtomb(s, wc, 0);
 }
 #endif
-size_t strlen(const char *s) { const char *a = s;for (; *s; s++);return s-a; }
-size_t strnlen(const char *s, size_t n) { const char *p = memchr(s, 0, n); return p ? (size_t)(p-s) : n;}
-void *memset(void *dest, int c, size_t n) { unsigned char *s = dest; for (; n; n--, s++) *s = c; return dest; }
-char *strcpy(char *d, const char *s) { for (; (*d=*s); s++, d++); return d; }
-char *strncpy(char *d, const char *s, size_t n) { for (; n && (*d=*s); n--, s++, d++); return d; }
-int strcmp(const char *l, const char *r)
+WEAK size_t strlen(const char *s) { const char *a = s;for (; *s; s++);return s-a; }
+WEAK size_t strnlen(const char *s, size_t n) { const char *p = memchr(s, 0, n); return p ? (size_t)(p-s) : n;}
+WEAK void *memset(void *dest, int c, size_t n) { unsigned char *s = dest; for (; n; n--, s++) *s = c; return dest; }
+WEAK char *strcpy(char *d, const char *s) { for (; (*d=*s); s++, d++); return d; }
+WEAK char *strncpy(char *d, const char *s, size_t n) { for (; n && (*d=*s); n--, s++, d++); return d; }
+WEAK int strcmp(const char *l, const char *r)
 {
 	for (; *l==*r && *l; l++, r++);
 	return *(unsigned char *)l - *(unsigned char *)r;
 }
-int strncmp(const char *_l, const char *_r, size_t n)
+WEAK int strncmp(const char *_l, const char *_r, size_t n)
 {
 	const unsigned char *l=(void *)_l, *r=(void *)_r;
 	if (!n--) return 0;
@@ -363,7 +365,7 @@ static char *twoway_strstr(const unsigned char *h, const unsigned char *n)
 	}
 }
 
-char *strstr(const char *h, const char *n)
+WEAK char *strstr(const char *h, const char *n)
 {
 	/* Return immediately on empty needle */
 	if (!n[0]) return (char *)h;
@@ -381,7 +383,7 @@ char *strstr(const char *h, const char *n)
 	return twoway_strstr((void *)h, (void *)n);
 }
 
-char *strchr(const char *s, int c)
+WEAK char *strchr(const char *s, int c)
 {
 	c = (unsigned char)c;
 	if (!c) return (char *)s + strlen(s);
@@ -390,7 +392,7 @@ char *strchr(const char *s, int c)
 }
 
 
-void *__memrchr(const void *m, int c, size_t n)
+WEAK void *__memrchr(const void *m, int c, size_t n)
 {
 	const unsigned char *s = m;
 	c = (unsigned char)c;
@@ -398,12 +400,12 @@ void *__memrchr(const void *m, int c, size_t n)
 	return 0;
 }
 
-char *strrchr(const char *s, int c)
+WEAK char *strrchr(const char *s, int c)
 {
 	return __memrchr(s, c, strlen(s) + 1);
 }
 
-void *memcpy(void *dest, const void *src, size_t n)
+WEAK void *memcpy(void *dest, const void *src, size_t n)
 {
 	unsigned char *d = dest;
 	const unsigned char *s = src;
@@ -411,7 +413,7 @@ void *memcpy(void *dest, const void *src, size_t n)
 	return dest;
 }
 
-int memcmp(const void *vl, const void *vr, size_t n)
+WEAK int memcmp(const void *vl, const void *vr, size_t n)
 {
 	const unsigned char *l=vl, *r=vr;
 	for (; n && *l == *r; n--, l++, r++);
@@ -419,7 +421,7 @@ int memcmp(const void *vl, const void *vr, size_t n)
 }
 
 
-void *memmove(void *dest, const void *src, size_t n)
+WEAK void *memmove(void *dest, const void *src, size_t n)
 {
 	char *d = dest;
 	const char *s = src;
@@ -435,7 +437,7 @@ void *memmove(void *dest, const void *src, size_t n)
 
 	return dest;
 }
-void *memchr(const void *src, int c, size_t n)
+WEAK void *memchr(const void *src, int c, size_t n)
 {
 	const unsigned char *s = src;
 	c = (unsigned char)c;
@@ -443,7 +445,7 @@ void *memchr(const void *src, int c, size_t n)
 	return n ? (void *)s : 0;
 }
 
-int puts(const char *s)
+WEAK int puts(const char *s)
 {
 	int sl = strlen( s );
 	_write(0, s, sl );
@@ -1345,7 +1347,7 @@ void SetupUART( int uartBRR )
 }
 
 // For debug writing to the UART.
-int _write(int fd, const char *buf, int size)
+WEAK int _write(int fd, const char *buf, int size)
 {
 	for(int i = 0; i < size; i++){
 	    while( !(USART1->STATR & USART_FLAG_TC));
@@ -1355,7 +1357,7 @@ int _write(int fd, const char *buf, int size)
 }
 
 // single char to UART
-int putchar(int c)
+WEAK int putchar(int c)
 {
 	while( !(USART1->STATR & USART_FLAG_TC));
 	USART1->DATAR = (const char)c;
@@ -1399,8 +1401,7 @@ void poll_input()
 //   b0..b3 = # of bytes in printf (+4).  (5 or higher indicates a print of some kind)
 //     note: if b7 is 0 in reply, but b0..b3 have >=4 then we received data from host.
 // declare as weak to allow overriding.
-int _write(int fd, const char *buf, int size) __attribute__((weak));
-int _write(int fd, const char *buf, int size)
+WEAK int _write(int fd, const char *buf, int size)
 {
 	(void)fd;
 
@@ -1449,7 +1450,7 @@ int _write(int fd, const char *buf, int size)
 }
 
 // single to debug intf
-int putchar(int c)
+WEAK int putchar(int c)
 {
 	int timeout = FUNCONF_DEBUGPRINTF_TIMEOUT;
 	uint32_t lastdmd = 0;
@@ -1481,13 +1482,13 @@ void WaitForDebuggerToAttach()
     (defined( FUNCONF_USE_UARTPRINTF ) && !FUNCONF_USE_UARTPRINTF) && \
     (defined( FUNCONF_NULL_PRINTF ) && FUNCONF_NULL_PRINTF)
 
-int _write(int fd, const char *buf, int size)
+WEAK int _write(int fd, const char *buf, int size)
 {
 	return size;
 }
 
 // single to debug intf
-int putchar(int c)
+WEAK int putchar(int c)
 {
 	return 1;
 }
