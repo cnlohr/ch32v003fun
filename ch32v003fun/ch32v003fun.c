@@ -365,6 +365,14 @@ static char *twoway_strstr(const unsigned char *h, const unsigned char *n)
 	}
 }
 
+WEAK char *strchr(const char *s, int c)
+{
+	c = (unsigned char)c;
+	if (!c) return (char *)s + strlen(s);
+	for (; *s && *(unsigned char *)s != c; s++);
+	return (char *)s;
+}
+
 WEAK char *strstr(const char *h, const char *n)
 {
 	/* Return immediately on empty needle */
@@ -381,14 +389,6 @@ WEAK char *strstr(const char *h, const char *n)
 	if (!n[4]) return fourbyte_strstr((void *)h, (void *)n);
 
 	return twoway_strstr((void *)h, (void *)n);
-}
-
-WEAK char *strchr(const char *s, int c)
-{
-	c = (unsigned char)c;
-	if (!c) return (char *)s + strlen(s);
-	for (; *s && *(unsigned char *)s != c; s++);
-	return (char *)s;
 }
 
 
