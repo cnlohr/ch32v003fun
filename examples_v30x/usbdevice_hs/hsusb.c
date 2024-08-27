@@ -63,7 +63,7 @@ void USBHS_IRQHandler(void)
 	int len = 0;
 	struct _USBState * ctx = &HSUSBCTX;
 	uint8_t * ctrl0buff = CTRL0BUFF;
-
+printf( "IRQ\n" );
     if( intfgst & CRB_UIF_TRANSFER )
 	{
 		int token = ( intfgst & CMASK_UIS_TOKEN) >> 12;
@@ -198,6 +198,9 @@ void USBHS_IRQHandler(void)
 			int USBHS_SetupReqIndex = pUSBHS_SetupReqPak->wIndex;
 			int USBHS_IndexValue = HSUSBCTX.USBHS_IndexValue = ( pUSBHS_SetupReqPak->wIndex << 16 ) | pUSBHS_SetupReqPak->wValue;
 			len = 0;
+
+			printf( "Setup: %d %d %d %d %d\n", USBHS_SetupReqType, USBHS_SetupReqCode, USBHS_SetupReqLen,
+				USBHS_SetupReqIndex, USBHS_IndexValue );
 
 			if( ( USBHS_SetupReqType & USB_REQ_TYP_MASK ) != USB_REQ_TYP_STANDARD )
 			{
@@ -616,6 +619,8 @@ int HSUSBSetup()
 
 	USBHSD->CONTROL |= USBHS_UC_DEV_PU_EN;
 	NVIC_EnableIRQ(USBHS_IRQn);
+
+	printf( "Going on-bus\n" );
 
 	// Go on-bus.
 	return 0;
