@@ -12566,6 +12566,7 @@ typedef volatile unsigned long *PUINT32V;
 #define USBHSD_UEP_TXDMA_BASE       0x4002345C
 #define USBHSD_UEP_TXLEN_BASE       0x400234DC
 #define USBHSD_UEP_TXCTL_BASE       0x400234DE
+#define USBHSD_UEP_TXCTL_BASE       0x400234DE
 #define USBHSD_UEP_TX_EN( N )       ( (uint16_t)( 0x01 << N ) )
 #define USBHSD_UEP_RX_EN( N )       ( (uint16_t)( 0x01 << ( N + 16 ) ) )
 #define USBHSD_UEP_DOUBLE_BUF( N )  ( (uint16_t)( 0x01 << N ) )
@@ -12574,6 +12575,7 @@ typedef volatile unsigned long *PUINT32V;
 #define USBHSD_UEP_RXDMA( N )       ( *((volatile uint32_t *)( USBHSD_UEP_RXDMA_BASE + ( N - 1 ) * 0x04 ) ) )
 #define USBHSD_UEP_RXBUF( N )       ( (uint8_t *)(*((volatile uint32_t *)( USBHSD_UEP_RXDMA_BASE + ( N - 1 ) * 0x04 ) ) ) + 0x20000000 )
 #define USBHSD_UEP_TXCTRL( N )      ( *((volatile uint8_t *)( USBHSD_UEP_TXCTL_BASE + ( N - 1 ) * 0x04 ) ) )
+#define USBHSD_UEP_RXCTRL( N )      ( *((volatile uint8_t *)( USBHSD_UEP_TXCTL_BASE + ( N - 1 ) * 0x04 + 1 ) ) )
 #define USBHSD_UEP_TXDMA( N )       ( *((volatile uint32_t *)( USBHSD_UEP_TXDMA_BASE + ( N - 1 ) * 0x04 ) ) )
 #define USBHSD_UEP_TXBUF( N )       ( (uint8_t *)(*((volatile uint32_t *)( USBHSD_UEP_TXDMA_BASE + ( N - 1 ) * 0x04 ) ) ) + 0x20000000 )
 #define USBHSD_UEP_TLEN( N )        ( *((volatile uint16_t *)( USBHSD_UEP_TXLEN_BASE + ( N - 1 ) * 0x04 ) ) )

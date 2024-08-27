@@ -760,6 +760,9 @@ extern uint32_t * _edata;
 void DefaultIRQHandler( void )
 {
 	// Infinite Loop
+#if defined( DEBUG )
+	printf( "DefaultIRQHandler MSTATUS:%08x MTVAL:%08x MCAUSE:%08x MEPC:%08x\n", (int)__get_MSTATUS(), (int)__get_MTVAL(), (int)__get_MCAUSE(), (int)__get_MEPC() );
+#endif
 	asm volatile( "1: j 1b" );
 }
 
@@ -1284,21 +1287,17 @@ void handle_reset( void )
 "	li t0, 0x1f\n\
 	csrw 0xbc0, t0\n"
 
-//XXX TODO: CHECKME - TEST ON 203!!!
-#if FUNCONF_ENABLE_HPE	// Enabled nested and hardware (HPE) stack, since it's really good on the x035.
+#if defined(CH32V30x) && !defined( DISABLED_FLOAT )
+"	li t0, 0x6088\n\
+	csrs mstatus, t0\n"
+#else
 "	li t0, 0x88\n\
 	csrs mstatus, t0\n"
-"	li t0, 0x0b\n\
-	csrw 0x804, t0\n"
-#else
-"	li a0, 0x80\n\
-	csrw mstatus, a0\n"
 #endif
 
-#if defined(CH32V30x)
-	// Enable floating point and interrupt
-"	li t0, 0x688\n\
-	csrs mstatus, t0\n"
+#if FUNCONF_ENABLE_HPE	// Enabled nested and hardware (HPE) stack, since it's really good on the x035.
+"	li t0, 0x0b\n\
+	csrw 0x804, t0\n"
 #endif
 "	la t0, InterruptVector\n\
 	ori t0, t0, 3\n\

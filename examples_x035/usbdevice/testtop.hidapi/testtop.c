@@ -7,8 +7,9 @@
 // This is for total perf testing.
 
 #include "hidapi.c"
-
 #include "os_generic.h"
+
+#define BUFFER_SIZE 255
 
 int main()
 {
@@ -21,8 +22,8 @@ int main()
 
 	// Size of buffers must match the report descriptor size in the special_hid_desc
 	//  NOTE: You are permitted to have multiple entries.
-	uint8_t buffer0[255] = { 0 }; // NOTE: This must be ONE MORE THAN what is in the hid descriptor.
-	uint8_t buffer1[255] = { 0 };
+	uint8_t buffer0[BUFFER_SIZE] = { 0 }; // NOTE: This must be ONE MORE THAN what is in the hid descriptor.
+	uint8_t buffer1[BUFFER_SIZE] = { 0 };
 	int r;
 	int i;
 	int j;
@@ -81,7 +82,7 @@ int main()
 		
 		if( dStartRecv - dSecond > 1.0 )
 		{
-			printf( "\n%2.3f KB/s PC->003 / %2.3f KB/s 003->PC\n", j * .249 / dSendTotal, j * .249 / dRecvTotal );
+			printf( "\n%2.3f KB/s PC->Device / %2.3f KB/s Device->PC\n", j * BUFFER_SIZE / 1024.0 / dSendTotal, j * BUFFER_SIZE / 1024.0 / dRecvTotal );
 			dSecond++;
 		}
 	}

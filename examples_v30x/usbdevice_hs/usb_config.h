@@ -4,12 +4,14 @@
 #include "funconfig.h"
 #include "ch32v003fun.h"
 
-#define HUSB_CONFIG_EPS       4 // Include EP0 in this count
+#define HUSB_CONFIG_EPS       6 // Include EP0 in this count
 #define HUSB_SUPPORTS_SLEEP   0
 #define HUSB_HID_INTERFACES   2
 #define HUSB_CURSED_TURBO_DMA 0 // Hacky, but seems fine, shaves 2.5us off filling 64-byte buffers.
 #define HUSB_HID_USER_REPORTS 1
 #define HUSB_IO_PROFILE       1
+
+#define HUSB_BULK_USER_REPORTS 1
 
 #include "usb_defines.h"
 
@@ -21,7 +23,7 @@ static const uint8_t device_descriptor[] = {
 	0x0, //Device Class
 	0x0, //Device Subclass
 	0x0, //Device Protocol  (000 = use config descriptor)
-	64, //Max packet size for EP0 (This has to be 8 because of the USB Low-Speed Standard)
+	64, //Max packet size for EP0
 	0x09, 0x12, //ID Vendor
 	0x35, 0xd0, //ID Product
 	0x03, 0x00, //ID Rev
@@ -124,8 +126,8 @@ static const uint8_t config_descriptor[ ] =
     /* Configuration Descriptor */
     0x09,                                                   // bLength
     0x02,                                                   // bDescriptorType
-    0x54, 0x00,                                             // wTotalLength
-    0x03,                                                   // bNumInterfaces (3)
+    0x6b, 0x00,                                             // wTotalLength
+    0x05,                                                   // bNumInterfaces (5)
     0x01,                                                   // bConfigurationValue
     0x00,                                                   // iConfiguration
     0xA0,                                                   // bmAttributes: Bus Powered; Remote Wakeup
@@ -157,7 +159,7 @@ static const uint8_t config_descriptor[ ] =
     0x81,                                                   // bEndpointAddress: IN Endpoint 1
     0x03,                                                   // bmAttributes
     0x08, 0x00,                                             // wMaxPacketSize
-    0x0A,                                                   // bInterval: 10mS
+    0x01,                                                   // bInterval: 1mS
 
     /* Interface Descriptor (Mouse) */
     0x09,                                                   // bLength
@@ -197,7 +199,7 @@ static const uint8_t config_descriptor[ ] =
     0x03,                                                   // bInterfaceClass
     0x00,                                                   // bInterfaceSubClass
     0xff,                                                   // bInterfaceProtocol: OTher
-    0x00,                                                   // iInterface
+    0x02,                                                   // iInterface
 
     /* HID Descriptor (HIDAPI) */
     0x09,                                                   // bLength
@@ -211,10 +213,37 @@ static const uint8_t config_descriptor[ ] =
     /* Endpoint Descriptor (HIDAPI) */
     0x07,                                                   // bLength
     0x05,                                                   // bDescriptorType
-    0x83,                                                   // bEndpointAddress: IN Endpoint 2
+    0x83,                                                   // bEndpointAddress: IN Endpoint 3 (BULK)
     0x03,                                                   // bmAttributes
-    0x08, 0x00,                                             // wMaxPacketSize
-    0x0a,                                                   // bInterval: 10mS
+    0x00, 0x02,                                             // wMaxPacketSize
+    0x01,                                                   // bInterval: 1mS
+
+    /* Interface Descriptor (Bulk) */
+    0x09,                                                   // bLength
+    0x04,                                                   // bDescriptorType
+    0x03,                                                   // bInterfaceNumber
+    0x00,                                                   // bAlternateSetting
+    0x02,                                                   // bNumEndpoints
+    0xff,                                                   // bInterfaceClass
+    0xff,                                                   // bInterfaceSubClass
+    0xff,                                                   // bInterfaceProtocol: Other
+    0x03,                                                   // iInterface
+
+    /* Endpoint Descriptor (Bulk) */
+    0x07,                                                   // bLength
+    0x05,                                                   // bDescriptorType
+    0x84,                                                   // bEndpointAddress: IN Endpoint 4 (BULK)
+    0x02,                                                   // bmAttributes
+    0x00, 0x02,                                             // wMaxPacketSize
+    0x01,                                                   // bInterval: 1mS
+
+    /* Endpoint Descriptor (Bulk) */
+    0x07,                                                   // bLength
+    0x05,                                                   // bDescriptorType
+    0x05,                                                   // bEndpointAddress: IN Endpoint 4 (BULK)
+    0x02,                                                   // bmAttributes
+    0x00, 0x02,                                             // wMaxPacketSize
+    0x01,                                                   // bInterval: 1mS
 };
 
 

@@ -2,7 +2,9 @@
 #define _HSUSB_H
 
 /* High speed USB infrastructure for CH32V30x.
-   Based off of the official USB stack and the current CH32X035 FS implementation
+   Based off of the official USB stack and the current CH32X035 FS implementation.
+
+   This is referenced in Chapter 22 USB Host/Device Controller (USBHD) of CH32FV2x_V3xRM.pdf
 */
 
 #include <stdint.h>
@@ -49,6 +51,10 @@ int HandleHidUserSetReportSetup( struct _USBState * ctx, tusb_control_request_t 
 void HandleHidUserReportDataOut( struct _USBState * ctx, uint8_t * data, int len );
 int HandleHidUserReportDataIn( struct _USBState * ctx, uint8_t * data, int len );
 void HandleHidUserReportOutComplete( struct _USBState * ctx );
+#endif
+
+#if HUSB_BULK_USER_REPORTS
+void HandleGotEPComplete( struct _USBState * ctx, int ep );
 #endif
 
 extern struct _USBState HSUSBCTX;
