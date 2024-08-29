@@ -20,7 +20,7 @@ ch32v003fun contains:
 
 ## Other family support
 
-Currently, there is experimental support for the ch32v103, ch32v203, ch32v208, ch32v303 and ch32v307.  Note: GDB will only workon the 003 at this time.
+Currently, there is experimental support for the ch32v103, ch32v203, ch32v208, ch32v303, ch32v305 and ch32v307.  GDB is mostly tested on the 003, but works, to a limited degree on the other processors.
 
 ## Getting Started
 
