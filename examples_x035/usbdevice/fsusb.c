@@ -368,9 +368,7 @@ void USBFS_IRQHandler()
 						{
 							if( (uint8_t)( USBFS_IndexValue & 0xFF ) == USB_REQ_FEAT_ENDP_HALT )
 							{
-								/* Clear End-point Feature */
-								// XXX TODO XXX ep here almost certainly should be extracted from USBFS_SetupReqIndex
-								ep = USBHS_SetupReqIndex & 0xf;  // XXX UNTESTED
+								ep = USBFS_SetupReqIndex & 0xf;
 								if( ( USBFS_SetupReqIndex & DEF_UEP_IN ) && ep < FUSB_CONFIG_EPS ) 
 								{
 									UEP_CTRL_H(ep) = USBFS_UEP_T_RES_NAK;
@@ -413,8 +411,7 @@ void USBFS_IRQHandler()
 							/* Set Endpoint Feature */
 							if( (uint8_t)( USBFS_IndexValue & 0xFF ) == USB_REQ_FEAT_ENDP_HALT )
 							{
-								// XXX TODO: ep here almost certainly should be extracted from USBFS_SetupReqIndex!
-								ep = USBHS_SetupReqIndex & 0xf; // XXX UNTESTED
+								ep = USBFS_SetupReqIndex & 0xf;
 								if( ( USBFS_SetupReqIndex & DEF_UEP_IN ) && ep < FUSB_CONFIG_EPS )
 									UEP_CTRL_H(ep) = ( UEP_CTRL_H(ep) & ~USBFS_UEP_T_RES_MASK ) | USBFS_UEP_T_RES_STALL;
 							}
@@ -448,7 +445,7 @@ void USBFS_IRQHandler()
 						}
 						else if( ( USBFS_SetupReqType & USB_REQ_RECIP_MASK ) == USB_REQ_RECIP_ENDP )
 						{
-							ep = USBHS_SetupReqIndex & 0xf;  // XXX UNTESTED
+							ep = USBFS_SetupReqIndex & 0xf;
 							if( ( USBFS_SetupReqIndex & DEF_UEP_IN ) && ep < FUSB_CONFIG_EPS )
 								ctrl0buff[0] = ( UEP_CTRL_H(ep) & USBFS_UEP_T_RES_MASK ) == USBFS_UEP_T_RES_STALL;
 							else
