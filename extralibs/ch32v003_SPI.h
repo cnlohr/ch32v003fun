@@ -41,7 +41,7 @@ then pick the desired setting of each group:
 #define CH32V003_SPI_CLK_MODE_POL1_PHA1			//leading = falling		trailing = rising		sample on trailing
 
 #define CH32V003_SPI_NSS_HARDWARE_PC0			// _NSS	toggled by hardware, automatic
-#define CH32V003_SPI_NSS_HADRWARE_PC1			// NSS	toggled by hardware, automatic
+#define CH32V003_SPI_NSS_HARDWARE_PC1			// NSS	toggled by hardware, automatic
 #define CH32V003_SPI_NSS_SOFTWARE_PC3			// PC3	toggled by software, automatic, manual setters available
 #define CH32V003_SPI_NSS_SOFTWARE_PC4			// PC4	toggled by software, automatic, manual setters available
 #define CH32V003_SPI_NSS_SOFTWARE_ANY_MANUAL	// toggle manually!
@@ -192,7 +192,7 @@ static inline void SPI_init() {
 		GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP_AF)<<(4*0);
 		AFIO->PCFR1 |= GPIO_Remap_SPI1;					// remap NSS (C1) to _NSS (C0)
 		SPI1->CTLR2 |= SPI_CTLR2_SSOE;					// pull _NSS high
-	#elif defined(CH32V003_SPI_NSS_HADRWARE_PC1)
+	#elif defined(CH32V003_SPI_NSS_HARDWARE_PC1)
 		// NSS (negative slave select) on PC1, 10MHz Output, alt func, push-pull1
 		SPI1->CTLR1 |= SPI_NSS_Hard;					// NSS hardware control mode
 		GPIOC->CFGLR &= ~(0xf<<(4*1));
