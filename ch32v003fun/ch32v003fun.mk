@@ -128,9 +128,15 @@ else
 		TARGET_MCU_PACKAGE?=CH32V307VCT6
 		MCU_PACKAGE?=1
 		TARGET_MCU_MEMORY_SPLIT?=3
+		ENABLE_FPU?=1
 
-		CFLAGS_ARCH+= -march=rv32imafc \
-			-mabi=ilp32f \
+		ifeq ($(ENABLE_FPU), 1)
+			CFLAGS_ARCH+= -march=rv32imafc -mabi=ilp32f
+		else
+			CFLAGS_ARCH+= -march=rv32imac -mabi=ilp32 -DDISABLED_FLOAT
+		endif
+
+		CFLAGS_ARCH+= \
 			-DCH32V30x=1 \
 			-DTARGET_MCU_MEMORY_SPLIT=$(TARGET_MCU_MEMORY_SPLIT)
 

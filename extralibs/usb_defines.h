@@ -69,8 +69,19 @@
 #ifndef TU_BIT
 #define TU_BIT(n)             (1U << (n))
 #endif
+#ifndef TU_STRCAT
 #define TU_STRCAT(a, b)   a##b            ///< concat without expand
 #define TU_XSTRCAT(a, b)  TU_STRCAT(a, b) ///< expand then concat
+#endif
+
+#ifndef _TU_COUNTER_
+#if defined __COUNTER__ && __COUNTER__ != __COUNTER__
+  #define _TU_COUNTER_ __COUNTER__
+#else
+  #define _TU_COUNTER_ __LINE__
+#endif
+#endif
+
 // Compile-time Assert
 #if defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
   #define TU_VERIFY_STATIC   _Static_assert

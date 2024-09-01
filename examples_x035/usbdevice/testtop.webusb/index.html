@@ -9,7 +9,9 @@
 <META charset="UTF-8">
 <SCRIPT>
 
-const expectedProductName = "CNLohr ch32v003fun ch32x035 test";
+const expectedProductName0 = "CNLohr ch32v003fun ch32x035 test";
+const expectedProductName1 = "CNLohr ch32v003fun ch32v30x USBHS Test";
+
 const filter = { vendorId : 0x1209, productId : 0xd035 };
 let dev = null;
 let loopAbort = false;
@@ -63,7 +65,7 @@ function onLoad()
 	}
 	else
 	{
-		navigator.hid.addEventListener("disconnect", (event) => { if( event.device.productName == expectedProductName ) closeDeviceTool(); } );
+		navigator.hid.addEventListener("disconnect", (event) => { closeDeviceTool(); } );
 	}
 
     setTimeout( () => { elapsedOK = true; }, 3000 );
@@ -86,9 +88,9 @@ function gotUSBDevice(result)
 		return;
 	}
 
-	if( result[0].productName != expectedProductName )
+	if( result[0].productName != expectedProductName0 && result[0].productName != expectedProductName1 )
 	{
-		setStatusError( "Error: Wrong device name.  Got " + result[0].productName + " Expected " + expectedProductName );
+		setStatusError( "Error: Wrong device name.  Got " + result[0].productName + " Expected '" + expectedProductName0 + "' or '" + expectedProductName1 + "'."  );
 		return;
 	}
 

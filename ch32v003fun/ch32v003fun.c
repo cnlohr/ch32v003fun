@@ -762,6 +762,9 @@ extern uint32_t * _edata;
 void DefaultIRQHandler( void )
 {
 	// Infinite Loop
+#if defined( DEBUG )
+	printf( "DefaultIRQHandler MSTATUS:%08x MTVAL:%08x MCAUSE:%08x MEPC:%08x\n", (int)__get_MSTATUS(), (int)__get_MTVAL(), (int)__get_MCAUSE(), (int)__get_MEPC() );
+#endif
 	asm volatile( "1: j 1b" );
 }
 
@@ -888,6 +891,9 @@ void DMA2_Channel3_IRQHandler( void ) 	__attribute__((section(".text.vector_hand
 void DMA2_Channel4_IRQHandler( void ) 	__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void DMA2_Channel5_IRQHandler( void ) 	__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void OTG_FS_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void USBHSWakeup_IRQHandler( void )		__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void USBHS_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void DVP_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void UART6_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void UART7_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void UART8_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
@@ -1199,11 +1205,17 @@ void InterruptVectorDefault()
     .word   0                          /* 80: CAN2_RX0 */ \n\
     .word   0                          /* 81: CAN2_RX1 */ \n\
     .word   0                          /* 82: CAN2_SCE */ \n\
-    .word   OTG_FS_IRQHandler          /* 83: OTGFS */ \n\
-    .word   0                          /* 84: USBHsWakeUp */ \n\
+    .word   OTG_FS_IRQHandler          /* 83: OTGFS */ \n"
+#if defined(CH32V30x)
+"   .word   USBHSWakeup_IRQHandler     /* 84: USBHsWakeUp */ \n\
+    .word   USBHS_IRQHandler           /* 85: USBHS */ \n\
+    .word   DVP_IRQHandler             /* 86: DVP */ \n"
+#else
+"   .word   0                          /* 84: USBHsWakeUp */ \n\
     .word   0                          /* 85: USBHS */ \n\
-    .word   0                          /* 86: DVP */ \n\
-    .word   UART6_IRQHandler           /* 87: UART6 */ \n\
+    .word   0                          /* 86: DVP */ \n"
+#endif
+"   .word   UART6_IRQHandler           /* 87: UART6 */ \n\
     .word   UART7_IRQHandler           /* 88: UART7 */ \n\
     .word   UART8_IRQHandler           /* 89: UART8 */ \n\
     .word   TIM9_BRK_IRQHandler        /* 90: TIM9 Break */ \n\
@@ -1277,21 +1289,17 @@ void handle_reset( void )
 "	li t0, 0x1f\n\
 	csrw 0xbc0, t0\n"
 
-//XXX TODO: CHECKME - TEST ON 203!!!
-#if FUNCONF_ENABLE_HPE	// Enabled nested and hardware (HPE) stack, since it's really good on the x035.
+#if defined(CH32V30x) && !defined( DISABLED_FLOAT )
+"	li t0, 0x6088\n\
+	csrs mstatus, t0\n"
+#else
 "	li t0, 0x88\n\
 	csrs mstatus, t0\n"
-"	li t0, 0x0b\n\
-	csrw 0x804, t0\n"
-#else
-"	li a0, 0x80\n\
-	csrw mstatus, a0\n"
 #endif
 
-#if defined(CH32V30x)
-	// Enable floating point and interrupt
-"	li t0, 0x688\n\
-	csrs mstatus, t0\n"
+#if FUNCONF_ENABLE_HPE	// Enabled nested and hardware (HPE) stack, since it's really good on the x035.
+"	li t0, 0x0b\n\
+	csrw 0x804, t0\n"
 #endif
 "	la t0, InterruptVector\n\
 	ori t0, t0, 3\n\
