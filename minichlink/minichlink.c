@@ -627,6 +627,7 @@ keep_going:
 					exit( -9 );
 				}
 
+
 				int is_flash = IsAddressFlash( offset );
 				//if( MCF.HaltMode ) MCF.HaltMode( dev, is_flash ? HALT_MODE_HALT_AND_RESET : HALT_MODE_HALT_BUT_NO_RESET );
 				if( MCF.HaltMode && is_flash )
@@ -634,11 +635,6 @@ keep_going:
 					if ( offset == 0x1ffff000 ) MCF.HaltMode( dev, HALT_MODE_HALT_BUT_NO_RESET ); // do not reset if writing bootloader, even if it is considered flash memory
 					else MCF.HaltMode( dev, HALT_MODE_HALT_AND_RESET );
 				}
-
-for( int gg = 0; gg < 20; gg++ ){			uint32_t rrx = 0;
-			int dms = MCF.ReadReg32( dev, DMSTATUS, &rrx ) ;
-printf( "RR %08x %d\n", rrx, dms ); }
-
 
 				if( MCF.WriteBinaryBlob )
 				{
@@ -757,12 +753,7 @@ static int64_t StringToMemoryAddress( const char * number )
 		number++;
 		return base + SimpleReadNumberInt( number, 0 );
 	}
-	int64_t r = SimpleReadNumberInt( number, -1 );
-	if( r == -1 )
-	{
-		fprintf( stderr, "Error: Could not parse \"%s\"\n", number );
-	}
-	return r;
+	return SimpleReadNumberInt( number, -1 );
 }
 
 static int DefaultWaitForFlash( void * dev )
@@ -824,15 +815,10 @@ static int DefaultWaitForDoneOp( void * dev, int ignore )
 
 int DefaultSetupInterface( void * dev )
 {
-	int timeout = 0;
-
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
 
 	if( MCF.Control3v3 ) MCF.Control3v3( dev, 1 );
 	MCF.DelayUS( dev, 16000 );
-
-retry_init:
-
 	MCF.WriteReg32( dev, DMSHDWCFGR, 0x5aa50000 | (1<<10) ); // Shadow Config Reg
 	MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // CFGR (1<<10 == Allow output from slave)
 
@@ -844,10 +830,6 @@ retry_init:
 		// Valid R.
 		if( reg == 0x00000000 || reg == 0xffffffff )
 		{
-			if( timeout++ < 10 )
-			{
-				goto retry_init;
-			}
 			fprintf( stderr, "Error: Setup chip failed. Got code %08x\n", reg );
 			return -9;
 		}
@@ -1287,7 +1269,6 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 			}
 			else 					// Block Write not avaialble
 			{
-printf( "A\n" );
 				if( is_flash )
 				{
 					if( !InternalIsMemoryErased( iss, base ) )
@@ -1302,14 +1283,9 @@ printf( "A\n" );
 					uint32_t writeword;
 					memcpy( &writeword, blob + rsofar, 4 );
 					MCF.WriteWord( dev, j*4+base, writeword );
-					uint32_t rra = 0;
-					int r = MCF.ReadWord( dev, 0x40022014, & rra );
-
-printf( "B %08x %08x -> %08x (%d) %d\n", j*4+base, writeword, rra, r, iss->target_chip_type == CHIP_CH32X03x );
 					rsofar += 4;
 				}
 
-printf( "C\n" );
 				if( is_flash )
 				{
 					MCF.WriteWord( dev, 0x40022014, base );  //0x40022014 -> FLASH->ADDR
@@ -1773,39 +1749,20 @@ int DefaultSetEnableBreakpoints( void * dev, int is_enabled, int single_step )
 
 static int DefaultHaltMode( void * dev, int mode )
 {
- 
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
 	switch ( mode )
 	{
 	case HALT_MODE_HALT_BUT_NO_RESET: // Don't reboot.
 	case HALT_MODE_HALT_AND_RESET:
-	{
-		int retry = 0;
-		for( retry = 0; retry < 100; retry++ )
-		{
-			MCF.WriteReg32( dev, DMSHDWCFGR, 0x5aa50000 | (1<<10) ); // Shadow Config Reg
-			MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // CFGR (1<<10 == Allow output from slave)
-			MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
-			if( mode == HALT_MODE_HALT_AND_RESET ) MCF.WriteReg32( dev, DMCONTROL, 0x80000003 ); // Reboot.
-			MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Re-initiate a halt request.
-	//		MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.  This is recommended, but not doing it seems more stable.
-			// Sometimes, even if the processor is halted but the MSB is clear, it will spuriously start?
-			MCF.FlushLLCommands( dev );
-
-for( int k = 0; k < 100; k++ ){
-			uint32_t rrx = 0;
-			int dms = MCF.ReadReg32( dev, DMSTATUS, &rrx ) ;
-printf( "RRX/SITU: %08x\n", rrx ); }
-//			if( rrx != 0xffffffff ) break;
-//			fprintf( stderr, "Warning: Failed to halt (%d) (%08x), retrying.\n", dms, rrx );
-
-exit(0);
-
+		MCF.WriteReg32( dev, DMSHDWCFGR, 0x5aa50000 | (1<<10) ); // Shadow Config Reg
+		MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // CFGR (1<<10 == Allow output from slave)
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
+		if( mode == HALT_MODE_HALT_AND_RESET ) MCF.WriteReg32( dev, DMCONTROL, 0x80000003 ); // Reboot.
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Re-initiate a halt request.
+//		MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.  This is recommended, but not doing it seems more stable.
+		// Sometimes, even if the processor is halted but the MSB is clear, it will spuriously start?
+		MCF.FlushLLCommands( dev );
 		break;
-
-		}
-		break;
-	}
 	case HALT_MODE_REBOOT:
 		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
 		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
@@ -1900,8 +1857,6 @@ int DefaultPollTerminal( void * dev, uint8_t * buffer, int maxlen, uint32_t leav
 
 int DefaultUnbrick( void * dev )
 {
-	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
-
 	printf( "Entering Unbrick Mode\n" );
 	MCF.Control3v3( dev, 0 );
 
@@ -1921,7 +1876,6 @@ int DefaultUnbrick( void * dev )
 		MCF.DelayUS( dev, 10 );
 		MCF.WriteReg32( dev, DMSHDWCFGR, 0x5aa50000 | (1<<10) ); // Shadow Config Reg
 		MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // CFGR (1<<10 == Allow output from slave)
-
 		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
 		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
 		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // No, really make sure.

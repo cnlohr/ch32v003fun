@@ -68,6 +68,8 @@ int main()
 
 	FSUSBSetup();
 
+	int clicks = 0;
+
 	while(1)
 	{
 		//printf( "%lu %08lx %lu %d %d\n", USBDEBUG0, USBDEBUG1, USBDEBUG2, 0, 0 );
@@ -78,12 +80,17 @@ int main()
 			uint32_t * buffer = (uint32_t*)USBFS_GetEPBufferIfAvailable( i );
 			if( buffer )
 			{
-				int tickDown =  ((SysTick->CNTL)&0x800000);
+				int tickDown =  ((SysTick->CNTL)&0x10000);
 				static int wasTickMouse, wasTickKeyboard;
 				if( i == 1 )
 				{
 					// Keyboard
-					buffer[0] = (tickDown && !wasTickKeyboard)?0x00250000:0x00000000;
+					buffer[0] = 0x00000000;
+					if(tickDown && !wasTickKeyboard && clicks < 50 )
+					{
+						buffer[0] = 0x00250000;
+						clicks++;
+					}
 					buffer[1] = 0x00000000;
 					wasTickKeyboard = tickDown;
 				}

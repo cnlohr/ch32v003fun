@@ -73,9 +73,7 @@ static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len,
 
 void wch_link_command( libusb_device_handle * devh, const void * command_v, int commandlen, int * transferred, uint8_t * reply, int replymax )
 {
-
 	uint8_t * command = (uint8_t*)command_v;
-	printf( ">> %02x %d %02x %02x %02x %02x %02x %02x\n", command[0], commandlen, command[1], command[2], command[3], command[4], command[5] );
 	uint8_t buffer[1024];
 	int got_to_recv = 0;
 	int status;
@@ -222,6 +220,7 @@ static inline libusb_device_handle * wch_link_base_setup( int inhibit_startup )
 int LEWriteReg32( void * dev, uint8_t reg_7_bit, uint32_t command )
 {
 	libusb_device_handle * devh = ((struct LinkEProgrammerStruct*)dev)->devh;
+
 	const uint8_t iOP = 2; // op 2 = write
 	uint8_t req[] = {
 		0x81, 0x08, 0x06, reg_7_bit,
@@ -401,7 +400,7 @@ static int LESetupInterface( void * d )
 	MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // Initiate a halt request.
 	MCF.WriteReg32( d, DMCONTROL, 0x80000003 ); // No, really make sure, and also super halt processor.
 	MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // Un-super-halt processor.
- 
+
 	int r = 0;
 
 	int timeout = 0;
@@ -429,21 +428,13 @@ retry_DoneOp:
 retry_ID:
 	wch_link_command( dev, "\x81\x11\x01\x05", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Chip ID + Other data (see below)
 
-	// something went wrong...
-	if( rbuff[0] == 0x00 || rbuff[4] == 0xff || rbuff[4] == 0x00 )
+	if( rbuff[0] == 0x00 )
 	{
-		MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
-		MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // Initiate a halt request.
-		MCF.WriteReg32( d, DMCONTROL, 0x80000003 ); // No, really make sure, and also super halt processor.
-		MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // Un-super-halt processor.
-
-		if( timeout++ < 100 ) goto retry_ID;
-		fprintf( stderr, "Failed to get chip ID [%02x %02x %02x %02x %02x %02x %02x %02x]\n", rbuff[0], rbuff[1], rbuff[2], rbuff[3], rbuff[4], rbuff[5], rbuff[6], rbuff[7] );
+		if( timeout++ < 10 ) goto retry_ID;
+		fprintf( stderr, "Failed to get chip ID\n" );
 		return -4;
 	}
 
-	fprintf( stderr, "Chip Type Packet Reply [%02x %02x %02x %02x %02x %02x %02x %02x]\n", rbuff[0], rbuff[1], rbuff[2], rbuff[3], rbuff[4], rbuff[5], rbuff[6], rbuff[7] );
-	
 	if( transferred != 20 )
 	{
 		fprintf( stderr, "Error: could not get part status\n" );
@@ -481,6 +472,7 @@ retry_ID:
 		fprintf( stderr, "Chip type not supported. Aborting...\n" );
 		return -1;
 	}
+
 
 	// Check for read protection
 	wch_link_command( dev, "\x81\x06\x01\x01", 4, (int*)&transferred, rbuff, 1024 );
