@@ -23,7 +23,7 @@ endif
 TARGET_MCU?=CH32V003
 TARGET_EXT?=c
 
-CH32V003FUN?=../../ch32v003fun
+CH32V003FUN?=$(dir $(lastword $(MAKEFILE_LIST)))
 MINICHLINK?=$(CH32V003FUN)/../minichlink
 
 WRITE_SECTION?=flash
