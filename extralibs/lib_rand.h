@@ -1,9 +1,9 @@
 /******************************************************************************
-* Random Number Generator using a Linear Feedback Shift Register
-* See the GutHub for more information:
+* Psuedo Random Number Generator using a Linear Feedback Shift Register
+* See the GitHub for more information:
 * https://github.com/ADBeta/CH32V003_lib_rand
 *
-* Ver 1.0    08 Sep 2024
+* Ver 1.1    09 Sep 2024
 * 
 * Released under the MIT Licence
 * Copyright ADBeta (c) 2024
@@ -30,7 +30,7 @@
 
 // Define the strength of the random generation. Do this in funconfig.h
 // Strength 1: Tap and shift the LFSR, then returns the LFSR value as is
-// Strenght 2: Generate 32 random bits using the LFSR
+// Strength 2: Generate 32 random bits using the LFSR
 // Strength 3: Genetate two 32bit values using the LFSR, then XOR them together
 // Example:    #define RANDOM_STRENGTH 2
 
@@ -66,10 +66,10 @@ uint8_t _rand_lfsr_update(void)
 }
 
 
-/// @brief Generates a Random 32bit number, using the LFSR - by generating
+/// @brief Generates a Random 32-bit number, using the LFSR - by generating
 /// a random bit from LFSR taps, 32 times.
 /// @param None
-/// @return a (psuedo)random 32bit value
+/// @return a (psuedo)random 32-bit value
 uint32_t _rand_gen_32b(void)
 {
 	uint32_t rand_out = 0;
@@ -98,7 +98,7 @@ void seed(const uint32_t seed_val)
 }
 
 
-/// @brief Generates a Random (32bit) Number, based on which RANDOM_STRENGTH
+/// @brief Generates a Random (32-bit) Number, based on the RANDOM_STRENGTH
 /// you have selected 
 /// @param None
 /// @return 32bit Random value
@@ -113,13 +113,13 @@ uint32_t rand(void)
 	rand_out = _rand_lfsr;
 	#endif
 
-	// If RANDOM_STRENGTH is level 2, generate a 32bit output, using 32 random
+	// If RANDOM_STRENGTH is level 2, generate a 32-bit output, using 32 random
 	// bits from the LFSR
 	#if RANDOM_STRENGTH == 2
 	rand_out = _rand_gen_32b();
 	#endif
 
-	// If RANDOM_STRENGTH is level 3, generate 2 32bit outputs, then XOR them
+	// If RANDOM_STRENGTH is level 3, generate 2 32-bit outputs, then XOR them
 	// together
 	#if RANDOM_STRENGTH == 3
 	uint32_t rand_a = _rand_gen_32b();

@@ -1,9 +1,10 @@
 /******************************************************************************
-* Random Number Generator using a Linear Feedback Shift Register - Demo Program
-* See the GutHub for more information:
+* Psuedo Random Number Generator using a Linear Feedback Shift Register 
+* - Demo Program
+* See the GitHub for more information:
 * https://github.com/ADBeta/CH32V003_lib_rand
 *
-* Ver 1.0    08 Sep 2024
+* Ver 2.0    09 Sep 2024
 * 
 * Released under the MIT Licence
 * Copyright ADBeta (c) 2024
@@ -36,15 +37,25 @@ int main()
 	SystemInit();
 
 	// Optional: Seed the Random Number Generator.
-	// It is pre-seeded with 0x747AA32F.
+	// It is pre-seeded with 0x747AA32F
 	seed(0x12345678);
 
-	// Print 10 Random Numbers
-	for(uint8_t x = 0; x < 10; x++)
+	// Print 4 Random Numbers
+	// These will ALWAYS be:
+	// * 3443170572
+	// * 2761041505
+	// * 3238759778
+	// * 3045866432
+	for(uint8_t x = 0; x < 4; x++)
 	{
 		printf("Random Number %u: %lu\n", x, rand());
 	}
 
+	// Seeding the LFSR using a semi-random input, like a timer tick, or 
+	// multiple samples of an analog pin may help to provide a less 
+	// deterministic random sequence. 
+	// Keep in mind, no guarantees of true random are given, as this is a
+	// psuedo-random generator.
 
 	return 0;
 }
