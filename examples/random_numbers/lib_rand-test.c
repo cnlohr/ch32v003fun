@@ -41,7 +41,7 @@ int main()
 	seed(0x12345678);
 
 	// Print 4 Random Numbers
-	// These will ALWAYS be:
+	// These values in decimal will ALWAYS be:
 	// * 3443170572
 	// * 2761041505
 	// * 3238759778

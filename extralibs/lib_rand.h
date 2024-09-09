@@ -35,11 +35,11 @@
 // Example:    #define RANDOM_STRENGTH 2
 
 #ifndef RANDOM_STRENGTH 
-	#error "Error in lib_rand. Must define Random Strength"
+	#error "Error in lib_rand. Must define RANDOM_STRENGTH"
 #endif
 
-// @brief set the rnadom LFSR values seed by default to a decent enough value
-uint32_t _rand_lfsr = 0x747AA32F;
+// @brief set the random LFSR values seed by default to a known-good value
+static uint32_t _rand_lfsr = 0x747AA32F;
 
 
 /*** Library specific Functions - Do Not Use *********************************/
