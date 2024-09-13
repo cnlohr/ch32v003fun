@@ -1,4 +1,4 @@
-# CH32V003 lib_rand
+(Psuedo) Random Number Generation, using lib_rand
 
 `lib_rand` provides a simple, but effective implementation of a Linear Feedback
 Shift Register, to provide 32-bit (Psuedo)Random Number Generation for the 
