@@ -29,6 +29,10 @@ MINICHLINK?=$(CH32V003FUN)/../minichlink
 WRITE_SECTION?=flash
 SYSTEM_C?=$(CH32V003FUN)/ch32v003fun.c
 
+ifeq ($(DEBUG),1)
+	EXTRA_CFLAGS+=-DFUNCONF_DEBUG=1
+endif
+
 CFLAGS?=-g -Os -flto -ffunction-sections -fdata-sections -fmessage-length=0 -msmall-data-limit=8
 LDFLAGS+=-Wl,--print-memory-usage
 
