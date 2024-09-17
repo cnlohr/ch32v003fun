@@ -13794,6 +13794,10 @@ void SystemInit(void);
 // Put an output debug UART on Pin D5.
 // You can write to this with printf(...) or puts(...)
 
+#include <setjmp.h>
+int setjmp(jmp_buf env);
+void longjmp(jmp_buf env, int val);
+
 void SetupUART( int uartBRR );
 
 void WaitForDebuggerToAttach();
