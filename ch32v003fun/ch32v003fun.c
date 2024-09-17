@@ -1321,7 +1321,7 @@ void handle_reset( void )
 
 #endif
 
-int setjmp(jmp_buf env)
+__attribute__ ((naked)) int setjmp(jmp_buf env)
 {
 	asm volatile(
 	// Common registers
@@ -1343,12 +1343,12 @@ int setjmp(jmp_buf env)
 "	sw s10, 12*4(a0)\n"
 "	sw s11, 13*4(a0)\n"
 #endif
+"	li a0, 0\n"
+"	ret\n"
 	);
-
-	return 0;
 }
 
-void longjmp(jmp_buf env, int val)
+__attribute__ ((naked)) void longjmp(jmp_buf env, int val)
 {
     asm volatile(
     // Common registers
