@@ -8591,6 +8591,8 @@ static __I uint8_t ADCPrescTable[4] = {2, 4, 6, 8};
 /* Delay time after configure PHY */
 #define PHY_ConfigDelay                 ((uint32_t)0x00FFFFFF)
 
+#define ROM_CFG_USERADR_ID              0x1FFFF7E8
+
 /* PHY basic register */
 #define PHY_BCR                          0x0           /*PHY transceiver Basic Control Register */
 #define PHY_BSR                          0x01          /*PHY transceiver Basic Status Register*/
@@ -12918,6 +12920,14 @@ extern "C" {
 #define PC13 45
 #define PC14 46
 #define PC15 47
+#define PD8 56
+#define PD9 57
+#define PD10 58
+#define PD11 59
+#define PD12 60
+#define PD13 61
+#define PD14 62
+#define PD15 63
 #endif
 
 
