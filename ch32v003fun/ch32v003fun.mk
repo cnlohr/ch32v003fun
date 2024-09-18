@@ -23,11 +23,15 @@ endif
 TARGET_MCU?=CH32V003
 TARGET_EXT?=c
 
-CH32V003FUN?=../../ch32v003fun
+CH32V003FUN?=$(dir $(lastword $(MAKEFILE_LIST)))
 MINICHLINK?=$(CH32V003FUN)/../minichlink
 
 WRITE_SECTION?=flash
 SYSTEM_C?=$(CH32V003FUN)/ch32v003fun.c
+
+ifeq ($(DEBUG),1)
+	EXTRA_CFLAGS+=-DFUNCONF_DEBUG=1
+endif
 
 CFLAGS?=-g -Os -flto -ffunction-sections -fdata-sections -fmessage-length=0 -msmall-data-limit=8
 LDFLAGS+=-Wl,--print-memory-usage
@@ -128,9 +132,15 @@ else
 		TARGET_MCU_PACKAGE?=CH32V307VCT6
 		MCU_PACKAGE?=1
 		TARGET_MCU_MEMORY_SPLIT?=3
+		ENABLE_FPU?=1
 
-		CFLAGS_ARCH+= -march=rv32imafc \
-			-mabi=ilp32f \
+		ifeq ($(ENABLE_FPU), 1)
+			CFLAGS_ARCH+= -march=rv32imafc -mabi=ilp32f
+		else
+			CFLAGS_ARCH+= -march=rv32imac -mabi=ilp32 -DDISABLED_FLOAT
+		endif
+
+		CFLAGS_ARCH+= \
 			-DCH32V30x=1 \
 			-DTARGET_MCU_MEMORY_SPLIT=$(TARGET_MCU_MEMORY_SPLIT)
 

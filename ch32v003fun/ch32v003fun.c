@@ -88,7 +88,9 @@ void __libc_init_array(void)
 #include <stdint.h>
 #include <ch32v003fun.h>
 
-int errno;
+#define WEAK __attribute__((weak))
+
+WEAK int errno;
 
 int mini_vsnprintf( char *buffer, unsigned int buffer_len, const char *fmt, va_list va );
 int mini_vpprintf( int (*puts)(char* s, int len, void* buf), void* buf, const char *fmt, va_list va );
@@ -101,7 +103,7 @@ static int __puts_uart( char *s, int len, void *buf )
 	return len;
 }
 
-int printf( const char* format, ... )
+WEAK int printf( const char* format, ... )
 {
 	va_list args;
 	va_start( args, format );
@@ -110,12 +112,12 @@ int printf( const char* format, ... )
 	return ret_status;
 }
 
-int vprintf(const char* format, va_list args)
+WEAK int vprintf(const char* format, va_list args)
 {
 	return mini_vpprintf(__puts_uart, 0, format, args);
 }
 
-int snprintf( char * buffer, unsigned int buffer_len, const char* format, ... )
+WEAK int snprintf( char * buffer, unsigned int buffer_len, const char* format, ... )
 {
 	va_list args;
 	va_start( args, format );
@@ -124,7 +126,7 @@ int snprintf( char * buffer, unsigned int buffer_len, const char* format, ... )
 	return ret;
 }
 
-int sprintf( char * buffer, const char * format, ... )
+WEAK int sprintf( char * buffer, const char * format, ... )
 {
 	va_list args;
 	va_start( args, format );
@@ -173,7 +175,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 typedef void * mbstate_t;
 
 #ifdef UNICODE
-size_t wcrtomb(char *restrict s, wchar_t wc, mbstate_t *restrict st)
+WEAK size_t wcrtomb(char *restrict s, wchar_t wc, mbstate_t *restrict st)
 {
 	if (!s) return 1;
 	if ((unsigned)wc < 0x80) {
@@ -205,23 +207,23 @@ size_t wcrtomb(char *restrict s, wchar_t wc, mbstate_t *restrict st)
 	errno = 0x02;//EILSEQ;
 	return -1;
 }
-int wctomb(char *s, wchar_t wc)
+WEAK int wctomb(char *s, wchar_t wc)
 {
 	if (!s) return 0;
 	return wcrtomb(s, wc, 0);
 }
 #endif
-size_t strlen(const char *s) { const char *a = s;for (; *s; s++);return s-a; }
-size_t strnlen(const char *s, size_t n) { const char *p = memchr(s, 0, n); return p ? (size_t)(p-s) : n;}
-void *memset(void *dest, int c, size_t n) { unsigned char *s = dest; for (; n; n--, s++) *s = c; return dest; }
-char *strcpy(char *d, const char *s) { for (; (*d=*s); s++, d++); return d; }
-char *strncpy(char *d, const char *s, size_t n) { for (; n && (*d=*s); n--, s++, d++); return d; }
-int strcmp(const char *l, const char *r)
+WEAK size_t strlen(const char *s) { const char *a = s;for (; *s; s++);return s-a; }
+WEAK size_t strnlen(const char *s, size_t n) { const char *p = memchr(s, 0, n); return p ? (size_t)(p-s) : n;}
+WEAK void *memset(void *dest, int c, size_t n) { unsigned char *s = dest; for (; n; n--, s++) *s = c; return dest; }
+WEAK char *strcpy(char *d, const char *s) { for (; (*d=*s); s++, d++); return d; }
+WEAK char *strncpy(char *d, const char *s, size_t n) { for (; n && (*d=*s); n--, s++, d++); return d; }
+WEAK int strcmp(const char *l, const char *r)
 {
 	for (; *l==*r && *l; l++, r++);
 	return *(unsigned char *)l - *(unsigned char *)r;
 }
-int strncmp(const char *_l, const char *_r, size_t n)
+WEAK int strncmp(const char *_l, const char *_r, size_t n)
 {
 	const unsigned char *l=(void *)_l, *r=(void *)_r;
 	if (!n--) return 0;
@@ -363,7 +365,15 @@ static char *twoway_strstr(const unsigned char *h, const unsigned char *n)
 	}
 }
 
-char *strstr(const char *h, const char *n)
+WEAK char *strchr(const char *s, int c)
+{
+	c = (unsigned char)c;
+	if (!c) return (char *)s + strlen(s);
+	for (; *s && *(unsigned char *)s != c; s++);
+	return (char *)s;
+}
+
+WEAK char *strstr(const char *h, const char *n)
 {
 	/* Return immediately on empty needle */
 	if (!n[0]) return (char *)h;
@@ -381,16 +391,8 @@ char *strstr(const char *h, const char *n)
 	return twoway_strstr((void *)h, (void *)n);
 }
 
-char *strchr(const char *s, int c)
-{
-	c = (unsigned char)c;
-	if (!c) return (char *)s + strlen(s);
-	for (; *s && *(unsigned char *)s != c; s++);
-	return (char *)s;
-}
 
-
-void *__memrchr(const void *m, int c, size_t n)
+WEAK void *__memrchr(const void *m, int c, size_t n)
 {
 	const unsigned char *s = m;
 	c = (unsigned char)c;
@@ -398,12 +400,12 @@ void *__memrchr(const void *m, int c, size_t n)
 	return 0;
 }
 
-char *strrchr(const char *s, int c)
+WEAK char *strrchr(const char *s, int c)
 {
 	return __memrchr(s, c, strlen(s) + 1);
 }
 
-void *memcpy(void *dest, const void *src, size_t n)
+WEAK void *memcpy(void *dest, const void *src, size_t n)
 {
 	unsigned char *d = dest;
 	const unsigned char *s = src;
@@ -411,7 +413,7 @@ void *memcpy(void *dest, const void *src, size_t n)
 	return dest;
 }
 
-int memcmp(const void *vl, const void *vr, size_t n)
+WEAK int memcmp(const void *vl, const void *vr, size_t n)
 {
 	const unsigned char *l=vl, *r=vr;
 	for (; n && *l == *r; n--, l++, r++);
@@ -419,7 +421,7 @@ int memcmp(const void *vl, const void *vr, size_t n)
 }
 
 
-void *memmove(void *dest, const void *src, size_t n)
+WEAK void *memmove(void *dest, const void *src, size_t n)
 {
 	char *d = dest;
 	const char *s = src;
@@ -435,7 +437,7 @@ void *memmove(void *dest, const void *src, size_t n)
 
 	return dest;
 }
-void *memchr(const void *src, int c, size_t n)
+WEAK void *memchr(const void *src, int c, size_t n)
 {
 	const unsigned char *s = src;
 	c = (unsigned char)c;
@@ -443,7 +445,7 @@ void *memchr(const void *src, int c, size_t n)
 	return n ? (void *)s : 0;
 }
 
-int puts(const char *s)
+WEAK int puts(const char *s)
 {
 	int sl = strlen( s );
 	_write(0, s, sl );
@@ -760,6 +762,9 @@ extern uint32_t * _edata;
 void DefaultIRQHandler( void )
 {
 	// Infinite Loop
+#if FUNCONF_DEBUG
+	printf( "DefaultIRQHandler MSTATUS:%08x MTVAL:%08x MCAUSE:%08x MEPC:%08x\n", (int)__get_MSTATUS(), (int)__get_MTVAL(), (int)__get_MCAUSE(), (int)__get_MEPC() );
+#endif
 	asm volatile( "1: j 1b" );
 }
 
@@ -886,6 +891,9 @@ void DMA2_Channel3_IRQHandler( void ) 	__attribute__((section(".text.vector_hand
 void DMA2_Channel4_IRQHandler( void ) 	__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void DMA2_Channel5_IRQHandler( void ) 	__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void OTG_FS_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void USBHSWakeup_IRQHandler( void )		__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void USBHS_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void DVP_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void UART6_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void UART7_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void UART8_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
@@ -1197,11 +1205,17 @@ void InterruptVectorDefault()
     .word   0                          /* 80: CAN2_RX0 */ \n\
     .word   0                          /* 81: CAN2_RX1 */ \n\
     .word   0                          /* 82: CAN2_SCE */ \n\
-    .word   OTG_FS_IRQHandler          /* 83: OTGFS */ \n\
-    .word   0                          /* 84: USBHsWakeUp */ \n\
+    .word   OTG_FS_IRQHandler          /* 83: OTGFS */ \n"
+#if defined(CH32V30x)
+"   .word   USBHSWakeup_IRQHandler     /* 84: USBHsWakeUp */ \n\
+    .word   USBHS_IRQHandler           /* 85: USBHS */ \n\
+    .word   DVP_IRQHandler             /* 86: DVP */ \n"
+#else
+"   .word   0                          /* 84: USBHsWakeUp */ \n\
     .word   0                          /* 85: USBHS */ \n\
-    .word   0                          /* 86: DVP */ \n\
-    .word   UART6_IRQHandler           /* 87: UART6 */ \n\
+    .word   0                          /* 86: DVP */ \n"
+#endif
+"   .word   UART6_IRQHandler           /* 87: UART6 */ \n\
     .word   UART7_IRQHandler           /* 88: UART7 */ \n\
     .word   UART8_IRQHandler           /* 89: UART8 */ \n\
     .word   TIM9_BRK_IRQHandler        /* 90: TIM9 Break */ \n\
@@ -1275,21 +1289,17 @@ void handle_reset( void )
 "	li t0, 0x1f\n\
 	csrw 0xbc0, t0\n"
 
-//XXX TODO: CHECKME - TEST ON 203!!!
-#if FUNCONF_ENABLE_HPE	// Enabled nested and hardware (HPE) stack, since it's really good on the x035.
+#if defined(CH32V30x) && !defined( DISABLED_FLOAT )
+"	li t0, 0x6088\n\
+	csrs mstatus, t0\n"
+#else
 "	li t0, 0x88\n\
 	csrs mstatus, t0\n"
-"	li t0, 0x0b\n\
-	csrw 0x804, t0\n"
-#else
-"	li a0, 0x80\n\
-	csrw mstatus, a0\n"
 #endif
 
-#if defined(CH32V30x)
-	// Enable floating point and interrupt
-"	li t0, 0x688\n\
-	csrs mstatus, t0\n"
+#if FUNCONF_ENABLE_HPE	// Enabled nested and hardware (HPE) stack, since it's really good on the x035.
+"	li t0, 0x0b\n\
+	csrw 0x804, t0\n"
 #endif
 "	la t0, InterruptVector\n\
 	ori t0, t0, 3\n\
@@ -1345,7 +1355,7 @@ void SetupUART( int uartBRR )
 }
 
 // For debug writing to the UART.
-int _write(int fd, const char *buf, int size)
+WEAK int _write(int fd, const char *buf, int size)
 {
 	for(int i = 0; i < size; i++){
 	    while( !(USART1->STATR & USART_FLAG_TC));
@@ -1355,7 +1365,7 @@ int _write(int fd, const char *buf, int size)
 }
 
 // single char to UART
-int putchar(int c)
+WEAK int putchar(int c)
 {
 	while( !(USART1->STATR & USART_FLAG_TC));
 	USART1->DATAR = (const char)c;
@@ -1399,8 +1409,7 @@ void poll_input()
 //   b0..b3 = # of bytes in printf (+4).  (5 or higher indicates a print of some kind)
 //     note: if b7 is 0 in reply, but b0..b3 have >=4 then we received data from host.
 // declare as weak to allow overriding.
-int _write(int fd, const char *buf, int size) __attribute__((weak));
-int _write(int fd, const char *buf, int size)
+WEAK int _write(int fd, const char *buf, int size)
 {
 	(void)fd;
 
@@ -1449,7 +1458,7 @@ int _write(int fd, const char *buf, int size)
 }
 
 // single to debug intf
-int putchar(int c)
+WEAK int putchar(int c)
 {
 	int timeout = FUNCONF_DEBUGPRINTF_TIMEOUT;
 	uint32_t lastdmd = 0;
@@ -1481,13 +1490,13 @@ void WaitForDebuggerToAttach()
     (defined( FUNCONF_USE_UARTPRINTF ) && !FUNCONF_USE_UARTPRINTF) && \
     (defined( FUNCONF_NULL_PRINTF ) && FUNCONF_NULL_PRINTF)
 
-int _write(int fd, const char *buf, int size)
+WEAK int _write(int fd, const char *buf, int size)
 {
 	return size;
 }
 
 // single to debug intf
-int putchar(int c)
+WEAK int putchar(int c)
 {
 	return 1;
 }
@@ -1511,7 +1520,7 @@ void DelaySysTick( uint32_t n )
 
 void SystemInit()
 {
-#if defined(CH32V30x) 
+#if defined(CH32V30x) && defined(TARGET_MCU_MEMORY_SPLIT)
 	FLASH->OBR = TARGET_MCU_MEMORY_SPLIT<<8;
 #endif
 

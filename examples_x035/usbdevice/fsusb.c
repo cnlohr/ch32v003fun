@@ -233,7 +233,6 @@ void USBFS_IRQHandler()
 							goto replycomplete;
 						case HID_GET_REPORT:
 							len = HandleHidUserGetReportSetup( ctx, pUSBFS_SetupReqPak );
-							len = 255;
 							if( len < 0 ) goto sendstall;
 							ctx->USBFS_SetupReqLen = len;
 							len = len >= DEF_USBD_UEP0_SIZE ? DEF_USBD_UEP0_SIZE : len;
@@ -368,7 +367,7 @@ void USBFS_IRQHandler()
 						{
 							if( (uint8_t)( USBFS_IndexValue & 0xFF ) == USB_REQ_FEAT_ENDP_HALT )
 							{
-								/* Clear End-point Feature */
+								ep = USBFS_SetupReqIndex & 0xf;
 								if( ( USBFS_SetupReqIndex & DEF_UEP_IN ) && ep < FUSB_CONFIG_EPS ) 
 								{
 									UEP_CTRL_H(ep) = USBFS_UEP_T_RES_NAK;
@@ -411,6 +410,7 @@ void USBFS_IRQHandler()
 							/* Set Endpoint Feature */
 							if( (uint8_t)( USBFS_IndexValue & 0xFF ) == USB_REQ_FEAT_ENDP_HALT )
 							{
+								ep = USBFS_SetupReqIndex & 0xf;
 								if( ( USBFS_SetupReqIndex & DEF_UEP_IN ) && ep < FUSB_CONFIG_EPS )
 									UEP_CTRL_H(ep) = ( UEP_CTRL_H(ep) & ~USBFS_UEP_T_RES_MASK ) | USBFS_UEP_T_RES_STALL;
 							}
@@ -444,6 +444,7 @@ void USBFS_IRQHandler()
 						}
 						else if( ( USBFS_SetupReqType & USB_REQ_RECIP_MASK ) == USB_REQ_RECIP_ENDP )
 						{
+							ep = USBFS_SetupReqIndex & 0xf;
 							if( ( USBFS_SetupReqIndex & DEF_UEP_IN ) && ep < FUSB_CONFIG_EPS )
 								ctrl0buff[0] = ( UEP_CTRL_H(ep) & USBFS_UEP_T_RES_MASK ) == USBFS_UEP_T_RES_STALL;
 							else

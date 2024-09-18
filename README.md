@@ -20,7 +20,7 @@ ch32v003fun contains:
 
 ## Other family support
 
-Currently, there is experimental support for the ch32v103, ch32v203, ch32v208, ch32v303 and ch32v307.  Note: GDB will only workon the 003 at this time.
+Currently, there is experimental support for the ch32v103, ch32v203, ch32v208, ch32v303, ch32v305 and ch32v307.  GDB is mostly tested on the 003, but works, to a limited degree on the other processors.
 
 ## Getting Started
 
@@ -98,16 +98,14 @@ If the C/C++ language server clangd is unable to find `ch32v003fun.h`, the examp
 Other third party tools are adding lots of examples, etc.  See the following repos, for extra libraries, etc.
  * [ch32v003fun_wildwest](https://github.com/recallmenot/ch32v003fun_wildwest)
  * [ch32v003fun_libs](https://github.com/hexeguitar/ch32v003fun_libs)
+ * [CH32V003_lib_uart](https://github.com/ADBeta/CH32V003_lib_uart)
+ * [CH32Vxxx_lib_i2c](https://github.com/ADBeta/CH32Vxxx_lib_i2c)
+ * [CH32Vxxx_lib_swi2c](https://github.com/ADBeta/CH32Vxxx_lib_swi2c)
+ * [ch32v003fun_shenanigans](https://github.com/DeadBugEngineering/ch32v003fun_shenanigans)
 
 ## Support
 
 You can open a github ticket or join my Discord in the #ch32v003fun channel.  Right now invites are private, so just ping me @cnlohr for an invite link.  My PMs are open.
-
-## General notes about the CH32V003.
-
-CPI/Processor Speed:
-
-Ignoring branches and load/stores, compressed instructions run at 1 CPI. Non-compressed instructions run at 1 CPI for the first 2 instructions, then further ones take 2 CPI regardless of how many more you have.  Running from RAM and running from FLASH have slightly different performance characteristics depending on wait states that should be measured in-situation.
 
 ### Footnotes/links
 
