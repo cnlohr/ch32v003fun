@@ -1,6 +1,6 @@
 all : flash
 
-TARGET:=usbdevice_hs
+TARGET:=turbo_adc_with_usb
 TARGET_MCU:=CH32V305
 TARGET_MCU_PACKAGE:=CH32V305RBT6
 

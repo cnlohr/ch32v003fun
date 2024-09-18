@@ -7,7 +7,6 @@
 #define HUSB_CONFIG_EPS       6 // Include EP0 in this count
 #define HUSB_SUPPORTS_SLEEP   0
 #define HUSB_HID_INTERFACES   2
-#define HUSB_CURSED_TURBO_DMA 0 // Hacky, but seems fine, shaves 2.5us off filling 64-byte buffers.
 #define HUSB_HID_USER_REPORTS 1
 #define HUSB_IO_PROFILE       1
 
@@ -240,7 +239,7 @@ static const uint8_t config_descriptor[ ] =
     /* Endpoint Descriptor (Bulk) */
     0x07,                                                   // bLength
     0x05,                                                   // bDescriptorType
-    0x05,                                                   // bEndpointAddress: IN Endpoint 4 (BULK)
+    0x05,                                                   // bEndpointAddress: OUT Endpoint 5 (BULK)
     0x02,                                                   // bmAttributes
     0x00, 0x02,                                             // wMaxPacketSize
     0x01,                                                   // bInterval: 1mS

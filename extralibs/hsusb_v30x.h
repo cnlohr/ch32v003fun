@@ -59,6 +59,23 @@ void HandleGotEPComplete( struct _USBState * ctx, int ep );
 
 extern struct _USBState HSUSBCTX;
 
-#include "hsusb.c"
 
+// To TX, you can use USBFS_GetEPBufferIfAvailable or USBHSD_UEP_TXBUF( endp )
+
+static inline uint8_t * USBHS_GetEPBufferIfAvailable( int endp )
+{
+	if( HSUSBCTX.USBHS_Endp_Busy[ endp ] ) return 0;
+	return USBHSD_UEP_TXBUF( endp );
+}
+
+static inline void USBHS_SendEndpoint( int endp, int len, const uint8_t * data )
+{
+	if( endp )
+	{
+		(((uint32_t*)(&USBHSD->UEP1_TX_DMA))[2-1]) = (uintptr_t)data;
+	}
+	USBHSD_UEP_TLEN( endp ) = len;
+	USBHSD_UEP_TXCTRL( endp ) = ( USBHSD_UEP_TXCTRL( endp ) & ~USBHS_UEP_T_RES_MASK ) | USBHS_UEP_T_RES_ACK;
+	HSUSBCTX.USBHS_Endp_Busy[ endp ] = 0x01;
+}
 #endif

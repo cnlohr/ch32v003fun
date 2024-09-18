@@ -4,7 +4,7 @@
 #include "ch32v003fun.h"
 #include <stdio.h>
 #include <string.h>
-#include "hsusb.h"
+#include "hsusb_v30x.h"
 
 uint32_t count;
 
