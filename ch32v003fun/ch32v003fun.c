@@ -1321,6 +1321,18 @@ void handle_reset( void )
 
 #endif
 
+#if defined( __riscv_d )
+#define FLOAD( src, offset, dst ) \
+"	fld " #src ", " #offset "*8(" #dst ")\n"
+#define FSTORE( dst, offset, src ) \
+"	fsd " #dst ", " #offset "*8(" #src ")\n"
+#else
+#define FLOAD( src, offset, dst ) \
+"	flw " #src ", " #offset "*4(" #dst ")\n"
+#define FSTORE( dst, offset, src ) \
+"	fsw " #dst ", " #offset "*4(" #src ")\n"
+#endif
+
 __attribute__ ((naked)) int setjmp(jmp_buf env)
 {
 	asm volatile(
@@ -1331,7 +1343,7 @@ __attribute__ ((naked)) int setjmp(jmp_buf env)
 "	sw sp, 3*4(a0)\n"
 
     // RV32I only registers
-#if !defined( CH32V003 )
+#if !defined( __riscv_e )
 "	sw s2, 4*4(a0)\n"
 "	sw s3, 5*4(a0)\n"
 "	sw s4, 6*4(a0)\n"
@@ -1343,6 +1355,21 @@ __attribute__ ((naked)) int setjmp(jmp_buf env)
 "	sw s10, 12*4(a0)\n"
 "	sw s11, 13*4(a0)\n"
 #endif
+
+	// FPU registers
+#if defined( __riscv_f )
+	FSTORE(fs2, 14, a0)
+	FSTORE(fs3, 15, a0)
+	FSTORE(fs4, 16, a0)
+	FSTORE(fs5, 17, a0)
+	FSTORE(fs6, 18, a0)
+	FSTORE(fs7, 19, a0)
+	FSTORE(fs8, 20, a0)
+	FSTORE(fs9, 21, a0)
+	FSTORE(fs10, 22, a0)
+	FSTORE(fs11, 23, a0)
+#endif
+
 "	li a0, 0\n"
 "	ret\n"
 	);
@@ -1358,7 +1385,7 @@ __attribute__ ((naked)) void longjmp(jmp_buf env, int val)
 "	lw sp, 3*4(a0)\n"
 
     // RV32I only registers
-#if !defined( CH32V003 )
+#if !defined( __riscv_e )
 "	lw s2, 4*4(a0)\n"
 "	lw s3, 5*4(a0)\n"
 "	lw s4, 6*4(a0)\n"
@@ -1369,6 +1396,20 @@ __attribute__ ((naked)) void longjmp(jmp_buf env, int val)
 "	lw s9, 11*4(a0)\n"
 "	lw s10, 12*4(a0)\n"
 "	lw s11, 13*4(a0)\n"
+#endif
+
+	// FPU registers
+#if defined( __riscv_f )
+	FLOAD(fs2, 14, a0)
+	FLOAD(fs3, 15, a0)
+	FLOAD(fs4, 16, a0)
+	FLOAD(fs5, 17, a0)
+	FLOAD(fs6, 18, a0)
+	FLOAD(fs7, 19, a0)
+	FLOAD(fs8, 20, a0)
+	FLOAD(fs9, 21, a0)
+	FLOAD(fs10, 22, a0)
+	FLOAD(fs11, 23, a0)
 #endif
 
 "	seqz a0, a1\n" // a0 = (a1 == 0) ? 1 : 0

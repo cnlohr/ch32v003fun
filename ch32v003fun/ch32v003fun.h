@@ -13794,7 +13794,29 @@ void SystemInit(void);
 // Put an output debug UART on Pin D5.
 // You can write to this with printf(...) or puts(...)
 
-#include <setjmp.h>
+#ifdef __riscv
+// _JBTYPE using long long to make sure the alignment is align to 8 byte,
+// otherwise in rv32imafd, store/restore FPR may mis-align.
+#define _JBTYPE long long
+#ifdef __riscv_e
+#define _JBLEN ((4*sizeof(long))/sizeof(long))
+#elif defined(__riscv_d)
+#define _JBLEN ((14*sizeof(long) + 12*sizeof(double))/sizeof(long))
+#elif defined(__riscv_f)
+#define _JBLEN ((14*sizeof(long) + 12*sizeof(float))/sizeof(long))
+#else
+#define _JBLEN ((14*sizeof(long))/sizeof(long))
+#endif
+#endif
+
+#ifdef _JBLEN
+#ifdef _JBTYPE
+typedef _JBTYPE jmp_buf[_JBLEN];
+#else
+typedef int jmp_buf[_JBLEN];
+#endif
+#endif
+
 int setjmp(jmp_buf env);
 void longjmp(jmp_buf env, int val);
 
