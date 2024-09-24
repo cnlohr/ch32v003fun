@@ -1321,19 +1321,20 @@ void handle_reset( void )
 
 #endif
 
-#if defined( __riscv_d )
+#if defined( __riscv_float_abi_double )
 #define FLOAD( src, offset, dst ) \
 "	fld " #src ", " #offset "*8(" #dst ")\n"
 #define FSTORE( dst, offset, src ) \
 "	fsd " #dst ", " #offset "*8(" #src ")\n"
-#else
+#elif defined( __riscv_float_abi_single )
 #define FLOAD( src, offset, dst ) \
 "	flw " #src ", " #offset "*4(" #dst ")\n"
 #define FSTORE( dst, offset, src ) \
 "	fsw " #dst ", " #offset "*4(" #src ")\n"
+#else // Soft float
 #endif
 
-__attribute__ ((naked)) int setjmp(jmp_buf env)
+__attribute__ ((naked)) int setjmp( jmp_buf env )
 {
 	asm volatile(
 	// Common registers
@@ -1343,7 +1344,7 @@ __attribute__ ((naked)) int setjmp(jmp_buf env)
 "	sw sp, 3*4(a0)\n"
 
     // RV32I only registers
-#if !defined( __riscv_e )
+#if !defined( __riscv_abi_rve )
 "	sw s2, 4*4(a0)\n"
 "	sw s3, 5*4(a0)\n"
 "	sw s4, 6*4(a0)\n"
@@ -1357,7 +1358,7 @@ __attribute__ ((naked)) int setjmp(jmp_buf env)
 #endif
 
 	// FPU registers
-#if defined( __riscv_f )
+#if defined( FSTORE )
 	FSTORE(fs2, 14, a0)
 	FSTORE(fs3, 15, a0)
 	FSTORE(fs4, 16, a0)
@@ -1375,7 +1376,7 @@ __attribute__ ((naked)) int setjmp(jmp_buf env)
 	);
 }
 
-__attribute__ ((naked)) void longjmp(jmp_buf env, int val)
+__attribute__ ((naked)) void longjmp( jmp_buf env, int val )
 {
     asm volatile(
     // Common registers
@@ -1385,7 +1386,7 @@ __attribute__ ((naked)) void longjmp(jmp_buf env, int val)
 "	lw sp, 3*4(a0)\n"
 
     // RV32I only registers
-#if !defined( __riscv_e )
+#if !defined( __riscv_abi_rve )
 "	lw s2, 4*4(a0)\n"
 "	lw s3, 5*4(a0)\n"
 "	lw s4, 6*4(a0)\n"
@@ -1399,7 +1400,7 @@ __attribute__ ((naked)) void longjmp(jmp_buf env, int val)
 #endif
 
 	// FPU registers
-#if defined( __riscv_f )
+#if defined( FLOAD )
 	FLOAD(fs2, 14, a0)
 	FLOAD(fs3, 15, a0)
 	FLOAD(fs4, 16, a0)

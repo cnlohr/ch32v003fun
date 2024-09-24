@@ -13798,11 +13798,11 @@ void SystemInit(void);
 // _JBTYPE using long long to make sure the alignment is align to 8 byte,
 // otherwise in rv32imafd, store/restore FPR may mis-align.
 #define _JBTYPE long long
-#ifdef __riscv_e
+#if defined( __riscv_abi_rve )
 #define _JBLEN ((4*sizeof(long))/sizeof(long))
-#elif defined(__riscv_d)
+#elif defined( __riscv_float_abi_double )
 #define _JBLEN ((14*sizeof(long) + 12*sizeof(double))/sizeof(long))
-#elif defined(__riscv_f)
+#elif defined( __riscv_float_abi_single )
 #define _JBLEN ((14*sizeof(long) + 12*sizeof(float))/sizeof(long))
 #else
 #define _JBLEN ((14*sizeof(long))/sizeof(long))
@@ -13817,8 +13817,8 @@ typedef int jmp_buf[_JBLEN];
 #endif
 #endif
 
-int setjmp(jmp_buf env);
-void longjmp(jmp_buf env, int val);
+int setjmp( jmp_buf env );
+void longjmp( jmp_buf env, int val );
 
 void SetupUART( int uartBRR );
 
