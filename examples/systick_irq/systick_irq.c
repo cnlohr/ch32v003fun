@@ -9,10 +9,17 @@
 #include "ch32v003fun.h"
 #include <stdio.h>
 
-#define SYSTICK_CMP_1_MILLISECOND ((uint32_t)FUNCONF_SYSTEM_CORE_CLOCK / 1000)
+// Number of ticks elapsed per millisecond (48,000 when using 48MHz Clock)
+#define SYSTICK_ONE_MILLISECOND ((uint32_t)FUNCONF_SYSTEM_CORE_CLOCK / 1000)
+// Number of ticks elapsed per microsecond (48 when using 48MHz Clock)
+#define SYSTICK_ONE_MICROSECOND ((uint32_t)FUNCONF_SYSTEM_CORE_CLOCK / 1000000)
 
-// Simple macro function to give a sensible function to call
+// Simple macro functions to give a arduino-like functions to call
+// millis() reads the incremented systick variable
+// micros() reads the raw SysTick Count, and divides it by the number of 
+// ticks per microsecond ( WARN: Wraps every 90 seconds!)
 #define millis() (systick_millis)
+#define micros() (SysTick->CNT / SYSTICK_ONE_MICROSECOND)
 
 // Incremented in the SysTick IRQ - in this example once per millisecond
 volatile uint32_t systick_millis;
@@ -27,7 +34,7 @@ void systick_init(void)
 	SysTick->CTLR = 0x0000;
 	
 	// Set the compare register to trigger once per millisecond
-	SysTick->CMP = SYSTICK_CMP_1_MILLISECOND - 1;
+	SysTick->CMP = SYSTICK_ONE_MILLISECOND - 1;
 
 	// Reset the Count Register, and the global millis counter to 0
 	SysTick->CNT = 0x00000000;
@@ -56,7 +63,7 @@ void SysTick_Handler(void)
 	// If more than this number of ticks elapse before the trigger is reset,
 	// you may miss your next interrupt trigger
 	// (Make sure the IQR is lightweight and CMP value is reasonable)
-	SysTick->CMP += SYSTICK_CMP_1_MILLISECOND;
+	SysTick->CMP += SYSTICK_ONE_MILLISECOND;
 
 	// Clear the trigger state for the next IRQ
 	SysTick->SR = 0x00000000;
@@ -105,6 +112,7 @@ int main(void)
 		// increment more than 500 per loop
 		printf("\nMilliseconds taken:\t%lu\n", end_millis - start_millis);
 		printf("Current Milliseconds:\t%lu\n", millis());
+		printf("Current Microseconds:\t%lu\n", micros());
 		printf("SysTick->CNT:\t\t%lu\n", SysTick->CNT);
 	}
 }
