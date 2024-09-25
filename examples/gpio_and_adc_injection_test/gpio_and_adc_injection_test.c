@@ -1,4 +1,4 @@
-// Basic GPIO and ADC Example using modern funPinMode / funDigitalWrite / etc... modes.
+// Basic GPIO and Injection-Mode ADC Example using modern funPinMode / funDigitalWrite / etc... modes.
 //
 // Modes (Assume processor VCC = 3.3V)
 //  Push/Pull: 
@@ -25,6 +25,11 @@
 #include "ch32v003fun.h"
 #include <stdio.h>
 
+void discard( int x )
+{
+	asm volatile( "" : : "r"(x) : "memory" );
+}
+
 int main()
 {
 	SystemInit();
@@ -48,12 +53,20 @@ int main()
 	// JSQ2 = Channel 1 (PA1)
 	// JSQ3 = Channel 2 (PC4)
 	// JSQ3 = Channel 3 (PD2)
-	// 4 Total channels
-	ADC1->ISQR = ((0)<<0) | ((1)<<5) | ((2)<<10) | ((3)<<15) | (3<<20);
+	ADC1->ISQR=
+		ADC_JL_0 | ADC_JL_1 |     // 4 Total channels
+		ADC_JSQ4_1 | ADC_JSQ4_0 | // Channel 3 (PD2)
+		ADC_JSQ3_1 |              // Channel 2 (PC4)
+		ADC_JSQ2_0 |              // Channel 1 (PA1)
+		0;                        // Channel 0 (PA2)
 
 	// 0:7 => 3/9/15/30/43/57/73/241 cycles
-	ADC1->SAMPTR2 |= (7<<(3*0)) | (7<<(3*1)) | (7<<(3*2)) | (7<<(3*3));
-		
+
+	ADC1->SAMPTR2 |= 	(ADC_SMP0_0 | ADC_SMP0_1 | ADC_SMP0_2 | \
+				ADC_SMP1_0 | ADC_SMP1_1 | ADC_SMP1_2 | \
+				ADC_SMP2_0 | ADC_SMP2_1 | ADC_SMP2_2 | \
+				ADC_SMP3_1 | ADC_SMP3_1 | ADC_SMP3_2);
+
 	// turn on ADC and set rule group to sw trig
 	ADC1->CTLR2 = ADC_ADON | ADC_JEXTSEL;
 
@@ -67,28 +80,26 @@ int main()
 	ADC1->CTLR2 |= ADC_CAL;
 	while(ADC1->CTLR2 & ADC_CAL);
 
-
 	while(1)
 	{
-		ADC1->CTLR2 |= ADC_JSWSTART;
-		while(!(ADC1->STATR & ADC_JEOC));
-		printf( "0: %d %d %d %d\n", (int)ADC1->IDATAR1, (int)ADC1->IDATAR2, (int)ADC1->IDATAR3, (int)ADC1->IDATAR4 );
 		funDigitalWrite( PD2, 1 );
 		funDigitalWrite( PC4, 1 );
 		funDigitalWrite( PC1, 1 ); // 5v tolerant, no ADC
 		funDigitalWrite( PA1, 1 );
 		funDigitalWrite( PA2, 1 );
-		Delay_Ms( 1000 );
-
 		ADC1->CTLR2 |= ADC_JSWSTART;
-		while(!(ADC1->STATR & ADC_JEOC));
+		// We can't do something like check JEOC here, because it is going to be true as soon as the conversion starts.
+		Delay_Ms(1000);
 		printf( "1: %d %d %d %d\n", (int)ADC1->IDATAR1, (int)ADC1->IDATAR2, (int)ADC1->IDATAR3, (int)ADC1->IDATAR4 );
+
 		funDigitalWrite( PD2, 0 );
 		funDigitalWrite( PC4, 0 );
 		funDigitalWrite( PC1, 0 ); // 5v tolerant, no ADC
 		funDigitalWrite( PA1, 0 );
 		funDigitalWrite( PA2, 0 );
-		Delay_Ms( 1000 );
+		ADC1->CTLR2 |= ADC_JSWSTART;
+		Delay_Ms(1000);
+		printf( "0: %d %d %d %d\n", (int)ADC1->IDATAR1, (int)ADC1->IDATAR2, (int)ADC1->IDATAR3, (int)ADC1->IDATAR4 );
 	}
 }
 
