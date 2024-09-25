@@ -3,7 +3,7 @@
  * 03-25-2023 E. Brombaugh
  * 05-12-2023 C. Lohr (Modified to reflect updated sysclk)
  * 09-25-2024 ADBeta (Minor updates to main loop, comments and added
- *                    convinient macro function)
+ *                    convenient macro function)
  */
 
 #include "ch32v003fun.h"
