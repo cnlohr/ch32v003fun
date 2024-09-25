@@ -36,9 +36,9 @@ void systick_init(void)
 	// Set the SysTick Configuration
 	// NOTE: By not setting SYSTICK_CTLR_STRE, we maintain compatibility with
 	// busywait delay funtions used by ch32v003_fun.
-	SysTick->CTLR |= 	SYSTICK_CTLR_STE   |  // Enable Counter
-						SYSTICK_CTLR_STIE  |  // Enable Interrupts
-						SYSTICK_CTLR_STCLK ;  // Set Clock Source to HCLK/1
+	SysTick->CTLR |= SYSTICK_CTLR_STE   |  // Enable Counter
+	                 SYSTICK_CTLR_STIE  |  // Enable Interrupts
+	                 SYSTICK_CTLR_STCLK ;  // Set Clock Source to HCLK/1
 	
 	// Enable the SysTick IRQ
 	NVIC_EnableIRQ(SysTicK_IRQn);
@@ -46,7 +46,7 @@ void systick_init(void)
 
 /*
  * SysTick ISR - must be lightweight to prevent the CPU from bogging down.
- * Incriments Compare Register and systick_millis when triggered (every 1ms)
+ * Increments Compare Register and systick_millis when triggered (every 1ms)
  * NOTE: the `__attribute__((interrupt))` attribute is very important
  */
 void SysTick_Handler(void) __attribute__((interrupt));
