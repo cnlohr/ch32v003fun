@@ -17,7 +17,6 @@ generic RISC-V GCC so that feature is not used here.
 
 # Use
 Connect LEDs (with proper current limit resistors) to GPIO pins C0, D0, D4 and
-a 3.3V logic level serial terminal to PD5. 
 The LEDs will flash and the Current Milliseconds since system power-on, 
 Milliseconds taken per loop, and a raw SysTick Counter value will be printed
-to via the debug terminal, or over UART on pin PD5.
+via the debug terminal, or over UART on pin PD5.
