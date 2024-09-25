@@ -1227,7 +1227,7 @@ typedef struct
     __IO uint32_t EXTEN_CTR;
 } EXTEN_TypeDef;
 
-/* The reference manual for the ch32v2xx/v3xx refernce this as "CTR" field in the "EXTEND" register so adding an alias here. */
+/* The reference manual for the ch32v2xx/v3xx reference this as "CTR" field in the "EXTEND" register so adding an alias here. */
 typedef struct
 {
     __IO uint32_t CTR;
