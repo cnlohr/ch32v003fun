@@ -34,6 +34,8 @@ void systick_init(void)
 	systick_millis = 0x00000000;
 	
 	// Set the SysTick Configuration
+	// NOTE: By not setting SYSTICK_CTLR_STRE, we maintain compatibility with
+	// busywait delay funtions used by ch32v003_fun.
 	SysTick->CTLR |= SYSTICK_CTLR_STE   |  // Enable Counter
 		             SYSTICK_CTLR_STIE  |  // Enable Interrupts
 		             SYSTICK_CTLR_STCLK ;  // Set Clock Source to HCLK/1
@@ -77,33 +79,25 @@ int main(void)
 	printf("done.\n");
 	
 	// Enable GPIOs for demonstation
-	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOC;
-
-	// GPIO D0 Push-Pull
-	GPIOD->CFGLR &= ~(0xf<<(4*0));
-	GPIOD->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*0);
-
-	// GPIO D4 Push-Pull
-	GPIOD->CFGLR &= ~(0xf<<(4*4));
-	GPIOD->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*4);
-
-	// GPIO C0 Push-Pull
-	GPIOC->CFGLR &= ~(0xf<<(4*0));
-	GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*0);
-
-	
+	funGpioInitAll();
+	funPinMode(PD0, GPIO_Speed_10MHz | GPIO_CNF_OUT_PP);
+	funPinMode(PD4, GPIO_Speed_10MHz | GPIO_CNF_OUT_PP);
+	funPinMode(PC0, GPIO_Speed_10MHz | GPIO_CNF_OUT_PP);
+		
 	printf("Beginning Loop...\n");
 	while(1)
 	{
 		// Toggle the GPIO Pins with a delay - total delay will be 500ms
 		uint32_t start_millis = millis();
 		// On
-		GPIOD->BSHR = 1 | (1<<4);
-		GPIOC->BSHR = 1;
+		funDigitalWrite(PD0, FUN_HIGH);
+		funDigitalWrite(PD4, FUN_HIGH);
+		funDigitalWrite(PC0, FUN_HIGH);
 		Delay_Ms(250);
 		// Off
-		GPIOD->BSHR = (1<<16) | (1<<(16+4));
-		GPIOC->BSHR = (1<<16);
+		funDigitalWrite(PD0, FUN_LOW);
+		funDigitalWrite(PD4, FUN_LOW);
+		funDigitalWrite(PC0, FUN_LOW);
 		Delay_Ms(250);
 		uint32_t end_millis = millis();
 		
