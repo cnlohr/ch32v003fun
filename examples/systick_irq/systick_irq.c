@@ -14,7 +14,7 @@
 // Simple macro function to give a sensible function to call
 #define millis() (systick_millis)
 
-// Incrimented in the SysTick IRQ - in this example once per millisecond
+// Incremented in the SysTick IRQ - in this example once per millisecond
 volatile uint32_t systick_millis;
 
 /*
@@ -36,9 +36,9 @@ void systick_init(void)
 	// Set the SysTick Configuration
 	// NOTE: By not setting SYSTICK_CTLR_STRE, we maintain compatibility with
 	// busywait delay funtions used by ch32v003_fun.
-	SysTick->CTLR |= SYSTICK_CTLR_STE   |  // Enable Counter
-		             SYSTICK_CTLR_STIE  |  // Enable Interrupts
-		             SYSTICK_CTLR_STCLK ;  // Set Clock Source to HCLK/1
+	SysTick->CTLR |= 	SYSTICK_CTLR_STE   |  // Enable Counter
+						SYSTICK_CTLR_STIE  |  // Enable Interrupts
+						SYSTICK_CTLR_STCLK ;  // Set Clock Source to HCLK/1
 	
 	// Enable the SysTick IRQ
 	NVIC_EnableIRQ(SysTicK_IRQn);
@@ -52,8 +52,8 @@ void systick_init(void)
 void SysTick_Handler(void) __attribute__((interrupt));
 void SysTick_Handler(void)
 {
-	// Incriment the Compare Register for the next trigger
-	// If more than this number of ticks elapse before the tirgger is reset,
+	// Increment the Compare Register for the next trigger
+	// If more than this number of ticks elapse before the trigger is reset,
 	// you may miss your next interrupt trigger
 	// (Make sure the IQR is lightweight and CMP value is reasonable)
 	SysTick->CMP += SYSTICK_CMP_1_MILLISECOND;
@@ -61,7 +61,7 @@ void SysTick_Handler(void)
 	// Clear the trigger state for the next IRQ
 	SysTick->SR = 0x00000000;
 
-	// Incriment the milliseconds count
+	// Increment the milliseconds count
 	systick_millis++;
 }
 
@@ -78,7 +78,7 @@ int main(void)
 	systick_init();
 	printf("done.\n");
 	
-	// Enable GPIOs for demonstation
+	// Enable GPIOs for demonstration
 	funGpioInitAll();
 	funPinMode(PD0, GPIO_Speed_10MHz | GPIO_CNF_OUT_PP);
 	funPinMode(PD4, GPIO_Speed_10MHz | GPIO_CNF_OUT_PP);
@@ -102,7 +102,7 @@ int main(void)
 		uint32_t end_millis = millis();
 		
 		// NOTE: Due to the time it takes for printf(), the Current Millis will
-		// incirment more than 500 per loop
+		// increment more than 500 per loop
 		printf("\nMilliseconds taken:\t%lu\n", end_millis - start_millis);
 		printf("Current Milliseconds:\t%lu\n", millis());
 		printf("SysTick->CNT:\t\t%lu\n", SysTick->CNT);
