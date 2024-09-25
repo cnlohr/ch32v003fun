@@ -1222,6 +1222,13 @@ typedef struct
     __IO uint32_t EXTEN_CTR;
 } EXTEN_TypeDef;
 
+/* The reference manual for the 32v2xx/v3xx refernce this as "CTR" on "EXTEND" so adding an alias here. for any processor. */
+typedef struct
+{
+    __IO uint32_t CTR;
+} EXTEND_TypeDef;
+
+
 #if defined(CH32V20x) || defined(CH32V30x)
 /* OPA Registers */
 typedef struct
@@ -2757,6 +2764,7 @@ typedef struct
 #define OB                                      ((OB_TypeDef *)OB_BASE)
 #define ESIG                                    ((ESG_TypeDef *)ESIG_BASE)
 #define EXTEN                                   ((EXTEN_TypeDef *)EXTEN_BASE)
+#define EXTEND                                  ((EXTEND_TypeDef *)EXTEN_BASE)  // Alias to EXTEN
 
 #if defined(CH32V20x)
 #if defined(CH32V20x_D8) || defined(CH32V20x_D8W)
