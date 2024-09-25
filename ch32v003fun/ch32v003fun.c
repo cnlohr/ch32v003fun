@@ -762,7 +762,7 @@ extern uint32_t * _edata;
 void DefaultIRQHandler( void )
 {
 	// Infinite Loop
-#if defined( DEBUG )
+#if FUNCONF_DEBUG
 	printf( "DefaultIRQHandler MSTATUS:%08x MTVAL:%08x MCAUSE:%08x MEPC:%08x\n", (int)__get_MSTATUS(), (int)__get_MTVAL(), (int)__get_MCAUSE(), (int)__get_MEPC() );
 #endif
 	asm volatile( "1: j 1b" );
