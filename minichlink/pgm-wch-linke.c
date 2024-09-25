@@ -335,7 +335,7 @@ static int LESetupInterface( void * d )
 	{
 		// Read DMSTATUS - in case we are a ch32x035, or other chip that does not respond to \x81\x0d\x01\x02.
 		wch_link_command( dev, "\x81\x08\x06\x05\x11\x00\x00\x00\x00\x01", 11, (int*)&transferred, rbuff, 1024 ); // Reply: Ignored, 820d050900300500
-		if( transferred == 9 && rbuff[8] != 0x02 && rbuff[8] != 0x03 )
+		if( transferred == 9 && rbuff[8] != 0x02 && rbuff[8] != 0x03 && rbuff[8] != 0x00 )
 		{
 			// Already connected.
 			if( is_already_connected )
@@ -383,7 +383,7 @@ static int LESetupInterface( void * d )
 		}
 	} while( 1 );
 
-	printf( "Full Chip Type Reply: [%d] %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n", transferred, rbuff[0], rbuff[1], rbuff[2], rbuff[3], rbuff[4], rbuff[5], rbuff[6], rbuff[7] );
+	printf( "Full Chip Type Reply: [%d] %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n", transferred, rbuff[0], rbuff[1], rbuff[2], rbuff[3], rbuff[4], rbuff[5], rbuff[6], rbuff[7], rbuff[8] );
 
 	enum RiscVChip chip = (enum RiscVChip)rbuff[3];
 	if( ( chip == 0x08 || chip > 0x09 ) && chip != CHIP_CH32X03x ) {
@@ -421,10 +421,10 @@ retry_DoneOp:
 	{
 		fprintf( stderr, "Setup success\n" );
 	}
-
 	// This puts the processor on hold to allow the debugger to run.
 	// Recommended to switch to 05 from 09 by Alexander M
 	//	wch_link_command( dev, "\x81\x11\x01\x09", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Chip ID + Other data (see below)
+
 retry_ID:
 	wch_link_command( dev, "\x81\x11\x01\x05", 4, (int*)&transferred, rbuff, 1024 ); // Reply: Chip ID + Other data (see below)
 
