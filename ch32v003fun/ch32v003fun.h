@@ -19,6 +19,7 @@
 		funPinMode( PA2, GPIO_CFGLR_OUT_10Mhz_PP );
 		funDigitalWrite( PA2, FUN_HIGH );
 		funDigitalWrite( PA2, FUN_HIGH );
+		funAnalogRead( 0 ); // Not Pin number, but rather analog number.
 
 	4. Delays
 		Delay_Us(n)
@@ -13659,9 +13660,28 @@ extern "C" {
 #define funGpioInitA() { RCC->APB2PCENR |= ( RCC_APB2Periph_AFIO | RCC_APB2Periph_GPIOA ); }
 #define funGpioInitC() { RCC->APB2PCENR |= ( RCC_APB2Periph_AFIO | RCC_APB2Periph_GPIOC ); }
 #define funGpioInitD() { RCC->APB2PCENR |= ( RCC_APB2Periph_AFIO | RCC_APB2Periph_GPIOD ); }
-#define funDigitalRead( pin ) ((GpioOf(pin)->INDR >> ((pin)&0xf)) & 1)
+#define funDigitalRead( pin ) ((int)((GpioOf(pin)->INDR >> ((pin)&0xf)) & 1))
 
 
+#define ANALOG_0 0
+#define ANALOG_1 1
+#define ANALOG_2 2
+#define ANALOG_3 3
+#define ANALOG_4 4
+#define ANALOG_5 5
+#define ANALOG_6 6
+#define ANALOG_7 7
+#define ANALOG_8 8
+#define ANALOG_9 9
+#define ANALOG_10 10
+#define ANALOG_11 11
+
+// Initialize the ADC calibrate it and set some sane defaults.
+void funAnalogInit();
+
+// Read an analog input (not a GPIO pin number)
+// Be sure to call funAnalogInit first.
+int funAnalogRead( int nAnalogNumber );
 
 #if defined(__riscv) || defined(__riscv__) || defined( CH32V003FUN_BASE )
 
