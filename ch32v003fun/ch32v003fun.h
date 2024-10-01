@@ -13215,20 +13215,28 @@ RV_STATIC_INLINE void SetVTFIRQ(uint32_t addr, IRQn_Type IRQn, uint8_t num, Func
  */
 RV_STATIC_INLINE void NVIC_SystemReset(void)
 {
-  NVIC->CFGR = NVIC_KEY3|(1<<7);
+	NVIC->CFGR = NVIC_KEY3|(1<<7);
 }
 
 // For configuring INTSYSCR, for interrupt nesting + hardware stack enable.
 static inline uint32_t __get_INTSYSCR(void)
 {
 	uint32_t result;
-	__ASM volatile("csrr %0, 0x804": "=r"(result));
+	__ASM volatile(	
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0, 0x804": "=r"(result));
 	return (result);
 }
 
 static inline void __set_INTSYSCR( uint32_t value )
 {
-    __ASM volatile("csrw 0x804, %0" : : "r"(value));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrw 0x804, %0" : : "r"(value));
 }
 
 #if defined(CH32V30x)
@@ -13242,7 +13250,11 @@ static inline void __set_INTSYSCR( uint32_t value )
 static inline uint32_t __get_FFLAGS(void)
 {
 	uint32_t result;
-	__ASM volatile ( "csrr %0," "fflags" : "=r" (result) );
+	__ASM volatile ( 
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0," "fflags" : "=r" (result) );
 	return (result);
 }
 
@@ -13254,7 +13266,11 @@ static inline uint32_t __get_FFLAGS(void)
  */
 static inline void __set_FFLAGS(uint32_t value)
 {
-	__ASM volatile ("csrw fflags, %0" : : "r" (value) );
+	__ASM volatile (
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrw fflags, %0" : : "r" (value) );
 }
 
 /*********************************************************************
@@ -13265,7 +13281,11 @@ static inline void __set_FFLAGS(uint32_t value)
 static inline uint32_t __get_FRM(void)
 {
 	uint32_t result;
-	__ASM volatile ( "csrr %0," "frm" : "=r" (result) );
+	__ASM volatile ( 
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0," "frm" : "=r" (result) );
 	return (result);
 }
 
@@ -13277,7 +13297,11 @@ static inline uint32_t __get_FRM(void)
  */
 static inline void __set_FRM(uint32_t value)
 {
-	__ASM volatile ("csrw frm, %0" : : "r" (value) );
+	__ASM volatile (
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrw frm, %0" : : "r" (value) );
 }
 
 /*********************************************************************
@@ -13288,7 +13312,11 @@ static inline void __set_FRM(uint32_t value)
 static inline uint32_t __get_FCSR(void)
 {
 	uint32_t result;
-	__ASM volatile ( "csrr %0," "fcsr" : "=r" (result) );
+	__ASM volatile (
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0," "fcsr" : "=r" (result) );
 	return (result);
 }
 
@@ -13300,7 +13328,11 @@ static inline uint32_t __get_FCSR(void)
  */
 static inline void __set_FCSR(uint32_t value)
 {
-	__ASM volatile ("csrw fcsr, %0" : : "r" (value) );
+	__ASM volatile (	
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrw fcsr, %0" : : "r" (value) );
 }
 
 #endif // CH32V30x
@@ -13313,7 +13345,11 @@ static inline void __set_FCSR(uint32_t value)
 static inline uint32_t __get_MSTATUS(void)
 {
 	uint32_t result;
-	__ASM volatile("csrr %0," "mstatus": "=r"(result));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0," "mstatus": "=r"(result));
 	return (result);
 }
 
@@ -13325,7 +13361,11 @@ static inline uint32_t __get_MSTATUS(void)
  */
 static inline void __set_MSTATUS(uint32_t value)
 {
-	__ASM volatile("csrw mstatus, %0" : : "r"(value));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrw mstatus, %0" : : "r"(value));
 }
 
 /*********************************************************************
@@ -13336,7 +13376,11 @@ static inline void __set_MSTATUS(uint32_t value)
 static inline uint32_t __get_MISA(void)
 {
 	uint32_t result;
-	__ASM volatile("csrr %0,""misa" : "=r"(result));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0,""misa" : "=r"(result));
 	return (result);
 }
 
@@ -13348,7 +13392,11 @@ static inline uint32_t __get_MISA(void)
  */
 static inline void __set_MISA(uint32_t value)
 {
-	__ASM volatile("csrw misa, %0" : : "r"(value));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrw misa, %0" : : "r"(value));
 }
 
 /*********************************************************************
@@ -13361,7 +13409,11 @@ static inline void __set_MISA(uint32_t value)
 static inline uint32_t __get_MTVEC(void)
 {
 	uint32_t result;
-	__ASM volatile("csrr %0," "mtvec": "=r"(result));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0," "mtvec": "=r"(result));
 	return (result);
 }
 
@@ -13373,7 +13425,11 @@ static inline uint32_t __get_MTVEC(void)
  */
 static inline void __set_MTVEC(uint32_t value)
 {
-	__ASM volatile("csrw mtvec, %0":: "r"(value));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrw mtvec, %0":: "r"(value));
 }
 
 /*********************************************************************
@@ -13384,7 +13440,11 @@ static inline void __set_MTVEC(uint32_t value)
 static inline uint32_t __get_MSCRATCH(void)
 {
 	uint32_t result;
-	__ASM volatile("csrr %0," "mscratch" : "=r"(result));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0," "mscratch" : "=r"(result));
 	return (result);
 }
 
@@ -13396,7 +13456,11 @@ static inline uint32_t __get_MSCRATCH(void)
  */
 static inline void __set_MSCRATCH(uint32_t value)
 {
-	__ASM volatile("csrw mscratch, %0" : : "r"(value));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrw mscratch, %0" : : "r"(value));
 }
 
 /*********************************************************************
@@ -13419,7 +13483,11 @@ static inline uint32_t __get_MEPC(void)
  */
 static inline void __set_MEPC(uint32_t value)
 {
-	__ASM volatile("csrw mepc, %0" : : "r"(value));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrw mepc, %0" : : "r"(value));
 }
 
 /*********************************************************************
@@ -13429,10 +13497,13 @@ static inline void __set_MEPC(uint32_t value)
  */
 static inline uint32_t __get_MCAUSE(void)
 {
-    uint32_t result;
-
-	__ASM volatile("csrr %0," "mcause": "=r"(result));
-    return (result);
+	uint32_t result;
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0," "mcause": "=r"(result));
+	return (result);
 }
 
 /*********************************************************************
@@ -13442,7 +13513,11 @@ static inline uint32_t __get_MCAUSE(void)
  */
 static inline void __set_MCAUSE(uint32_t value)
 {
-	__ASM volatile("csrw mcause, %0":: "r"(value));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrw mcause, %0":: "r"(value));
 }
 
 /*********************************************************************
@@ -13454,7 +13529,11 @@ static inline uint32_t __get_MTVAL(void)
 {
 	uint32_t result;
 
-	__ASM volatile ( "csrr %0," "mtval" : "=r" (result) );
+	__ASM volatile (
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0," "mtval" : "=r" (result) );
 	return (result);
 }
 
@@ -13465,7 +13544,11 @@ static inline uint32_t __get_MTVAL(void)
  */
 static inline void __set_MTVAL(uint32_t value)
 {
-	__ASM volatile ("csrw mtval, %0" : : "r" (value) );
+	__ASM volatile (
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrw mtval, %0" : : "r" (value) );
 }
 
 /*********************************************************************
@@ -13476,7 +13559,11 @@ static inline void __set_MTVAL(uint32_t value)
 static inline uint32_t __get_MVENDORID(void)
 {
 	uint32_t result;
-	__ASM volatile("csrr %0,""mvendorid": "=r"(result));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0,""mvendorid": "=r"(result));
 	return (result);
 }
 
@@ -13489,7 +13576,11 @@ static inline uint32_t __get_MARCHID(void)
 {
 	uint32_t result;
 
-	__ASM volatile("csrr %0,""marchid": "=r"(result));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0,""marchid": "=r"(result));
 	return (result);
 }
 
@@ -13501,7 +13592,11 @@ static inline uint32_t __get_MARCHID(void)
 static inline uint32_t __get_MIMPID(void)
 {
 	uint32_t result;
-	__ASM volatile("csrr %0,""mimpid": "=r"(result));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0,""mimpid": "=r"(result));
 	return (result);
 }
 
@@ -13513,7 +13608,11 @@ static inline uint32_t __get_MIMPID(void)
 static inline uint32_t __get_MHARTID(void)
 {
 	uint32_t result;
-	__ASM volatile("csrr %0,""mhartid": "=r"(result));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0,""mhartid": "=r"(result));
 	return (result);
 }
 
@@ -13525,7 +13624,8 @@ static inline uint32_t __get_MHARTID(void)
 static inline uint32_t __get_SP(void)
 {
 	uint32_t result;
-	__ASM volatile("mv %0,""sp": "=r"(result):);
+	__ASM volatile(
+	"mv %0,""sp": "=r"(result):);
 	return (result);
 }
 
