@@ -1571,6 +1571,46 @@ WEAK int putchar(int c)
 	return 1;
 }
 
+void funAnalogInit()
+{
+	//RCC->CFGR0 &= ~(0x1F<<11); // Assume ADCPRE = 0
+	RCC->APB2PCENR |= RCC_APB2Periph_ADC1;
+
+	// Reset ADC.
+	RCC->APB2PRSTR |= RCC_APB2Periph_ADC1;
+	RCC->APB2PRSTR &= ~RCC_APB2Periph_ADC1;
+
+	// set sampling time for all channels to 15 (A good middleground) ADC_SMP0_1.
+	ADC1->SAMPTR2 = (ADC_SMP0_1<<(3*0)) | (ADC_SMP0_1<<(3*1)) | (ADC_SMP0_1<<(3*2)) | (ADC_SMP0_1<<(3*3)) | (ADC_SMP0_1<<(3*4)) | (ADC_SMP0_1<<(3*5)) | (ADC_SMP0_1<<(3*6)) | (ADC_SMP0_1<<(3*7)) | (ADC_SMP0_1<<(3*8)) | (ADC_SMP0_1<<(3*9));
+	ADC1->SAMPTR1 = (ADC_SMP0_1<<(3*0)) | (ADC_SMP0_1<<(3*1)) | (ADC_SMP0_1<<(3*2)) | (ADC_SMP0_1<<(3*3)) | (ADC_SMP0_1<<(3*4)) | (ADC_SMP0_1<<(3*5));
+
+	ADC1->CTLR2 |= ADC_ADON | ADC_EXTSEL;	// turn on ADC and set rule group to sw trig
+
+	// Reset calibration
+	ADC1->CTLR2 |= ADC_RSTCAL;
+	while(ADC1->CTLR2 & ADC_RSTCAL);
+	
+	// Calibrate
+	ADC1->CTLR2 |= ADC_CAL;
+	while(ADC1->CTLR2 & ADC_CAL);
+
+}
+
+
+int funAnalogRead( int nAnalogNumber )
+{
+	ADC1->RSQR3 = nAnalogNumber;
+
+	// start sw conversion (auto clears)
+	ADC1->CTLR2 |= ADC_SWSTART;
+	
+	// wait for conversion complete
+	while(!(ADC1->STATR & ADC_EOC));
+	
+	// get result
+	return ADC1->RDATAR;
+}
+
 void SetupDebugPrintf()
 {
 	// Clear out the sending flag.
