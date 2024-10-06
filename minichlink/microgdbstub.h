@@ -24,6 +24,7 @@
 void RVNetPoll(void * dev );
 int RVSendGDBHaltReason( void * dev );
 void RVNetConnect( void * dev );
+int RVGetNumRegisters( void * dev );
 int RVReadCPURegister( void * dev, int regno, uint32_t * regret );
 int RVWriteCPURegister( void * dev, int regno, uint32_t value );
 void RVDebugExec( void * dev, int halt_reset_or_resume );
@@ -455,8 +456,10 @@ printf( "LEN: %08x %d %d %c\n", address_to_write, len, toflash, data[0] );
 	case 'g':
 	{
 		// Register Read (All regs)
-		char cts[17*8+1];
-		for( i = 0; i < 17; i++ )
+		int num_regs = RVGetNumRegisters( dev );
+
+		char cts[num_regs*8+1];
+		for( i = 0; i < num_regs+1; i++ )
 		{
 			uint32_t regret;
 			if( RVReadCPURegister( dev, i, &regret ) ) goto err;
