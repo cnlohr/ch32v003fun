@@ -86,7 +86,7 @@ else
 
 		TARGET_MCU_LD:=4		
 	else ifeq ($(findstring CH32V20,$(TARGET_MCU)),CH32V20) # CH32V203
-		TARGET_MCU_PACKAGE?=CH32V203F8P6
+		TARGET_MCU_PACKAGE?=CH32V203F6P6
 		CFLAGS_ARCH+=	-march=rv32imac \
 			-mabi=ilp32 \
 			-DCH32V20x=1
