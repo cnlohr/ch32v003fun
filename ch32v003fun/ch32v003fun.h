@@ -7812,6 +7812,7 @@ static __I uint8_t ADCPrescTable[4] = {2, 4, 6, 8};
 /*ADC_output_buffer*/
 #define ADC_OutputBuffer_Enable                        ((uint32_t)0x04000000)
 #define ADC_OutputBuffer_Disable                       ((uint32_t)0x00000000)
+#define ADC_BUFEN                                      ((uint32_t)0x04000000)
 
 /*ADC_pga*/
 #define ADC_Pga_1                                      ((uint32_t)0x00000000)
