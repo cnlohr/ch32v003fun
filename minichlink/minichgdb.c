@@ -129,6 +129,12 @@ void RVNetPoll(void * dev )
 	}
 }
 
+int RVGetNumRegisters( void * dev )
+{
+	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
+	return iss->nr_registers_for_debug;
+}
+
 int RVReadCPURegister( void * dev, int regno, uint32_t * regret )
 {
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
