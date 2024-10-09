@@ -28,7 +28,7 @@
 #endif
 
 #ifndef SSD1306_BAUD_RATE_PRESCALER
-#define SPI_BaudRatePrescaler_2
+#define SSD1306_BAUD_RATE_PRESCALER SPI_BaudRatePrescaler_2
 #endif
 
 /*
