@@ -18,7 +18,8 @@
 		funGpioInitAll();
 		funPinMode( PA2, GPIO_CFGLR_OUT_10Mhz_PP );
 		funDigitalWrite( PA2, FUN_HIGH );
-		funDigitalWrite( PA2, FUN_HIGH );
+		funDigitalWrite( PA2, FUN_LOW );
+		funAnalogRead( 0 ); // Not Pin number, but rather analog number.
 
 	4. Delays
 		Delay_Us(n)
@@ -1226,6 +1227,13 @@ typedef struct
 {
     __IO uint32_t EXTEN_CTR;
 } EXTEN_TypeDef;
+
+/* The reference manual for the ch32v2xx/v3xx reference this as "CTR" field in the "EXTEND" register so adding an alias here. */
+typedef struct
+{
+    __IO uint32_t CTR;
+} EXTEND_TypeDef;
+
 
 #if defined(CH32V20x) || defined(CH32V30x)
 /* OPA Registers */
@@ -2762,6 +2770,7 @@ typedef struct
 #define OB                                      ((OB_TypeDef *)OB_BASE)
 #define ESIG                                    ((ESG_TypeDef *)ESIG_BASE)
 #define EXTEN                                   ((EXTEN_TypeDef *)EXTEN_BASE)
+#define EXTEND                                  ((EXTEND_TypeDef *)EXTEN_BASE)  // Alias to EXTEN
 
 #if defined(CH32V20x)
 #if defined(CH32V20x_D8) || defined(CH32V20x_D8W)
@@ -7803,6 +7812,7 @@ static __I uint8_t ADCPrescTable[4] = {2, 4, 6, 8};
 /*ADC_output_buffer*/
 #define ADC_OutputBuffer_Enable                        ((uint32_t)0x04000000)
 #define ADC_OutputBuffer_Disable                       ((uint32_t)0x00000000)
+#define ADC_BUFEN                                      ((uint32_t)0x04000000)
 
 /*ADC_pga*/
 #define ADC_Pga_1                                      ((uint32_t)0x00000000)
@@ -13209,20 +13219,28 @@ RV_STATIC_INLINE void SetVTFIRQ(uint32_t addr, IRQn_Type IRQn, uint8_t num, Func
  */
 RV_STATIC_INLINE void NVIC_SystemReset(void)
 {
-  NVIC->CFGR = NVIC_KEY3|(1<<7);
+	NVIC->CFGR = NVIC_KEY3|(1<<7);
 }
 
 // For configuring INTSYSCR, for interrupt nesting + hardware stack enable.
 static inline uint32_t __get_INTSYSCR(void)
 {
 	uint32_t result;
-	__ASM volatile("csrr %0, 0x804": "=r"(result));
+	__ASM volatile(	
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0, 0x804": "=r"(result));
 	return (result);
 }
 
 static inline void __set_INTSYSCR( uint32_t value )
 {
-    __ASM volatile("csrw 0x804, %0" : : "r"(value));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrw 0x804, %0" : : "r"(value));
 }
 
 #if defined(CH32V30x)
@@ -13236,7 +13254,11 @@ static inline void __set_INTSYSCR( uint32_t value )
 static inline uint32_t __get_FFLAGS(void)
 {
 	uint32_t result;
-	__ASM volatile ( "csrr %0," "fflags" : "=r" (result) );
+	__ASM volatile ( 
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0," "fflags" : "=r" (result) );
 	return (result);
 }
 
@@ -13248,7 +13270,11 @@ static inline uint32_t __get_FFLAGS(void)
  */
 static inline void __set_FFLAGS(uint32_t value)
 {
-	__ASM volatile ("csrw fflags, %0" : : "r" (value) );
+	__ASM volatile (
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrw fflags, %0" : : "r" (value) );
 }
 
 /*********************************************************************
@@ -13259,7 +13285,11 @@ static inline void __set_FFLAGS(uint32_t value)
 static inline uint32_t __get_FRM(void)
 {
 	uint32_t result;
-	__ASM volatile ( "csrr %0," "frm" : "=r" (result) );
+	__ASM volatile ( 
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0," "frm" : "=r" (result) );
 	return (result);
 }
 
@@ -13271,7 +13301,11 @@ static inline uint32_t __get_FRM(void)
  */
 static inline void __set_FRM(uint32_t value)
 {
-	__ASM volatile ("csrw frm, %0" : : "r" (value) );
+	__ASM volatile (
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrw frm, %0" : : "r" (value) );
 }
 
 /*********************************************************************
@@ -13282,7 +13316,11 @@ static inline void __set_FRM(uint32_t value)
 static inline uint32_t __get_FCSR(void)
 {
 	uint32_t result;
-	__ASM volatile ( "csrr %0," "fcsr" : "=r" (result) );
+	__ASM volatile (
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0," "fcsr" : "=r" (result) );
 	return (result);
 }
 
@@ -13294,7 +13332,11 @@ static inline uint32_t __get_FCSR(void)
  */
 static inline void __set_FCSR(uint32_t value)
 {
-	__ASM volatile ("csrw fcsr, %0" : : "r" (value) );
+	__ASM volatile (	
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrw fcsr, %0" : : "r" (value) );
 }
 
 #endif // CH32V30x
@@ -13307,7 +13349,11 @@ static inline void __set_FCSR(uint32_t value)
 static inline uint32_t __get_MSTATUS(void)
 {
 	uint32_t result;
-	__ASM volatile("csrr %0," "mstatus": "=r"(result));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0," "mstatus": "=r"(result));
 	return (result);
 }
 
@@ -13319,7 +13365,11 @@ static inline uint32_t __get_MSTATUS(void)
  */
 static inline void __set_MSTATUS(uint32_t value)
 {
-	__ASM volatile("csrw mstatus, %0" : : "r"(value));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrw mstatus, %0" : : "r"(value));
 }
 
 /*********************************************************************
@@ -13330,7 +13380,11 @@ static inline void __set_MSTATUS(uint32_t value)
 static inline uint32_t __get_MISA(void)
 {
 	uint32_t result;
-	__ASM volatile("csrr %0,""misa" : "=r"(result));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0,""misa" : "=r"(result));
 	return (result);
 }
 
@@ -13342,7 +13396,11 @@ static inline uint32_t __get_MISA(void)
  */
 static inline void __set_MISA(uint32_t value)
 {
-	__ASM volatile("csrw misa, %0" : : "r"(value));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrw misa, %0" : : "r"(value));
 }
 
 /*********************************************************************
@@ -13355,7 +13413,11 @@ static inline void __set_MISA(uint32_t value)
 static inline uint32_t __get_MTVEC(void)
 {
 	uint32_t result;
-	__ASM volatile("csrr %0," "mtvec": "=r"(result));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0," "mtvec": "=r"(result));
 	return (result);
 }
 
@@ -13367,7 +13429,11 @@ static inline uint32_t __get_MTVEC(void)
  */
 static inline void __set_MTVEC(uint32_t value)
 {
-	__ASM volatile("csrw mtvec, %0":: "r"(value));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrw mtvec, %0":: "r"(value));
 }
 
 /*********************************************************************
@@ -13378,7 +13444,11 @@ static inline void __set_MTVEC(uint32_t value)
 static inline uint32_t __get_MSCRATCH(void)
 {
 	uint32_t result;
-	__ASM volatile("csrr %0," "mscratch" : "=r"(result));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0," "mscratch" : "=r"(result));
 	return (result);
 }
 
@@ -13390,7 +13460,11 @@ static inline uint32_t __get_MSCRATCH(void)
  */
 static inline void __set_MSCRATCH(uint32_t value)
 {
-	__ASM volatile("csrw mscratch, %0" : : "r"(value));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrw mscratch, %0" : : "r"(value));
 }
 
 /*********************************************************************
@@ -13413,7 +13487,11 @@ static inline uint32_t __get_MEPC(void)
  */
 static inline void __set_MEPC(uint32_t value)
 {
-	__ASM volatile("csrw mepc, %0" : : "r"(value));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrw mepc, %0" : : "r"(value));
 }
 
 /*********************************************************************
@@ -13423,10 +13501,13 @@ static inline void __set_MEPC(uint32_t value)
  */
 static inline uint32_t __get_MCAUSE(void)
 {
-    uint32_t result;
-
-	__ASM volatile("csrr %0," "mcause": "=r"(result));
-    return (result);
+	uint32_t result;
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0," "mcause": "=r"(result));
+	return (result);
 }
 
 /*********************************************************************
@@ -13436,7 +13517,11 @@ static inline uint32_t __get_MCAUSE(void)
  */
 static inline void __set_MCAUSE(uint32_t value)
 {
-	__ASM volatile("csrw mcause, %0":: "r"(value));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrw mcause, %0":: "r"(value));
 }
 
 /*********************************************************************
@@ -13448,7 +13533,11 @@ static inline uint32_t __get_MTVAL(void)
 {
 	uint32_t result;
 
-	__ASM volatile ( "csrr %0," "mtval" : "=r" (result) );
+	__ASM volatile (
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0," "mtval" : "=r" (result) );
 	return (result);
 }
 
@@ -13459,7 +13548,11 @@ static inline uint32_t __get_MTVAL(void)
  */
 static inline void __set_MTVAL(uint32_t value)
 {
-	__ASM volatile ("csrw mtval, %0" : : "r" (value) );
+	__ASM volatile (
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrw mtval, %0" : : "r" (value) );
 }
 
 /*********************************************************************
@@ -13470,7 +13563,11 @@ static inline void __set_MTVAL(uint32_t value)
 static inline uint32_t __get_MVENDORID(void)
 {
 	uint32_t result;
-	__ASM volatile("csrr %0,""mvendorid": "=r"(result));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0,""mvendorid": "=r"(result));
 	return (result);
 }
 
@@ -13483,7 +13580,11 @@ static inline uint32_t __get_MARCHID(void)
 {
 	uint32_t result;
 
-	__ASM volatile("csrr %0,""marchid": "=r"(result));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0,""marchid": "=r"(result));
 	return (result);
 }
 
@@ -13495,7 +13596,11 @@ static inline uint32_t __get_MARCHID(void)
 static inline uint32_t __get_MIMPID(void)
 {
 	uint32_t result;
-	__ASM volatile("csrr %0,""mimpid": "=r"(result));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0,""mimpid": "=r"(result));
 	return (result);
 }
 
@@ -13507,7 +13612,11 @@ static inline uint32_t __get_MIMPID(void)
 static inline uint32_t __get_MHARTID(void)
 {
 	uint32_t result;
-	__ASM volatile("csrr %0,""mhartid": "=r"(result));
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0,""mhartid": "=r"(result));
 	return (result);
 }
 
@@ -13519,11 +13628,38 @@ static inline uint32_t __get_MHARTID(void)
 static inline uint32_t __get_SP(void)
 {
 	uint32_t result;
-	__ASM volatile("mv %0,""sp": "=r"(result):);
+	__ASM volatile(
+	"mv %0,""sp": "=r"(result):);
 	return (result);
 }
 
 #endif
+
+#if defined(__riscv) || defined(__riscv__) || defined( CH32V003FUN_BASE )
+// _JBTYPE using long long to make sure the alignment is align to 8 byte,
+// otherwise in rv32imafd, store/restore FPR may mis-align.
+#define _JBTYPE long long
+#if defined( __riscv_abi_rve )
+#define _JBLEN ((4*sizeof(long))/sizeof(long))
+#elif defined( __riscv_float_abi_double )
+#define _JBLEN ((14*sizeof(long) + 12*sizeof(double))/sizeof(long))
+#elif defined( __riscv_float_abi_single )
+#define _JBLEN ((14*sizeof(long) + 12*sizeof(float))/sizeof(long))
+#else
+#define _JBLEN ((14*sizeof(long))/sizeof(long))
+#endif
+
+#ifdef _JBLEN
+#ifdef _JBTYPE
+typedef _JBTYPE jmp_buf[_JBLEN];
+#else
+typedef int jmp_buf[_JBLEN];
+#endif // _JBTYPE
+#endif // _JBLEN
+
+int setjmp( jmp_buf env );
+void longjmp( jmp_buf env, int val );
+#endif // defined(__riscv) || defined(__riscv__) || defined( CH32V003FUN_BASE )
 
 #ifdef __cplusplus
 }
@@ -13661,9 +13797,28 @@ extern "C" {
 #define funGpioInitA() { RCC->APB2PCENR |= ( RCC_APB2Periph_AFIO | RCC_APB2Periph_GPIOA ); }
 #define funGpioInitC() { RCC->APB2PCENR |= ( RCC_APB2Periph_AFIO | RCC_APB2Periph_GPIOC ); }
 #define funGpioInitD() { RCC->APB2PCENR |= ( RCC_APB2Periph_AFIO | RCC_APB2Periph_GPIOD ); }
-#define funDigitalRead( pin ) ((GpioOf(pin)->INDR >> ((pin)&0xf)) & 1)
+#define funDigitalRead( pin ) ((int)((GpioOf(pin)->INDR >> ((pin)&0xf)) & 1))
 
 
+#define ANALOG_0 0
+#define ANALOG_1 1
+#define ANALOG_2 2
+#define ANALOG_3 3
+#define ANALOG_4 4
+#define ANALOG_5 5
+#define ANALOG_6 6
+#define ANALOG_7 7
+#define ANALOG_8 8
+#define ANALOG_9 9
+#define ANALOG_10 10
+#define ANALOG_11 11
+
+// Initialize the ADC calibrate it and set some sane defaults.
+void funAnalogInit();
+
+// Read an analog input (not a GPIO pin number)
+// Be sure to call funAnalogInit first.
+int funAnalogRead( int nAnalogNumber );
 
 #if defined(__riscv) || defined(__riscv__) || defined( CH32V003FUN_BASE )
 

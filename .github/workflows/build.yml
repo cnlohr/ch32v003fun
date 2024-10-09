@@ -8,7 +8,7 @@ jobs:
     outputs:
       dir: ${{ steps.set-dirs.outputs.dir }} # generate output name dir by using inner step output
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - id: set-dirs # Give it an id to handle to get step outputs in the outputs key above
         run: echo "::set-output name=dir::$(find examples* -name Makefile -print0 |xargs -0 -n 1 dirname | jq -R -s -c 'split("\n")[:-1]')"
         # Define step output named dir base on ls command transformed to JSON thanks to jq
@@ -21,7 +21,7 @@ jobs:
       matrix:
         example: ${{fromJson(needs.find-examples.outputs.dir)}}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Install Dependencies
       run: sudo apt-get update && sudo apt-get install -y build-essential make libnewlib-dev gcc-riscv64-unknown-elf libusb-1.0-0-dev libudev-dev
     - name: Build ${{ matrix.example }}
@@ -34,14 +34,14 @@ jobs:
         os: [windows-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/cache@v3
+    - uses: actions/checkout@v4
+    - uses: actions/cache@v4
       with:
         path: |
           ~/.cache/pip
           ~/.platformio/.cache
         key: ${{ runner.os }}-pio
-    - uses: actions/setup-python@v4
+    - uses: actions/setup-python@v5
       with:
         python-version: '3.9'
     - name: Install PlatformIO Core
