@@ -1304,7 +1304,7 @@ void handle_reset( void )
 "	la t0, InterruptVector\n\
 	ori t0, t0, 3\n\
 	csrw mtvec, t0\n"
-	: : "InterruptVector" (InterruptVector) : "t0", "memory"
+	: : [InterruptVector]"r"(InterruptVector) : "t0", "memory"
 	);
 
 #if defined( FUNCONF_SYSTICK_USE_HCLK ) && FUNCONF_SYSTICK_USE_HCLK && !defined(CH32V10x)
