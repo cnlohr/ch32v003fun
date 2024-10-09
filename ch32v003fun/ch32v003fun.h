@@ -18,7 +18,7 @@
 		funGpioInitAll();
 		funPinMode( PA2, GPIO_CFGLR_OUT_10Mhz_PP );
 		funDigitalWrite( PA2, FUN_HIGH );
-		funDigitalWrite( PA2, FUN_HIGH );
+		funDigitalWrite( PA2, FUN_LOW );
 		funAnalogRead( 0 ); // Not Pin number, but rather analog number.
 
 	4. Delays
