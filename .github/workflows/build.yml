@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: set-dirs # Give it an id to handle to get step outputs in the outputs key above
-        run: echo "::set-output name=dir::$(find examples* -name Makefile -print0 |xargs -0 -n 1 dirname | jq -R -s -c 'split("\n")[:-1]')"
+        run: echo "::set-output name=dir::$(find examples* -maxdepth 2 -name Makefile -print0 |xargs -0 -n 1 dirname | jq -R -s -c 'split("\n")[:-1]')"
         # Define step output named dir base on ls command transformed to JSON thanks to jq
   # Build using native Makefile buildsystem
   makefile-build:
