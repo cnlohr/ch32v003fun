@@ -71,8 +71,6 @@ void USBHD_IRQHandler()
 	funDigitalWrite( PB0, 1 );
 #endif
 
-	int tries = 0;
-
 	// Combined FG + ST flag.
 	uint16_t intfgst = *(uint16_t*)(&USBOTG_FS->INT_FG);
 	int len = 0;
