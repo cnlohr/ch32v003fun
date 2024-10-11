@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "hsusb_v30x.h"
+#include "hsusb_v30x.c" // Normally would be in ADDITIONAL_C_FILES, but the PIO build system doesn't currently understand that.
 
 uint32_t count;
 

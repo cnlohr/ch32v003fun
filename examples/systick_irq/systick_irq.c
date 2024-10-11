@@ -2,99 +2,117 @@
  * Example for using SysTick with IRQs
  * 03-25-2023 E. Brombaugh
  * 05-12-2023 C. Lohr (Modified to reflect updated sysclk)
+ * 09-25-2024 ADBeta (Minor updates to main loop, comments and added
+ *                    convenient macro function)
  */
 
 #include "ch32v003fun.h"
 #include <stdio.h>
 
-volatile uint32_t systick_cnt;
+// Number of ticks elapsed per millisecond (48,000 when using 48MHz Clock)
+#define SYSTICK_ONE_MILLISECOND ((uint32_t)FUNCONF_SYSTEM_CORE_CLOCK / 1000)
+// Number of ticks elapsed per microsecond (48 when using 48MHz Clock)
+#define SYSTICK_ONE_MICROSECOND ((uint32_t)FUNCONF_SYSTEM_CORE_CLOCK / 1000000)
+
+// Simple macro functions to give a arduino-like functions to call
+// millis() reads the incremented systick variable
+// micros() reads the raw SysTick Count, and divides it by the number of 
+// ticks per microsecond ( WARN: Wraps every 90 seconds!)
+#define millis() (systick_millis)
+#define micros() (SysTick->CNT / SYSTICK_ONE_MICROSECOND)
+
+// Incremented in the SysTick IRQ - in this example once per millisecond
+volatile uint32_t systick_millis;
 
 /*
- * Start up the SysTick IRQ
+ * Initialises the SysTick to trigger an IRQ with auto-reload, using HCLK/1 as
+ * its clock source
  */
 void systick_init(void)
 {
-	/* disable default SysTick behavior */
-	SysTick->CTLR = 0;
+	// Reset any pre-existing configuration
+	SysTick->CTLR = 0x0000;
 	
-	/* enable the SysTick IRQ */
+	// Set the compare register to trigger once per millisecond
+	SysTick->CMP = SYSTICK_ONE_MILLISECOND - 1;
+
+	// Reset the Count Register, and the global millis counter to 0
+	SysTick->CNT = 0x00000000;
+	systick_millis = 0x00000000;
+	
+	// Set the SysTick Configuration
+	// NOTE: By not setting SYSTICK_CTLR_STRE, we maintain compatibility with
+	// busywait delay funtions used by ch32v003_fun.
+	SysTick->CTLR |= SYSTICK_CTLR_STE   |  // Enable Counter
+	                 SYSTICK_CTLR_STIE  |  // Enable Interrupts
+	                 SYSTICK_CTLR_STCLK ;  // Set Clock Source to HCLK/1
+	
+	// Enable the SysTick IRQ
 	NVIC_EnableIRQ(SysTicK_IRQn);
-	
-	/* Set the tick interval to 1ms for normal op */
-	SysTick->CMP = (FUNCONF_SYSTEM_CORE_CLOCK/1000)-1;
-	
-	/* Start at zero */
-	SysTick->CNT = 0;
-	systick_cnt = 0;
-	
-	/* Enable SysTick counter, IRQ, HCLK/1 */
-	SysTick->CTLR = SYSTICK_CTLR_STE | SYSTICK_CTLR_STIE |
-					SYSTICK_CTLR_STCLK;
 }
 
 /*
- * SysTick ISR just counts ticks
- * note - the __attribute__((interrupt)) syntax is crucial!
+ * SysTick ISR - must be lightweight to prevent the CPU from bogging down.
+ * Increments Compare Register and systick_millis when triggered (every 1ms)
+ * NOTE: the `__attribute__((interrupt))` attribute is very important
  */
 void SysTick_Handler(void) __attribute__((interrupt));
 void SysTick_Handler(void)
 {
-	// move the compare further ahead in time.
-	// as a warning, if more than this length of time
-	// passes before triggering, you may miss your
-	// interrupt.
-	SysTick->CMP += (FUNCONF_SYSTEM_CORE_CLOCK/1000);
+	// Increment the Compare Register for the next trigger
+	// If more than this number of ticks elapse before the trigger is reset,
+	// you may miss your next interrupt trigger
+	// (Make sure the IQR is lightweight and CMP value is reasonable)
+	SysTick->CMP += SYSTICK_ONE_MILLISECOND;
 
-	/* clear IRQ */
-	SysTick->SR = 0;
+	// Clear the trigger state for the next IRQ
+	SysTick->SR = 0x00000000;
 
-	/* update counter */
-	systick_cnt++;
+	// Increment the milliseconds count
+	systick_millis++;
 }
 
-/*
- * entry
- */
-int main()
+
+int main(void)
 {
-	uint32_t count = 0;
-	
 	SystemInit();
 	Delay_Ms(100);
 
-	printf("\r\r\n\nsystick_irq example\n\r");
+	printf("\n\nsystick_irq example\n");
 
-	// init systick @ 1ms rate
+	// Initialise the IRQ 
 	printf("initializing systick...");
 	systick_init();
-	printf("done.\n\r");
+	printf("done.\n");
 	
-	// Enable GPIOs
-	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOC;
-
-	// GPIO D0 Push-Pull
-	GPIOD->CFGLR &= ~(0xf<<(4*0));
-	GPIOD->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*0);
-
-	// GPIO D4 Push-Pull
-	GPIOD->CFGLR &= ~(0xf<<(4*4));
-	GPIOD->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*4);
-
-	// GPIO C0 Push-Pull
-	GPIOC->CFGLR &= ~(0xf<<(4*0));
-	GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP)<<(4*0);
-
-	printf("looping...\n\r");
+	// Enable GPIOs for demonstration
+	funGpioInitAll();
+	funPinMode(PD0, GPIO_Speed_10MHz | GPIO_CNF_OUT_PP);
+	funPinMode(PD4, GPIO_Speed_10MHz | GPIO_CNF_OUT_PP);
+	funPinMode(PC0, GPIO_Speed_10MHz | GPIO_CNF_OUT_PP);
+		
+	printf("Beginning Loop...\n");
 	while(1)
 	{
-		GPIOD->BSHR = 1 | (1<<4);	 // Turn on GPIOs
-		Delay_Ms( 250 );
-		GPIOC->BSHR = 1;
-		Delay_Ms( 250 );
-		GPIOD->BSHR = (1<<16) | (1<<(16+4)); // Turn off GPIODs
-		Delay_Ms( 250 );
-		GPIOC->BSHR = (1<<16);
-		Delay_Ms( 250 );
-		printf( "Print #: %lu / Milliseconds: %lu / CNT: %lu\n\r", count++, systick_cnt, SysTick->CNT );
+		// Toggle the GPIO Pins with a delay - total delay will be 500ms
+		uint32_t start_millis = millis();
+		// On
+		funDigitalWrite(PD0, FUN_HIGH);
+		funDigitalWrite(PD4, FUN_HIGH);
+		funDigitalWrite(PC0, FUN_HIGH);
+		Delay_Ms(250);
+		// Off
+		funDigitalWrite(PD0, FUN_LOW);
+		funDigitalWrite(PD4, FUN_LOW);
+		funDigitalWrite(PC0, FUN_LOW);
+		Delay_Ms(250);
+		uint32_t end_millis = millis();
+		
+		// NOTE: Due to the time it takes for printf(), the Current Millis will
+		// increment more than 500 per loop
+		printf("\nMilliseconds taken:\t%lu\n", end_millis - start_millis);
+		printf("Current Milliseconds:\t%lu\n", millis());
+		printf("Current Microseconds:\t%lu\n", micros());
+		printf("SysTick->CNT:\t\t%lu\n", SysTick->CNT);
 	}
 }

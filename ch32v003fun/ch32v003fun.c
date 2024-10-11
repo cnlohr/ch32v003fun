@@ -1304,7 +1304,7 @@ void handle_reset( void )
 "	la t0, InterruptVector\n\
 	ori t0, t0, 3\n\
 	csrw mtvec, t0\n"
-	: : "InterruptVector" (InterruptVector) : "t0", "memory"
+	: : [InterruptVector]"r"(InterruptVector) : "t0", "memory"
 	);
 
 #if defined( FUNCONF_SYSTICK_USE_HCLK ) && FUNCONF_SYSTICK_USE_HCLK && !defined(CH32V10x)
@@ -1320,6 +1320,105 @@ void handle_reset( void )
 }
 
 #endif
+
+#if defined( __riscv_float_abi_double )
+#define FLOAD( src, offset, dst ) \
+"	fld " #src ", " #offset "*8(" #dst ")\n"
+#define FSTORE( dst, offset, src ) \
+"	fsd " #dst ", " #offset "*8(" #src ")\n"
+#elif defined( __riscv_float_abi_single )
+#define FLOAD( src, offset, dst ) \
+"	flw " #src ", " #offset "*4(" #dst ")\n"
+#define FSTORE( dst, offset, src ) \
+"	fsw " #dst ", " #offset "*4(" #src ")\n"
+#else // Soft float
+#endif
+
+__attribute__ ((naked)) int setjmp( jmp_buf env )
+{
+	asm volatile(
+	// Common registers
+"	sw ra, 0*4(a0)\n"
+"	sw s0, 1*4(a0)\n"
+"	sw s1, 2*4(a0)\n"
+"	sw sp, 3*4(a0)\n"
+
+    // RV32I only registers
+#if !defined( __riscv_abi_rve )
+"	sw s2, 4*4(a0)\n"
+"	sw s3, 5*4(a0)\n"
+"	sw s4, 6*4(a0)\n"
+"	sw s5, 7*4(a0)\n"
+"	sw s6, 8*4(a0)\n"
+"	sw s7, 9*4(a0)\n"
+"	sw s8, 10*4(a0)\n"
+"	sw s9, 11*4(a0)\n"
+"	sw s10, 12*4(a0)\n"
+"	sw s11, 13*4(a0)\n"
+#endif
+
+	// FPU registers
+#if defined( FSTORE )
+	FSTORE(fs2, 14, a0)
+	FSTORE(fs3, 15, a0)
+	FSTORE(fs4, 16, a0)
+	FSTORE(fs5, 17, a0)
+	FSTORE(fs6, 18, a0)
+	FSTORE(fs7, 19, a0)
+	FSTORE(fs8, 20, a0)
+	FSTORE(fs9, 21, a0)
+	FSTORE(fs10, 22, a0)
+	FSTORE(fs11, 23, a0)
+#endif
+
+"	li a0, 0\n"
+"	ret\n"
+	);
+}
+
+__attribute__ ((naked)) void longjmp( jmp_buf env, int val )
+{
+    asm volatile(
+    // Common registers
+"	lw ra, 0*4(a0)\n"
+"	lw s0, 1*4(a0)\n"
+"	lw s1, 2*4(a0)\n"
+"	lw sp, 3*4(a0)\n"
+
+    // RV32I only registers
+#if !defined( __riscv_abi_rve )
+"	lw s2, 4*4(a0)\n"
+"	lw s3, 5*4(a0)\n"
+"	lw s4, 6*4(a0)\n"
+"	lw s5, 7*4(a0)\n"
+"	lw s6, 8*4(a0)\n"
+"	lw s7, 9*4(a0)\n"
+"	lw s8, 10*4(a0)\n"
+"	lw s9, 11*4(a0)\n"
+"	lw s10, 12*4(a0)\n"
+"	lw s11, 13*4(a0)\n"
+#endif
+
+	// FPU registers
+#if defined( FLOAD )
+	FLOAD(fs2, 14, a0)
+	FLOAD(fs3, 15, a0)
+	FLOAD(fs4, 16, a0)
+	FLOAD(fs5, 17, a0)
+	FLOAD(fs6, 18, a0)
+	FLOAD(fs7, 19, a0)
+	FLOAD(fs8, 20, a0)
+	FLOAD(fs9, 21, a0)
+	FLOAD(fs10, 22, a0)
+	FLOAD(fs11, 23, a0)
+#endif
+
+"	seqz a0, a1\n" // a0 = (a1 == 0) ? 1 : 0
+"	add a0, a0, a1\n"
+"	ret\n"
+	);
+	__builtin_unreachable(); // Disable warning about no return.
+}
 
 #if defined( FUNCONF_USE_UARTPRINTF ) && FUNCONF_USE_UARTPRINTF
 void SetupUART( int uartBRR )
@@ -1470,6 +1569,46 @@ WEAK int putchar(int c)
 	if( lastdmd ) internal_handle_input( (uint32_t*)DMDATA0 );
 	*DMDATA0 = 0x85 | ((const char)c<<8);
 	return 1;
+}
+
+void funAnalogInit()
+{
+	//RCC->CFGR0 &= ~(0x1F<<11); // Assume ADCPRE = 0
+	RCC->APB2PCENR |= RCC_APB2Periph_ADC1;
+
+	// Reset ADC.
+	RCC->APB2PRSTR |= RCC_APB2Periph_ADC1;
+	RCC->APB2PRSTR &= ~RCC_APB2Periph_ADC1;
+
+	// set sampling time for all channels to 15 (A good middleground) ADC_SMP0_1.
+	ADC1->SAMPTR2 = (ADC_SMP0_1<<(3*0)) | (ADC_SMP0_1<<(3*1)) | (ADC_SMP0_1<<(3*2)) | (ADC_SMP0_1<<(3*3)) | (ADC_SMP0_1<<(3*4)) | (ADC_SMP0_1<<(3*5)) | (ADC_SMP0_1<<(3*6)) | (ADC_SMP0_1<<(3*7)) | (ADC_SMP0_1<<(3*8)) | (ADC_SMP0_1<<(3*9));
+	ADC1->SAMPTR1 = (ADC_SMP0_1<<(3*0)) | (ADC_SMP0_1<<(3*1)) | (ADC_SMP0_1<<(3*2)) | (ADC_SMP0_1<<(3*3)) | (ADC_SMP0_1<<(3*4)) | (ADC_SMP0_1<<(3*5));
+
+	ADC1->CTLR2 |= ADC_ADON | ADC_EXTSEL;	// turn on ADC and set rule group to sw trig
+
+	// Reset calibration
+	ADC1->CTLR2 |= ADC_RSTCAL;
+	while(ADC1->CTLR2 & ADC_RSTCAL);
+	
+	// Calibrate
+	ADC1->CTLR2 |= ADC_CAL;
+	while(ADC1->CTLR2 & ADC_CAL);
+
+}
+
+
+int funAnalogRead( int nAnalogNumber )
+{
+	ADC1->RSQR3 = nAnalogNumber;
+
+	// start sw conversion (auto clears)
+	ADC1->CTLR2 |= ADC_SWSTART;
+	
+	// wait for conversion complete
+	while(!(ADC1->STATR & ADC_EOC));
+	
+	// get result
+	return ADC1->RDATAR;
 }
 
 void SetupDebugPrintf()
