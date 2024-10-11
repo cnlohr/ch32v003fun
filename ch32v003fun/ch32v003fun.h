@@ -404,6 +404,7 @@ typedef enum IRQn
 	DMA2_Channel3_IRQn          = 74,      /* DMA2 Channel 3 global Interrupt                      */
 	DMA2_Channel4_IRQn          = 75,      /* DMA2 Channel 4 global Interrupt                      */
 	DMA2_Channel5_IRQn          = 76,      /* DMA2 Channel 5 global Interrupt                      */
+	ETH_IRQn                    = 77,      /* ETH global Interrupt               	               */
 	OTG_FS_IRQn                 = 83,      /* OTGFS global Interrupt NOTE: THIS APPEAR TO BE INCORRECT                */
     USBHSWakeup_IRQn            = 84,      /* USBHS Wakeup Interrupt                               */
     USBHS_IRQn                  = 85,      /* USBHS global Interrupt                               */
@@ -2474,6 +2475,7 @@ typedef struct
 
 #define OB_BASE                                 ((uint32_t)0x1FFFF800)    /* Flash Option Bytes base address */
 #define ESIG_BASE                               ((uint32_t)0x1FFFF7E0)
+#define CHIP_ID                                 *((uint32_t*)0x1FFFF704) // Mentioned in ch32v30x_dbgmcu.c, may not work on all processors.
 
 #if defined(CH32V003) || defined(CH32V10x)
 #define EXTEN_BASE                              ((uint32_t)0x40023800)
