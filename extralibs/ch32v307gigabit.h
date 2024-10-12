@@ -59,7 +59,7 @@ static int ch32v307ethTickPhy( void );
 
 // Data pursuent to ethernet.
 uint8_t ch32v307eth_mac[6] = { 0 };
-uint16_t ch32v307eth_mdio_update_state;
+uint16_t ch32v307eth_phyid = 0; // 0xc916 = RTL8211FS / 0xc915 = RTL8211E-VB
 ETH_DMADESCTypeDef ch32v307eth_DMARxDscrTab[CH32V307GIGABIT_RXBUFNB] __attribute__((aligned(4)));            // MAC receive descriptor, 4-byte aligned
 ETH_DMADESCTypeDef ch32v307eth_DMATxDscrTab[CH32V307GIGABIT_TXBUFNB] __attribute__((aligned(4)));            // MAC send descriptor, 4-byte aligned
 uint8_t  ch32v307eth_MACRxBuf[CH32V307GIGABIT_RXBUFNB*CH32V307GIGABIT_BUFFSIZE] __attribute__((aligned(4))); // MAC receive buffer, 4-byte aligned
@@ -70,7 +70,7 @@ ETH_DMADESCTypeDef * pDMATxSet;
 // Internal functions
 static int ch32v307ethPHYRegWrite( uint32_t reg, uint32_t val );
 static int ch32v307ethPHYRegAsyncRead( int reg, int * value );
-
+static int ch32v307ethPHYRegRead( uint32_t reg );
 
 static int ch32v307ethPHYRegAsyncRead( int reg, int * value )
 {
@@ -98,13 +98,24 @@ static int ch32v307ethPHYRegAsyncRead( int reg, int * value )
 
 static int ch32v307ethTickPhy(void)
 {
-	const int reg = 0x11; // PHYSR
+	int speed, linked, duplex;
+	const int reg = (ch32v307eth_phyid == 0xc916) ? 0x1a : 0x11; // PHYSR (different on each part)
 	int miidr;
 	if( ch32v307ethPHYRegAsyncRead( reg, &miidr ) ) return -1;
 
-	int speed  = ((miidr>>14)&3);
-	int linked = ((miidr>>10)&1);
-	int duplex = ((miidr>>13)&1);
+	if( reg == 0x1a )
+	{
+		speed  = ((miidr>>4)&3);
+		linked = ((miidr>>2)&1);
+		duplex = ((miidr>>3)&1);		
+	}
+	else
+	{
+		speed  = ((miidr>>14)&3);
+		linked = ((miidr>>10)&1);
+		duplex = ((miidr>>13)&1);
+	}
+
 	if( linked )
 	{
 		uint32_t oldmaccr = ETH->MACCR;
@@ -135,6 +146,21 @@ static int ch32v307ethPHYRegWrite( uint32_t reg, uint32_t val )
 	// If timeout = 0, is an error.
 	return timeout ? 0 : -1;
 }
+
+static int ch32v307ethPHYRegRead( uint32_t reg )
+{
+	ETH->MACMIIAR = ETH_MACMIIAR_CR_Div42 /* = 0, per 27.1.8.1.4 */ |
+		((uint32_t)CH32V307GIGABIT_PHYADDRESS << 11) | // ETH_MACMIIAR_PA
+		(((uint32_t)reg << 6) & ETH_MACMIIAR_MR) |
+		(0 /*!ETH_MACMIIAR_MW*/) | ETH_MACMIIAR_MB;
+
+	uint32_t	timeout = 0x100000;
+	while( ( ETH->MACMIIAR & ETH_MACMIIAR_MB ) && --timeout );
+
+	// If timeout = 0, is an error.
+	return timeout ? ETH->MACMIIDR : -1;
+}
+
 
 static void ch32v307ethGetMacInUC( uint8_t * mac )
 {
@@ -307,28 +333,33 @@ static int ch32v307ethInit( void )
 		1<<6 | // Speed Bit.
 		0 );
 
+	ch32v307ethPHYRegRead( 0x03 );
+	ch32v307eth_phyid = ch32v307ethPHYRegRead( 0x03 ); // Read twice to be safe.
+	if( ch32v307eth_phyid == 0xc916 )
+		ch32v307ethPHYRegWrite( 0x1F, 0x0a43 ); // RTL8211FS needs page select.
+
 	ch32v307ethGetMacInUC( ch32v307eth_mac );
 
 	ETH->MACA0HR = (uint32_t)((ch32v307eth_mac[5]<<8) | ch32v307eth_mac[4]);
 	ETH->MACA0LR = (uint32_t)(ch32v307eth_mac[0] | (ch32v307eth_mac[1]<<8) | (ch32v307eth_mac[2]<<16) | (ch32v307eth_mac[3]<<24));
 
-    ETH->MACFFR = (uint32_t)(ETH_ReceiveAll_Disable |
-                          ETH_SourceAddrFilter_Disable |
-                          ETH_PassControlFrames_BlockAll |
-                          ETH_BroadcastFramesReception_Enable |
-                          ETH_DestinationAddrFilter_Normal |
-                          ETH_PromiscuousMode_Disable |
-                          ETH_MulticastFramesFilter_Perfect |
-                          ETH_UnicastFramesFilter_Perfect);
+	ETH->MACFFR = (uint32_t)(ETH_ReceiveAll_Disable |
+		ETH_SourceAddrFilter_Disable |
+		ETH_PassControlFrames_BlockAll |
+		ETH_BroadcastFramesReception_Enable |
+		ETH_DestinationAddrFilter_Normal |
+		ETH_PromiscuousMode_Disable |
+		ETH_MulticastFramesFilter_Perfect |
+		ETH_UnicastFramesFilter_Perfect);
 
-    ETH->MACHTHR = (uint32_t)0;
-    ETH->MACHTLR = (uint32_t)0;
-    ETH->MACVLANTR = (uint32_t)(ETH_VLANTagComparison_16Bit);
+	ETH->MACHTHR = (uint32_t)0;
+	ETH->MACHTLR = (uint32_t)0;
+	ETH->MACVLANTR = (uint32_t)(ETH_VLANTagComparison_16Bit);
 
 	ETH->MACFCR = 0; // No pause frames.
 
 	// Configure RX/TX chains.
-    ETH_DMADESCTypeDef *tdesc;
+	ETH_DMADESCTypeDef *tdesc;
 	for(i = 0; i < CH32V307GIGABIT_TXBUFNB; i++)
 	{
 		tdesc = ch32v307eth_DMATxDscrTab + i;
@@ -337,7 +368,7 @@ static int ch32v307ethInit( void )
 		tdesc->Buffer1Addr = (uint32_t)0; // Populate with data.
 		tdesc->Buffer2NextDescAddr = (i < CH32V307GIGABIT_TXBUFNB - 1) ? ((uint32_t)(ch32v307eth_DMATxDscrTab + i + 1)) : (uint32_t)ch32v307eth_DMATxDscrTab;
 	}
-    ETH->DMATDLAR = (uint32_t)ch32v307eth_DMATxDscrTab;
+	ETH->DMATDLAR = (uint32_t)ch32v307eth_DMATxDscrTab;
 	for(i = 0; i < CH32V307GIGABIT_RXBUFNB; i++)
 	{
 		tdesc = ch32v307eth_DMARxDscrTab + i;
