@@ -34,7 +34,6 @@ int main()
 	int r = ch32v307ethInit();
 	printf( "R: %d\n",r );
 	printf( "%02x:%02x:%02x:%02x:%02x:%02x\n", ch32v307eth_mac[0], ch32v307eth_mac[1], ch32v307eth_mac[2], ch32v307eth_mac[3], ch32v307eth_mac[4], ch32v307eth_mac[5] );
-	Delay_Ms(100);
 
 	uint8_t testframe[] = { 
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, // Destination
