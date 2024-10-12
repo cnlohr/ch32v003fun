@@ -13,6 +13,7 @@ You should be able to see the messages with wireshark.
 ## IO Mapping
 
 | GMII Pin | Processor Pin | Reconfigurable |
+| --- | --- | --- |
 | RXC | PC0 | No |
 | RXCTL | PC1 | No |
 | RXD0 | PC2 | No |
@@ -34,8 +35,10 @@ You should be able to see the messages with wireshark.
 
 Strapping pins for the RTL8211E-VB-CG:
 
+| Pin | How to strap |
+| --- | --- |
 | LED2/RXDLY | 4.7k to GND |
 | MDIO | 4.7k to 3.3V |
-| LED1 | LED connected to GND |
-| LED0 | LED connected to VCC| 
+| LED1 | LED connected to GND, 1k resistor |
+| LED0 | LED connected to VCC, 1k resistor | 
 
