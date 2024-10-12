@@ -1,4 +1,4 @@
-#include "hsusb.h"
+#include "hsusb_v30x.h"
 #include "ch32v003fun.h"
 #include <string.h>
 
@@ -27,8 +27,7 @@ struct _USBState HSUSBCTX;
 #define CUIS_TOKEN_IN    0x2
 #define CUIS_TOKEN_SETUP 0x3
 
-static inline void USBHS_SendEndpoint( int endp, int len, const uint8_t * data );
-
+#if 0
 static inline void DMA7FastCopy( uint8_t * dest, const uint8_t * src, int len )
 {
 	while( DMA1_Channel7->CNTR );
@@ -53,6 +52,8 @@ static inline void DMA7FastCopy( uint8_t * dest, const uint8_t * src, int len )
 }
 
 static inline void DMA7FastCopyComplete() { while( DMA1_Channel7->CNTR ); }
+
+#endif
 
 void USBHS_InternalFinishSetup();
 
@@ -119,7 +120,8 @@ void USBHS_IRQHandler(void)
 						}
 						else
 						{
-							DMA7FastCopy( ctrl0buff, ctx->pCtrlPayloadPtr, len );
+							//DMA7FastCopy( ctrl0buff, ctx->pCtrlPayloadPtr, len );
+							memcpy( ctrl0buff, ctx->pCtrlPayloadPtr, len );
 							ctx->pCtrlPayloadPtr += len;
 						}
 						USBHSD->UEP0_TX_LEN = len;
@@ -196,7 +198,8 @@ void USBHS_IRQHandler(void)
 						totalLen = len;
 					}
 					len = ( totalLen >= DEF_USBD_UEP0_SIZE ) ? DEF_USBD_UEP0_SIZE : totalLen;
-					DMA7FastCopy( ctrl0buff, ctx->pCtrlPayloadPtr, len ); //memcpy( CTRL0BUFF, ctx->pCtrlPayloadPtr, len );
+					//DMA7FastCopy( ctrl0buff, ctx->pCtrlPayloadPtr, len ); //memcpy( CTRL0BUFF, ctx->pCtrlPayloadPtr, len );
+					memcpy( ctrl0buff, ctx->pCtrlPayloadPtr, len );
 					ctx->USBHS_SetupReqLen = totalLen - len;
 					ctx->pCtrlPayloadPtr += len;
 					USBHSD->UEP0_TX_LEN = len;
@@ -405,7 +408,8 @@ void USBHS_IRQHandler(void)
 				{
 					// Shortcut mechanism, for descriptors or if the user wants it.
 					len = ctx->USBHS_SetupReqLen >= DEF_USBD_UEP0_SIZE ? DEF_USBD_UEP0_SIZE : ctx->USBHS_SetupReqLen;
-					DMA7FastCopy( ctrl0buff, ctx->pCtrlPayloadPtr, len ); // FYI -> Would need to do this if using DMA
+					//DMA7FastCopy( ctrl0buff, ctx->pCtrlPayloadPtr, len ); // FYI -> Would need to do this if using DMA
+					memcpy(  ctrl0buff, ctx->pCtrlPayloadPtr, len );
 					ctx->USBHS_SetupReqLen -= len;
 					if( ctx->USBHS_SetupReqLen > 0 )
 						ctx->pCtrlPayloadPtr += len;
@@ -474,7 +478,8 @@ void USBHS_IRQHandler(void)
 							len += remain;
 							remain = 0;
 						}
-						DMA7FastCopy( cptr, ctrl0buff, len );
+						//DMA7FastCopy( cptr, ctrl0buff, len );
+						memcpy( cptr, ctrl0buff, len  );
 						ctx->USBHS_SetupReqLen = remain;
 						if( remain > 0 )
 							ctx->pCtrlPayloadPtr = cptr + len;
@@ -486,7 +491,7 @@ void USBHS_IRQHandler(void)
 					if( ctx->USBHS_SetupReqLen == 0 )
 					{
 #if HUSB_HID_USER_REPORTS
-						DMA7FastCopyComplete();
+						//DMA7FastCopyComplete();
 						HandleHidUserReportOutComplete( ctx );
 #endif
 					}
@@ -578,7 +583,7 @@ void USBHS_InternalFinishSetup()
 	// Feel free to override any of these.
 	USBHSD->UEP5_MAX_LEN = 64;
 	USBHSD->UEP5_RX_DMA = (uintptr_t)HSUSBCTX.ENDPOINTS[5];
-	USBHSD->UEP5_RX_CTRL = USBHS_UEP_R_RES_ACK | USBHS_UEP_R_TOG_AUTO; 	// For bulk-out, I think you nee dto do this.
+	USBHSD->UEP5_RX_CTRL = USBHS_UEP_R_RES_ACK | USBHS_UEP_R_TOG_AUTO; 	// For bulk-out, I think you need to do this.
 #endif
 #if HUSB_CONFIG_EPS > 4
 	USBHSD->UEP4_MAX_LEN = 64; // TODO: change to dynamic size, as USB HS supports more than 64?
@@ -655,22 +660,4 @@ int HSUSBSetup()
 	return 0;
 }
 
-// To TX, you can use USBFS_GetEPBufferIfAvailable or USBHSD_UEP_TXBUF( endp )
-
-static inline uint8_t * USBHS_GetEPBufferIfAvailable( int endp )
-{
-	if( HSUSBCTX.USBHS_Endp_Busy[ endp ] ) return 0;
-	return USBHSD_UEP_TXBUF( endp );
-}
-
-static inline void USBHS_SendEndpoint( int endp, int len, const uint8_t * data )
-{
-	if( endp )
-	{
-		*((uint32_t*)(&USBHSD->UEP1_TX_DMA)[endp-1]) = (uintptr_t)data;
-	}
-	USBHSD_UEP_TLEN( endp ) = len;
-	USBHSD_UEP_TXCTRL( endp ) = ( USBHSD_UEP_TXCTRL( endp ) & ~USBHS_UEP_T_RES_MASK ) | USBHS_UEP_T_RES_ACK;
-	HSUSBCTX.USBHS_Endp_Busy[ endp ] = 0x01;
-}
 

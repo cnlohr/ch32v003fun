@@ -405,6 +405,7 @@ typedef enum IRQn
 	DMA2_Channel3_IRQn          = 74,      /* DMA2 Channel 3 global Interrupt                      */
 	DMA2_Channel4_IRQn          = 75,      /* DMA2 Channel 4 global Interrupt                      */
 	DMA2_Channel5_IRQn          = 76,      /* DMA2 Channel 5 global Interrupt                      */
+	ETH_IRQn                    = 77,      /* ETH global Interrupt               	               */
 	OTG_FS_IRQn                 = 83,      /* OTGFS global Interrupt NOTE: THIS APPEAR TO BE INCORRECT                */
     USBHSWakeup_IRQn            = 84,      /* USBHS Wakeup Interrupt                               */
     USBHS_IRQn                  = 85,      /* USBHS global Interrupt                               */
@@ -2482,6 +2483,7 @@ typedef struct
 
 #define OB_BASE                                 ((uint32_t)0x1FFFF800)    /* Flash Option Bytes base address */
 #define ESIG_BASE                               ((uint32_t)0x1FFFF7E0)
+#define CHIP_ID                                 *((uint32_t*)0x1FFFF704) // Mentioned in ch32v30x_dbgmcu.c, may not work on all processors.
 
 #if defined(CH32V003) || defined(CH32V10x)
 #define EXTEN_BASE                              ((uint32_t)0x40023800)
@@ -6796,6 +6798,7 @@ typedef struct
 #define EXTEN_USBD_LS                           ((uint32_t)0x00000001) /* Bit 0 */
 #define EXTEN_USBD_PU_EN                        ((uint32_t)0x00000002) /* Bit 1 */
 #define EXTEN_ETH_10M_EN                        ((uint32_t)0x00000004) /* Bit 2 */
+#define EXTEN_ETH_RGMII_SEL                     ((uint32_t)0x00000008) /* Bit 3 (only on parts with RGMII) */
 #define EXTEN_PLL_HSI_PRE                       ((uint32_t)0x00000010) /* Bit 4 */
 #endif
 #define EXTEN_LOCKUP_EN                         ((uint32_t)0x00000040) /* Bit 5 */
@@ -8608,6 +8611,8 @@ static __I uint8_t ADCPrescTable[4] = {2, 4, 6, 8};
 
 /* Delay time after configure PHY */
 #define PHY_ConfigDelay                 ((uint32_t)0x00FFFFFF)
+
+#define ROM_CFG_USERADR_ID              0x1FFFF7E8
 
 /* PHY basic register */
 #define PHY_BCR                          0x0           /*PHY transceiver Basic Control Register */
@@ -13764,6 +13769,14 @@ extern "C" {
 #define PC13 45
 #define PC14 46
 #define PC15 47
+#define PD8 56
+#define PD9 57
+#define PD10 58
+#define PD11 59
+#define PD12 60
+#define PD13 61
+#define PD14 62
+#define PD15 63
 #endif
 
 

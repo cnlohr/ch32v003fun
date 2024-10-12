@@ -11,6 +11,16 @@
 
 #define USB_TIMEOUT 1024
 
+
+const int block_size = 512;
+int bRx = 1;
+//#define SYNCHRONOUS_TEST
+//#define ASYNC_CONTROL
+#define BULKTEST
+
+#define TRANSFERS 8
+
+
 static libusb_context *ctx = NULL;
 static libusb_device_handle *handle;
 
@@ -61,15 +71,6 @@ int main(int argc, char **argv)
 	double dSendTotalTime = 0;
 	double dLastPrint = OGGetAbsoluteTime();
 	int rtotal = 0, stotal = 0;
-
-	const int block_size = 512;
-	int bRx = 1;
-//	#define SYNCHRONOUS_TEST
-//	#define ASYNC_CONTROL
-	#define BULKTEST
-
-	#define TRANSFERS 8
-
 
 #if defined(SYNCHRONOUS_TEST)
 	// Slow (synchronous) mode.
@@ -214,7 +215,7 @@ int main(int argc, char **argv)
 			if( dNow - dLastPrint > 1 )
 			{
 				dSendTotalTime = dNow - dLastPrint;
-				printf( "%f MB/s TX\n", xfertotal / (dSendTotalTime * 1024 * 1024) );
+				printf( "%f MB/s %cX\n", xfertotal / (dSendTotalTime * 1024 * 1024), bRx?'R':'T' );
 				xfertotal = 0;
 				dSendTotalTime = 0;
 				dLastPrint = dNow;
