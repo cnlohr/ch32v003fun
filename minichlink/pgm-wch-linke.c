@@ -563,12 +563,6 @@ int LEExit( void * d )
 	return 0;
 }
 
-int LESetSplit(void * d, enum RAMSplit split) {
-	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)d)->internal);
-	iss->split = split;
-	return 0;
-}
-
 void * TryInit_WCHLinkE()
 {
 	libusb_device_handle * wch_linke_devh;
@@ -590,7 +584,6 @@ void * TryInit_WCHLinkE()
 	MCF.Unbrick = LEUnbrick;
 	MCF.ConfigureNRSTAsGPIO = LEConfigureNRSTAsGPIO;
 	MCF.ConfigureReadProtection = LEConfigureReadProtection;
-	MCF.SetSplit = LESetSplit;
 
 	MCF.Exit = LEExit;
 	return ret;
@@ -769,143 +762,6 @@ static int LEReadBinaryBlob( void * d, uint32_t offset, uint32_t amount, uint8_t
 }
 #endif
 
-static void SetFlashRamSplit(libusb_device_handle * dev, enum RAMSplit split, uint32_t chip_id) {
-	uint8_t split_cmd[] = {0x81, 0x06, 0x08, 0x02, 0x3f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}; 
-
-
-	/* List of ChipIDs List
-	* Taken from: ch32v307/EVT/EXAM/SRC/Peripheral/src/ch32v30x_dbgmcu.c:108
-	* CH32V303CBT6: 0x303305x4
-	* CH32V303RBT6: 0x303205x4
-	* CH32V303RCT6: 0x303105x4
-	* CH32V303VCT6: 0x303005x4
-	* CH32V305FBP6: 0x305205x8
-	* CH32V305RBT6: 0x305005x8
-	* CH32V305GBU6: 0x305B05x8
-	* CH32V307WCU6: 0x307305x8
-	* CH32V307FBP6: 0x307205x8
-	* CH32V307RCT6: 0x307105x8
-	* CH32V307VCT6: 0x307005x8
-	* CH32V317VCT6: 0x3170B5X8
-	* CH32V317WCU6: 0x3173B5X8
-	* CH32V317TCU6: 0x3175B5X8
-	*/
-
-	uint32_t chip = chip_id & 0xFFFFFF0F;
-
-	switch (split)
-	{
-		case FLASH_192_RAM_128:
-			if (chip == 0x30700508 
-			 || chip == 0x30710508 
-			 || chip == 0x30730508
-			 || chip == 0x30300504
-			 || chip == 0x30310504
-			 || chip == 0x30720508
-			 || chip == 0x30740508) {
-				split_cmd[4] |= (0) << 6;
-				wch_link_command( (libusb_device_handle *)dev, split_cmd, 11, 0, 0, 0 );
-			} else {
-				fprintf( stderr, "Error, 192k/128k split not supported for chip 0x%08x\n", chip);
-				exit( -110 );
-			}
-			break;
-		
-		case FLASH_224_RAM_96:
-			if (chip == 0x30700508 
-			 || chip == 0x30710508 
-			 || chip == 0x30730508
-			 || chip == 0x30300504
-			 || chip == 0x30310504
-			 || chip == 0x30720508
-			 || chip == 0x30740508) {
-				split_cmd[4] |= (1) << 6;
-				wch_link_command( (libusb_device_handle *)dev, split_cmd, 11, 0, 0, 0 );
-			} else {
-				fprintf( stderr, "Error, 224k/96k split not supported for chip 0x%08x\n", chip);
-				exit( -110 );
-			}
-			break;
-		
-		case FLASH_256_RAM_64:
-			if (chip == 0x30700508 
-			 || chip == 0x30710508 
-			 || chip == 0x30730508
-			 || chip == 0x30300504
-			 || chip == 0x30310504) {
-				split_cmd[4] |= (2) << 6;
-				wch_link_command( (libusb_device_handle *)dev, split_cmd, 11, 0, 0, 0 );
-			} else {
-				fprintf( stderr, "Error, 256k/64k split not supported for chip 0x%08x\n", chip);
-				exit( -110 );
-			}
-			break;
-
-		case FLASH_288_RAM_32:
-			if (chip == 0x30700508 
-			 || chip == 0x30710508 
-			 || chip == 0x30730508
-			 || chip == 0x30300504
-			 || chip == 0x30310504) {
-				split_cmd[4] |= (3) << 6;
-				wch_link_command( (libusb_device_handle *)dev, split_cmd, 11, 0, 0, 0 );
-			} else {
-				fprintf( stderr, "Error, 288k/32k split not supported for chip 0x%08x\n", chip);
-				exit( -110 );
-			}
-			break;
-
-		case FLASH_128_RAM_64:
-			if (chip == 0x2034050c
-			 || chip == 0x2080050c
-			 || chip == 0x2081050c
-			 || chip == 0x2082050c
-			 || chip == 0x2083050c) {
-				split_cmd[4] |= (0) << 6;
-				wch_link_command( (libusb_device_handle *)dev, split_cmd, 11, 0, 0, 0 );
-			} else {
-				fprintf( stderr, "Error, 128k/64k split not supported for chip 0x%08x\n", chip);
-				exit( -110 );
-			}
-			break;
-
-		case FLASH_144_RAM_48:
-			if (chip == 0x2034050c
-			 || chip == 0x2080050c
-			 || chip == 0x2081050c
-			 || chip == 0x2082050c
-			 || chip == 0x2083050c) {
-				split_cmd[4] |= (1) << 6;
-				wch_link_command( (libusb_device_handle *)dev, split_cmd, 11, 0, 0, 0 );
-			} else {
-				fprintf( stderr, "Error, 144k/48k split not supported for chip 0x%08x\n", chip);
-				exit( -110 );
-			}
-			break;
-
-		case FLASH_160_RAM_32:
-			if (chip == 0x2034050c
-			 || chip == 0x2080050c
-			 || chip == 0x2081050c
-			 || chip == 0x2082050c
-			 || chip == 0x2083050c) {
-				split_cmd[4] |= (1) << 6;
-				wch_link_command( (libusb_device_handle *)dev, split_cmd, 11, 0, 0, 0 );
-			} else {
-				fprintf( stderr, "Error, 160k/32k split not supported for chip 0x%08x\n", chip);
-				exit( -110 );
-			}
-			break;
-
-		default:
-			// Leave the Flash / SRAM split alone
-			(void) dev;
-			(void) split;
-			(void) chip;
-			(void) split_cmd;
-	}
-}
-
 static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len, uint8_t * blob )
 {
 	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
@@ -921,9 +777,6 @@ static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len,
 	int padlen = ((len-1) & (~(iss->sector_size-1))) + iss->sector_size;
 
 	wch_link_command( (libusb_device_handle *)dev, "\x81\x06\x01\x01", 4, 0, 0, 0 );
-
-	// Set FLASH/SRAM split for supported V20x and V30x devices
-	SetFlashRamSplit(dev, iss->split, iss->target_chip_id);
 	
 	wch_link_command( (libusb_device_handle *)dev, "\x81\x06\x01\x01", 4, 0, 0, 0 ); // Not sure why but it seems to work better when we request twice.
 
