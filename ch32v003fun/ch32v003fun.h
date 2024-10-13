@@ -789,6 +789,19 @@ typedef struct
 	__IO uint32_t RES3;
 } ESG_TypeDef;
 
+typedef struct
+{
+    union
+    {   
+        __I uint32_t CHIPID;
+        struct 
+        {
+            __I uint16_t REVID;
+	        __I uint16_t DEVID;
+        };
+    };
+} INFO_TypeDef;
+
 #if defined(CH32V30x)
 /* FSMC Bank1 Registers */
 typedef struct
@@ -2483,7 +2496,7 @@ typedef struct
 
 #define OB_BASE                                 ((uint32_t)0x1FFFF800)    /* Flash Option Bytes base address */
 #define ESIG_BASE                               ((uint32_t)0x1FFFF7E0)
-#define CHIP_ID                                 *((uint32_t*)0x1FFFF704) // Mentioned in ch32v30x_dbgmcu.c, may not work on all processors.
+#define INFO_BASE                               ((uint32_t)0x1FFFF704)
 
 #if defined(CH32V003) || defined(CH32V10x)
 #define EXTEN_BASE                              ((uint32_t)0x40023800)
@@ -2771,6 +2784,8 @@ typedef struct
 #endif // defined(CH32V20x) || defined(CH32V30x)
 #define OB                                      ((OB_TypeDef *)OB_BASE)
 #define ESIG                                    ((ESG_TypeDef *)ESIG_BASE)
+// Mentioned in ch32v30x_dbgmcu.c, may not work on all processors.
+#define INFO                                    ((INFO_TypeDef *)INFO_BASE) 
 #define EXTEN                                   ((EXTEN_TypeDef *)EXTEN_BASE)
 #define EXTEND                                  ((EXTEND_TypeDef *)EXTEN_BASE)  // Alias to EXTEN
 
