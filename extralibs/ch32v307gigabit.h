@@ -422,7 +422,7 @@ void ETH_IRQHandler( void )
 		    if (int_sta & ETH_DMA_IT_RBU)
 		    {
 		        ETH->DMASR = ETH_DMA_IT_RBU;
-		        if((INFO->CHIP_ID & 0xf0) == 0x10)
+		        if((INFO->CHIPID & 0xf0) == 0x10)
 		        {
 		            ((ETH_DMADESCTypeDef *)(((ETH_DMADESCTypeDef *)(ETH->DMACHRDR))->Buffer2NextDescAddr))->Status = ETH_DMARxDesc_OWN;
 		            ETH->DMARPDR = 0;
