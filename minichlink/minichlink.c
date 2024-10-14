@@ -304,6 +304,44 @@ keep_going:
 				else
 					goto unimplemented;
 				break;
+			case 'S':  // Set FLASH/RAM split in option bytes
+			{	
+				if( !MCF.SetSplit )
+					goto unimplemented;
+				enum RAMSplit split = FLASH_DEFAULT;
+
+				iarg+=2;
+				if( iarg >= argc )
+				{
+					fprintf( stderr, "FLASH/RAM split requires two values: flash size and RAM size (in kb)\n" );
+					goto unimplemented;
+				}
+
+				uint32_t flash_size = SimpleReadNumberInt( argv[iarg-1], 0);
+				uint32_t sram_size = SimpleReadNumberInt( argv[iarg], 0 );
+				
+				if (flash_size == 192 && sram_size == 128) {
+					split = FLASH_192_RAM_128;
+				} else if (flash_size == 224 && sram_size == 96) {
+					split = FLASH_224_RAM_96;
+				} else if (flash_size == 256 && sram_size == 64) {
+					split = FLASH_256_RAM_64;
+				} else if (flash_size == 288 && sram_size == 32) {
+					split = FLASH_288_RAM_32;
+				}else if (flash_size == 128 && sram_size == 64) {
+					split = FLASH_128_RAM_64;
+				} else if (flash_size == 144 && sram_size == 48) {
+					split = FLASH_144_RAM_48;
+				} else if (flash_size == 160 && sram_size == 32) {
+					split = FLASH_160_RAM_32;
+				} else {
+					fprintf( stderr, "Unknown split: %dk FLASH / %dk RAM\n", flash_size, sram_size );
+					goto unimplemented;
+				}
+
+				MCF.SetSplit(dev, split);
+				break;
+			}
 			case 'G':
 			case 'T':
 			{
@@ -692,6 +730,7 @@ help:
 	fprintf( stderr, " -G Terminal + GDB (must be last arg)\n" );
 	fprintf( stderr, " -P Enable Read Protection\n" );
 	fprintf( stderr, " -p Disable Read Protection\n" );
+	fprintf( stderr, " -S set FLASH/SRAM split [FLASH kbytes] [SRAM kbytes]\n" );
 	fprintf( stderr, " -w [binary image to write] [address, decimal or 0x, try0x08000000]\n" );
 	fprintf( stderr, " -r [output binary image] [memory address, decimal or 0x, try 0x08000000] [size, decimal or 0x, try 16384]\n" );
 	fprintf( stderr, "   Note: for memory addresses, you can use 'flash' 'launcher' 'bootloader' 'option' 'ram' and say \"ram+0x10\" for instance\n" );
@@ -1566,6 +1605,198 @@ flashoperr:
 	return -93;
 }
 
+static int DefaultSetSplit(void * dev, enum RAMSplit split) {
+
+	uint8_t split_code = 0;
+	uint16_t option_bytes = 0;
+	uint32_t flash_ctlr = 0;
+	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
+
+
+	// If the progammer already read the chip_id, use it
+	// Otherwise read it off the chip
+	uint32_t chip_id = iss->target_chip_id;
+	if (!chip_id) {
+		if( MCF.ReadWord( dev, (intptr_t)&INFO->CHIPID, &chip_id ) ) goto flashoperr;
+	}
+
+	uint32_t chip = chip_id & 0xFFFFFF0F;
+
+	/* List of ChipIDs
+	* Values taken from: ch32v307/EVT/EXAM/SRC/Peripheral/src/ch32v30x_dbgmcu.c:108
+	* CH32V303CBT6: 0x303305x4
+	* CH32V303RBT6: 0x303205x4
+	* CH32V303RCT6: 0x303105x4
+	* CH32V303VCT6: 0x303005x4
+	* CH32V305FBP6: 0x305205x8
+	* CH32V305RBT6: 0x305005x8
+	* CH32V305GBU6: 0x305B05x8
+	* CH32V307WCU6: 0x307305x8
+	* CH32V307FBP6: 0x307205x8
+	* CH32V307RCT6: 0x307105x8
+	* CH32V307VCT6: 0x307005x8
+	* CH32V317VCT6: 0x3170B5X8
+	* CH32V317WCU6: 0x3173B5X8
+	* CH32V317TCU6: 0x3175B5X8
+	*/
+
+	switch (split)
+	{
+		case FLASH_192_RAM_128:
+			if (chip == 0x30700508 
+			 || chip == 0x30710508 
+			 || chip == 0x30730508
+			 || chip == 0x30300504
+			 || chip == 0x30310504
+			 || chip == 0x30720508
+			 || chip == 0x30740508) {
+				split_code = 0;
+			} else {
+				fprintf( stderr, "Error, 192k/128k split not supported for chip 0x%08x\n", chip);
+				exit( -110 );
+			}
+			break;
+		
+		case FLASH_224_RAM_96:
+			if (chip == 0x30700508 
+			 || chip == 0x30710508 
+			 || chip == 0x30730508
+			 || chip == 0x30300504
+			 || chip == 0x30310504
+			 || chip == 0x30720508
+			 || chip == 0x30740508) {
+				split_code = 1;
+			} else {
+				fprintf( stderr, "Error, 224k/96k split not supported for chip 0x%08x\n", chip);
+				exit( -110 );
+			}
+			break;
+		
+		case FLASH_256_RAM_64:
+			if (chip == 0x30700508 
+			 || chip == 0x30710508 
+			 || chip == 0x30730508
+			 || chip == 0x30300504
+			 || chip == 0x30310504) {
+				split_code = 2;
+			} else {
+				fprintf( stderr, "Error, 256k/64k split not supported for chip 0x%08x\n", chip);
+				exit( -110 );
+			}
+			break;
+
+		case FLASH_288_RAM_32:
+			if (chip == 0x30700508 
+			 || chip == 0x30710508 
+			 || chip == 0x30730508
+			 || chip == 0x30300504
+			 || chip == 0x30310504) {
+				split_code = 3;
+			} else {
+				fprintf( stderr, "Error, 288k/32k split not supported for chip 0x%08x\n", chip);
+				exit( -110 );
+			}
+			break;
+
+		case FLASH_128_RAM_64:
+			if (chip == 0x2034050c
+			 || chip == 0x2080050c
+			 || chip == 0x2081050c
+			 || chip == 0x2082050c
+			 || chip == 0x2083050c) {
+				split_code = 0;
+			} else {
+				fprintf( stderr, "Error, 128k/64k split not supported for chip 0x%08x\n", chip);
+				exit( -110 );
+			}
+			break;
+
+		case FLASH_144_RAM_48:
+			if (chip == 0x2034050c
+			 || chip == 0x2080050c
+			 || chip == 0x2081050c
+			 || chip == 0x2082050c
+			 || chip == 0x2083050c) {
+				split_code = 1;
+			} else {
+				fprintf( stderr, "Error, 144k/48k split not supported for chip 0x%08x\n", chip);
+				exit( -110 );
+			}
+			break;
+
+		case FLASH_160_RAM_32:
+			if (chip == 0x2034050c
+			 || chip == 0x2080050c
+			 || chip == 0x2081050c
+			 || chip == 0x2082050c
+			 || chip == 0x2083050c) {
+				split_code = 2;
+			} else {
+				fprintf( stderr, "Error, 160k/32k split not supported for chip 0x%08x\n", chip);
+				exit( -110 );
+			}
+			break;
+
+		default:
+			fprintf( stderr, "Error: chip 0x%08x does not support a configurable RAM split\n", chip);
+			return -110;
+			
+	}
+
+	if( !MCF.WriteHalfWord || !MCF.ReadHalfWord)
+	{
+		fprintf( stderr, "Error: for setting ram split option bytes, half-word read and write is required\n" );
+		return -5;
+	}
+
+	if( MCF.ReadHalfWord( dev, (intptr_t)&OB->USER, &option_bytes ) ) goto flashoperr;
+	printf("initial option_bytes = %04x\n", option_bytes);
+
+
+	// Option byte b is stored as 16 bits (~b << 8)|b
+	// Mask off upper copy and clear split bits
+	option_bytes &= 0x003F;
+	// Set split code at [7:6]
+	option_bytes |= split_code << 6;
+	// Add inverted copy back as high byte
+	option_bytes |= (~option_bytes) << 8;
+
+	InternalUnlockFlash(dev, iss);
+
+	if( MCF.ReadWord( dev, (intptr_t)&FLASH->CTLR, &flash_ctlr ) ) goto flashoperr;
+	flash_ctlr |= CR_OPTER_Set;
+	if( MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, flash_ctlr ) ) goto flashoperr;
+	flash_ctlr |= CR_STRT_Set;
+	if( MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, flash_ctlr ) ) goto flashoperr;
+	if( MCF.WaitForFlash(dev) ) goto flashoperr;
+
+	if( MCF.ReadWord( dev, (intptr_t)&FLASH->CTLR, &flash_ctlr ) ) goto flashoperr;
+	flash_ctlr &= CR_OPTER_Reset;
+	flash_ctlr |= CR_OPTPG_Set;
+	if( MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, flash_ctlr ) ) goto flashoperr;
+	if( MCF.WriteWord( dev, (intptr_t)&OB->RDPR, RDP_Key ) ) goto flashoperr;
+	if( MCF.WaitForFlash(dev) ) goto flashoperr;
+
+	if( MCF.WriteWord( dev, (intptr_t)&FLASH->OBKEYR, FLASH_KEY1 ) ) goto flashoperr;
+	if( MCF.WriteWord( dev, (intptr_t)&FLASH->OBKEYR, FLASH_KEY2 ) ) goto flashoperr;
+	if( MCF.WaitForFlash(dev) ) goto flashoperr;
+
+	if( MCF.ReadWord( dev, (intptr_t)&FLASH->CTLR, &flash_ctlr ) ) goto flashoperr;
+	flash_ctlr |= CR_OPTPG_Set;
+	if( MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, flash_ctlr ) ) goto flashoperr;
+	if( MCF.WriteHalfWord( dev, (intptr_t)&OB->USER, option_bytes ) ) goto flashoperr;
+	if( MCF.WaitForFlash(dev) ) goto flashoperr;
+
+	flash_ctlr &= CR_OPTPG_Reset;
+	if( MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, flash_ctlr ) ) goto flashoperr;
+	if( MCF.WaitForFlash(dev) ) goto flashoperr;
+
+	return 0;
+flashoperr:
+	fprintf( stderr, "Error: Flash operation error\n" );
+	return -93;
+}
+
 void PostSetupConfigureInterface( void * dev )
 {
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
@@ -2023,6 +2254,8 @@ int SetupAutomaticHighLevelFunctions( void * dev )
 		MCF.Erase = DefaultErase;
 	if( !MCF.HaltMode )
 		MCF.HaltMode = DefaultHaltMode;
+	if( !MCF.SetSplit )
+		MCF.SetSplit = DefaultSetSplit;
 	if( !MCF.PollTerminal )
 		MCF.PollTerminal = DefaultPollTerminal;
 	if( !MCF.WaitForFlash )

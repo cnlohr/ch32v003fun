@@ -394,6 +394,7 @@ static int LESetupInterface( void * d )
 	printChipInfo(chip);
 
 	iss->target_chip_type = chip;
+	iss->target_chip_id = (rbuff[4] << 24) | (rbuff[5] << 16) | (rbuff[6] << 8) | rbuff[7];
 
 	// For some reason, if we don't do this sometimes the programmer starts in a hosey mode.
 	MCF.WriteReg32( d, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
@@ -776,6 +777,7 @@ static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len,
 	int padlen = ((len-1) & (~(iss->sector_size-1))) + iss->sector_size;
 
 	wch_link_command( (libusb_device_handle *)dev, "\x81\x06\x01\x01", 4, 0, 0, 0 );
+	
 	wch_link_command( (libusb_device_handle *)dev, "\x81\x06\x01\x01", 4, 0, 0, 0 ); // Not sure why but it seems to work better when we request twice.
 
 	// This contains the write data quantity, in bytes.  (The last 2 octets)
