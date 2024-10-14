@@ -304,7 +304,7 @@ keep_going:
 				else
 					goto unimplemented;
 				break;
-			case 'S':  //Erase whole chip.
+			case 'S':  // Set FLASH/RAM split in option bytes
 			{	
 				if( !MCF.SetSplit )
 					goto unimplemented;
