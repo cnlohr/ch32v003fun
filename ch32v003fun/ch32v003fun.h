@@ -397,7 +397,7 @@ typedef enum IRQn
 	UART5_IRQn                  = 69,      /* UART5 global Interrupt                               */
 #endif
 
-#if defined(CH32V30x) || defined(CH32V20x)
+#if defined(CH32V30x) 
 	TIM6_IRQn                   = 70,      /* TIM6 global Interrupt                                */
 	TIM7_IRQn                   = 71,      /* TIM7 global Interrupt                                */
 	DMA2_Channel1_IRQn          = 72,      /* DMA2 Channel 1 global Interrupt                      */
