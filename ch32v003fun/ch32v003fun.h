@@ -13667,6 +13667,8 @@ static inline uint32_t __get_SP(void)
 #define _JBLEN ((14*sizeof(long))/sizeof(long))
 #endif
 
+
+#ifndef __ASSEMBLER__
 #ifdef _JBLEN
 #ifdef _JBTYPE
 typedef _JBTYPE jmp_buf[_JBLEN];
@@ -13677,6 +13679,8 @@ typedef int jmp_buf[_JBLEN];
 
 int setjmp( jmp_buf env );
 void longjmp( jmp_buf env, int val );
+#endif
+
 #endif // defined(__riscv) || defined(__riscv__) || defined( CH32V003FUN_BASE )
 
 #ifdef __cplusplus
@@ -13831,6 +13835,13 @@ extern "C" {
 #define ANALOG_10 10
 #define ANALOG_11 11
 
+#if defined(__riscv) || defined(__riscv__) || defined( CH32V003FUN_BASE )
+
+
+// Stuff that can only be compiled on device (not for the programmer, or other host programs)
+
+#ifndef __ASSEMBLER__
+
 // Initialize the ADC calibrate it and set some sane defaults.
 void funAnalogInit();
 
@@ -13838,11 +13849,6 @@ void funAnalogInit();
 // Be sure to call funAnalogInit first.
 int funAnalogRead( int nAnalogNumber );
 
-#if defined(__riscv) || defined(__riscv__) || defined( CH32V003FUN_BASE )
-
-// Stuff that can only be compiled on device (not for the programmer, or other host programs)
-
-#ifndef __ASSEMBLER__
 void handle_reset()            __attribute__((naked)) __attribute((section(".text.handle_reset"))) __attribute__((used));
 void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) __attribute__((naked)) __attribute__((used));
 // used to clear the CSS flag in case of clock fail switch
