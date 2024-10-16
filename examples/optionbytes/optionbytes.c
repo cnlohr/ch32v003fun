@@ -71,6 +71,7 @@ int main()
 
 
 	printf( "After Clear:%04x\n", OB->USER );
+
 /* Notes from flash document:
  * @param   OB_IWDG - Selects the IWDG mode
  *            OB_IWDG_SW - Software IWDG selected
@@ -86,11 +87,15 @@ int main()
  *            OB_RST_EN_DT12ms - Reset IO enable (PD7) and  Ignore delay time 12ms
  *            OB_RST_EN_DT1ms - Reset IO enable (PD7) and  Ignore delay time 1ms
  *            OB_RST_EN_DT128ms - Reset IO enable (PD7) and  Ignore delay time 128ms
+ *          OB_BOOT - Selects bootloader or usercode for on start.
+ *            OB_STARTMODE_USER - Boot directly to flash
+ *            OB_STARTMODE_BOOT - Boot to bootloader
 */
 	uint16_t OB_STOP = OB_STOP_NoRST;
 	uint16_t OB_IWDG = OB_IWDG_SW;
 	uint16_t OB_STDBY = OB_STDBY_NoRST;
 	uint16_t OB_RST = OB_RST_EN_DT1ms;
+	uint16_t OB_BOOT = OB_STARTMODE_BOOT;
 
     FLASH->OBKEYR = FLASH_KEY1;
     FLASH->OBKEYR = FLASH_KEY2;
@@ -99,7 +104,7 @@ int main()
     if(status == FLASH_COMPLETE)
     {
         FLASH->CTLR |= CR_OPTPG_Set;
-        OB->USER = OB_IWDG | (uint16_t)(OB_STOP | (uint16_t)(OB_STDBY | (uint16_t)(OB_RST | (uint16_t)0xE0)));
+        OB->USER = OB_BOOT | OB_IWDG | (uint16_t)(OB_STOP | (uint16_t)(OB_STDBY | (uint16_t)(OB_RST | (uint16_t)0xc0)));
 
         status = FLASH_WaitForLastOperation(10000);
         if(status != FLASH_TIMEOUT)

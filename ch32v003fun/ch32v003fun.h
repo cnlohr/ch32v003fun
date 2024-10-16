@@ -9734,6 +9734,9 @@ typedef enum
 #define OB_RST_EN_DT12ms                 ((uint16_t)0x0010) /* Reset IO enable (PD7) and  Ignore delay time 12ms */
 #define OB_RST_EN_DT1ms                  ((uint16_t)0x0008) /* Reset IO enable (PD7) and  Ignore delay time 1ms */
 #define OB_RST_EN_DT128ms                ((uint16_t)0x0000) /* Reset IO enable (PD7) and  Ignore delay time 128ms */
+
+#define OB_STARTMODE_BOOT                ((uint16_t)0x0020) /* Start in BOOT area */
+#define OB_STARTMODE_USER                ((uint16_t)0x0000) /* Start in user area */
 #endif
 
 /* FLASH_Interrupts */
