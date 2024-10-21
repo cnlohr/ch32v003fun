@@ -828,6 +828,7 @@ void ADC1_2_IRQHandler( void ) 			 __attribute__((section(".text.vector_handler"
 #endif
 #if defined(CH32V10x)
 void USBFS_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void USBFSWakeup_IRQHandler( void )		__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 #endif
 #if defined(CH32V20x) || defined(CH32V30x)
 void USB_HP_CAN1_TX_IRQHandler( void ) 	 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
