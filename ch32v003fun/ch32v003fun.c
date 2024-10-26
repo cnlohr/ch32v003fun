@@ -1132,54 +1132,54 @@ void InterruptVectorDefault()
 
 #if defined(CH32V10x)
 "	.word   SysTick_Handler            /* SysTick Handler */ \n \
-    	.word   0 \n \
-        .word   SW_Handler                 /* SW Handler */ \n \
-    	.word   0 \n \
-    	/* External Interrupts */ \n \
-        .word   WWDG_IRQHandler            /* Window Watchdog */ \n \
-        .word   PVD_IRQHandler             /* PVD through EXTI Line detect */ \n \
-        .word   TAMPER_IRQHandler          /* TAMPER */ \n \
-        .word   RTC_IRQHandler             /* RTC */ \n \
-        .word   FLASH_IRQHandler           /* Flash */ \n \
-        .word   RCC_IRQHandler             /* RCC */ \n \
-        .word   EXTI0_IRQHandler           /* EXTI Line 0 */ \n \
-        .word   EXTI1_IRQHandler           /* EXTI Line 1 */ \n \
-        .word   EXTI2_IRQHandler           /* EXTI Line 2 */ \n \
-        .word   EXTI3_IRQHandler           /* EXTI Line 3 */ \n \
-        .word   EXTI4_IRQHandler           /* EXTI Line 4 */ \n \
-        .word   DMA1_Channel1_IRQHandler   /* DMA1 Channel 1 */ \n \
-        .word   DMA1_Channel2_IRQHandler   /* DMA1 Channel 2 */ \n \
-        .word   DMA1_Channel3_IRQHandler   /* DMA1 Channel 3 */ \n \
-        .word   DMA1_Channel4_IRQHandler   /* DMA1 Channel 4 */ \n \
-        .word   DMA1_Channel5_IRQHandler   /* DMA1 Channel 5 */ \n \
-        .word   DMA1_Channel6_IRQHandler   /* DMA1 Channel 6 */ \n \
-        .word   DMA1_Channel7_IRQHandler   /* DMA1 Channel 7 */ \n \
-        .word   ADC1_2_IRQHandler          /* ADC1_2 */ \n \
-        .word   0 \n \
-        .word   0 \n \
-        .word   0 \n \
-        .word   0 \n \
-        .word   EXTI9_5_IRQHandler         /* EXTI Line 9..5 */ \n \
-        .word   TIM1_BRK_IRQHandler        /* TIM1 Break */ \n \
-        .word   TIM1_UP_IRQHandler         /* TIM1 Update */ \n \
-        .word   TIM1_TRG_COM_IRQHandler    /* TIM1 Trigger and Commutation */ \n \
-        .word   TIM1_CC_IRQHandler         /* TIM1 Capture Compare */ \n \
-        .word   TIM2_IRQHandler            /* TIM2 */ \n \
-        .word   TIM3_IRQHandler            /* TIM3 */ \n \
-        .word   TIM4_IRQHandler            /* TIM4 */ \n \
-        .word   I2C1_EV_IRQHandler         /* I2C1 Event */ \n \
-        .word   I2C1_ER_IRQHandler         /* I2C1 Error */ \n \
-        .word   I2C2_EV_IRQHandler         /* I2C2 Event */ \n \
-        .word   I2C2_ER_IRQHandler         /* I2C2 Error */ \n \
-        .word   SPI1_IRQHandler            /* SPI1 */ \n \
-        .word   SPI2_IRQHandler            /* SPI2 */ \n \
-        .word   USART1_IRQHandler          /* USART1 */ \n \
-        .word   USART2_IRQHandler          /* USART2 */ \n \
-        .word   USART3_IRQHandler          /* USART3 */ \n \
-        .word   EXTI15_10_IRQHandler       /* EXTI Line 15..10 */ \n \
-        .word   RTCAlarm_IRQHandler        /* RTC Alarm through EXTI Line */ \n \
-        .word   USBFSWakeup_IRQHandler     /* USB Wakeup from suspend */ \n \
-        .word   USBFS_IRQHandler           /* USBFS */ \n "
+	.word   0 \n \
+	.word   SW_Handler                 /* SW Handler */ \n \
+	.word   0 \n \
+	/* External Interrupts */ \n \
+	.word   WWDG_IRQHandler            /* Window Watchdog */ \n \
+	.word   PVD_IRQHandler             /* PVD through EXTI Line detect */ \n \
+	.word   TAMPER_IRQHandler          /* TAMPER */ \n \
+	.word   RTC_IRQHandler             /* RTC */ \n \
+	.word   FLASH_IRQHandler           /* Flash */ \n \
+	.word   RCC_IRQHandler             /* RCC */ \n \
+	.word   EXTI0_IRQHandler           /* EXTI Line 0 */ \n \
+	.word   EXTI1_IRQHandler           /* EXTI Line 1 */ \n \
+	.word   EXTI2_IRQHandler           /* EXTI Line 2 */ \n \
+	.word   EXTI3_IRQHandler           /* EXTI Line 3 */ \n \
+	.word   EXTI4_IRQHandler           /* EXTI Line 4 */ \n \
+	.word   DMA1_Channel1_IRQHandler   /* DMA1 Channel 1 */ \n \
+	.word   DMA1_Channel2_IRQHandler   /* DMA1 Channel 2 */ \n \
+	.word   DMA1_Channel3_IRQHandler   /* DMA1 Channel 3 */ \n \
+	.word   DMA1_Channel4_IRQHandler   /* DMA1 Channel 4 */ \n \
+	.word   DMA1_Channel5_IRQHandler   /* DMA1 Channel 5 */ \n \
+	.word   DMA1_Channel6_IRQHandler   /* DMA1 Channel 6 */ \n \
+	.word   DMA1_Channel7_IRQHandler   /* DMA1 Channel 7 */ \n \
+	.word   ADC1_2_IRQHandler          /* ADC1_2 */ \n \
+	.word   0 \n \
+	.word   0 \n \
+	.word   0 \n \
+	.word   0 \n \
+	.word   EXTI9_5_IRQHandler         /* EXTI Line 9..5 */ \n \
+	.word   TIM1_BRK_IRQHandler        /* TIM1 Break */ \n \
+	.word   TIM1_UP_IRQHandler         /* TIM1 Update */ \n \
+	.word   TIM1_TRG_COM_IRQHandler    /* TIM1 Trigger and Commutation */ \n \
+	.word   TIM1_CC_IRQHandler         /* TIM1 Capture Compare */ \n \
+	.word   TIM2_IRQHandler            /* TIM2 */ \n \
+	.word   TIM3_IRQHandler            /* TIM3 */ \n \
+	.word   TIM4_IRQHandler            /* TIM4 */ \n \
+	.word   I2C1_EV_IRQHandler         /* I2C1 Event */ \n \
+	.word   I2C1_ER_IRQHandler         /* I2C1 Error */ \n \
+	.word   I2C2_EV_IRQHandler         /* I2C2 Event */ \n \
+	.word   I2C2_ER_IRQHandler         /* I2C2 Error */ \n \
+	.word   SPI1_IRQHandler            /* SPI1 */ \n \
+	.word   SPI2_IRQHandler            /* SPI2 */ \n \
+	.word   USART1_IRQHandler          /* USART1 */ \n \
+	.word   USART2_IRQHandler          /* USART2 */ \n \
+	.word   USART3_IRQHandler          /* USART3 */ \n \
+	.word   EXTI15_10_IRQHandler       /* EXTI Line 15..10 */ \n \
+	.word   RTCAlarm_IRQHandler        /* RTC Alarm through EXTI Line */ \n \
+	.word   USBFSWakeup_IRQHandler     /* USB Wakeup from suspend */ \n \
+	.word   USBFS_IRQHandler           /* USBFS */ \n "
 	//defined(CH32V10x)
 #elif defined(CH32V20x)
 "	.word   SysTick_Handler            /* SysTick */ \n \
