@@ -866,10 +866,10 @@ void RTCAlarm_IRQHandler( void ) 		 __attribute__((section(".text.vector_handler
 void USBWakeUp_IRQHandler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 #endif
 #if defined(CH32V10x) || defined(CH32V20x)
-void USBHD_IRQHandler( void ) 			 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void USBFS_IRQHandler( void ) 			 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 #endif // defined(CH32V10x) || defined(CH32V20x)
 #if defined(CH32V20x) || defined(CH32V30x)
-void USBHDWakeUp_IRQHandler( void ) 	 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void USBFSWakeUp_IRQHandler( void ) 	 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void ETH_IRQHandler( void ) 			 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void ETHWakeUp_IRQHandler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void OSC32KCal_IRQHandler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
@@ -899,6 +899,7 @@ void DMA2_Channel5_IRQHandler( void ) 	__attribute__((section(".text.vector_hand
 void OTG_FS_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void USBHSWakeup_IRQHandler( void )		__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void USBHS_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void USBFS_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void DVP_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void UART6_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void UART7_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
