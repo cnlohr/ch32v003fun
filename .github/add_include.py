@@ -21,4 +21,5 @@ for filter in src_filters:
 # propagate to all construction environments
 for e in env, projenv, DefaultEnvironment():
    e.Append(CCFLAGS=[("-I", example_folder)])
+   e.Append(ASFLAGS=[("-I", example_folder)])
    e.Append(CPPPATH=[example_folder])
