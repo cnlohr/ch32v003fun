@@ -136,7 +136,7 @@ static const unsigned char sintable[] = {
 	0x26, 0x28, 0x2a, 0x2d, 0x2f, 0x31, 0x34, 0x36, 0x39, 0x3c, 0x3e, 0x41, 0x44, 0x47, 0x49, 0x4c, 
 	0x4f, 0x52, 0x55, 0x58, 0x5b, 0x5e, 0x61, 0x64, 0x67, 0x6a, 0x6d, 0x70, 0x73, 0x76, 0x79, 0x7d, };
 
-static inline uint32_t FastMultiply( uint32_t big_num, uint32_t small_num ) __attribute__((section(".data")));
+static inline uint32_t FastMultiply( uint32_t big_num, uint32_t small_num ) __attribute__((section(".srodata")));
 static inline uint32_t FastMultiply( uint32_t big_num, uint32_t small_num )
 {
 	// The CH32V003 is an EC core, so no hardware multiply. GCC's way multiply
