@@ -1578,9 +1578,17 @@ void SetupDebugPrintf()
 	*DMDATA0 = 0x80;
 }
 
-void WaitForDebuggerToAttach()
+int WaitForDebuggerToAttach( int timeout_ms )
 {
-	while( ((*DMDATA0) & 0x80) );
+	const uint32_t start = SysTick->CNT;
+	const uint32_t ticks_per_ms = (FUNCONF_SYSTEM_CORE_CLOCK / 1000);
+	const uint32_t timeout = timeout_ms * ticks_per_ms;
+
+	while( (*DMDATA0) & 0x80 ) {
+		if( (SysTick->CNT - start) > timeout ) return 1;
+	}
+
+	return 0;
 }
 
 #endif
