@@ -1,11 +1,11 @@
 // Basic GPIO and Injection-Mode ADC Example using modern funPinMode / funDigitalWrite / etc... modes.
 //
 // Modes (Assume processor VCC = 3.3V)
-//  Push/Pull: 
+//  Push/Pull (PP): 
 //   * ADC Works. 
-//   * Output 1: GPIO Sources 50mA
-//   * Output 0: GPIO Sinks   52mA
-//  Open Drain
+//   * Output 1 (FUN_HIGH): GPIO Sources 50mA
+//   * Output 0 (FUN LOW): GPIO Sinks 52mA
+//  Open Drain (OD)
 //   (PC1, 2, 5, 6, 5V tolerant pins)
 //     * Output 1: if 5V is applied, no current flows.
 //     * Output 0: Pin is driven low.
@@ -19,8 +19,7 @@
 //   * No analog pins are 5V tolerant.
 //   * If 5V is applied to 5v-tolearnt pin (PC1, 2, 5, 6, 5V tolerant pins) no current flows.
 //   * If 5V is applied to other pins, pin sinks 20mA from 5V
-//  PU/PD
-//   * Pull-up and Pull-down.
+//  Pull-up and Pull-down (PU/PD)
 //   * Output 1: pin sources 76uA from GND.
 //   * Output 0: pin sinks 76uA from 3.3v.
 //   * I.e. If you want to have a pull-up, configure PUPD, then set output to 1.
