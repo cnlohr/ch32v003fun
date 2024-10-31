@@ -29,7 +29,7 @@ int main()
 		funDigitalWrite( PIN_1,     FUN_LOW );
 		funDigitalWrite( PIN_K,     FUN_LOW );
 		funDigitalWrite( PIN_BOB,   FUN_LOW );
-    funDigitalWrite( PIN_KEVIN, FUN_LOW );
+		funDigitalWrite( PIN_KEVIN, FUN_LOW );
 		Delay_Ms( 250 );
 	}
 }
