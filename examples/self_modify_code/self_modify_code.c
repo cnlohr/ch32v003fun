@@ -85,7 +85,8 @@ int main()
 {
 	SystemInit();
 
-	WaitForDebuggerToAttach();
+	// Wait 60s for debugger to attach
+	(void)WaitForDebuggerToAttach(60*1000);
 
 	// Enable GPIOs
 	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOC;

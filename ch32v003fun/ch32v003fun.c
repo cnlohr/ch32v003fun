@@ -1578,9 +1578,32 @@ void SetupDebugPrintf( void )
 	*DMDATA0 = 0x80;
 }
 
-void WaitForDebuggerToAttach()
+int WaitForDebuggerToAttach( int timeout_ms )
 {
-	while( ((*DMDATA0) & 0x80) );
+
+#if defined(CH32V20x) || defined(CH32V30x)
+	#define systickcnt_t uint64_t
+	#define SYSTICKCNT SysTick->CNT
+#elif defined(CH32V10x) || defined(CH32X03x)
+	#define systickcnt_t uint32_t
+	#define SYSTICKCNT SysTick->CNTL
+#else
+	#define systickcnt_t uint32_t
+	#define SYSTICKCNT SysTick->CNT
+#endif
+
+	const systickcnt_t start = SYSTICKCNT;
+	const systickcnt_t ticks_per_ms = (FUNCONF_SYSTEM_CORE_CLOCK / 1000);
+	const systickcnt_t timeout = timeout_ms * ticks_per_ms;
+
+	while( (*DMDATA0) & 0x80 ) {
+		if( (SYSTICKCNT - start) > timeout ) return 1;
+	}
+
+	return 0;
+
+#undef systickcnt_t
+#undef SYSTICKCNT
 }
 
 #endif

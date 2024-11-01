@@ -13988,7 +13988,8 @@ void SystemInit(void);
 
 void SetupUART( int uartBRR );
 
-void WaitForDebuggerToAttach();
+// Returns 1 if timeout reached, 0 otherwise.
+int WaitForDebuggerToAttach( int timeout_ms );
 
 // Just a definition to the internal _write function.
 int _write(int fd, const char *buf, int size);
