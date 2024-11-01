@@ -43,8 +43,8 @@ void DefaultIRQHandler( void )
 void NMI_RCC_CSS_IRQHandler( void )
 
 // Startup Code
-void InterruptVectorDefault()
-void handle_reset()
+void InterruptVectorDefault( void )
+void handle_reset( void )
 
 // Configuration-specific I/O
 
@@ -56,10 +56,10 @@ int putchar(int c)
 
 #if defined( FUNCONF_USE_DEBUGPRINTF ) && FUNCONF_USE_DEBUGPRINTF
 void handle_debug_input( int numbytes, uint8_t * data ) // You can override this!
-void poll_input()
+void poll_input( void )
 int _write(int fd, const char *buf, int size)
 int putchar(int c)
-void SetupDebugPrintf()
+void SetupDebugPrintf( void )
 void WaitForDebuggerToAttach()
 #endif
 
@@ -72,7 +72,7 @@ int putchar(int c)
 #endif
 
 void DelaySysTick( uint32_t n )
-void SystemInit()
+void SystemInit( void )
 
 #ifdef CPLUSPLUS
 extern void __cxa_pure_virtual()
@@ -938,7 +938,7 @@ void handle_reset( void ) __attribute__((section(".text.handle_reset")));
 
 #if defined( CH32V003 ) || defined( CH32X03x )
 
-void InterruptVectorDefault()
+void InterruptVectorDefault( void )
 {
 	asm volatile( "\n\
 	.align  2\n\
@@ -1017,7 +1017,7 @@ void InterruptVectorDefault()
 	asm volatile( ".option   pop;\n");
 }
 
-void handle_reset()
+void handle_reset( void )
 {
 	asm volatile( "\n\
 .option push\n\
@@ -1091,7 +1091,7 @@ asm volatile(
 
 #elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 
-void InterruptVectorDefault()
+void InterruptVectorDefault( void )
 {
 	asm volatile( "\n\
 	.align	1 \n\
@@ -1489,7 +1489,7 @@ static void internal_handle_input( volatile uint32_t * dmdata0 )
 }
 
 
-void poll_input()
+void poll_input( void )
 {
 	volatile uint32_t * dmdata0 = (volatile uint32_t *)DMDATA0;
  	if( ((*dmdata0) & 0x80) == 0 )
@@ -1571,7 +1571,7 @@ WEAK int putchar(int c)
 	return 1;
 }
 
-void SetupDebugPrintf()
+void SetupDebugPrintf( void )
 {
 	// Clear out the sending flag.
 	*DMDATA1 = 0x0;
@@ -1617,7 +1617,7 @@ void DelaySysTick( uint32_t n )
 #endif
 }
 
-void SystemInit()
+void SystemInit( void )
 {
 #if defined(CH32V30x) && defined(TARGET_MCU_MEMORY_SPLIT)
 	FLASH->OBR = TARGET_MCU_MEMORY_SPLIT<<8;
@@ -1740,7 +1740,7 @@ void SystemInit()
 #endif
 }
 
-void funAnalogInit()
+void funAnalogInit( void )
 {
 	//RCC->CFGR0 &= ~(0x1F<<11); // Assume ADCPRE = 0
 	RCC->APB2PCENR |= RCC_APB2Periph_ADC1;
