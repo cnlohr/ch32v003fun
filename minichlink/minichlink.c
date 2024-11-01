@@ -1327,6 +1327,8 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 					int j;
 					for( j = 0; j < sectorsize/4; j++ )
 					{
+						// WARNING: Just so you know, this is ACTUALLY doing the write AND if writing to flash, doing the following:
+						// FLASH->CTLR = CR_PAGE_PG | FLASH_CTLR_BUF_LOAD AFTER it does the write.  THIS IS REQUIRED.
 						MCF.WriteWord( dev, j*4+base, *(uint32_t*)(tempblock + j * 4) );
 						rsofar += 4;
 					}
