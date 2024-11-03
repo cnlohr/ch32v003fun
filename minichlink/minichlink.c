@@ -860,6 +860,8 @@ int DefaultSetupInterface( void * dev )
 	MCF.DelayUS( dev, 16000 );
 	MCF.WriteReg32( dev, DMSHDWCFGR, 0x5aa50000 | (1<<10) ); // Shadow Config Reg
 	MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // CFGR (1<<10 == Allow output from slave)
+	MCF.WriteReg32( dev, DMSHDWCFGR, 0x5aa50000 | (1<<10) ); // sometimes doing this just once isn't enough
+	MCF.WriteReg32( dev, DMCFGR, 0x5aa50000 | (1<<10) ); // And this is about as fast as checking, so why not.
 
 	// Read back chip status.  This is really basic.
 	uint32_t reg = 0;
