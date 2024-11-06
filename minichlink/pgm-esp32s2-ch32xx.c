@@ -1,5 +1,13 @@
 #include <stdint.h>
+
+#ifdef __APPLE__
+#include <hidapi.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#else
 #include "hidapi.c"
+#endif
 #include "minichlink.h"
 
 struct ESP32ProgrammerStruct

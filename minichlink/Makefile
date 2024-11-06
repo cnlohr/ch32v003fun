@@ -17,10 +17,10 @@ else
 		LDFLAGS:=-lpthread -lusb-1.0 -ludev
 	endif
 	ifeq ($(OS_NAME),darwin)
-		LDFLAGS:=-lpthread -lusb-1.0 -framework CoreFoundation -framework IOKit
+		LDFLAGS:=-lpthread -lusb-1.0 -lhidapi -framework CoreFoundation -framework IOKit
 		CFLAGS:=-O0 -Wall -Wno-asm-operand-widths -Wno-deprecated-declarations -Wno-deprecated-non-prototype -D__MACOSX__ -DCH32V003 -I.
-		INCLUDES:=$(shell pkg-config --cflags-only-I libusb-1.0)
-		LIBINCLUDES:=$(shell pkg-config --libs-only-L libusb-1.0)
+		INCLUDES:=$(shell pkg-config --cflags-only-I libusb-1.0) $(shell pkg-config --cflags-only-I hidapi)
+		LIBINCLUDES:=$(shell pkg-config --libs-only-L libusb-1.0) $(shell pkg-config --libs-only-L hidapi)
 		INCS:=$(INCLUDES) $(LIBINCLUDES)
 	endif
 endif
