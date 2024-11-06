@@ -673,9 +673,10 @@ keep_going:
 					if ( offset == 0x1ffff000 ) MCF.HaltMode( dev, HALT_MODE_HALT_BUT_NO_RESET ); // do not reset if writing bootloader, even if it is considered flash memory
 					else MCF.HaltMode( dev, HALT_MODE_HALT_AND_RESET );
 				}
-
+				
 				if( MCF.WriteBinaryBlob )
 				{
+				        printf("Writing image\n");
 					if( MCF.WriteBinaryBlob( dev, offset, len, image ) )
 					{
 						fprintf( stderr, "Error: Fault writing image.\n" );
@@ -687,7 +688,7 @@ keep_going:
 					goto unimplemented;
 				}
 
-				printf( "Image written.\n" );
+				printf( "\nImage written.\n" );
 
 				free( image );
 				break;
