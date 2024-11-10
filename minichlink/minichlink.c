@@ -13,7 +13,7 @@
 #include "../ch32v003fun/ch32v003fun.h"
 
 #if defined(WINDOWS) || defined(WIN32) || defined(_WIN32)
-#ifndef _SYNCHAPI_H_
+#if !defined(_SYNCHAPI_H_) && !defined(__TINYC__)
 void Sleep(uint32_t dwMilliseconds);
 #endif
 #else

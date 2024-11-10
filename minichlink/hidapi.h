@@ -44,20 +44,111 @@
 #include <wchar.h>
 
 #ifdef _WIN32
-      #define HID_API_EXPORT __declspec(dllexport)
-      #define HID_API_CALL
+	#define HID_API_EXPORT __declspec(dllexport)
+	#define HID_API_CALL
+	#include <stdint.h>
+	#include <guiddef.h>
 #else
-      #define HID_API_EXPORT /**< API export macro */
-      #define HID_API_CALL /**< API call macro */
+	#define HID_API_EXPORT /**< API export macro */
+	#define HID_API_CALL /**< API call macro */
 #endif
 
 #define HID_API_EXPORT_CALL HID_API_EXPORT HID_API_CALL /**< API export and call macro*/
 
+
+/** @brief Static/compile-time major version of the library.
+
+	@ingroup API
+*/
+#define HID_API_VERSION_MAJOR 0
+/** @brief Static/compile-time minor version of the library.
+
+	@ingroup API
+*/
+#define HID_API_VERSION_MINOR 15
+/** @brief Static/compile-time patch version of the library.
+
+	@ingroup API
+*/
+#define HID_API_VERSION_PATCH 0
+
+/* Helper macros */
+#define HID_API_AS_STR_IMPL(x) #x
+#define HID_API_AS_STR(x) HID_API_AS_STR_IMPL(x)
+#define HID_API_TO_VERSION_STR(v1, v2, v3) HID_API_AS_STR(v1.v2.v3)
+
+/** @brief Coverts a version as Major/Minor/Patch into a number:
+	<8 bit major><16 bit minor><8 bit patch>.
+
+	This macro was added in version 0.12.0.
+
+	Convenient function to be used for compile-time checks, like:
+	@code{.c}
+	#if HID_API_VERSION >= HID_API_MAKE_VERSION(0, 12, 0)
+	@endcode
+
+	@ingroup API
+*/
+#define HID_API_MAKE_VERSION(mj, mn, p) (((mj) << 24) | ((mn) << 8) | (p))
+
+/** @brief Static/compile-time version of the library.
+
+	This macro was added in version 0.12.0.
+
+	@see @ref HID_API_MAKE_VERSION.
+
+	@ingroup API
+*/
+#define HID_API_VERSION HID_API_MAKE_VERSION(HID_API_VERSION_MAJOR, HID_API_VERSION_MINOR, HID_API_VERSION_PATCH)
+
+/** @brief Static/compile-time string version of the library.
+
+	@ingroup API
+*/
+#define HID_API_VERSION_STR HID_API_TO_VERSION_STR(HID_API_VERSION_MAJOR, HID_API_VERSION_MINOR, HID_API_VERSION_PATCH)
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+		/** A structure to hold the version numbers. */
+		struct hid_api_version {
+			int major; /**< major version number */
+			int minor; /**< minor version number */
+			int patch; /**< patch version number */
+		};
+
 		struct hid_device_;
 		typedef struct hid_device_ hid_device; /**< opaque hidapi structure */
+		/** @brief HID underlying bus types.
+
+			@ingroup API
+		*/
+		typedef enum {
+			/** Unknown bus type */
+			HID_API_BUS_UNKNOWN = 0x00,
+
+			/** USB bus
+			   Specifications:
+			   https://usb.org/hid */
+			HID_API_BUS_USB = 0x01,
+
+			/** Bluetooth or Bluetooth LE bus
+			   Specifications:
+			   https://www.bluetooth.com/specifications/specs/human-interface-device-profile-1-1-1/
+			   https://www.bluetooth.com/specifications/specs/hid-service-1-0/
+			   https://www.bluetooth.com/specifications/specs/hid-over-gatt-profile-1-0/ */
+			HID_API_BUS_BLUETOOTH = 0x02,
+
+			/** I2C bus
+			   Specifications:
+			   https://docs.microsoft.com/previous-versions/windows/hardware/design/dn642101(v=vs.85) */
+			HID_API_BUS_I2C = 0x03,
+
+			/** SPI bus
+			   Specifications:
+			   https://www.microsoft.com/download/details.aspx?id=103325 */
+			HID_API_BUS_SPI = 0x04,
+		} hid_bus_type;
 
 		/** hidapi info structure */
 		struct hid_device_info {
@@ -90,6 +181,12 @@ extern "C" {
 
 			/** Pointer to the next device */
 			struct hid_device_info *next;
+
+			/** Underlying bus type
+			    Since version 0.13.0, @ref HID_API_VERSION >= HID_API_MAKE_VERSION(0, 13, 0)
+				NOTE: Not all amalgam versions have this.
+			*/
+			hid_bus_type bus_type;
 		};
 
 
@@ -372,6 +469,23 @@ extern "C" {
 				This function returns 0 on success and -1 on error.
 		*/
 		int HID_API_EXPORT_CALL hid_get_serial_number_string(hid_device *device, wchar_t *string, size_t maxlen);
+		
+		/** @brief Get The struct #hid_device_info from a HID device.
+
+			Since version 0.13.0, @ref HID_API_VERSION >= HID_API_MAKE_VERSION(0, 13, 0)
+
+			@ingroup API
+			@param dev A device handle returned from hid_open().
+
+			@returns
+				This function returns a pointer to the struct #hid_device_info
+				for this hid_device, or NULL in the case of failure.
+				Call hid_error(dev) to get the failure reason.
+				This struct is valid until the device is closed with hid_close().
+
+			@note The returned object is owned by the @p dev, and SHOULD NOT be freed by the user.
+		*/
+		struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_get_device_info(hid_device *dev);
 
 		/** @brief Get a string from a HID device, based on its string index.
 
@@ -386,6 +500,23 @@ extern "C" {
 		*/
 		int HID_API_EXPORT_CALL hid_get_indexed_string(hid_device *device, int string_index, wchar_t *string, size_t maxlen);
 
+		/** @brief Get a report descriptor from a HID device.
+
+			Since version 0.14.0, @ref HID_API_VERSION >= HID_API_MAKE_VERSION(0, 14, 0)
+
+			User has to provide a preallocated buffer where descriptor will be copied to.
+			The recommended size for preallocated buffer is @ref HID_API_MAX_REPORT_DESCRIPTOR_SIZE bytes.
+
+			@ingroup API
+			@param dev A device handle returned from hid_open().
+			@param buf The buffer to copy descriptor into.
+			@param buf_size The size of the buffer in bytes.
+
+			@returns
+				This function returns non-negative number of bytes actually copied, or -1 on error.
+		*/
+		int HID_API_EXPORT_CALL hid_get_report_descriptor(hid_device *dev, unsigned char *buf, size_t buf_size);
+
 		/** @brief Get a string describing the last error which occurred.
 
 			@ingroup API
@@ -396,6 +527,116 @@ extern "C" {
 				which occurred or NULL if none has occurred.
 		*/
 		HID_API_EXPORT const wchar_t* HID_API_CALL hid_error(hid_device *device);
+
+#if defined( _WIN32 )
+		/** @brief Get the container ID for a HID device.
+
+			Since version 0.12.0, @ref HID_API_VERSION >= HID_API_MAKE_VERSION(0, 12, 0)
+
+			This function returns the `DEVPKEY_Device_ContainerId` property of
+			the given device. This can be used to correlate different
+			interfaces/ports on the same hardware device.
+
+			@ingroup API
+			@param dev A device handle returned from hid_open().
+			@param container_id The device's container ID on return.
+
+			@returns
+				This function returns 0 on success and -1 on error.
+		*/
+		int HID_API_EXPORT_CALL hid_winapi_get_container_id(hid_device *dev, GUID *container_id);
+
+		/**
+		 * @brief Reconstructs a HID Report Descriptor from a Win32 HIDP_PREPARSED_DATA structure.
+		 *  This reconstructed report descriptor is logical identical to the real report descriptor,
+		 *  but not byte wise identical.
+		 *
+		 * @param[in]  hidp_preparsed_data Pointer to the HIDP_PREPARSED_DATA to read, i.e.: the value of PHIDP_PREPARSED_DATA,
+		 *   as returned by HidD_GetPreparsedData WinAPI function.
+		 * @param      buf       Pointer to the buffer where the report descriptor should be stored.
+		 * @param[in]  buf_size  Size of the buffer. The recommended size for the buffer is @ref HID_API_MAX_REPORT_DESCRIPTOR_SIZE bytes.
+		 *
+		 * @return Returns size of reconstructed report descriptor if successful, -1 for error.
+		 */
+		int HID_API_EXPORT_CALL hid_winapi_descriptor_reconstruct_pp_data(void *hidp_preparsed_data, unsigned char *buf, size_t buf_size);
+
+		/**
+		 * @brief Sets the timeout for hid_write operation.
+		 *
+		 * Since version 0.15.0, @ref HID_API_VERSION >= HID_API_MAKE_VERSION(0, 15, 0)
+		 *
+		 * The default timeout is 1sec for winapi backend.
+		 *
+		 * In case if 1sec is not enough, on in case of multi-platform development,
+		 * the recommended value is 5sec, e.g. to match (unconfigurable) 5sec timeout
+		 * set for hidraw (linux kernel) implementation.
+		 *
+		 * When the timeout is set to 0, hid_write function becomes non-blocking and would exit immediately.
+		 * When the timeout is set to INFINITE ((DWORD)-1), the function will not exit,
+		 * until the write operation is performed or an error occured.
+		 * See dwMilliseconds parameter documentation of WaitForSingleObject function.
+		 *
+		 * @param timeout New timeout value in milliseconds.
+		 */
+		void HID_API_EXPORT_CALL hid_winapi_set_write_timeout(hid_device *dev, unsigned long timeout);
+#elif defined( __MACOSX__ )
+		/** @brief Get the location ID for a HID device.
+
+			Since version 0.12.0, @ref HID_API_VERSION >= HID_API_MAKE_VERSION(0, 12, 0)
+
+			@ingroup API
+			@param dev A device handle returned from hid_open().
+			@param location_id The device's location ID on return.
+
+			@returns
+				This function returns 0 on success and -1 on error.
+		*/
+		int HID_API_EXPORT_CALL hid_darwin_get_location_id(hid_device *dev, uint32_t *location_id);
+
+
+		/** @brief Changes the behavior of all further calls to @ref hid_open or @ref hid_open_path.
+
+			By default on Darwin platform all devices opened by HIDAPI with @ref hid_open or @ref hid_open_path
+			are opened in exclusive mode (see kIOHIDOptionsTypeSeizeDevice).
+
+			Since version 0.12.0, @ref HID_API_VERSION >= HID_API_MAKE_VERSION(0, 12, 0)
+
+			@ingroup API
+			@param open_exclusive When set to 0 - all further devices will be opened
+				in non-exclusive mode. Otherwise - all further devices will be opened
+				in exclusive mode.
+
+			@note During the initialisation by @ref hid_init - this property is set to 1 (TRUE).
+			This is done to preserve full backward compatibility with previous behavior.
+
+			@note Calling this function before @ref hid_init or after @ref hid_exit has no effect.
+		*/
+		void HID_API_EXPORT_CALL hid_darwin_set_open_exclusive(int open_exclusive);
+
+		/** @brief Getter for option set by @ref hid_darwin_set_open_exclusive.
+
+			Since version 0.12.0, @ref HID_API_VERSION >= HID_API_MAKE_VERSION(0, 12, 0)
+
+			@ingroup API
+			@return 1 if all further devices will be opened in exclusive mode.
+
+			@note Value returned by this function before calling to @ref hid_init or after @ref hid_exit
+			is not reliable.
+		*/
+		int HID_API_EXPORT_CALL hid_darwin_get_open_exclusive(void);
+
+		/** @brief Check how the device was opened.
+
+			Since version 0.12.0, @ref HID_API_VERSION >= HID_API_MAKE_VERSION(0, 12, 0)
+
+			@ingroup API
+			@param dev A device to get property from.
+
+			@return 1 if the device is opened in exclusive mode, 0 - opened in non-exclusive,
+			-1 - if dev is invalid.
+		*/
+		int HID_API_EXPORT_CALL hid_darwin_is_device_open_exclusive(hid_device *dev);
+#endif
 
 #ifdef __cplusplus
 }
