@@ -55,7 +55,7 @@ void * MiniCHLinkInitAsDLL( struct MiniChlinkFunctions ** MCFO, const init_hints
 		}
 		else if( (dev = TryInit_ESP32S2CHFUN()) )
 		{
-			fprintf( stderr, "Found ESP32S2 Programmer\n" );
+			fprintf( stderr, "Found ESP32S2-Style Programmer\n" );
 		}
 		else if ((dev = TryInit_NHCLink042()))
 		{
