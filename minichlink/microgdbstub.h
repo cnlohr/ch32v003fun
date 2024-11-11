@@ -20,6 +20,13 @@
 #ifndef _MICROGDBSTUB_H
 #define _MICROGDBSTUB_H
 
+enum HaltResetResumeType
+{
+	HALT_TYPE_SINGLE_STEP = 9,
+	HALT_TYPE_CONTINUE = 2,
+	HALT_TYPE_CONTINUE_WITH_SIGNAL = 4,
+};
+
 // You must write these for your processor.
 void RVNetPoll(void * dev );
 int RVSendGDBHaltReason( void * dev );
@@ -27,7 +34,7 @@ void RVNetConnect( void * dev );
 int RVGetNumRegisters( void * dev );
 int RVReadCPURegister( void * dev, int regno, uint32_t * regret );
 int RVWriteCPURegister( void * dev, int regno, uint32_t value );
-void RVDebugExec( void * dev, int halt_reset_or_resume );
+int RVDebugExec( void * dev, enum HaltResetResumeType halt_reset_or_resume, int resume_from_other_address, uint32_t address );
 int RVReadMem( void * dev, uint32_t memaddy, uint8_t * payload, int len );
 int RVHandleBreakpoint( void * dev, int set, uint32_t address );
 int RVWriteRAM(void * dev, uint32_t memaddy, uint32_t length, uint8_t * payload );
@@ -203,13 +210,15 @@ void HandleGDBPacket( void * dev, char * data, int len )
 	data++;
 
 	char cmd = *(data++);
+	//printf( "DATA: [%c] %c%c%c%c%c%c%c%c%c\n",cmd, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8] );
+	
 	switch( cmd )
 	{
 	case 'q':
 		if( StringMatch( data, "Attached" ) )
 			SendReplyFull( "1" ); //Attached to an existing process.
 		else if( StringMatch( data, "Supported" ) )
-			SendReplyFull( "PacketSize=f000;qXfer:memory-map:read+" );
+			SendReplyFull( "PacketSize=f000;multiprocess+;hwbreak+;vContSupported+;qXfer:memory-map:read+" );
 		else if( StringMatch( data, "C") ) // Get Current Thread ID. (Can't be -1 or 0.  Those are special)
 			SendReplyFull( "QC1" );
 		else if( StringMatch( data, "fThreadInfo" ) )  // Query all active thread IDs (Can't be 0 or 1)
@@ -237,7 +246,7 @@ void HandleGDBPacket( void * dev, char * data, int len )
 					SendReplyFull( "" );
 					break;
 				}
-				printf("Got monitor command: %s\n", cmd);
+				//printf("Got monitor command: %s\n", cmd);
 				// Support commands that OpenOCD also does:
 				// https://openocd.org/doc/html/General-Commands.html
 				if(StringMatch(cmd, "halt")) {
@@ -273,8 +282,8 @@ void HandleGDBPacket( void * dev, char * data, int len )
 					SendReplyFull( "+" );
 				}
 				else {
-					printf("Unknown monitor command '%s', use 'monitor help'.\n", cmd);
-					MakeGDBPrintText("Unknown monitor command, use 'monitor help'\n");
+					fprintf( stderr, "Unknown monitor command '%s', use 'monitor help'.\n", cmd );
+					MakeGDBPrintText( "Unknown monitor command, use 'monitor help'\n" );
 					SendReplyFull( "-" );
 				}
 			} else {
@@ -290,26 +299,35 @@ void HandleGDBPacket( void * dev, char * data, int len )
 			snprintf( map, mslen, MICROGDBSTUB_MEMORY_MAP, iss->flash_size, iss->sector_size, iss->ram_size );
 			SendReplyFull( map );
 		}
+		else if( StringMatch( data, "ThreadExtraInfo" ) )
+			SendReplyFull( "4E2F41" );
+		else if( data[0] == 'P' )
+			SendReplyFull( "m1" );			// Archaic threadid.
 		else
 		{
-			printf( "Unknown command: %s\n", data );
+			fprintf( stderr, "Unknown q command: q%s\n", data );
 			SendReplyFull( "" );
 		}
 		break;
 	case 'c':
 	case 'C':
-		RVDebugExec( dev, (cmd == 's' )?9:(cmd == 'C')?4:2 );
-		SendReplyFull( "OK" );
+		// TODO: Support continue-from-another-address
+		RVDebugExec( dev, (cmd == 'C')?HALT_TYPE_CONTINUE_WITH_SIGNAL:HALT_TYPE_CONTINUE, 0, 0 );
+		//The real reply will be sent from RVNetPoll 
 		break;
 	case 's':
-		RVDebugExec( dev, 4 );
-		SendReplyFull( "OK" );
-		//RVHandleGDBBreakRequest( dev );
+	case 'S':
+		// TODO: Support step-with-signal.
+		RVDebugExec( dev, HALT_TYPE_SINGLE_STEP, 0, 0 );
+		//SendReplyFull( "T05" );
+		//SendReplyFull( "OK" ); // Will be sent from RVNetPoll
+		RVHandleGDBBreakRequest( dev );
 		RVSendGDBHaltReason( dev );
 		break;
 	case 'D':
 		// Handle disconnect.
 		RVHandleDisconnect( dev );
+		//SendReplyFull( "OK" );
 		break;
 	case 'k':
 		RVHandleKillRequest( dev ); // no reply.
@@ -320,7 +338,6 @@ void HandleGDBPacket( void * dev, char * data, int len )
 		if( ReadHex( &data, -1, &reg ) < 0 ) goto err;
 		if( *(data++) != ',' ) goto err;
 		if( ReadHex( &data, -1, &value ) < 0 ) goto err;
-		printf( "REG: %02x = %08x\n", reg, value );
 		RVWriteCPURegister( dev, reg, value );
 		break;
 	}
@@ -413,6 +430,12 @@ void HandleGDBPacket( void * dev, char * data, int len )
 		{
 			SendReplyFull( "OK" );
 		}
+		else if( StringMatch( data, "Kill" ) )   //vKill
+		{
+			SendReplyFull( "OK" );
+			fprintf( stderr, "Received Kill command. Exiting\n" );
+			exit( 0 );
+		}
 		else if( StringMatch( data, "FlashErase" ) ) //vFlashErase
 		{
 			data += 10; // FlashErase
@@ -432,16 +455,15 @@ void HandleGDBPacket( void * dev, char * data, int len )
 		{
 			data += 10; // FlashWrite
 
-			printf( "Write\n" );
 			if( *(data++) != ':' ) goto err;
 			uint32_t address_to_write = 0;
 			if( ReadHex( &data, -1, &address_to_write ) < 0 ) goto err;
 			if( *(data++) != ':' ) goto err;
 			int toflash = len - (data - odata) - 1;
-printf( "LEN: %08x %d %d %c\n", address_to_write, len, toflash, data[0] );
-			if( RVWriteFlash( dev, address_to_write, len, (uint8_t*)data ) == 0 )
+			fprintf( stderr, "Writing flash: %08x len %d\n", address_to_write, toflash );
+			if( RVWriteFlash( dev, address_to_write, toflash, (uint8_t*)data ) == 0 )
 			{
-				printf( "Write OK\n" );
+				fprintf( stderr, "Write OK\n" );
 				SendReplyFull( "OK" ); 
 			}
 			else
@@ -449,7 +471,7 @@ printf( "LEN: %08x %d %d %c\n", address_to_write, len, toflash, data[0] );
 		}
 		else
 		{
-			printf( "Warning: Unknown v command %s\n", data );
+			fprintf( stderr, "Warning: Unknown v command %s\n", data );
 			SendReplyFull( "E 01" );
 		}
 		break;
@@ -493,12 +515,12 @@ printf( "LEN: %08x %d %d %c\n", address_to_write, len, toflash, data[0] );
 		SendReplyFull( "" );
 		break;
 	default:
-		printf( "UNKNOWN PACKET: %d (%s)\n", len, data-1 );
+		fprintf( stderr, "UNKNOWN PACKET: %d (%s)\n", len, data-1 );
 		for( i = 0; i < len; i++ )
 		{
-			printf( "%02x ", data[i] );
+			fprintf( stderr, "%02x ", data[i] );
 		}
-		printf( "\n" );
+		fprintf( stderr, "\n" );
 		goto err;
 		break;
 	}
@@ -543,7 +565,7 @@ void MicroGDBStubHandleClientData( void * dev, const uint8_t * rxdata, int len )
 			{
 				char escaped = c ^ 0x20;
 				gdbbuffer[gdbbufferplace++] = escaped;
-				printf( "ESCAPED @ %02x -> %c [%d]\n", gdbbufferplace, escaped, escaped );
+				fprintf( stderr, "ESCAPED @ %02x -> %c [%d]\n", gdbbufferplace, escaped, escaped );
 				gdbbufferstate = 1;
 			}
 			break;
@@ -570,15 +592,15 @@ void MicroGDBStubHandleClientData( void * dev, const uint8_t * rxdata, int len )
 			}
 			else
 			{
-				printf( "Checksum Error: Got %02x expected %02x / len: %d\n", gdbrunningcsum, gdbchecksum, gdbbufferplace );
+				fprintf( stderr, "Checksum Error: Got %02x expected %02x / len: %d\n", gdbrunningcsum, gdbchecksum, gdbbufferplace );
 				int i;
 				for( i = 0; i < gdbbufferplace; i++ )
 				{
 					int c = ((uint8_t*)gdbbuffer)[i];
-					printf( "%02x [%c] ", c, (c>=32 && c < 128)?c:' ');
-					if( ( i & 0xf ) == 0xf ) printf( "\n" );
+					fprintf( stderr, "%02x [%c] ", c, (c>=32 && c < 128)?c:' ');
+					if( ( i & 0xf ) == 0xf ) fprintf( stderr, "\n" );
 				}
-				printf( "\n" );
+				fprintf( stderr, "\n" );
 				MicroGDBStubSendReply( "-", -1, 0 );
 			}
 
@@ -693,7 +715,7 @@ int MicroGDBPollServer( void * dev )
 
 	if( r < 0 )
 	{
-		printf( "R: %d\n", r );
+		fprintf( stderr, "R poll(...): %d\n", r );
 	}
 
 	//If there's faults, bail.

@@ -46,6 +46,17 @@
 	7. Hardware MMIO structs, i.e.
 		SysTick->CNT = current system tick counter (can be Hclk or Hclk/8)
 		TIM2->CH1CVR = direct control over a PWM output
+
+    8. Default debug behavior, when semihosting:
+        a. You get access to DidDebuggerAttach() - so you can see if a debugger has attached.
+        b. WaitForDebuggerToAttach( int timeout_ms ) - if timeout_ms == 0, will wait for forever.
+        c. printf will wait 120ms (configurable) to make sure it doesn't drop data.  Otherwise,
+           printf will fast-path to exit after the first timeout. It will still do the string
+           formatting, but will not wait on output. Timeout is configured with
+           FUNCONF_DEBUGPRINTF_TIMEOUT.
+        d. If you hard fault, it will wait indefinitely for a debugger to attach, once attached,
+           will printf the fault cause, and the memory address of the fault. Space can be saved
+           by setting FUNCONF_DEBUG_HARDFAULT to 0.
 */
 
 
@@ -13991,10 +14002,15 @@ void SystemInit(void);
 void SetupUART( int uartBRR );
 
 // Returns 1 if timeout reached, 0 otherwise.
+// If timeout_ms == 0, wait indefinitely.
+// Use DidDebuggerAttach() For a zero-wait way of seeing if it attached.
 int WaitForDebuggerToAttach( int timeout_ms );
 
 // Returns 1 if a debugger has activated the debug module.
-static int DidDebuggerAttach() { return !*DMSTATUS_SENTINEL; }
+#define DidDebuggerAttach() (!*DMSTATUS_SENTINEL)
+
+// Returns 1 if a debugger has activated the debug module.
+#define DebugPrintfBufferFree() (!(*DMDATA0 & 0x80))
 
 // Just a definition to the internal _write function.
 int _write(int fd, const char *buf, int size);

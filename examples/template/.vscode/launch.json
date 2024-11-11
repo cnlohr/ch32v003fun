@@ -1,47 +1,33 @@
 {
 	"configurations": [
 		{
-			"name": "cppdbg GDB Debug Target",
+			"name": "GDB Debug Target",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/template.elf",
+			"program": "debugprintfdemo.elf",
 			"args": [],
 			"stopAtEntry": true,
 			"cwd": "${workspaceFolder}",
 			"environment": [],
 			"externalConsole": false,
 			"MIMode": "gdb",
-			"deploySteps": [ // 'make ...gdbserver' doesn't seem to work here. The Makefile calls 'minichlink -baG'... Needs -aG. Easier to add minichlink as a seperate step below
-				{
-					"type": "shell", //isn't there some way to call a task from tasks.json?
-					"command": "make --directory=${workspaceFolder} -j 1 closechlink flash",
-				},
-				{
-					"type": "shell",
-					"command": "${workspaceFolder}/../../minichlink/minichlink -aG",
-					"continueOn": "gdbserver running"
-				},
-			],
+			"preLaunchTask": "run_flash_and_gdbserver",
 			"setupCommands": [
 				{
 					"description": "Enable pretty-printing for gdb",
 					"text": "-enable-pretty-printing",
-					"ignoreFailures": true,
-				},
+					"ignoreFailures": true
+				}
 			],
-			"svdPath": "${workspaceFolder}/../../misc/CH32V003xx.svd", // extension 'Peripheral Viewer' by mcu-debug (cortex-debug)
 			"miDebuggerPath": "gdb-multiarch",
-			"miDebuggerServerAddress": "localhost:2000",
-			"logging": {
-				"engineLogging": false
-			},
+			"miDebuggerServerAddress": "127.0.0.1:2000"
 		},
 		{
 			"name": "Run Only (In Terminal)",
 			"type": "node",
 			"request": "launch",
 			"program": "",
-			"preLaunchTask": "run_flash_and_gdbserver",
-		}
-	]
+			"preLaunchTask": "run_flash_and_monitor",
+		}	
+		]
 }

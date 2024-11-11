@@ -15,8 +15,20 @@
 		},
 		{
 			"type": "shell",
+			"label": "run_flash_and_monitor",
+			"presentation": {
+				"echo": true,
+				"focus": false,
+				"group": "build",
+				"panel": "shared",
+				"showReuseMessage" : false
+			},
+			"command": "make flash monitor",
+		},
+		{
+			"type": "shell",
 			"label": "run_flash_and_gdbserver",
-			"command": "make closechlink flash gdbserver",
+			"command": "make flash gdbserver",
 
 			"presentation": {
 				"echo": true,

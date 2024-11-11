@@ -2128,14 +2128,14 @@ int DefaultWriteAllCPURegisters( void * dev, uint32_t * regret )
 	int i;
 	for( i = 0; i < iss->nr_registers_for_debug; i++ )
 	{
-		MCF.WriteReg32( dev, DMCOMMAND, 0x00230000 | 0x1000 | i ); // Read xN into DATA0.
 		if( MCF.WriteReg32( dev, DMDATA0, regret[i] ) )
 		{
 			return -5;
 		}
+		MCF.WriteReg32( dev, DMCOMMAND, 0x00230000 | 0x1000 | i ); // Read xN into DATA0.
 	}
-	MCF.WriteReg32( dev, DMCOMMAND, 0x00230000 | 0x7b1 ); // Read xN into DATA0.
 	int r = MCF.WriteReg32( dev, DMDATA0, regret[i] );
+	MCF.WriteReg32( dev, DMCOMMAND, 0x00230000 | 0x7b1 ); // Read xN into DATA0.
 	return r;
 }
 
@@ -2172,7 +2172,6 @@ int DefaultSetEnableBreakpoints( void * dev, int is_enabled, int single_step )
 	else
 		DCSR &=~4;
 
-	//printf( "Setting DCSR: %08x\n", DCSR );
 	if( MCF.WriteCPURegister( dev, 0x7b0, DCSR ) )
 		fprintf( stderr, "Error: DCSR could not be read\n" );
 
