@@ -764,7 +764,7 @@ void DefaultIRQHandler( void )
 #if FUNCONF_DEBUG_HARDFAULT
 	// Wait indefinitely for a debugger to attach.
 	while( !DidDebuggerAttach() );
-	printf( "DefaultIRQHandler MSTATUS:%08x MTVAL:%08x MCAUSE:%08x MEPC:%08x\n", (int)__get_MSTATUS(), (int)__get_MTVAL(), (int)__get_MCAUSE(), (int)__get_MEPC() );
+	printf( "DEAD MSTATUS:%08x MTVAL:%08x MCAUSE:%08x MEPC:%08x\n", (int)__get_MSTATUS(), (int)__get_MTVAL(), (int)__get_MCAUSE(), (int)__get_MEPC() );
 #endif
 	// Infinite Loop
 	asm volatile( "1: j 1b" );
@@ -1682,7 +1682,7 @@ WEAK int putchar(int c)
 void SetupDebugPrintf( void )
 {
 	// Clear out the sending flag.
-	*DMDATA1 = 0x0;
+	*DMDATA1 = 0x00;
 	*DMDATA0 = 0x80;
 }
 
@@ -1706,7 +1706,7 @@ int WaitForDebuggerToAttach( int timeout_ms )
 
 	// Wait for the sentinel to become zero.
 	while( !DidDebuggerAttach() ) {
-		if( (SYSTICKCNT - start) > timeout ) return 1;
+		if( timeout_ms && (SYSTICKCNT - start) > timeout ) return 1;
 	}
 
 	return 0;
