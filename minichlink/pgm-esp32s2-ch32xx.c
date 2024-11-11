@@ -164,7 +164,7 @@ int ESPControl3v3( void * dev, int bOn )
 int ESPReadWord( void * dev, uint32_t address_to_read, uint32_t * data )
 {
 	struct ESP32ProgrammerStruct * eps = (struct ESP32ProgrammerStruct *)dev;
-//printf( "READ: %08x\n", address_to_read );
+
 	if( SRemain( eps ) < 6 )
 		ESPFlushLLCommands( eps );
 
@@ -172,15 +172,13 @@ int ESPReadWord( void * dev, uint32_t address_to_read, uint32_t * data )
 	Write4LE( eps, address_to_read );
 	ESPFlushLLCommands( eps );
 
-//	printf( "Got: %d\n", eps->replylen );
 	if( eps->replylen < 5 )
 	{
 		return -9;
 	}
 	int tail = eps->replylen-5;
 	memcpy( data, eps->reply + tail + 1, 4 );
-//	printf( "Read Mem: %08x => %08x\n", address_to_read, *data );
-	return eps->reply[tail];
+	return (int8_t)eps->reply[tail];
 }
 
 int ESPWriteWord( void * dev, uint32_t address_to_write, uint32_t data )
@@ -279,14 +277,6 @@ retry:
 	}
 
 	return (char)eps->reply[1];
-}
-
-int ESPPerformSongAndDance( void * dev )
-{
-	struct ESP32ProgrammerStruct * eps = (struct ESP32ProgrammerStruct *)dev;
-	Write2LE( eps, 0x01fe );
-	ESPFlushLLCommands( dev );	
-	return 0;
 }
 
 int ESPVoidHighLevelState( void * dev )
@@ -427,19 +417,17 @@ void * TryInit_ESP32S2CHFUN()
 	MCF.Control3v3 = ESPControl3v3;
 	MCF.Exit = ESPExit;
 	MCF.VoidHighLevelState = ESPVoidHighLevelState;
-	MCF.PollTerminal = ESPPollTerminal;
+	MCF.VendorCommand = ESPVendorCommand;
 
 	// These are optional. Disabling these is a good mechanismto make sure the core functions still work.
+	// Comment these out to test the reference algorithm.
+	// DO NOT Comment them out piecemeal because there are state assumptions built into these functions.
+	MCF.PollTerminal = ESPPollTerminal;
 	MCF.WriteWord = ESPWriteWord;
 	MCF.ReadWord = ESPReadWord;
-
 	MCF.WaitForFlash = ESPWaitForFlash;
 	MCF.WaitForDoneOp = ESPWaitForDoneOp;
-
-	MCF.PerformSongAndDance = ESPPerformSongAndDance;
-
 	MCF.BlockWrite64 = ESPBlockWrite64;
-	MCF.VendorCommand = ESPVendorCommand;
 
 	// Reset internal programmer state.
 	Write2LE( eps, 0x0afe );
@@ -450,6 +438,8 @@ void * TryInit_ESP32S2CHFUN()
 	{
 		eps->dev_version = eps->reply[1];
 	}
+	Write2LE( eps, 0x0efe ); // Trigger Init.
+	ESPFlushLLCommands( eps );
 	return eps;
 }
 

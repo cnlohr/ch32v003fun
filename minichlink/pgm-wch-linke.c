@@ -19,6 +19,9 @@ struct LinkEProgrammerStruct
 
 static void printChipInfo(enum RiscVChip chip) {
 	switch(chip) {
+		case CHIP_UNKNOWN:
+			fprintf(stderr, "No detected chip.\n" );
+			break;
 		case CHIP_CH32V10x:
 			fprintf(stderr, "Detected: CH32V10x\n");
 			break;

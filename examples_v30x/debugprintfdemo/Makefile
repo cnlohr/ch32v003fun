@@ -7,6 +7,9 @@ TARGET_MCU_PACKAGE:=CH32V305RBT6
 
 include ../../ch32v003fun/ch32v003fun.mk
 
+monitor :
+	$(MINICHLINK)/minichlink -aT
+
 flash : cv_flash
 clean : cv_clean
 
