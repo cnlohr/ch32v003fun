@@ -761,10 +761,12 @@ extern uint32_t * _edata;
 // If you don't override a specific handler, it will just spin forever.
 void DefaultIRQHandler( void )
 {
-	// Infinite Loop
-#if FUNCONF_DEBUG
+#if FUNCONF_DEBUG_HARDFAULT
+	// Wait indefinitely for a debugger to attach.
+	while( !DidDebuggerAttach() );
 	printf( "DefaultIRQHandler MSTATUS:%08x MTVAL:%08x MCAUSE:%08x MEPC:%08x\n", (int)__get_MSTATUS(), (int)__get_MTVAL(), (int)__get_MCAUSE(), (int)__get_MEPC() );
 #endif
+	// Infinite Loop
 	asm volatile( "1: j 1b" );
 }
 
@@ -1614,11 +1616,12 @@ void poll_input( void )
 WEAK int _write(int fd, const char *buf, int size)
 {
 	(void)fd;
+	if( !DidDebuggerAttach() ) return;
 
 	char buffer[4] = { 0 };
 	int place = 0;
 	uint32_t lastdmd;
-	uint32_t timeout = FUNCONF_DEBUGPRINTF_TIMEOUT; // Give up after ~40ms
+	uint32_t timeout = FUNCONF_DEBUGPRINTF_TIMEOUT; // Give up after ~120ms
 
 	if( size == 0 )
 	{
@@ -1662,6 +1665,8 @@ WEAK int _write(int fd, const char *buf, int size)
 // single to debug intf
 WEAK int putchar(int c)
 {
+	if( !DidDebuggerAttach() ) return;
+
 	int timeout = FUNCONF_DEBUGPRINTF_TIMEOUT;
 	uint32_t lastdmd = 0;
 
@@ -1699,7 +1704,8 @@ int WaitForDebuggerToAttach( int timeout_ms )
 	const systickcnt_t ticks_per_ms = (FUNCONF_SYSTEM_CORE_CLOCK / 1000);
 	const systickcnt_t timeout = timeout_ms * ticks_per_ms;
 
-	while( (*DMDATA0) & 0x80 ) {
+	// Wait for the sentinel to become zero.
+	while( !DidDebuggerAttach() ) {
 		if( (SYSTICKCNT - start) > timeout ) return 1;
 	}
 

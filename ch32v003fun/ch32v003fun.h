@@ -66,10 +66,10 @@
 #define FUNCONF_SYSTICK_USE_HCLK 0      // Should systick be at 48 MHz or 6MHz?
 #define FUNCONF_TINYVECTOR 0            // If enabled, Does not allow normal interrupts.
 #define FUNCONF_UART_PRINTF_BAUD 115200 // Only used if FUNCONF_USE_UARTPRINTF is set.
-#define FUNCONF_DEBUGPRINTF_TIMEOUT 160000 // Arbitrary time units
+#define FUNCONF_DEBUGPRINTF_TIMEOUT 0x80000 // Arbitrary time units, this is around 120ms.
 #define FUNCONF_ENABLE_HPE 1            // Enable hardware interrupt stack.  Very good on QingKeV4, i.e. x035, v10x, v20x, v30x, but questionable on 003.
 #define FUNCONF_USE_5V_VDD 0            // Enable this if you plan to use your part at 5V - affects USB and PD configration on the x035.
-#define FUNCONF_DEBUG      0            // Log fatal errors with "printf"
+#define FUNCONF_DEBUG_HARDFAULT    1    // Log fatal errors with "printf"
 */
 
 // Sanity check for when porting old code.
@@ -88,7 +88,7 @@
 #endif
 
 #if defined(FUNCONF_USE_DEBUGPRINTF) && FUNCONF_USE_DEBUGPRINTF && !defined(FUNCONF_DEBUGPRINTF_TIMEOUT)
-	#define FUNCONF_DEBUGPRINTF_TIMEOUT 160000
+	#define FUNCONF_DEBUGPRINTF_TIMEOUT 0x80000
 #endif
 
 #if defined(FUNCONF_USE_HSI) && defined(FUNCONF_USE_HSE) && FUNCONF_USE_HSI && FUNCONF_USE_HSE
@@ -112,8 +112,8 @@
 	#endif
 #endif
 
-#if !defined( FUNCONF_DEBUG )
-	#define FUNCONF_DEBUG 0
+#if !defined( FUNCONF_DEBUG_HARDFAULT )
+	#define FUNCONF_DEBUG_HARDFAULT 1
 #endif
 
 #if defined( CH32X03x ) && FUNCONF_USE_PLL
@@ -13864,9 +13864,11 @@ void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) 
 #if defined(CH32V003)
 	#define DMDATA0 ((volatile uint32_t*)0xe00000f4)
 	#define DMDATA1 ((volatile uint32_t*)0xe00000f8)
+	#define DMSTATUS_SENTINEL ((volatile uint32_t*)0xe00000fc) // Reads as 0x00000000 if debugger is attached.
 #else
 	#define DMDATA0 ((volatile uint32_t*)0xe0000380)
 	#define DMDATA1 ((volatile uint32_t*)0xe0000384)
+	#define DMSTATUS_SENTINEL ((volatile uint32_t*)0xe0000388)// Reads as 0x00000000 if debugger is attached.
 #endif
 
 #endif
@@ -13990,6 +13992,9 @@ void SetupUART( int uartBRR );
 
 // Returns 1 if timeout reached, 0 otherwise.
 int WaitForDebuggerToAttach( int timeout_ms );
+
+// Returns 1 if a debugger has activated the debug module.
+static int DidDebuggerAttach() { return !*DMSTATUS_SENTINEL; }
 
 // Just a definition to the internal _write function.
 int _write(int fd, const char *buf, int size);
