@@ -17,6 +17,8 @@ int main()
 {
 	SystemInit();
 
+	while( !DebugPrintfBufferFree() );
+
 	// Enable GPIOs
 	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOC;
 

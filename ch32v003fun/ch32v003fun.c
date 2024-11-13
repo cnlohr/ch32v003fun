@@ -761,10 +761,15 @@ extern uint32_t * _edata;
 // If you don't override a specific handler, it will just spin forever.
 void DefaultIRQHandler( void )
 {
-	// Infinite Loop
-#if FUNCONF_DEBUG
-	printf( "DefaultIRQHandler MSTATUS:%08x MTVAL:%08x MCAUSE:%08x MEPC:%08x\n", (int)__get_MSTATUS(), (int)__get_MTVAL(), (int)__get_MCAUSE(), (int)__get_MEPC() );
+#if FUNCONF_DEBUG_HARDFAULT && ( FUNCONF_USE_DEBUGPRINTF || FUNCONF_USE_UARTPRINTF )
+#if FUNCONF_USE_DEBUGPRINTF
+	// Wait indefinitely for a printf to become clear.
+	while( !DebugPrintfBufferFree() );
+
 #endif
+	printf( "DEAD MSTATUS:%08x MTVAL:%08x MCAUSE:%08x MEPC:%08x\n", (int)__get_MSTATUS(), (int)__get_MTVAL(), (int)__get_MCAUSE(), (int)__get_MEPC() );
+#endif
+	// Infinite Loop
 	asm volatile( "1: j 1b" );
 }
 
@@ -1585,7 +1590,7 @@ static void internal_handle_input( volatile uint32_t * dmdata0 )
 {
 	uint32_t dmd0 = *dmdata0;
 	int bytes = (dmd0 & 0x3f) - 4;
-	if( bytes > 0 )
+	if( bytes > 0 && bytes < 16 )
 	{
 		handle_debug_input( bytes, ((uint8_t*)dmdata0) + 1 );
 	}
@@ -1607,18 +1612,23 @@ void poll_input( void )
 //           MSB .... LSB
 // DMDATA0: char3 char2 char1 [status word]
 // where [status word] is:
-//   b7 = is a "printf" waiting?
-//   b0..b3 = # of bytes in printf (+4).  (5 or higher indicates a print of some kind)
+//   bit 7 = is a "printf" waiting?
+//   bit 6 = printf has timed out.
+//   bit 0..bit 3 = # of bytes in printf (+4).  (5 or higher indicates a print of some kind)
 //     note: if b7 is 0 in reply, but b0..b3 have >=4 then we received data from host.
+// Special sentinel:
+//     status word = 0x80 = default at start
+//     status word = 0xcx = timed out.
 // declare as weak to allow overriding.
 WEAK int _write(int fd, const char *buf, int size)
 {
 	(void)fd;
+	if( ( *DMDATA0 & 0xc0 ) == 0xc0 ) return 0;
 
 	char buffer[4] = { 0 };
 	int place = 0;
 	uint32_t lastdmd;
-	uint32_t timeout = FUNCONF_DEBUGPRINTF_TIMEOUT; // Give up after ~40ms
+	uint32_t timeout = FUNCONF_DEBUGPRINTF_TIMEOUT; // Give up after ~120ms
 
 	if( size == 0 )
 	{
@@ -1631,7 +1641,13 @@ WEAK int _write(int fd, const char *buf, int size)
 		if( tosend > 7 ) tosend = 7;
 
 		while( ( lastdmd = (*DMDATA0) ) & 0x80 )
-			if( timeout-- == 0 ) return place;
+		{
+			if( timeout-- == 0 )
+			{
+				*DMDATA0 |= 0xc0;
+				return 0;
+			}
+		}
 
 		if( lastdmd ) internal_handle_input( (uint32_t*)DMDATA0 );
 
@@ -1662,14 +1678,24 @@ WEAK int _write(int fd, const char *buf, int size)
 // single to debug intf
 WEAK int putchar(int c)
 {
+	if( ( *DMDATA0 & 0xc0 ) == 0xc0 ) return 0;
+
 	int timeout = FUNCONF_DEBUGPRINTF_TIMEOUT;
 	uint32_t lastdmd = 0;
 
 	while( ( lastdmd = (*DMDATA0) ) & 0x80 )
-		if( timeout-- == 0 ) return 0;
+	{
+		if( timeout-- == 0 )
+		{
+			*DMDATA0 |= 0xc0;
+			return 0;
+		}
+	}
 
 	// Simply seeking input.
 	if( lastdmd ) internal_handle_input( (uint32_t*)DMDATA0 );
+
+	// Write out character.
 	*DMDATA0 = 0x85 | ((const char)c<<8);
 	return 1;
 }
@@ -1677,7 +1703,7 @@ WEAK int putchar(int c)
 void SetupDebugPrintf( void )
 {
 	// Clear out the sending flag.
-	*DMDATA1 = 0x0;
+	*DMDATA1 = 0x00;
 	*DMDATA0 = 0x80;
 }
 
@@ -1699,8 +1725,9 @@ int WaitForDebuggerToAttach( int timeout_ms )
 	const systickcnt_t ticks_per_ms = (FUNCONF_SYSTEM_CORE_CLOCK / 1000);
 	const systickcnt_t timeout = timeout_ms * ticks_per_ms;
 
-	while( (*DMDATA0) & 0x80 ) {
-		if( (SYSTICKCNT - start) > timeout ) return 1;
+	// Wait for the sentinel to become zero.
+	while( !DidDebuggerAttach() ) {
+		if( timeout_ms && (SYSTICKCNT - start) > timeout ) return 1;
 	}
 
 	return 0;
