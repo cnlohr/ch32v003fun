@@ -210,7 +210,7 @@ void HandleGDBPacket( void * dev, char * data, int len )
 	data++;
 
 	char cmd = *(data++);
-	//printf( "DATA: [%c] %c%c%c%c%c%c%c%c%c\n",cmd, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8] );
+	//	printf( "DATA: [%c] %c%c%c%c%c%c%c%c%c\n",cmd, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8] );
 	switch( cmd )
 	{
 	case 'q':
@@ -306,7 +306,7 @@ void HandleGDBPacket( void * dev, char * data, int len )
 		break;
 	case 'c':
 	case 'C':
-		RVDebugExec( dev, (cmd == 's' )?HALT_TYPE_SINGLE_STEP:(cmd == 'C')?HALT_TYPE_CONTINUE_WITH_SIGNAL:HALT_TYPE_CONTINUE );
+		RVDebugExec( dev, (cmd == 'C')?HALT_TYPE_CONTINUE_WITH_SIGNAL:HALT_TYPE_CONTINUE );
 		//SendReplyFull( "OK" ); ... this will be sent from RVNetPoll
 		break;
 	case 's':

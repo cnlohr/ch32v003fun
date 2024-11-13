@@ -2,6 +2,9 @@
 
 // Connect in with:
 //   gdb-multiarch -ex 'target remote :2000' ./blink.elf 
+// Optionally, use these commands:
+//   set debug remote 1
+//   target extended-remote :2000
 
 #include "minichlink.h"
 
@@ -292,7 +295,8 @@ int RVDebugExec( void * dev, enum HaltResetResumeType halt_reset_or_resume )
 		{
 			RVCommandEpilogue( dev );
 		}
-		MCF.HaltMode( dev, halt_reset_or_resume );
+
+		MCF.HaltMode( dev, (halt_reset_or_resume == HALT_TYPE_SINGLE_STEP)?HALT_TYPE_CONTINUE:halt_reset_or_resume );
 	}
 
 	shadow_running_state = halt_reset_or_resume >= HALT_TYPE_CONTINUE;
