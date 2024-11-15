@@ -34,7 +34,7 @@ void RVNetConnect( void * dev );
 int RVGetNumRegisters( void * dev );
 int RVReadCPURegister( void * dev, int regno, uint32_t * regret );
 int RVWriteCPURegister( void * dev, int regno, uint32_t value );
-int RVDebugExec( void * dev, enum HaltResetResumeType halt_reset_or_resume );
+int RVDebugExec( void * dev, enum HaltResetResumeType halt_reset_or_resume, int resume_from_other_address, uint32_t address );
 int RVReadMem( void * dev, uint32_t memaddy, uint8_t * payload, int len );
 int RVHandleBreakpoint( void * dev, int set, uint32_t address );
 int RVWriteRAM(void * dev, uint32_t memaddy, uint32_t length, uint8_t * payload );
@@ -217,7 +217,7 @@ void HandleGDBPacket( void * dev, char * data, int len )
 		if( StringMatch( data, "Attached" ) )
 			SendReplyFull( "1" ); //Attached to an existing process.
 		else if( StringMatch( data, "Supported" ) )
-			SendReplyFull( "PacketSize=f000;qXfer:memory-map:read+" );
+			SendReplyFull( "PacketSize=f000;multiprocess+;hwbreak+;vContSupported+;qXfer:memory-map:read+" );
 		else if( StringMatch( data, "C") ) // Get Current Thread ID. (Can't be -1 or 0.  Those are special)
 			SendReplyFull( "QC1" );
 		else if( StringMatch( data, "fThreadInfo" ) )  // Query all active thread IDs (Can't be 0 or 1)
@@ -306,13 +306,17 @@ void HandleGDBPacket( void * dev, char * data, int len )
 		break;
 	case 'c':
 	case 'C':
-		RVDebugExec( dev, (cmd == 'C')?HALT_TYPE_CONTINUE_WITH_SIGNAL:HALT_TYPE_CONTINUE );
+		// TODO: Support continue-from-another-address
+		RVDebugExec( dev, (cmd == 'C')?HALT_TYPE_CONTINUE_WITH_SIGNAL:HALT_TYPE_CONTINUE, 0, 0 );
 		//SendReplyFull( "OK" ); ... this will be sent from RVNetPoll
 		break;
 	case 's':
-		RVDebugExec( dev, HALT_TYPE_SINGLE_STEP );
+	case 'S':
+		// TODO: Support step-with-signal.
+		RVDebugExec( dev, HALT_TYPE_SINGLE_STEP, 0, 0 );
+		//SendReplyFull( "T05" );
 		//SendReplyFull( "OK" ); // Will be sent from RVNetPoll
-		//RVHandleGDBBreakRequest( dev );
+		RVHandleGDBBreakRequest( dev );
 		RVSendGDBHaltReason( dev );
 		break;
 	case 'D':
@@ -420,6 +424,12 @@ void HandleGDBPacket( void * dev, char * data, int len )
 		else if( StringMatch( data, "FlashDone" ) )   //vFlashDone
 		{
 			SendReplyFull( "OK" );
+		}
+		else if( StringMatch( data, "Kill" ) )   //vKill
+		{
+			SendReplyFull( "OK" );
+			fprintf( stderr, "Received Kill command. Exiting\n" );
+			exit( 0 );
 		}
 		else if( StringMatch( data, "FlashErase" ) ) //vFlashErase
 		{

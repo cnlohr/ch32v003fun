@@ -1,10 +1,8 @@
 // This file is loosely based on aappleby's GDBServer.
 
 // Connect in with:
-//   gdb-multiarch -ex 'target remote :2000' ./blink.elf 
-// Optionally, use these commands:
-//   set debug remote 1
-//   target extended-remote :2000
+//   gdb-multiarch -ex "set debug remote 1" -ex "target extended-remote :2000" ./blink.elf 
+//   gdb-multiarch -ex "target extended-remote :2000" ./blink.elf 
 
 #include "minichlink.h"
 
@@ -15,7 +13,7 @@
 const char* MICROGDBSTUB_MEMORY_MAP = "l<?xml version=\"1.0\"?>"
 "<!DOCTYPE memory-map PUBLIC \"+//IDN gnu.org//DTD GDB Memory Map V1.0//EN\" \"http://sourceware.org/gdb/gdb-memory-map.dtd\">"
 "<memory-map>"
-"  <memory type=\"flash\" start=\"0x00000000\" length=\"0x%x\">"
+"  <memory type=\"ram\" start=\"0x00000000\" length=\"0x%x\">"
 "    <property name=\"blocksize\">%d</property>"
 "  </memory>"
 "  <memory type=\"ram\" start=\"0x20000000\" length=\"0x%x\">"
@@ -113,7 +111,7 @@ void RVNetPoll(void * dev )
 		return;
 	}
 	int statusrunning = ((status & (1<<10)));
-
+	
 	static int laststatus;
 	if( status != laststatus )
 	{
@@ -210,7 +208,7 @@ int RVWriteCPURegister( void * dev, int regno, uint32_t value )
 	return 0;
 }
 
-int RVDebugExec( void * dev, enum HaltResetResumeType halt_reset_or_resume )
+int RVDebugExec( void * dev, enum HaltResetResumeType halt_reset_or_resume, int resume_from_other_address, uint32_t address )
 {
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
 	int nrregs = iss->nr_registers_for_debug;
@@ -220,6 +218,18 @@ int RVDebugExec( void * dev, enum HaltResetResumeType halt_reset_or_resume )
 		fprintf( stderr, "Error: Can't alter halt mode with this programmer.\n" );
 		exit( -6 );
 	}
+	
+	if( halt_reset_or_resume == HALT_TYPE_SINGLE_STEP )
+	{
+		MCF.SetEnableBreakpoints( dev, 1, 1 );
+		RVCommandEpilogue( dev );
+		MCF.HaltMode( dev, HALT_MODE_RESUME );
+		MCF.HaltMode( dev, HALT_MODE_HALT_BUT_NO_RESET );
+		RVCommandPrologue( dev );
+		MCF.SetEnableBreakpoints( dev, 1, 0 );
+		return 0;
+	}
+
 	// Special case halt_reset_or_resume = 4: Skip instruction and resume.
 	if( halt_reset_or_resume == HALT_TYPE_CONTINUE_WITH_SIGNAL || halt_reset_or_resume == HALT_TYPE_CONTINUE )
 	{
@@ -296,7 +306,7 @@ int RVDebugExec( void * dev, enum HaltResetResumeType halt_reset_or_resume )
 			RVCommandEpilogue( dev );
 		}
 
-		MCF.HaltMode( dev, (halt_reset_or_resume == HALT_TYPE_SINGLE_STEP)?HALT_TYPE_CONTINUE:halt_reset_or_resume );
+		MCF.HaltMode( dev, halt_reset_or_resume );
 	}
 
 	shadow_running_state = halt_reset_or_resume >= HALT_TYPE_CONTINUE;
