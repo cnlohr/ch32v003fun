@@ -91,6 +91,113 @@ int ESPReadReg32( void * dev, uint8_t reg_7_bit, uint32_t * commandresp )
 	}
 }
 
+int ESPReadAllCPURegisters( void * dev, uint32_t * regret )
+{
+	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
+	struct ESP32ProgrammerStruct * eps = (struct ESP32ProgrammerStruct *)dev;
+	ESPFlushLLCommands( dev );
+
+	Write2LE( eps, 0x05fe ); // Void ESP's internal high level state.
+	iss->statetag = STTAG( "RER2" ); // Void local high level state.
+
+	ESPWriteReg32( dev, DMABSTRACTAUTO, 0x00000000 ); // Disable Autoexec.
+	MCF.DetermineChipType( dev );
+	int i;
+	for( i = 0; i < iss->nr_registers_for_debug; i++ )
+	{
+		ESPWriteReg32( dev, DMCOMMAND, 0x00220000 | 0x1000 | i ); // Read xN into DATA0.
+		Write1( eps, (DMDATA0<<1) | 0 );
+	}
+	ESPWriteReg32( dev, DMCOMMAND, 0x00220000 | 0x7b1 ); // Read xN into DATA0.
+	Write1( eps, (DMDATA0<<1) | 0 );
+	ESPFlushLLCommands( eps );
+	if( eps->replylen - 1 != (iss->nr_registers_for_debug+1)*5 )
+	{
+		fprintf( stderr, "Error: Weird reply trying to read all CPU registers (%d/%d)\n", eps->replylen - 1, (iss->nr_registers_for_debug+1)*5 );
+		return -1;
+	}
+	uint8_t * e = eps->reply + 1;
+	for( i = 0; i < iss->nr_registers_for_debug + 1; i++ )
+	{
+		if( *e )
+		{
+			fprintf( stderr, "Error reading reg at %d %d\n", i, *e );
+			return -2;
+		}
+		e++;
+		memcpy( regret + i, e, 4 ); 
+		e += 4;
+	}
+	return 0;
+}
+
+int DefaultReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t read_size, uint8_t * blob );
+int ESPReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t read_size, uint8_t * blob )
+{
+	struct ESP32ProgrammerStruct * eps = (struct ESP32ProgrammerStruct *)dev;
+
+	uint32_t address_to_read_from_2 = address_to_read_from;
+	uint8_t * blob_2 = blob;
+	int r = 0;
+	
+	if( read_size == 0 )
+	{
+		return 0;
+	}
+
+	if( address_to_read_from_2 & 3 )
+	{
+		// We have to read out the first few bits.
+		int nrb2r = 4 - (address_to_read_from_2 & 3);
+		if( nrb2r < read_size ) nrb2r = read_size;
+		r = DefaultReadBinaryBlob( dev, address_to_read_from_2, read_size, blob_2 );
+		if( r )	return r;
+		address_to_read_from_2 += nrb2r;
+		blob_2 += nrb2r;
+		read_size -= nrb2r;
+	}
+
+	int words = read_size / 4;
+
+	ESPFlushLLCommands( dev );
+	int w = 0;
+	int words_this_group = 0;
+	while( w <= words )
+	{
+		if( w < words )
+		{
+			Write2LE( eps, 0x09fe );
+			Write4LE( eps, address_to_read_from_2 );
+			address_to_read_from_2 += 4;
+			read_size -= 4;
+			words_this_group++;
+		}
+		if( ( SRemain( eps ) < 7 ) || w == words )
+		{
+			ESPFlushLLCommands( dev );
+			uint8_t * resp = eps->reply + 1;
+			int i;
+			for( i = 0; i < words_this_group; i++ )
+			{
+				if( resp[0] ) return resp[0];
+				memcpy( blob_2, resp + 1, 4 );
+				resp += 5;
+				blob_2 += 4;
+			}
+		}
+		w++;
+	}
+
+	if( read_size )
+	{
+		r = DefaultReadBinaryBlob( dev, address_to_read_from_2, read_size, blob_2 );
+		if( r )	return r;
+	}
+	
+	return 0;
+}
+
+
 int ESPFlushLLCommands( void * dev )
 {
 	struct ESP32ProgrammerStruct * eps = (struct ESP32ProgrammerStruct *)dev;
@@ -448,6 +555,8 @@ void * TryInit_ESP32S2CHFUN()
 	MCF.WaitForFlash = ESPWaitForFlash;
 	MCF.WaitForDoneOp = ESPWaitForDoneOp;
 	MCF.BlockWrite64 = ESPBlockWrite64;
+	MCF.ReadBinaryBlob = ESPReadBinaryBlob;
+	MCF.ReadAllCPURegisters = ESPReadAllCPURegisters;
 
 	// Reset internal programmer state.
 	Write2LE( eps, 0x0afe );

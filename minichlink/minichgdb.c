@@ -35,7 +35,7 @@ void SendReplyFull( const char * replyMessage );
 int shadow_running_state = 1;
 int last_halt_reason = 5;
 uint32_t backup_regs[33]; //0..15 + PC, or 0..32 + PC
-int gdbasserting_break = 0;
+//int gdbasserting_break = 0;
 
 #define MAX_SOFTWARE_BREAKPOINTS 128
 int num_software_breakpoints = 0;
@@ -89,7 +89,7 @@ void RVNetConnect( void * dev )
 }
 
 int RVSendGDBHaltReason( void * dev )
-{
+{ 
 	char st[5];
 	sprintf( st, "T%02x", last_halt_reason );
 	SendReplyFull( st );
@@ -227,21 +227,22 @@ int RVDebugExec( void * dev, enum HaltResetResumeType halt_reset_or_resume, int 
 		MCF.HaltMode( dev, HALT_MODE_HALT_BUT_NO_RESET );
 		RVCommandPrologue( dev );
 		MCF.SetEnableBreakpoints( dev, 1, 0 );
+		//printf( "STEP PC: %08x\n", backup_regs[iss->nr_registers_for_debug] );
 		return 0;
 	}
 
 	// Special case halt_reset_or_resume = 4: Skip instruction and resume.
 	if( halt_reset_or_resume == HALT_TYPE_CONTINUE_WITH_SIGNAL || halt_reset_or_resume == HALT_TYPE_CONTINUE )
 	{
-		if( gdbasserting_break )
-		{
-			// This is tricky, but I don't know how else to handle it.
-			// If GDB is stepping, and you ctrl+c, then, it will ignore that and keep going.
-			// Here I say if the user ctrl+c'd actually fail to switch run mode.
-			gdbasserting_break = 0;
-			SendReplyFull( "E 99" );
-			return 1;
-		}
+		//if( gdbasserting_break )
+		//{
+		//	// This is tricky, but I don't know how else to handle it.
+		//	// If GDB is stepping, and you ctrl+c, then, it will ignore that and keep going.
+		//	// Here I say if the user ctrl+c'd actually fail to switch run mode.
+		//	gdbasserting_break = 0;
+		//	SendReplyFull( "T99" );
+		//	return 1;
+		//}
 		// First see if we already know about this breakpoint
 		int matchingbreakpoint = -1;
 		// For this we want to advance PC.
@@ -494,8 +495,8 @@ void RVHandleDisconnect( void * dev )
 
 void RVHandleGDBBreakRequest( void * dev )
 {
-	if( !shadow_running_state )
-		gdbasserting_break = 1;
+	//	if( !shadow_running_state )
+	//		gdbasserting_break = 1;
 	MCF.HaltMode( dev, 5 );
 }
 

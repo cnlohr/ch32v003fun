@@ -210,7 +210,8 @@ void HandleGDBPacket( void * dev, char * data, int len )
 	data++;
 
 	char cmd = *(data++);
-	//	printf( "DATA: [%c] %c%c%c%c%c%c%c%c%c\n",cmd, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8] );
+	//printf( "DATA: [%c] %c%c%c%c%c%c%c%c%c\n",cmd, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8] );
+	
 	switch( cmd )
 	{
 	case 'q':
@@ -298,9 +299,13 @@ void HandleGDBPacket( void * dev, char * data, int len )
 			snprintf( map, mslen, MICROGDBSTUB_MEMORY_MAP, iss->flash_size, iss->sector_size, iss->ram_size );
 			SendReplyFull( map );
 		}
+		else if( StringMatch( data, "ThreadExtraInfo" ) )
+			SendReplyFull( "4E2F41" );
+		else if( data[0] == 'P' )
+			SendReplyFull( "m1" );			// Archaic threadid.
 		else
 		{
-			fprintf( stderr, "Unknown command: %s\n", data );
+			fprintf( stderr, "Unknown q command: q%s\n", data );
 			SendReplyFull( "" );
 		}
 		break;
@@ -308,7 +313,7 @@ void HandleGDBPacket( void * dev, char * data, int len )
 	case 'C':
 		// TODO: Support continue-from-another-address
 		RVDebugExec( dev, (cmd == 'C')?HALT_TYPE_CONTINUE_WITH_SIGNAL:HALT_TYPE_CONTINUE, 0, 0 );
-		//SendReplyFull( "OK" ); ... this will be sent from RVNetPoll
+		//The real reply will be sent from RVNetPoll 
 		break;
 	case 's':
 	case 'S':
