@@ -1321,7 +1321,9 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 
 		uint32_t temp;
 		MCF.ReadWord( dev, 0x4002200c, &temp );
-		if( temp & 0x8000 )
+		//STATR & BOOT only exists on the 003 and x03x
+		// No issue if we force an unlock anyway.
+		//if( temp & 0x8000 )
 		{
 			MCF.WriteWord( dev, 0x40022004, 0x45670123 ); // KEYR
 			MCF.WriteWord( dev, 0x40022004, 0xCDEF89AB );
@@ -1331,9 +1333,6 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 			MCF.WriteWord( dev, 0x40022008, 0xCDEF89AB );
 			MCF.WriteWord( dev, 0x40022028, 0x45670123 ); //(FLASH_BOOT_MODEKEYP)
 			MCF.WriteWord( dev, 0x40022028, 0xCDEF89AB ); //(FLASH_BOOT_MODEKEYP)
-
-			MCF.ReadWord( dev, 0x40022010, &temp );
-			MCF.ReadWord( dev, 0x4002200c, &temp );
 		}
 
 		MCF.ReadWord( dev, 0x4002200c, &temp );
@@ -1366,11 +1365,19 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 		int i;
 		for( i = 0; i < 8; i++ )
 		{
+			// OBPG = FLASH_CTLR_OPTPG
 			MCF.WriteWord( dev, 0x40022010, FLASH_CTLR_OPTPG | FLASH_CTLR_OPTWRE );
 			MCF.WriteWord( dev, 0x40022010, FLASH_CTLR_OPTPG | FLASH_CTLR_STRT | FLASH_CTLR_OPTWRE );
-			MCF.WriteHalfWord( dev, i*2+base, block[i*2+0] | (block[i*2+1]<<8) );
-
+			uint32_t writeaddy = i*2+base;
+			uint16_t writeword = block[i*2+0] | (block[i*2+1]<<8);
+			MCF.WriteHalfWord( dev, writeaddy, writeword );
 			if( MCF.WaitForFlash ) MCF.WaitForFlash( dev );
+			uint16_t verify = 0;
+			MCF.ReadHalfWord( dev, writeaddy, &verify );
+			if( verify != writeword )
+			{
+				fprintf( stderr, "Warning when writing option bytes at %08x, %04x != %04x\n", writeaddy, writeword, verify );
+			}
 			MCF.ReadWord( dev, 0x4002200c, &temp );
 			if( temp & 0x10 )
 			{
@@ -1378,8 +1385,9 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 				return -9;
 			}
 		}
-		if( MCF.WaitForFlash ) MCF.WaitForFlash( dev );
+		// Turn off OPTPG, OPTWRE.
 		MCF.WriteWord( dev, 0x40022010, 0 );
+		if( MCF.WaitForFlash ) MCF.WaitForFlash( dev );
 
 		return 0;
 	}
@@ -2355,8 +2363,8 @@ int DefaultUnbrick( void * dev )
 	printf( "Chip Type: %d\n", iss->target_chip_type );
 
 	// Override all option bytes and reset to factory settings, unlocking all flash sections.
-	static const uint8_t option_data_003_x03x[] = { 0xa5, 0x5a, 0x97, 0x68, 0x00, 0xff, 0x00, 0xff, 0xff, 0x00, 0xff, 0x00 };
-	static const uint8_t option_data_20x_30x[]  = { 0xa5, 0x5a, 0x3f, 0xc0, 0x00, 0xff, 0x00, 0xff, 0xff, 0x00, 0xff, 0x00 };
+	static const uint8_t option_data_003_x03x[] = { 0xa5, 0x5a, 0x97, 0x68, 0x00, 0xff, 0x00, 0xff, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00 };
+	static const uint8_t option_data_20x_30x[]  = { 0xa5, 0x5a, 0x3f, 0xc0, 0x00, 0xff, 0x00, 0xff, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00 };
 
 	InternalUnlockFlash(dev, iss);
 
@@ -2364,7 +2372,7 @@ int DefaultUnbrick( void * dev )
 		( iss->target_chip_type == CHIP_CH32X03x || iss->target_chip_type == CHIP_CH32V003 ) ?
 		option_data_003_x03x : option_data_20x_30x;
 
-	DefaultWriteBinaryBlob(dev, 0x1ffff800, sizeof( option_data ), option_data );
+	DefaultWriteBinaryBlob(dev, 0x1ffff800, 16, option_data );
 
 	MCF.DelayUS( dev, 20000 );
 
