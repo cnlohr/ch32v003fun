@@ -518,6 +518,8 @@ static int LEControl5v( void * d, int bOn )
 	return 0;
 }
 
+// Official unbrick unreliable on x-series devices.
+/*
 static int LEUnbrick( void * d )
 {
 	printf( "Sending unbrick\n" );
@@ -526,7 +528,7 @@ static int LEUnbrick( void * d )
 	printf( "Done unbrick\n" );
 	return 0;
 }
-
+*/
 
 static int LEConfigureNRSTAsGPIO( void * d, int one_if_yes_gpio )
 {
@@ -584,7 +586,7 @@ void * TryInit_WCHLinkE()
 	MCF.SetupInterface = LESetupInterface;
 	MCF.Control3v3 = LEControl3v3;
 	MCF.Control5v = LEControl5v;
-	MCF.Unbrick = LEUnbrick;
+	//MCF.Unbrick = LEUnbrick; // 
 	MCF.ConfigureNRSTAsGPIO = LEConfigureNRSTAsGPIO;
 	MCF.ConfigureReadProtection = LEConfigureReadProtection;
 

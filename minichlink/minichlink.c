@@ -2297,11 +2297,11 @@ int DefaultUnbrick( void * dev )
 	MCF.DelayUS( dev, 60000 );
 	MCF.DelayUS( dev, 60000 );
 	MCF.Control3v3( dev, 1 );
-	MCF.DelayUS( dev, 100 );
-	MCF.FlushLLCommands( dev );
 	printf( "Connection starting\n" );
+	MCF.FlushLLCommands( dev );
+
 	int timeout = 0;
-	int max_timeout = 500;
+	int max_timeout = 50000; // An absurdly long time.
 	uint32_t ds = 0;
 	for( timeout = 0; timeout < max_timeout; timeout++ )
 	{
@@ -2323,21 +2323,29 @@ int DefaultUnbrick( void * dev )
 		if( ds != 0xffffffff && ds != 0x00000000 ) break;
 	}
 
-	// Make sure we are in halt.
-	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
-	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
-	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // No, really make sure.
-	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 );
+	if( timeout == max_timeout ) 
+	{
+		fprintf( stderr, "Timed out trying to unbrick\n" );
+		return -5;
+	}
+	
+	int i;
+	for( i = 0; i < 10; i++ )
+	{
+		// Make sure we are in halt.
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // No, really make sure.
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 );
+		
+		// After more experimentation, it appaers to work best by not clearing the halt request.
+		MCF.FlushLLCommands( dev );
+	}
+
+	MCF.WriteReg32( dev, DMABSTRACTCS, 0x00000700 ); // Clear out possible abstractcs errors.
 
 	int r = MCF.ReadReg32( dev, DMSTATUS, &ds );
 	printf( "DMStatus After Halt: /%d/%08x\n", r, ds );
-
-//  Many times we would clear the halt request, but in this case, we want to just leave it here, to prevent it from booting.
-//  TODO: Experiment and see if this is needed/wanted in cases.  NOTE: If you don't clear halt request, progarmmers can get stuck.
-//	MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
-
-	// After more experimentation, it appaers to work best by not clearing the halt request.
-	MCF.FlushLLCommands( dev );
 
 	// Override all option bytes and reset to factory settings, unlocking all flash sections.
 	uint8_t option_data[] = { 0xa5, 0x5a, 0x97, 0x68, 0x00, 0xff, 0x00, 0xff, 0xff, 0x00, 0xff, 0x00 };
@@ -2349,11 +2357,6 @@ int DefaultUnbrick( void * dev )
 
 	MCF.DelayUS( dev, 20000 );
 
-	if( timeout == max_timeout ) 
-	{
-		fprintf( stderr, "Timed out trying to unbrick\n" );
-		return -5;
-	}
 	MCF.Erase( dev, 0, 0, 1);
 	MCF.FlushLLCommands( dev );
 	return -5;
