@@ -132,10 +132,10 @@ int ESPReadAllCPURegisters( void * dev, uint32_t * regret )
 }
 
 int DefaultReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t read_size, uint8_t * blob );
-int ESPReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t read_size, uint8_t * blob )
+int ESPReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t read_size_in, uint8_t * blob )
 {
+	int read_size = read_size_in;
 	struct ESP32ProgrammerStruct * eps = (struct ESP32ProgrammerStruct *)dev;
-
 	uint32_t address_to_read_from_2 = address_to_read_from;
 	uint8_t * blob_2 = blob;
 	int r = 0;
@@ -157,6 +157,11 @@ int ESPReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t read_
 		read_size -= nrb2r;
 	}
 
+	if( read_size <= 0 )
+	{
+		return 0;
+	}
+
 	int words = read_size / 4;
 
 	ESPFlushLLCommands( dev );
@@ -172,7 +177,7 @@ int ESPReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t read_
 			read_size -= 4;
 			words_this_group++;
 		}
-		if( ( SRemain( eps ) < 7 ) || w == words )
+		if( ( SRemain( eps ) < 8 ) || ( words_this_group * 5 > eps->replysize - 4 ) || w == words )
 		{
 			ESPFlushLLCommands( dev );
 			uint8_t * resp = eps->reply + 1;
@@ -184,16 +189,17 @@ int ESPReadBinaryBlob( void * dev, uint32_t address_to_read_from, uint32_t read_
 				resp += 5;
 				blob_2 += 4;
 			}
+			words_this_group = 0;
 		}
 		w++;
 	}
 
-	if( read_size )
+	if( read_size > 0 )
 	{
 		r = DefaultReadBinaryBlob( dev, address_to_read_from_2, read_size, blob_2 );
 		if( r )	return r;
 	}
-	
+
 	return 0;
 }
 
@@ -213,7 +219,7 @@ int ESPFlushLLCommands( void * dev )
 	int r;
 
 	eps->commandbuffer[0] = 0xad; // Key report ID
-	eps->commandbuffer[eps->commandplace] = 0xff;
+	memset( eps->commandbuffer + eps->commandplace, 0xff, eps->commandbuffersize - eps->commandplace - 1 );
 
 #if 0
 	int i;

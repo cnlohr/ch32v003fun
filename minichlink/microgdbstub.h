@@ -814,7 +814,7 @@ void MicroGDBStubSendReply( const void * data, int len, int docs )
 	
 	if( listenMode == 2 )
 	{
-		//printf( ">>>>%s<<<<(%d)\n", data );
+		//printf( ">>>>%s<<<<\n", data );
 		send( serverSocket, data, len, MSG_NOSIGNAL );
 	}
 }

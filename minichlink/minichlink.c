@@ -1439,13 +1439,13 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 				for( i = 0; i < sectorsize/64; i++ )
 				{
 					int r = MCF.BlockWrite64( dev, base + i*64, blob + rsofar+i*64 );
-					rsofar += 64;
 					if( r )
 					{
 						fprintf( stderr, "Error writing block at memory %08x (error = %d)\n", base, r );
 						return r;
 					}
 				}
+				rsofar += sectorsize;
 			}
 			else 					// Block Write not avaialble
 			{
@@ -1547,7 +1547,6 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 						MCF.WriteWord( dev, j*4+base, *(uint32_t*)(tempblock + j * 4) );
 
 						// On the v2xx, v3xx, you also need to make sure FLASH->STATR & 2 is not set.  This is only an issue when running locally.
-						rsofar += 4;
 					}
 
 					if( iss->target_chip_type == CHIP_CH32V20x || iss->target_chip_type == CHIP_CH32V30x )
