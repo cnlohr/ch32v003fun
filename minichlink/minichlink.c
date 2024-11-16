@@ -1273,10 +1273,11 @@ static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t dat
 	return ret;
 }
 
-int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob_size, uint8_t * blob )
+int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob_size, const uint8_t * blob )
 {
 	// NOTE IF YOU FIX SOMETHING IN THIS FUNCTION PLEASE ALSO UPDATE THE PROGRAMMERS.
 	//  this is only fallback functionality for really realy basic programmers.
+	//  it is also used in unbrick.
 
 	uint32_t rw;
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
@@ -1324,10 +1325,13 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 		{
 			MCF.WriteWord( dev, 0x40022004, 0x45670123 ); // KEYR
 			MCF.WriteWord( dev, 0x40022004, 0xCDEF89AB );
+
+			// These registers are not on or required on the v20x / v30x, but no harm in writing.
 			MCF.WriteWord( dev, 0x40022008, 0x45670123 ); // OBWRE
 			MCF.WriteWord( dev, 0x40022008, 0xCDEF89AB );
 			MCF.WriteWord( dev, 0x40022028, 0x45670123 ); //(FLASH_BOOT_MODEKEYP)
 			MCF.WriteWord( dev, 0x40022028, 0xCDEF89AB ); //(FLASH_BOOT_MODEKEYP)
+
 			MCF.ReadWord( dev, 0x40022010, &temp );
 			MCF.ReadWord( dev, 0x4002200c, &temp );
 		}
@@ -1336,15 +1340,14 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 		if( temp & 0x8000 )
 		{
 			fprintf( stderr, "Error: Critical memory zone is still locked out\n" );
-			return -10;
 		}
 		if( MCF.WaitForFlash ) MCF.WaitForFlash( dev );
 
 		MCF.ReadWord( dev, 0x40022010, &temp );
+
 		if( !(temp & (1<<9)) ) // Check OBWRE
 		{
-			fprintf( stderr, "Error: Option Byte Unlock Failed\n" );
-			return -10;
+			fprintf( stderr, "Error: Option Byte Unlock Failed (FLASH_CTRL=%08x)\n", temp );
 		}
 
 		// Perform erase.
@@ -2347,13 +2350,21 @@ int DefaultUnbrick( void * dev )
 	int r = MCF.ReadReg32( dev, DMSTATUS, &ds );
 	printf( "DMStatus After Halt: /%d/%08x\n", r, ds );
 
+	DefaultDetermineChipType( dev );
+	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
+	printf( "Chip Type: %d\n", iss->target_chip_type );
+
 	// Override all option bytes and reset to factory settings, unlocking all flash sections.
-	uint8_t option_data[] = { 0xa5, 0x5a, 0x97, 0x68, 0x00, 0xff, 0x00, 0xff, 0xff, 0x00, 0xff, 0x00 };
-	if( MCF.WriteBinaryBlob != DefaultWriteBinaryBlob )
-	{
-		fprintf( stderr, "Warning, using nonstandard WriteBinaryBlob.  Unbrick may not work.\n" );
-	}
-	MCF.WriteBinaryBlob(dev, 0x1ffff800, sizeof( option_data ), option_data );
+	static const uint8_t option_data_003_x03x[] = { 0xa5, 0x5a, 0x97, 0x68, 0x00, 0xff, 0x00, 0xff, 0xff, 0x00, 0xff, 0x00 };
+	static const uint8_t option_data_20x_30x[]  = { 0xa5, 0x5a, 0x3f, 0xc0, 0x00, 0xff, 0x00, 0xff, 0xff, 0x00, 0xff, 0x00 };
+
+	InternalUnlockFlash(dev, iss);
+
+	const uint8_t * option_data = 
+		( iss->target_chip_type == CHIP_CH32X03x || iss->target_chip_type == CHIP_CH32V003 ) ?
+		option_data_003_x03x : option_data_20x_30x;
+
+	DefaultWriteBinaryBlob(dev, 0x1ffff800, sizeof( option_data ), option_data );
 
 	MCF.DelayUS( dev, 20000 );
 

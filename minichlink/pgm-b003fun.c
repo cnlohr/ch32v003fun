@@ -232,7 +232,7 @@ static int B003FunDelayUS( void * dev, int microseconds )
 }
 
 // Does not handle erasing
-static int InternalB003FunWriteBinaryBlob( void * dev, uint32_t address_to_write_to, uint32_t write_size, uint8_t * blob )
+static int InternalB003FunWriteBinaryBlob( void * dev, uint32_t address_to_write_to, uint32_t write_size, const uint8_t * blob )
 {
 	struct B003FunProgrammerStruct * eps = (struct B003FunProgrammerStruct *)dev;
 
@@ -436,7 +436,7 @@ static int B003FunReadWord( void * dev, uint32_t address_to_read, uint32_t * dat
 	return B003FunReadBinaryBlob( dev, address_to_read, 4, (uint8_t*)data );
 }
 
-static int B003FunBlockWrite64( void * dev, uint32_t address_to_write, uint8_t * data )
+static int B003FunBlockWrite64( void * dev, uint32_t address_to_write, const uint8_t * data )
 {
 	struct B003FunProgrammerStruct * eps = (struct B003FunProgrammerStruct*) dev;
 	struct InternalState * iss = eps->internal;

@@ -347,7 +347,7 @@ int ESPExit( void * dev )
 	return 0;
 }
 
-int ESPBlockWrite64( void * dev, uint32_t address_to_write, uint8_t * data )
+int ESPBlockWrite64( void * dev, uint32_t address_to_write, const uint8_t * data )
 {
 	int writeretry = 0;
 	struct ESP32ProgrammerStruct * eps = (struct ESP32ProgrammerStruct *)dev;
