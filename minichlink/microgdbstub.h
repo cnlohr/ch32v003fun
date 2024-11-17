@@ -219,8 +219,8 @@ void HandleGDBPacket( void * dev, char * data, int len )
 	case 'Q':
 		if( StringMatch( data, "Attached" ) )
 			SendReplyFull( "1" ); //Attached to an existing process.
-		else if( StringMatch( data, "Supported" ) )
-			SendReplyFull( "PacketSize=f000;hwbreak+;vContSupported+;qXfer:memory-map:read+;qXfer:threads:read+;QStartNoAckMode+" );
+		else if( StringMatch( data, "Supported" ) ) // qXfer:threads:
+			SendReplyFull( "PacketSize=f000;hwbreak+;vContSupported+;qXfer:memory-map:read+;read+;QStartNoAckMode+" );
 		else if( StringMatch( data, "C") ) // Get Current Thread ID. (Can't be -1 or 0.  Those are special)
 			SendReplyFull( "QC1" );
 		else if( StringMatch( data, "fThreadInfo" ) )  // Query all active thread IDs (Can't be 0 or 1)
@@ -457,7 +457,7 @@ void HandleGDBPacket( void * dev, char * data, int len )
 						RVSendGDBHaltReason( dev );
 						break;
 					default:
-					SendReplyFull( "E 98" );
+						SendReplyFull( "E 98" );
 				}
 			}
 			else
