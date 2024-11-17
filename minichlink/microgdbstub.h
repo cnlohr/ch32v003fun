@@ -430,39 +430,58 @@ void HandleGDBPacket( void * dev, char * data, int len )
 	case 'v':
 		if( StringMatch( data, "Cont" ) ) // vCont?
 		{
-			const char * de = data + 4;
-			if( de[0] == '?' )
+			char * de = data + 4;
+			char de0;
+			while( (de0 = *(de++)) )
 			{
-				// Request a list of actions supported by the ‘vCont’ packet. 
-				// We don't support vCont
-				SendReplyFull( "vCont;c;C;s;S" ); //no ;t because we don't implement them.
-			}
-			else if( de[0] == ';' )
-			{
-				switch( de[1] )
+				printf( "DE0: %c\n", de0 );
+				if( de0 == '?' )
 				{
-					case 'c':
-					case 'C':
-						// TODO: Support continue-from-another-address
-						RVDebugExec( dev, (cmd == 'C')?HALT_TYPE_CONTINUE_WITH_SIGNAL:HALT_TYPE_CONTINUE, 0, 0 );
-						//The real reply will be sent from RVNetPoll 
-						break;
-					case 's':
-					case 'S':
-						// TODO: Support step-with-signal.
-						RVDebugExec( dev, HALT_TYPE_SINGLE_STEP, 0, 0 );
-						//SendReplyFull( "T05" );
-						//SendReplyFull( "OK" ); // Will be sent from RVNetPoll
-						RVHandleGDBBreakRequest( dev );
-						RVSendGDBHaltReason( dev );
-						break;
-					default:
-						SendReplyFull( "E 98" );
+					// Request a list of actions supported by the ‘vCont’ packet. 
+					// We don't support vCont
+					SendReplyFull( "vCont;c;C;s;S" ); //no ;t because we don't implement them.
+					break;
 				}
-			}
-			else
-			{
-				SendReplyFull( "E 99" );
+				else if( de0 == ';' )
+				{
+					switch( de[0] )
+					{
+						case 'c':
+						case 'C':
+							// TODO: Support continue-from-another-address
+							RVDebugExec( dev, (cmd == 'C')?HALT_TYPE_CONTINUE_WITH_SIGNAL:HALT_TYPE_CONTINUE, 0, 0 );
+							//The real reply will be sent from RVNetPoll 
+							break;
+						case 's':
+						case 'S':
+							// TODO: Support step-with-signal.
+							RVDebugExec( dev, HALT_TYPE_SINGLE_STEP, 0, 0 );
+							//SendReplyFull( "T05" );
+							//SendReplyFull( "OK" ); // Will be sent from RVNetPoll
+							//RVHandleGDBBreakRequest( dev );
+							//RVSendGDBHaltReason( dev );
+							break;
+						default:
+							SendReplyFull( "E 98" );
+							break;
+					}
+					de++;
+				}
+				else if( de0 == ':' )
+				{
+					// Parse off thread number and throw it away.
+					uint32_t signalnumber;
+					if( ReadHex( &de, -1, &signalnumber ) < 0 ) goto err;
+				}
+				else if( de0 == '#' )
+				{
+					// We're done.
+					break;
+				}
+				else
+				{
+					SendReplyFull( "E 99" );
+				}
 			}
 		}
 		else if( StringMatch( data, "MustReplyEmpty" ) ) //vMustReplyEmpty
