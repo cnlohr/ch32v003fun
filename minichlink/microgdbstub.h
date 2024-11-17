@@ -98,6 +98,7 @@ uint8_t gdbchecksum = 0;
 int gdbbufferplace = 0;
 int gdbbufferstate = 0;
 int gdbrunningcsum = 0;
+int gdbqnoackmode = 0;
 
 static inline char ToHEXNibble( int i )
 {
@@ -215,10 +216,11 @@ void HandleGDBPacket( void * dev, char * data, int len )
 	switch( cmd )
 	{
 	case 'q':
+	case 'Q':
 		if( StringMatch( data, "Attached" ) )
 			SendReplyFull( "1" ); //Attached to an existing process.
 		else if( StringMatch( data, "Supported" ) )
-			SendReplyFull( "PacketSize=f000;multiprocess+;hwbreak+;vContSupported+;qXfer:memory-map:read+" );
+			SendReplyFull( "PacketSize=f000;hwbreak+;vContSupported+;qXfer:memory-map:read+;qXfer:threads:read+;QStartNoAckMode+" );
 		else if( StringMatch( data, "C") ) // Get Current Thread ID. (Can't be -1 or 0.  Those are special)
 			SendReplyFull( "QC1" );
 		else if( StringMatch( data, "fThreadInfo" ) )  // Query all active thread IDs (Can't be 0 or 1)
@@ -230,6 +232,11 @@ void HandleGDBPacket( void * dev, char * data, int len )
 			SendReplyFull( "" );
 		else if( StringMatch( data, "Symbol" ) )   // Trace-Status
 			SendReplyFull( "" );
+		else if( StringMatch( data, "StartNoAckMode" ) )
+		{
+			gdbqnoackmode = 1;
+			SendReplyFull( "OK" );
+		}
 		else if( StringMatch( data, "TStatus" ) )  // Trace-Status
 			SendReplyFull( "" );
 		else if( StringMatch( data, "Rcmd," ) )  // "monitor <command>"
@@ -298,6 +305,11 @@ void HandleGDBPacket( void * dev, char * data, int len )
 			struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
 			snprintf( map, mslen, MICROGDBSTUB_MEMORY_MAP, iss->flash_size, iss->sector_size, iss->ram_size );
 			SendReplyFull( map );
+		}
+		else if( StringMatch( data, "Xfer:threads" ) )
+		{
+			static const char * emptyxml = "l<?xml version=\"1.0\"?>\n<threads>\n</threads>";
+			SendReplyFull( emptyxml );
 		}
 		else if( StringMatch( data, "ThreadExtraInfo" ) )
 			SendReplyFull( "4E2F41" );
@@ -418,9 +430,40 @@ void HandleGDBPacket( void * dev, char * data, int len )
 	case 'v':
 		if( StringMatch( data, "Cont" ) ) // vCont?
 		{
-			// Request a list of actions supported by the ‘vCont’ packet. 
-			// We don't support vCont
-			SendReplyFull( "vCont;s;c;;" ); //no ;t because we don't implement them.
+			const char * de = data + 4;
+			if( de[0] == '?' )
+			{
+				// Request a list of actions supported by the ‘vCont’ packet. 
+				// We don't support vCont
+				SendReplyFull( "vCont;c;C;s;S" ); //no ;t because we don't implement them.
+			}
+			else if( de[0] == ';' )
+			{
+				switch( de[1] )
+				{
+					case 'c':
+					case 'C':
+						// TODO: Support continue-from-another-address
+						RVDebugExec( dev, (cmd == 'C')?HALT_TYPE_CONTINUE_WITH_SIGNAL:HALT_TYPE_CONTINUE, 0, 0 );
+						//The real reply will be sent from RVNetPoll 
+						break;
+					case 's':
+					case 'S':
+						// TODO: Support step-with-signal.
+						RVDebugExec( dev, HALT_TYPE_SINGLE_STEP, 0, 0 );
+						//SendReplyFull( "T05" );
+						//SendReplyFull( "OK" ); // Will be sent from RVNetPoll
+						RVHandleGDBBreakRequest( dev );
+						RVSendGDBHaltReason( dev );
+						break;
+					default:
+					SendReplyFull( "E 98" );
+				}
+			}
+			else
+			{
+				SendReplyFull( "E 99" );
+			}
 		}
 		else if( StringMatch( data, "MustReplyEmpty" ) ) //vMustReplyEmpty
 		{
