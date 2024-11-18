@@ -29,22 +29,11 @@ int main()
 	// PD3 output to send something back into PD2.
 	funPinMode( PD3, GPIO_CFGLR_OUT_2Mhz_PP );
 
-	TIM1->PSC = 0x0fff;		// set TIM1 clock prescaler divider (Massive prescaler)
-	TIM1->ATRLR = 65535;	// set PWM total cycle width
-
-	// CH2 Mode is output, PWM1 (CC1S = 00, OC1M = 110)
-	TIM1->CHCTLR1 = TIM_CC1S_0;
-
-	// Add here CC1P to switch from UP->GOING to DOWN->GOING log times.
-	TIM1->CCER = TIM_CC1E;// | TIM_CC1P;
-	
-	// initialize counter
-	TIM1->SWEVGR = TIM_UG;
-
 	// Enable TIM2
 	TIM1->CTLR1 = TIM_ARPE | TIM_CEN;
-	TIM1->DMAINTENR = TIM_CC1DE | TIM_UDE; // Enable DMA motion.
-	TIM1->CTLR1 |= TIM_URS;   // Trigger DMA on overflow ONLY.
+	TIM1->DMAINTENR = TIM_CC1DE | TIM_UDE; // Enable DMA for T1CC1
+
+	int samples_in_buffer = sizeof(reply_buffer) / sizeof(reply_buffer[0]);
 
 	// TIM1_TRIG/TIM1_COM/TIM1_CH4
 	DMA_IN->MADDR = (uint32_t)reply_buffer;
@@ -59,9 +48,20 @@ int main()
 		0                 |                  // NO Half-trigger
 		0                 |                  // NO Whole-trigger
 		DMA_CFGR1_EN;                        // Enable
-
-	int samples_in_buffer = sizeof(reply_buffer) / sizeof(reply_buffer[0]);
 	DMA_IN->CNTR = samples_in_buffer;
+
+	TIM1->PSC = 0x0fff;		// set TIM1 clock prescaler divider (Massive prescaler)
+	TIM1->ATRLR = 65535;	// set PWM total cycle width
+
+	// Tim 1 input / capture (CC1S = 01)
+	TIM1->CHCTLR1 = TIM_CC1S_0;
+
+	// Add here CC1P to switch from UP->GOING to DOWN->GOING log times.
+	TIM1->CCER = TIM_CC1E;// | TIM_CC1P;
+	
+	// initialize counter
+	TIM1->SWEVGR = TIM_UG;
+
 
 	int tail = 0;
 	while(1)
