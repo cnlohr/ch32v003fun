@@ -131,12 +131,12 @@
 	#error No PLL on the X03x
 #endif
 
-#ifndef FUNCONF_ENABLE_HPE
-	#if defined( CH32V003 )
-		#define FUNCONF_ENABLE_HPE 0
-	#else
-		#define FUNCONF_ENABLE_HPE 1
-	#endif
+#ifdef FUNCONF_ENABLE_HPE
+	#define FUNCONF_ENABLE_HPE 1
+	#define INTERRUPT_DECORATOR  __attribute__((interrupt("WCH-Interrupt-fast")))
+#else
+	#define FUNCONF_ENABLE_HPE 0
+	#define INTERRUPT_DECORATOR  __attribute__((interrupt))
 #endif
 
 
