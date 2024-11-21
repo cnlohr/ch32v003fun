@@ -133,14 +133,13 @@
 #endif
 
 #ifndef FUNCONF_ENABLE_HPE
-    #define FUNCONF_ENABLE_HPE 0
+	#define FUNCONF_ENABLE_HPE 0
 #endif
 
 #if FUNCONF_ENABLE_HPE == 1
-        #define INTERRUPT_DECORATOR  __attribute__((interrupt("WCH-Interrupt-fast")))
-    #else
-        #define INTERRUPT_DECORATOR  __attribute__((interrupt))
-    #endif
+	#define INTERRUPT_DECORATOR  __attribute__((interrupt("WCH-Interrupt-fast")))
+#else
+	#define INTERRUPT_DECORATOR  __attribute__((interrupt))
 #endif
 
 
