@@ -435,7 +435,7 @@ void HandleGDBPacket( void * dev, char * data, int len )
 			char de0;
 			if( (de0 = *(de++)) ) // was while?
 			{
-				printf( "DE0: %c\n", de0 );
+				//printf( "DE0: %c\n", de0 );
 				if( de0 == '?' )
 				{
 					// Request a list of actions supported by the ‘vCont’ packet. 
@@ -462,6 +462,7 @@ void HandleGDBPacket( void * dev, char * data, int len )
 							//SendReplyFull( "OK" ); // Will be sent from RVNetPoll
 							RVHandleGDBBreakRequest( dev );
 							RVSendGDBHaltReason( dev );
+							printf( "Step.\n" );
 							break;
 						default:
 							SendReplyFull( "E 98" );
