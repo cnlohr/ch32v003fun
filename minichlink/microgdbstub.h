@@ -211,7 +211,7 @@ void HandleGDBPacket( void * dev, char * data, int len )
 	data++;
 
 	char cmd = *(data++);
-	//printf( "DATA: [%c] %c%c%c%c%c%c%c%c%c\n",cmd, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8] );
+	//printf( "DATA: [%c] %c%c%c%c%c%c%c%c%c%c%c%c\n",cmd, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], data[10], data[11] );
 	
 	switch( cmd )
 	{
@@ -430,9 +430,10 @@ void HandleGDBPacket( void * dev, char * data, int len )
 	case 'v':
 		if( StringMatch( data, "Cont" ) ) // vCont?
 		{
+			//printf( "CONT: %s\n", data );
 			char * de = data + 4;
 			char de0;
-			while( (de0 = *(de++)) )
+			if( (de0 = *(de++)) ) // was while?
 			{
 				printf( "DE0: %c\n", de0 );
 				if( de0 == '?' )
@@ -444,6 +445,7 @@ void HandleGDBPacket( void * dev, char * data, int len )
 				}
 				else if( de0 == ';' )
 				{
+					//printf( "de[0] = %c\n", de[0] );
 					switch( de[0] )
 					{
 						case 'c':
@@ -458,8 +460,8 @@ void HandleGDBPacket( void * dev, char * data, int len )
 							RVDebugExec( dev, HALT_TYPE_SINGLE_STEP, 0, 0 );
 							//SendReplyFull( "T05" );
 							//SendReplyFull( "OK" ); // Will be sent from RVNetPoll
-							//RVHandleGDBBreakRequest( dev );
-							//RVSendGDBHaltReason( dev );
+							RVHandleGDBBreakRequest( dev );
+							RVSendGDBHaltReason( dev );
 							break;
 						default:
 							SendReplyFull( "E 98" );
