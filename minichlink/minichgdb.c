@@ -22,6 +22,9 @@ const char* MICROGDBSTUB_MEMORY_MAP = "l<?xml version=\"1.0\"?>"
 "  <memory type=\"ram\" start=\"0x40000000\" length=\"0x10000000\">"
 "    <property name=\"blocksize\">4</property>"
 "  </memory>"
+"  <memory type=\"ram\" start=\"0xe0000000\" length=\"0x10000000\">"
+"    <property name=\"blocksize\">4</property>"
+"  </memory>"
 "</memory-map>";
 
 #include "microgdbstub.h"
@@ -35,7 +38,7 @@ void SendReplyFull( const char * replyMessage );
 int shadow_running_state = 1;
 int last_halt_reason = 5;
 uint32_t backup_regs[33]; //0..15 + PC, or 0..32 + PC
-//int gdbasserting_break = 0;
+int gdbasserting_break = 0;
 
 #define MAX_SOFTWARE_BREAKPOINTS 128
 int num_software_breakpoints = 0;
@@ -91,6 +94,13 @@ void RVNetConnect( void * dev )
 int RVSendGDBHaltReason( void * dev )
 { 
 	char st[5];
+	if( gdbasserting_break )
+	{
+		gdbasserting_break = 0;
+		sprintf( st, "T%02x", 2 );
+		SendReplyFull( st );
+		return 0;
+	}
 	sprintf( st, "T%02x", last_halt_reason );
 	SendReplyFull( st );
 	return 0;
@@ -234,15 +244,6 @@ int RVDebugExec( void * dev, enum HaltResetResumeType halt_reset_or_resume, int 
 	// Special case halt_reset_or_resume = 4: Skip instruction and resume.
 	if( halt_reset_or_resume == HALT_TYPE_CONTINUE_WITH_SIGNAL || halt_reset_or_resume == HALT_TYPE_CONTINUE )
 	{
-		//if( gdbasserting_break )
-		//{
-		//	// This is tricky, but I don't know how else to handle it.
-		//	// If GDB is stepping, and you ctrl+c, then, it will ignore that and keep going.
-		//	// Here I say if the user ctrl+c'd actually fail to switch run mode.
-		//	gdbasserting_break = 0;
-		//	SendReplyFull( "T99" );
-		//	return 1;
-		//}
 		// First see if we already know about this breakpoint
 		int matchingbreakpoint = -1;
 		// For this we want to advance PC.
@@ -322,6 +323,13 @@ int RVReadMem( void * dev, uint32_t memaddy, uint8_t * payload, int len )
 		exit( -6 );
 	}
 	int ret = MCF.ReadBinaryBlob( dev, memaddy, len, payload );
+	//printf( "Read Mem: %08x %d\n", memaddy, len );
+	//int i;
+	//for( i = 0; i < len; i++ )
+	//{
+	//	printf( "%02x%c", payload[i], ((i&15)==15)?'\n':' ' );
+	//}
+	//printf( "\n" );
 	if( ret < 0 )
 	{
 		fprintf( stderr, "Error reading binary blob at %08x\n", memaddy );
@@ -495,11 +503,15 @@ void RVHandleDisconnect( void * dev )
 
 void RVHandleGDBBreakRequest( void * dev )
 {
-	//	if( !shadow_running_state )
-	//		gdbasserting_break = 1;
 	MCF.HaltMode( dev, 5 );
 }
 
+void RVHandleUnsolicitedGDBBreakRequest( void * dev )
+{
+	fprintf( stderr, "Invoke Unsolicited Break\n" );
+	MCF.HaltMode( dev, 5 );
+	gdbasserting_break = 1;
+}
 
 int PollGDBServer( void * dev )
 {

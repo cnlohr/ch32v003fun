@@ -41,6 +41,7 @@ int RVWriteRAM(void * dev, uint32_t memaddy, uint32_t length, uint8_t * payload 
 void RVCommandResetPart( void * dev, int mode );
 void RVHandleDisconnect( void * dev );
 void RVHandleGDBBreakRequest( void * dev );
+void RVHandleUnsolicitedGDBBreakRequest( void * dev );
 void RVHandleKillRequest( void * dev );
 int RVErase( void * dev, uint32_t memaddy, uint32_t length );
 int RVWriteFlash( void * dev, uint32_t memaddy, uint32_t length, uint8_t * payload );
@@ -462,7 +463,7 @@ void HandleGDBPacket( void * dev, char * data, int len )
 							//SendReplyFull( "OK" ); // Will be sent from RVNetPoll
 							RVHandleGDBBreakRequest( dev );
 							RVSendGDBHaltReason( dev );
-							printf( "Step.\n" );
+							fprintf( stderr, "Step.\n" );
 							break;
 						default:
 							SendReplyFull( "E 98" );
@@ -608,7 +609,7 @@ void MicroGDBStubHandleClientData( void * dev, const uint8_t * rxdata, int len )
 		}
 		if( c == 3 && gdbbufferstate == 0 )
 		{
-			RVHandleGDBBreakRequest( dev );
+			RVHandleUnsolicitedGDBBreakRequest( dev );
 			continue;
 		}
 		switch( gdbbufferstate )
