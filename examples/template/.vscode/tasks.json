@@ -3,7 +3,6 @@
 	"tasks": [
 		{
 			"type": "shell",
-			"label": "flash",
 			"presentation": {
 				"echo": true,
 				"focus": false,
