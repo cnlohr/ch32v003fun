@@ -159,6 +159,8 @@ int main( int argc, char ** argv )
 	int must_be_end = 0;
 
 	int skip_startup = 
+		(argc > 1 && argv[1][0] == '-' && argv[1][1] == 'e' ) |
+		(argc > 1 && argv[1][0] == '-' && argv[1][1] == 'A' ) |
 		(argc > 1 && argv[1][0] == '-' && argv[1][1] == 'u' ) |
 		(argc > 1 && argv[1][0] == '-' && argv[1][1] == 'h' ) |
 		(argc > 1 && argv[1][0] == '-' && argv[1][1] == 't' ) |
@@ -700,7 +702,7 @@ keep_going:
 	if( MCF.FlushLLCommands )
 		MCF.FlushLLCommands( dev );
 
-	if( MCF.Exit )
+	if( MCF.Exit && !skip_startup )
 		MCF.Exit( dev );
 
 	return 0;
