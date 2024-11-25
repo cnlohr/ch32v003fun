@@ -7,9 +7,9 @@ C_S:=minichlink.c pgm-wch-linke.c pgm-esp32s2-ch32xx.c nhc-link042.c ardulink.c 
 # gdb-multilib {file}
 # target remote :2345
 
+CFLAGS_WINDOWS:=-Os -s -Wall -D_WIN32_WINNT=0x0600 -I. -Wall -DCH32V003
+LDFLAGS_WINDOWS:=-L. -lpthread -lusb-1.0 -lsetupapi -lws2_32
 ifeq ($(OS),Windows_NT)
-	LDFLAGS:=-L. -lpthread -lusb-1.0 -lsetupapi -lws2_32
-	CFLAGS:=-Os -s -Wall -D_WIN32_WINNT=0x0600 -DCH32V003 -I.
 	TOOLS:=minichlink.exe
 else
 	OS_NAME := $(shell uname -s | tr A-Z a-z)
@@ -29,7 +29,7 @@ all : $(TOOLS)
 
 # will need mingw-w64-x86-64-dev gcc-mingw-w64-x86-64
 minichlink.exe : $(C_S)
-	x86_64-w64-mingw32-gcc -o $@ $^ $(LDFLAGS) $(CFLAGS)
+	x86_64-w64-mingw32-gcc -o $@ $^ $(LDFLAGS_WINDOWS) $(CFLAGS_WINDOWS)
 
 minichlink : $(C_S)
 	gcc -o $@ $^ $(LDFLAGS) $(CFLAGS) $(INCS)
@@ -38,7 +38,7 @@ minichlink.so : $(C_S)
 	gcc -o $@ $^ $(LDFLAGS) $(CFLAGS) $(INCS) -shared -fPIC
 
 minichlink.dll : $(C_S)
-	x86_64-w64-mingw32-gcc -o $@ $^ $(LDFLAGS) $(CFLAGS) $(INCS) -shared -DMINICHLINK_AS_LIBRARY
+	x86_64-w64-mingw32-gcc -o $@ $^ $(LDFLAGS_WINDOWS) $(CFLAGS_WINDOWS) $(INCS) -shared -DMINICHLINK_AS_LIBRARY
 
 install_udev_rules :
 	cp 99-minichlink.rules /etc/udev/rules.d/
@@ -50,4 +50,4 @@ inspect_bootloader : minichlink
 	riscv64-unknown-elf-objdump -S -D test.bin -b binary -m riscv:rv32 | less
 
 clean :
-	rm -rf $(TOOLS) 
+	rm -rf $(TOOLS) minichlink.exe
