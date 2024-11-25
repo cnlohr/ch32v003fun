@@ -212,6 +212,9 @@ unbrick :
 gdbserver : 
 	-$(MINICHLINK)/minichlink -baG
 
+gdbclient :
+	gdb-multiarch $(TARGET).elf -ex "target remote :2000"
+
 clangd :
 	make clean
 	bear -- make build

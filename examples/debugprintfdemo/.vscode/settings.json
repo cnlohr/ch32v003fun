@@ -3,7 +3,7 @@
     "makefile.launchConfigurations": [
         {
             "cwd": "",
-            "sbinaryPath": "debugprintfdemo.elf",
+            "sbinaryPath": "debugprintf.elf",
             "binaryArgs": []
         }
     ],
@@ -11,5 +11,5 @@
     "editor.tabSize": 4,
     "files.associations": {
         "ch32v003fun.h": "c"
-    }
+    },
 }

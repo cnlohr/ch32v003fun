@@ -31,7 +31,7 @@ struct MiniChlinkFunctions
 	int (*SetSplit)( void * dev, enum RAMSplit split );
 
 	// No boundary or limit rules.  Must support any combination of alignment and size.
-	int (*WriteBinaryBlob)( void * dev, uint32_t address_to_write, uint32_t blob_size, uint8_t * blob );
+	int (*WriteBinaryBlob)( void * dev, uint32_t address_to_write, uint32_t blob_size, const uint8_t * blob );
 	int (*ReadBinaryBlob)( void * dev, uint32_t address_to_read_from, uint32_t read_size, uint8_t * blob );
 
 	int (*Erase)( void * dev, uint32_t address, uint32_t length, int type ); //type = 0 for fast, 1 for whole-chip
@@ -62,7 +62,7 @@ struct MiniChlinkFunctions
 	int (*PrintChipInfo)( void * dev );
 
 	// Geared for flash, but could be anything.  Note: If in flash, must also erase.
-	int (*BlockWrite64)( void * dev, uint32_t address_to_write, uint8_t * data );
+	int (*BlockWrite64)( void * dev, uint32_t address_to_write, const uint8_t * data );
 
 	// Returns positive if received text.
 	// Returns negative if error.

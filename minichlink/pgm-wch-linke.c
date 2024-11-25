@@ -69,7 +69,7 @@ static int checkChip(enum RiscVChip chip) {
 // For non-ch32v003 chips.
 //static int LEReadBinaryBlob( void * d, uint32_t offset, uint32_t amount, uint8_t * readbuff );
 static int InternalLinkEHaltMode( void * d, int mode );
-static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len, uint8_t * blob );
+static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len, const uint8_t * blob );
 
 #define WCHTIMEOUT 5000
 #define WCHCHECK(x) if( (status = x) ) { fprintf( stderr, "Bad USB Operation on " __FILE__ ":%d (%d)\n", __LINE__, status ); exit( status ); }
@@ -518,6 +518,8 @@ static int LEControl5v( void * d, int bOn )
 	return 0;
 }
 
+// Official unbrick unreliable on x-series devices.
+/*
 static int LEUnbrick( void * d )
 {
 	printf( "Sending unbrick\n" );
@@ -526,7 +528,7 @@ static int LEUnbrick( void * d )
 	printf( "Done unbrick\n" );
 	return 0;
 }
-
+*/
 
 static int LEConfigureNRSTAsGPIO( void * d, int one_if_yes_gpio )
 {
@@ -584,7 +586,7 @@ void * TryInit_WCHLinkE()
 	MCF.SetupInterface = LESetupInterface;
 	MCF.Control3v3 = LEControl3v3;
 	MCF.Control5v = LEControl5v;
-	MCF.Unbrick = LEUnbrick;
+	//MCF.Unbrick = LEUnbrick; // 
 	MCF.ConfigureNRSTAsGPIO = LEConfigureNRSTAsGPIO;
 	MCF.ConfigureReadProtection = LEConfigureReadProtection;
 
@@ -765,7 +767,7 @@ static int LEReadBinaryBlob( void * d, uint32_t offset, uint32_t amount, uint8_t
 }
 #endif
 
-static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len, uint8_t * blob )
+static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len, const uint8_t * blob )
 {
 	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
 	struct InternalState * iss = (struct InternalState*)(((struct LinkEProgrammerStruct*)d)->internal);
@@ -833,7 +835,7 @@ static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len,
 		}
 		else
 		{
-			WCHCHECK( libusb_bulk_transfer( (libusb_device_handle *)dev, 0x02, blob+pplace, iss->sector_size, &transferred, WCHTIMEOUT ) );
+			WCHCHECK( libusb_bulk_transfer( (libusb_device_handle *)dev, 0x02, ((uint8_t*)blob)+pplace, iss->sector_size, &transferred, WCHTIMEOUT ) );
 		}
 	}
 
