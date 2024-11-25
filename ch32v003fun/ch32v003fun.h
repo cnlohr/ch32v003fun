@@ -78,7 +78,8 @@
 #define FUNCONF_TINYVECTOR 0            // If enabled, Does not allow normal interrupts.
 #define FUNCONF_UART_PRINTF_BAUD 115200 // Only used if FUNCONF_USE_UARTPRINTF is set.
 #define FUNCONF_DEBUGPRINTF_TIMEOUT 0x80000 // Arbitrary time units, this is around 120ms.
-#define FUNCONF_ENABLE_HPE 1            // Enable hardware interrupt stack.  Very good on QingKeV4, i.e. x035, v10x, v20x, v30x, but questionable on 003.
+#define FUNCONF_ENABLE_HPE 1            // Enable hardware interrupt stack.  Very good on QingKeV4, i.e. x035, v10x, v20x, v30x, but questionable on 003. 
+                                        // If you are using that, consider using INTERRUPT_DECORATOR as an attribute to your interrupt handlers.
 #define FUNCONF_USE_5V_VDD 0            // Enable this if you plan to use your part at 5V - affects USB and PD configration on the x035.
 #define FUNCONF_DEBUG_HARDFAULT    1    // Log fatal errors with "printf"
 */
@@ -132,11 +133,13 @@
 #endif
 
 #ifndef FUNCONF_ENABLE_HPE
-	#if defined( CH32V003 )
-		#define FUNCONF_ENABLE_HPE 0
-	#else
-		#define FUNCONF_ENABLE_HPE 1
-	#endif
+	#define FUNCONF_ENABLE_HPE 0
+#endif
+
+#if FUNCONF_ENABLE_HPE == 1
+	#define INTERRUPT_DECORATOR  __attribute__((interrupt("WCH-Interrupt-fast")))
+#else
+	#define INTERRUPT_DECORATOR  __attribute__((interrupt))
 #endif
 
 
