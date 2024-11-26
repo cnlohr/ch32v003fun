@@ -238,21 +238,24 @@ int LEWriteReg32( void * dev, uint8_t reg_7_bit, uint32_t command )
 	wch_link_command( devh, req, sizeof(req), &resplen, resp, sizeof(resp) );
 	if( resplen != 9 || resp[8] == 0x02 || resp[8] == 0x03 ) //|| resp[3] != reg_7_bit )
 	{
-    struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
-    if ( !iss->target_chip_id && !iss->statetag ) {
-      fprintf( stderr, "Programmer wasn't initialized? Fixing\n" );
-      wch_link_command( devh, "\x81\x0d\x01\x02", 4, &resplen, resp, sizeof(resp) );
-      iss->statetag = STTAG( "INIT" );
-    } else {
-      fprintf( stderr, "Error setting write reg. Tell cnlohr. Maybe we should allow retries here?\n" );
-      fprintf( stderr, "RR: %d :", resplen );
-      int i;
-      for( i = 0; i < resplen; i++ )
-      {
-        fprintf( stderr, "%02x ", resp[i] );
-      }
-      fprintf( stderr, "\n" );
-    }
+		struct InternalState *iss = (struct InternalState *)( ( (struct ProgrammerStructBase *)dev )->internal );
+		if ( !iss->target_chip_id && !iss->statetag )
+		{
+			fprintf( stderr, "Programmer wasn't initialized? Fixing\n" );
+			wch_link_command( devh, "\x81\x0d\x01\x02", 4, &resplen, resp, sizeof( resp ) );
+			iss->statetag = STTAG( "INIT" );
+		}
+		else
+		{
+			fprintf( stderr, "Error setting write reg. Tell cnlohr. Maybe we should allow retries here?\n" );
+			fprintf( stderr, "RR: %d :", resplen );
+			int i;
+			for ( i = 0; i < resplen; i++ )
+			{
+				fprintf( stderr, "%02x ", resp[i] );
+			}
+			fprintf( stderr, "\n" );
+		}
 	}
 	return 0;
 }
@@ -271,21 +274,24 @@ int LEReadReg32( void * dev, uint8_t reg_7_bit, uint32_t * commandresp )
 	*commandresp = ( rbuff[4]<<24 ) | (rbuff[5]<<16) | (rbuff[6]<<8) | (rbuff[7]<<0);
 	if( transferred != 9 || rbuff[8] == 0x02 || rbuff[8] == 0x03 ) //|| rbuff[3] != reg_7_bit )
 	{
-    struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
-    if ( !iss->target_chip_id && !iss->statetag ) {
-      fprintf( stderr, "Programmer wasn't initialized? Fixing\n" );
-      wch_link_command( devh, "\x81\x0d\x01\x02", 4, (int*)&transferred, rbuff, sizeof( rbuff ) );
-      iss->statetag = STTAG( "INIT" );
-    } else {
-      fprintf( stderr, "Error setting read reg. Tell cnlohr. Maybe we should allow retries here?\n" );
-      fprintf( stderr, "RR: %d :", transferred );
-      int i;
-      for( i = 0; i < transferred; i++ )
-      {
-        fprintf( stderr, "%02x ", rbuff[i] );
-      }
-      fprintf( stderr, "\n" );
-    }
+		struct InternalState *iss = (struct InternalState *)( ( (struct ProgrammerStructBase *)dev )->internal );
+		if ( !iss->target_chip_id && !iss->statetag )
+		{
+			fprintf( stderr, "Programmer wasn't initialized? Fixing\n" );
+			wch_link_command( devh, "\x81\x0d\x01\x02", 4, (int *)&transferred, rbuff, sizeof( rbuff ) );
+			iss->statetag = STTAG( "INIT" );
+		}
+		else
+		{
+			fprintf( stderr, "Error setting read reg. Tell cnlohr. Maybe we should allow retries here?\n" );
+			fprintf( stderr, "RR: %d :", transferred );
+			int i;
+			for ( i = 0; i < transferred; i++ )
+			{
+				fprintf( stderr, "%02x ", rbuff[i] );
+			}
+			fprintf( stderr, "\n" );
+		}
 	}
 	/*
 	printf( "RR: %d :", transferred );
