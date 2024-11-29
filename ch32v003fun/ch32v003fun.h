@@ -4754,7 +4754,7 @@ typedef struct
 #define DMA_CFGR1_TCIE                          ((uint16_t)0x0002) /* Transfer complete interrupt enable */
 #define DMA_CFGR1_HTIE                          ((uint16_t)0x0004) /* Half Transfer interrupt enable */
 #define DMA_CFGR1_TEIE                          ((uint16_t)0x0008) /* Transfer error interrupt enable */
-#define DMA_CFGR1_DIR                           ((uint16_t)0x0010) /* Data transfer direction */
+#define DMA_CFGR1_DIR                           ((uint16_t)0x0010) /* Data transfer direction (Setting = Memory -> Peripheral) */
 #define DMA_CFGR1_CIRC                          ((uint16_t)0x0020) /* Circular mode */
 #define DMA_CFGR1_PINC                          ((uint16_t)0x0040) /* Peripheral increment mode */
 #define DMA_CFGR1_MINC                          ((uint16_t)0x0080) /* Memory increment mode */
