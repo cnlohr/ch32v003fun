@@ -160,11 +160,16 @@ resend:
 	#endif
 	if( r < 0 )
 	{
-		fprintf( stderr, "Warning: Issue with hid_send_feature_report. Retrying: %d\n", retries );
+		if( retries ) fprintf( stderr, "Warning: Issue with hid_send_feature_report. Retrying: %d\n", retries );
 		if( retries++ > 10 )
+		{
 			return r;
+		}
 		else
+		{
+			MCF.DelayUS( eps, 5000 );
 			goto resend;
+		}
 	}
         
 	if (eps->no_get_report) return r;
@@ -219,11 +224,11 @@ static int B003FunWaitForDoneOp( void * dev, int ignore )
 	return 0;
 }
 
-static int B003FunDelayUS( void * dev, int microseconds )
-{
-	usleep( microseconds );
-	return 0;
-}
+// static int B003FunDelayUS( void * dev, int microseconds )
+// {
+// 	usleep( microseconds );
+// 	return 0;
+// }
 
 // Does not handle erasing
 static int InternalB003FunWriteBinaryBlob( void * dev, uint32_t address_to_write_to, uint32_t write_size, const uint8_t * blob )
@@ -557,7 +562,7 @@ void * TryInit_B003Fun()
 	MCF.WriteReg32 = 0;
 	MCF.ReadReg32 = 0;
 	MCF.FlushLLCommands = B003FunFlushLLCommands;
-	MCF.DelayUS = B003FunDelayUS;
+	// MCF.DelayUS = B003FunDelayUS;
 	MCF.Control3v3 = 0;
 	MCF.SetupInterface = B003FunSetupInterface;
 	MCF.Exit = B003FunExit;
