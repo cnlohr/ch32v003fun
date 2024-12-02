@@ -256,6 +256,8 @@ int LEWriteReg32( void * dev, uint8_t reg_7_bit, uint32_t command )
 			}
 			fprintf( stderr, "\n" );
 		}
+		fprintf( stderr, "\n" );
+		return -1;
 	}
 	return 0;
 }
