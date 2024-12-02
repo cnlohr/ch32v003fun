@@ -154,7 +154,6 @@ static int CommitOp( struct B003FunProgrammerStruct * eps )
 	#endif
 
 resend:
-        usleep(1000);
 	r = hid_send_feature_report( eps->hd, eps->commandbuffer, sizeof(eps->commandbuffer) );
 	#ifdef DEBUG_B003
 	printf( "hid_send_feature_report = %d\n", r );
@@ -168,12 +167,7 @@ resend:
 			goto resend;
 	}
         
-        if (eps->no_get_report) return r;
-
-	if( eps->prepping_for_erase )
-	{
-		usleep(4000);
-	}
+	if (eps->no_get_report) return r;
 
 	int timeout = 0;
 

@@ -811,11 +811,13 @@ static int DefaultWaitForFlash( void * dev )
 		}
 	} while(rw & 3);  // BSY flag for 003, or WRBSY for other processors.
 
-	if( rw & 0x20 )
-	{
-		// On non-003-processors, clear done op.
-		MCF.WriteWord( dev, (intptr_t)&FLASH->STATR, 0x20 );
-	}
+	// This was set at some point for non-003 processors.
+	// but, it seems not to be needed.
+	//if( rw & 0x20 )
+	//{
+	//	// On non-003-processors, clear done op.
+	//	MCF.WriteWord( dev, (intptr_t)&FLASH->STATR, 0x20 );
+	//}
 
 	if( rw & FLASH_STATR_WRPRTERR )
 	{
@@ -1792,7 +1794,6 @@ int DefaultErase( void * dev, uint32_t address, uint32_t length, int type )
 				}
 			}
 
-			if( MCF.WaitForFlash && MCF.WaitForFlash( dev ) ) return -99;
 			// Step 4:  set PAGE_ER of FLASH_CTLR(0x40022010)
 			if( MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_PAGE_ER ) ) goto flashoperr; // CR_PAGE_ER is FTER
 			// Step 5: Write the first address of the fast erase page to the FLASH_ADDR register.
