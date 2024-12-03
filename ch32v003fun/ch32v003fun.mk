@@ -213,7 +213,7 @@ gdbserver :
 	-$(MINICHLINK)/minichlink -baG
 
 gdbclient :
-	gdb-multiarch $(TARGET).elf -ex "target remote :2000"
+	gdb-multiarch $(TARGET).elf -ex "target remote :3333"
 
 clangd :
 	make clean

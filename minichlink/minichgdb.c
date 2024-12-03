@@ -1,14 +1,14 @@
 // This file is loosely based on aappleby's GDBServer.
 
 // Connect in with:
-//   gdb-multiarch -ex "set debug remote 1" -ex "target extended-remote :2000" ./blink.elf 
-//   gdb-multiarch -ex "target extended-remote :2000" ./blink.elf 
+//   gdb-multiarch -ex "set debug remote 1" -ex "target extended-remote :3333" ./blink.elf 
+//   gdb-multiarch -ex "target extended-remote :3333" ./blink.elf 
 
 #include "minichlink.h"
 
 #define MICROGDBSTUB_IMPLEMENTATION
 #define MICROGDBSTUB_SOCKETS
-#define MICROGDBSTUB_PORT 2000
+#define MICROGDBSTUB_PORT 3333
 
 const char* MICROGDBSTUB_MEMORY_MAP = "l<?xml version=\"1.0\"?>"
 "<!DOCTYPE memory-map PUBLIC \"+//IDN gnu.org//DTD GDB Memory Map V1.0//EN\" \"http://sourceware.org/gdb/gdb-memory-map.dtd\">"
