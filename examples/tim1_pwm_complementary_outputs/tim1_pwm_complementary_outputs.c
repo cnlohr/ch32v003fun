@@ -53,12 +53,10 @@ void t1pwm_init( void )
 	AFIO->PCFR1 |= AFIO_PCFR1_TIM1_REMAP_PARTIALREMAP1;
 
 	// PC3 is T1CH1_N, 10MHz Output alt func, push-pull
-	GPIOC->CFGLR &= ~( 0xf << ( 4 * 3 ) );
-	GPIOC->CFGLR |= ( GPIO_Speed_10MHz | GPIO_CNF_OUT_PP_AF ) << ( 4 * 3 );
+	funPinMode( PC3, GPIO_Speed_10MHz | GPIO_CNF_OUT_PP_AF );
 
 	// PC6 is T1CH1, 10MHz Output alt func, push-pull
-	GPIOC->CFGLR &= ~( 0xf << ( 4 * 6 ) );
-	GPIOC->CFGLR |= ( GPIO_Speed_10MHz | GPIO_CNF_OUT_PP_AF ) << ( 4 * 6 );
+	funPinMode( PC6, GPIO_Speed_10MHz | GPIO_CNF_OUT_PP_AF );
 
 	// Reset TIM1 to init all regs
 	RCC->APB2PRSTR |= RCC_APB2Periph_TIM1;
