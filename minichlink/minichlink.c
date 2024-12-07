@@ -45,7 +45,7 @@ void * MiniCHLinkInitAsDLL( struct MiniChlinkFunctions ** MCFO, const init_hints
 		else if( strcmp( specpgm, "b003boot" ) == 0 )
 			dev = TryInit_B003Fun();
 		else if( strcmp( specpgm, "ardulink" ) == 0 )
-			dev = TryInit_B003Fun();
+			dev = TryInit_Ardulink(init_hints);
 	}
 	else
 	{
