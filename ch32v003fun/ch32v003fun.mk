@@ -99,6 +99,7 @@ else
 			CFLAGS+=-DCH32V20x_D8
 		else ifeq ($(findstring 208, $(TARGET_MCU_PACKAGE)), 208)
 			CFLAGS+=-DCH32V20x_D8W
+			MCU_PACKAGE:=3
 		else ifeq ($(findstring F8, $(TARGET_MCU_PACKAGE)), F8)
 			MCU_PACKAGE:=1
 		else ifeq ($(findstring G8, $(TARGET_MCU_PACKAGE)), G8)
