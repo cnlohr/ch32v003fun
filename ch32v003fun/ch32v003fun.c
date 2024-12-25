@@ -1023,6 +1023,13 @@ void handle_reset( void )
 	or a0, a0, a3\n\
 	csrw mtvec, a0\n" 
 	: : : "a0", "a3", "memory");
+//This changes the standard mode of the CH32x035 to machine mode
+#if defined ( CH32X03x )
+asm volatile(
+"	li t0, 0x1888\n\
+	csrw mstatus, t0\n\
+");
+#endif
 
 	// Careful: Use registers to prevent overwriting of self-data.
 	// This clears out BSS.
