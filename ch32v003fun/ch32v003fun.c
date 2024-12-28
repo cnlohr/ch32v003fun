@@ -213,11 +213,24 @@ WEAK int wctomb(char *s, wchar_t wc)
 	return wcrtomb(s, wc, 0);
 }
 #endif
-WEAK size_t strlen(const char *s) { const char *a = s;for (; *s; s++);return s-a; }
+WEAK size_t strlen(const char *s)
+{
+	const char *a = s;
+	for (; *s; s++);
+	return s-a;
+}
 WEAK size_t strnlen(const char *s, size_t n) { const char *p = memchr(s, 0, n); return p ? (size_t)(p-s) : n;}
 WEAK void *memset(void *dest, int c, size_t n) { unsigned char *s = dest; for (; n; n--, s++) *s = c; return dest; }
-WEAK char *strcpy(char *d, const char *s) { for (; (*d=*s); s++, d++); return d; }
-WEAK char *strncpy(char *d, const char *s, size_t n) { for (; n && (*d=*s); n--, s++, d++); return d; }
+WEAK char *strcpy(char *d, const char *s)
+{
+	for (; (*d=*s); s++, d++);
+	return d;
+}
+WEAK char *strncpy(char *d, const char *s, size_t n)
+{
+	for (; n && (*d=*s); n--, s++, d++);
+	return d;
+}
 WEAK int strcmp(const char *l, const char *r)
 {
 	for (; *l==*r && *l; l++, r++);
