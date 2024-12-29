@@ -218,11 +218,9 @@ gdbclient :
 clangd :
 	make clean
 	bear -- make build
-	@echo "CompileFlags:" > .clangd
-	@echo "  Remove: [-march=*, -mabi=*]" >> .clangd
 
 clangd_clean :
-	rm -f compile_commands.json .clangd
+	rm -f compile_commands.json
 	rm -rf .cache
 
 FLASH_COMMAND?=$(MINICHLINK)/minichlink -w $< $(WRITE_SECTION) -b
