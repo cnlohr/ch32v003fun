@@ -40,11 +40,35 @@ static void printChipInfo(enum RiscVChip chip) {
 		case CHIP_CH58x:
 			fprintf(stderr, "Detected: CH58x\n");
 			break;
+		case CHIP_CH32V003:
+			fprintf(stderr, "Detected: CH32V003\n");
+			break;
+		case CHIP_CH59x:
+			fprintf(stderr, "Detected: CH59x\n");
+			break;
+		case CHIP_CH643:
+			fprintf(stderr, "Detected: CH643\n");
+			break;
 		case CHIP_CH32X03x:
 			fprintf(stderr, "Detected: CH32X03x\n");
 			break;
-		case CHIP_CH32V003:
-			fprintf(stderr, "Detected: CH32V003\n");
+		case CHIP_CH32L10x:
+			fprintf(stderr, "Detected: CH32L10x\n");
+			break;
+		case CHIP_CH564:
+			fprintf(stderr, "Detected: CH564\n");
+			break;
+		case CHIP_CH645:
+			fprintf(stderr, "Detected: CH645\n");
+			break;
+		case CHIP_CH641:
+			fprintf(stderr, "Detected: CH641\n");
+			break;
+		case CHIP_CH32V00x:
+			fprintf(stderr, "Detected: CH32V00x or CH32M007\n");
+			break;
+		case CHIP_CH32V317:
+			fprintf(stderr, "Detected: CH32V317\n");
 			break;
 	}
 }
@@ -53,6 +77,7 @@ static int checkChip(enum RiscVChip chip) {
 	switch(chip) {
 		case CHIP_CH32V003:
 		case CHIP_CH32X03x:
+		case CHIP_CH641:
 			return 0; // Use direct mode
 		case CHIP_CH32V10x:
 		case CHIP_CH32V20x:
@@ -411,7 +436,8 @@ static int LESetupInterface( void * d )
 	printf( "Full Chip Type Reply: [%d] %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n", transferred, rbuff[0], rbuff[1], rbuff[2], rbuff[3], rbuff[4], rbuff[5], rbuff[6], rbuff[7], rbuff[8] );
 
 	enum RiscVChip chip = (enum RiscVChip)rbuff[3];
-	if( ( chip == 0x08 || chip > 0x09 ) && chip != CHIP_CH32X03x ) {
+	if( ( chip == 0x04 || chip == 0x08 || chip == 0x0a || chip > 0x0f )
+	   && chip != CHIP_CH645 && chip != CHIP_CH641 && chip != CHIP_CH32V00x && chip != CHIP_CH32V317 ) {
 		fprintf( stderr, "Chip Type unknown [%02x]. Aborting...\n", chip );
 		return -1;
 	}
