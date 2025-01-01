@@ -13513,10 +13513,13 @@ static inline void __set_MSCRATCH(uint32_t value)
  */
 static inline uint32_t __get_MEPC(void)
 {
-    uint32_t result;
-
-	__ASM volatile("csrr %0," "mepc" : "=r"(result));
-    return (result);
+	uint32_t result;
+	__ASM volatile(
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0," "mepc" : "=r"(result));
+	return (result);
 }
 
 /*********************************************************************
