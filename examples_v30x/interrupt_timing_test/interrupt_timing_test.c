@@ -136,25 +136,25 @@ int main()
 	// Keep the HSI on but turn on the HSE.
 	RCC->CTLR = RCC_HSION | RCC_HSEON;
 
-	// It's soemthing like this: https://cnlohr.github.io/microclockoptimizer/?chipSelect=ch32vx05_7%2Cd8w&HSI=1,8&HSE=0,4&PREDIV2=1,0&PLL2CLK=1,7&PLL2VCO=0,72&PLL3CLK=1,1&PLL3VCO=0,100&PREDIV1SRC=1,0&PREDIV1=1,2&PLLSRC=1,0&PLL=1,4&PLLVCO=0,144&SYSCLK=1,2&
+	// It's soemthing like this: https://cnlohr.github.io/microclockoptimizer/?chipSelect=ch32vx05_7%2Cd8w&HSI=1,8&HSE=0,8&PREDIV2=1,0&PLL2CLK=1,7&PLL2VCO=0,144&PLL3CLK=0,1&PLL3VCO=0,200&PREDIV1SRC=1,0&PREDIV1=1,2&PLLSRC=1,0&PLL=1,4&PLLVCO=0,144&SYSCLK=1,2&
 	// Assuming PLL_MUL_REG = 4 (so it's not overclocking)
-	// ALSO-SIDE-NOTE: I think there's a /2 going on somewhere.
 
 	// Setup clock tree.
 	RCC->CFGR2 |= 
 		(0<<RCC_PREDIV2_OFFSET) | // PREDIV = not div 2, but really it is. Prediv Freq = 4MHz
-		(1<<RCC_PLL3MUL_OFFSET) | // PLL3 = x12.5 (NOT USED)
+		(6<<RCC_PLL3MUL_OFFSET) | // PLL3 = x12.5 (NOT USED)
 		(7<<RCC_PLL2MUL_OFFSET) | // PLL2 = x9 (PLL2 = 36MHz) TBA
 		(2<<RCC_PREDIV1_OFFSET) | // PREDIV1 = /3; Prediv freq = 12MHz
 		RCC_PREDIV1_Source_PLL2 | // Use PLL2 to feed PLL.
 		0;
 
-#define PLL_MUL_REG 7
 
 	// PLL = x18 (0 in register)
 	//  4 in register = x6 (or 144MHz)
 	//  7 in register = x9 (or 216MHz)
 	// Going above 7 causes the PLL not to kock, so I recommend keeping it at 6 or below (192MHz)
+	// This is how we most tightly control overclocking.
+#define PLL_MUL_REG 6
 	RCC->CFGR0 = ( RCC->CFGR0 & ~(0xf<<18)) | (PLL_MUL_REG<<18) | RCC_PLLSRC;
 
 	// Power on PLLs
