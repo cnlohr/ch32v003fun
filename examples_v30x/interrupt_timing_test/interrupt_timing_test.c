@@ -11,21 +11,32 @@
 //   You should write C helper functions to access them.
 //
 // RESULTS (comparing from line drop on PA5 to line rise on PA6), using Saleae Pro 8, 500MSps, 3.3V
-// Default behavior is 133ns
-// Using HPE interrupts, 117ns (FUNCONF_ENABLE_HPE = 1)
-// Naked (With or without HPE): 88ns
-// Using the VTF + naked + (with or without HPE): 74ns
+//
+//  Interrupt in Flash:
+//     Default behavior is 133ns
+//     Using HPE interrupts, 117ns (FUNCONF_ENABLE_HPE = 1)
+//     Naked (With or without HPE): 88ns
+//     Using the VTF + naked + (with or without HPE): 74ns
+//  Interrupt in RAM, Using Naked VTF, no HPE.
+//     Running from RAM about 81ns.
 //
 // Conclusion: 
 //   Using the HPE shaves off 3 cycles.
 //   Using the Naked interrupts saves about 4 cycles
 //   Using the Vector-Table-Free Interrupt (VTF) System saves about 2 cycles.
+//   Running from RAM adds about 1 cycle. 
 //   Overall, you can reply to interrupts in about 10-11 cycles, depending on when the interrupt falls.
 
 #include "ch32v003fun.h"
 #include <stdio.h>
 
 volatile int ok = 0;
+
+#if INTERRUPT_IN_RAM
+#define EXTRA_INTERRUPT_DECORATOR __attribute__((section(".sdata2.interrupts")))
+#else
+#define EXTRA_INTERRUPT_DECORATOR
+#endif
 
 #if NAKED_TEST
 
@@ -36,7 +47,7 @@ register volatile void * global_EXTI asm ("s9");
 register volatile unsigned global_APIN asm ("s10");
 register volatile unsigned global_EXITPIN asm ("s11");
 
-void EXTI4_IRQHandler( void )	__attribute__((naked));
+void EXTI4_IRQHandler( void )	__attribute__((naked)) EXTRA_INTERRUPT_DECORATOR;
 
 void EXTI4_IRQHandler( void )
 {
@@ -74,7 +85,7 @@ void SetupRegisters( void )
 
 #else
 
-void EXTI4_IRQHandler( void ) INTERRUPT_DECORATOR;
+void EXTI4_IRQHandler( void ) INTERRUPT_DECORATOR EXTRA_INTERRUPT_DECORATOR;
 
 void EXTI4_IRQHandler( void )
 {
