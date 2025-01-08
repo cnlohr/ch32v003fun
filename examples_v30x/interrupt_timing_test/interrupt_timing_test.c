@@ -127,6 +127,58 @@ int main()
 	SetVTFIRQ( (uintptr_t)&EXTI4_IRQHandler, EXTI4_IRQn, 0, ENABLE );
 #endif
 
+#if OVERCLOCK
+	EXTEND->CTR = ( EXTEND->CTR & (~(3<<10)) ) | 3<<10; // Turning it "to 1.0V according to datasheet" seems to make it most reliable.
+
+	// Switch processor back to HSI so we don't eat dirt.
+	RCC->CFGR0 = (RCC->CFGR0 & ~RCC_SW) | RCC_SW_HSI;
+
+	// Keep the HSI on but turn on the HSE.
+	RCC->CTLR = RCC_HSION | RCC_HSEON;
+
+	// It's soemthing like this: https://cnlohr.github.io/microclockoptimizer/?chipSelect=ch32vx05_7%2Cd8w&HSI=1,8&HSE=0,4&PREDIV2=1,0&PLL2CLK=1,7&PLL2VCO=0,72&PLL3CLK=1,1&PLL3VCO=0,100&PREDIV1SRC=1,0&PREDIV1=1,2&PLLSRC=1,0&PLL=1,4&PLLVCO=0,144&SYSCLK=1,2&
+	// Assuming PLL_MUL_REG = 4 (so it's not overclocking)
+	// ALSO-SIDE-NOTE: I think there's a /2 going on somewhere.
+
+	// Setup clock tree.
+	RCC->CFGR2 |= 
+		(0<<RCC_PREDIV2_OFFSET) | // PREDIV = not div 2, but really it is. Prediv Freq = 4MHz
+		(1<<RCC_PLL3MUL_OFFSET) | // PLL3 = x12.5 (NOT USED)
+		(7<<RCC_PLL2MUL_OFFSET) | // PLL2 = x9 (PLL2 = 36MHz) TBA
+		(2<<RCC_PREDIV1_OFFSET) | // PREDIV1 = /3; Prediv freq = 12MHz
+		RCC_PREDIV1_Source_PLL2 | // Use PLL2 to feed PLL.
+		0;
+
+#define PLL_MUL_REG 7
+
+	// PLL = x18 (0 in register)
+	//  4 in register = x6 (or 144MHz)
+	//  7 in register = x9 (or 216MHz)
+	// Going above 7 causes the PLL not to kock, so I recommend keeping it at 6 or below (192MHz)
+	RCC->CFGR0 = ( RCC->CFGR0 & ~(0xf<<18)) | (PLL_MUL_REG<<18) | RCC_PLLSRC;
+
+	// Power on PLLs
+	RCC->CTLR |= RCC_PLL3ON | RCC_PLL2ON;
+	int timeout;
+
+	for( timeout = 10000; timeout > 0; timeout--) if (RCC->CTLR & RCC_PLL2RDY) break;
+	if( timeout == 0 ) goto lockfail;
+	printf( "NEXT\n" );
+
+	RCC->CTLR |= RCC_PLLON;
+	for( timeout = 10000; timeout > 0; timeout--) if (RCC->CTLR & RCC_PLLRDY) break;
+	if( timeout == 0 ) goto lockfail;
+
+	RCC->CFGR0 = (RCC->CFGR0 & ~RCC_SW) | RCC_SW_PLL;
+	printf( "RCC->CTLR  = %08x\n", RCC->CTLR );
+	printf( "RCC->CFGR0 = %08x\n", RCC->CFGR0  );
+
+	goto success;
+lockfail:
+	printf( "FAILED TO LOCK\n" );
+success:
+#endif
+
 	// enable interrupt
 	NVIC_EnableIRQ( EXTI4_IRQn );
 
