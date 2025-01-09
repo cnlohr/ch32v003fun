@@ -118,8 +118,17 @@ enum RiscVChip {
 	CHIP_CH32V30x = 0x06,
 	CHIP_CH58x = 0x07,
 	CHIP_CH32V003 = 0x09,
+	CHIP_CH59x = 0x0b,
+	CHIP_CH643 = 0x0c,
 	CHIP_CH32X03x = 0x0d,
+	CHIP_CH32L10x = 0x0e,
+	CHIP_CH564 = 0x0f,
+	CHIP_CH645 = 0x46,
+	CHIP_CH641 = 0x49,
+	CHIP_CH32V00x = 0x4e,
+	CHIP_CH32V317 = 0x86,
 };
+#define CHIP_CH32M007 CHIP_CH32V00x
 
 enum RAMSplit {
 	// For supported V30x and some V20x devices
