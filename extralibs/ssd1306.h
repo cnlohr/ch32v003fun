@@ -14,7 +14,7 @@
 #define SSD1306_PSZ 32
 
 // characteristics of each type
-#if !defined (SSD1306_64X32) && !defined (SSD1306_128X32) && !defined (SSD1306_128X64) && !defined (SH1107_128x128)
+#if !defined (SSD1306_64X32) && !defined (SSD1306_128X32) && !defined (SSD1306_128X64) && !defined (SH1107_128x128) && !(defined(SSD1306_W) && defined(SSD1306_H) && defined(SSD1306_OFFSET) )
 	#error "Please define the SSD1306_WXH resolution used in your application"
 #endif
 
