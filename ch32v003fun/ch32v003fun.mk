@@ -1,15 +1,15 @@
 # Default prefix for Windows
 ifeq ($(OS),Windows_NT)
-    PREFIX?=riscv64-unknown-elf
+	PREFIX?=riscv64-unknown-elf
 # Check if riscv64-linux-gnu-gcc exists
 else ifneq ($(shell which riscv64-linux-gnu-gcc),)
-    PREFIX?=riscv64-linux-gnu
+	PREFIX?=riscv64-linux-gnu
 # Check if riscv64-unknown-elf-gcc exists
 else ifneq ($(shell which riscv64-unknown-elf-gcc),)
-    PREFIX?=riscv64-unknown-elf
+	PREFIX?=riscv64-unknown-elf
 # Default prefix
 else
-    PREFIX?=riscv64-elf
+	PREFIX?=riscv64-elf
 endif
 
 # Fedora places newlib in a different location
@@ -34,7 +34,7 @@ ifeq ($(DEBUG),1)
 endif
 
 CFLAGS?=-g -Os -flto -ffunction-sections -fdata-sections -fmessage-length=0 -msmall-data-limit=8
-LDFLAGS+=-Wl,--print-memory-usage
+LDFLAGS+=-Wl,--print-memory-usage -Wl,-Map=$(TARGET).map
 
 ifeq ($(TARGET_MCU),CH32V003)
 	CFLAGS_ARCH+=-march=rv32ec -mabi=ilp32e -DCH32V003=1
@@ -99,6 +99,7 @@ else
 			CFLAGS+=-DCH32V20x_D8
 		else ifeq ($(findstring 208, $(TARGET_MCU_PACKAGE)), 208)
 			CFLAGS+=-DCH32V20x_D8W
+			MCU_PACKAGE:=3
 		else ifeq ($(findstring F8, $(TARGET_MCU_PACKAGE)), F8)
 			MCU_PACKAGE:=1
 		else ifeq ($(findstring G8, $(TARGET_MCU_PACKAGE)), G8)
@@ -189,7 +190,6 @@ FILES_TO_COMPILE:=$(SYSTEM_C) $(TARGET).$(TARGET_EXT) $(ADDITIONAL_C_FILES)
 
 $(TARGET).bin : $(TARGET).elf
 	$(PREFIX)-objdump -S $^ > $(TARGET).lst
-	$(PREFIX)-objdump -t $^ > $(TARGET).map
 	$(PREFIX)-objcopy -O binary $< $(TARGET).bin
 	$(PREFIX)-objcopy -O ihex $< $(TARGET).hex
 
@@ -212,14 +212,15 @@ unbrick :
 gdbserver : 
 	-$(MINICHLINK)/minichlink -baG
 
+gdbclient :
+	gdb-multiarch $(TARGET).elf -ex "target remote :3333"
+
 clangd :
 	make clean
 	bear -- make build
-	@echo "CompileFlags:" > .clangd
-	@echo "  Remove: [-march=*, -mabi=*]" >> .clangd
 
 clangd_clean :
-	rm -f compile_commands.json .clangd
+	rm -f compile_commands.json
 	rm -rf .cache
 
 FLASH_COMMAND?=$(MINICHLINK)/minichlink -w $< $(WRITE_SECTION) -b

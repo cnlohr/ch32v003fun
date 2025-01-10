@@ -45,7 +45,7 @@ void * MiniCHLinkInitAsDLL( struct MiniChlinkFunctions ** MCFO, const init_hints
 		else if( strcmp( specpgm, "b003boot" ) == 0 )
 			dev = TryInit_B003Fun();
 		else if( strcmp( specpgm, "ardulink" ) == 0 )
-			dev = TryInit_B003Fun();
+			dev = TryInit_Ardulink(init_hints);
 	}
 	else
 	{
@@ -159,6 +159,8 @@ int main( int argc, char ** argv )
 	int must_be_end = 0;
 
 	int skip_startup = 
+		(argc > 1 && argv[1][0] == '-' && argv[1][1] == 'e' ) |
+		(argc > 1 && argv[1][0] == '-' && argv[1][1] == 'A' ) |
 		(argc > 1 && argv[1][0] == '-' && argv[1][1] == 'u' ) |
 		(argc > 1 && argv[1][0] == '-' && argv[1][1] == 'h' ) |
 		(argc > 1 && argv[1][0] == '-' && argv[1][1] == 't' ) |
@@ -700,7 +702,7 @@ keep_going:
 	if( MCF.FlushLLCommands )
 		MCF.FlushLLCommands( dev );
 
-	if( MCF.Exit )
+	if( MCF.Exit && !skip_startup )
 		MCF.Exit( dev );
 
 	return 0;
@@ -809,11 +811,13 @@ static int DefaultWaitForFlash( void * dev )
 		}
 	} while(rw & 3);  // BSY flag for 003, or WRBSY for other processors.
 
-	if( rw & 0x20 )
-	{
-		// On non-003-processors, clear done op.
-		MCF.WriteWord( dev, (intptr_t)&FLASH->STATR, 0x20 );
-	}
+	// This was set at some point for non-003 processors.
+	// but, it seems not to be needed.
+	//if( rw & 0x20 )
+	//{
+	//	// On non-003-processors, clear done op.
+	//	MCF.WriteWord( dev, (intptr_t)&FLASH->STATR, 0x20 );
+	//}
 
 	if( rw & FLASH_STATR_WRPRTERR )
 	{
@@ -1273,10 +1277,11 @@ static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t dat
 	return ret;
 }
 
-int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob_size, uint8_t * blob )
+int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob_size, const uint8_t * blob )
 {
 	// NOTE IF YOU FIX SOMETHING IN THIS FUNCTION PLEASE ALSO UPDATE THE PROGRAMMERS.
 	//  this is only fallback functionality for really realy basic programmers.
+	//  it is also used in unbrick.
 
 	uint32_t rw;
 	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
@@ -1320,31 +1325,32 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 
 		uint32_t temp;
 		MCF.ReadWord( dev, 0x4002200c, &temp );
-		if( temp & 0x8000 )
+		//STATR & BOOT only exists on the 003 and x03x
+		// No issue if we force an unlock anyway.
+		//if( temp & 0x8000 )
 		{
 			MCF.WriteWord( dev, 0x40022004, 0x45670123 ); // KEYR
 			MCF.WriteWord( dev, 0x40022004, 0xCDEF89AB );
+
+			// These registers are not on or required on the v20x / v30x, but no harm in writing.
 			MCF.WriteWord( dev, 0x40022008, 0x45670123 ); // OBWRE
 			MCF.WriteWord( dev, 0x40022008, 0xCDEF89AB );
 			MCF.WriteWord( dev, 0x40022028, 0x45670123 ); //(FLASH_BOOT_MODEKEYP)
 			MCF.WriteWord( dev, 0x40022028, 0xCDEF89AB ); //(FLASH_BOOT_MODEKEYP)
-			MCF.ReadWord( dev, 0x40022010, &temp );
-			MCF.ReadWord( dev, 0x4002200c, &temp );
 		}
 
 		MCF.ReadWord( dev, 0x4002200c, &temp );
 		if( temp & 0x8000 )
 		{
 			fprintf( stderr, "Error: Critical memory zone is still locked out\n" );
-			return -10;
 		}
 		if( MCF.WaitForFlash ) MCF.WaitForFlash( dev );
 
 		MCF.ReadWord( dev, 0x40022010, &temp );
+
 		if( !(temp & (1<<9)) ) // Check OBWRE
 		{
-			fprintf( stderr, "Error: Option Byte Unlock Failed\n" );
-			return -10;
+			fprintf( stderr, "Error: Option Byte Unlock Failed (FLASH_CTRL=%08x)\n", temp );
 		}
 
 		// Perform erase.
@@ -1363,11 +1369,19 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 		int i;
 		for( i = 0; i < 8; i++ )
 		{
+			// OBPG = FLASH_CTLR_OPTPG
 			MCF.WriteWord( dev, 0x40022010, FLASH_CTLR_OPTPG | FLASH_CTLR_OPTWRE );
 			MCF.WriteWord( dev, 0x40022010, FLASH_CTLR_OPTPG | FLASH_CTLR_STRT | FLASH_CTLR_OPTWRE );
-			MCF.WriteHalfWord( dev, i*2+base, block[i*2+0] | (block[i*2+1]<<8) );
-
+			uint32_t writeaddy = i*2+base;
+			uint16_t writeword = block[i*2+0] | (block[i*2+1]<<8);
+			MCF.WriteHalfWord( dev, writeaddy, writeword );
 			if( MCF.WaitForFlash ) MCF.WaitForFlash( dev );
+			uint16_t verify = 0;
+			MCF.ReadHalfWord( dev, writeaddy, &verify );
+			if( verify != writeword )
+			{
+				fprintf( stderr, "Warning when writing option bytes at %08x, %04x != %04x\n", writeaddy, writeword, verify );
+			}
 			MCF.ReadWord( dev, 0x4002200c, &temp );
 			if( temp & 0x10 )
 			{
@@ -1375,8 +1389,9 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 				return -9;
 			}
 		}
-		if( MCF.WaitForFlash ) MCF.WaitForFlash( dev );
+		// Turn off OPTPG, OPTWRE.
 		MCF.WriteWord( dev, 0x40022010, 0 );
+		if( MCF.WaitForFlash ) MCF.WaitForFlash( dev );
 
 		return 0;
 	}
@@ -1428,13 +1443,13 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 				for( i = 0; i < sectorsize/64; i++ )
 				{
 					int r = MCF.BlockWrite64( dev, base + i*64, blob + rsofar+i*64 );
-					rsofar += 64;
 					if( r )
 					{
 						fprintf( stderr, "Error writing block at memory %08x (error = %d)\n", base, r );
 						return r;
 					}
 				}
+				rsofar += sectorsize;
 			}
 			else 					// Block Write not avaialble
 			{
@@ -1536,7 +1551,6 @@ int DefaultWriteBinaryBlob( void * dev, uint32_t address_to_write, uint32_t blob
 						MCF.WriteWord( dev, j*4+base, *(uint32_t*)(tempblock + j * 4) );
 
 						// On the v2xx, v3xx, you also need to make sure FLASH->STATR & 2 is not set.  This is only an issue when running locally.
-						rsofar += 4;
 					}
 
 					if( iss->target_chip_type == CHIP_CH32V20x || iss->target_chip_type == CHIP_CH32V30x )
@@ -1780,7 +1794,6 @@ int DefaultErase( void * dev, uint32_t address, uint32_t length, int type )
 				}
 			}
 
-			if( MCF.WaitForFlash && MCF.WaitForFlash( dev ) ) return -99;
 			// Step 4:  set PAGE_ER of FLASH_CTLR(0x40022010)
 			if( MCF.WriteWord( dev, (intptr_t)&FLASH->CTLR, CR_PAGE_ER ) ) goto flashoperr; // CR_PAGE_ER is FTER
 			// Step 5: Write the first address of the fast erase page to the FLASH_ADDR register.
@@ -2128,14 +2141,14 @@ int DefaultWriteAllCPURegisters( void * dev, uint32_t * regret )
 	int i;
 	for( i = 0; i < iss->nr_registers_for_debug; i++ )
 	{
-		MCF.WriteReg32( dev, DMCOMMAND, 0x00230000 | 0x1000 | i ); // Read xN into DATA0.
 		if( MCF.WriteReg32( dev, DMDATA0, regret[i] ) )
 		{
 			return -5;
 		}
+		MCF.WriteReg32( dev, DMCOMMAND, 0x00230000 | 0x1000 | i ); // Read xN into DATA0.
 	}
-	MCF.WriteReg32( dev, DMCOMMAND, 0x00230000 | 0x7b1 ); // Read xN into DATA0.
 	int r = MCF.WriteReg32( dev, DMDATA0, regret[i] );
+	MCF.WriteReg32( dev, DMCOMMAND, 0x00230000 | 0x7b1 ); // Read xN into DATA0.
 	return r;
 }
 
@@ -2172,7 +2185,6 @@ int DefaultSetEnableBreakpoints( void * dev, int is_enabled, int single_step )
 	else
 		DCSR &=~4;
 
-	//printf( "Setting DCSR: %08x\n", DCSR );
 	if( MCF.WriteCPURegister( dev, 0x7b0, DCSR ) )
 		fprintf( stderr, "Error: DCSR could not be read\n" );
 
@@ -2298,11 +2310,11 @@ int DefaultUnbrick( void * dev )
 	MCF.DelayUS( dev, 60000 );
 	MCF.DelayUS( dev, 60000 );
 	MCF.Control3v3( dev, 1 );
-	MCF.DelayUS( dev, 100 );
-	MCF.FlushLLCommands( dev );
 	printf( "Connection starting\n" );
+	MCF.FlushLLCommands( dev );
+
 	int timeout = 0;
-	int max_timeout = 500;
+	int max_timeout = 50000; // An absurdly long time.
 	uint32_t ds = 0;
 	for( timeout = 0; timeout < max_timeout; timeout++ )
 	{
@@ -2324,37 +2336,48 @@ int DefaultUnbrick( void * dev )
 		if( ds != 0xffffffff && ds != 0x00000000 ) break;
 	}
 
-	// Make sure we are in halt.
-	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
-	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
-	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // No, really make sure.
-	MCF.WriteReg32( dev, DMCONTROL, 0x80000001 );
-
-	int r = MCF.ReadReg32( dev, DMSTATUS, &ds );
-	printf( "DMStatus After Halt: /%d/%08x\n", r, ds );
-
-//  Many times we would clear the halt request, but in this case, we want to just leave it here, to prevent it from booting.
-//  TODO: Experiment and see if this is needed/wanted in cases.  NOTE: If you don't clear halt request, progarmmers can get stuck.
-//	MCF.WriteReg32( dev, DMCONTROL, 0x00000001 ); // Clear Halt Request.
-
-	// After more experimentation, it appaers to work best by not clearing the halt request.
-	MCF.FlushLLCommands( dev );
-
-	// Override all option bytes and reset to factory settings, unlocking all flash sections.
-	uint8_t option_data[] = { 0xa5, 0x5a, 0x97, 0x68, 0x00, 0xff, 0x00, 0xff, 0xff, 0x00, 0xff, 0x00 };
-	if( MCF.WriteBinaryBlob != DefaultWriteBinaryBlob )
-	{
-		fprintf( stderr, "Warning, using nonstandard WriteBinaryBlob.  Unbrick may not work.\n" );
-	}
-	MCF.WriteBinaryBlob(dev, 0x1ffff800, sizeof( option_data ), option_data );
-
-	MCF.DelayUS( dev, 20000 );
-
 	if( timeout == max_timeout ) 
 	{
 		fprintf( stderr, "Timed out trying to unbrick\n" );
 		return -5;
 	}
+	
+	int i;
+	for( i = 0; i < 10; i++ )
+	{
+		// Make sure we are in halt.
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Make the debug module work properly.
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // Initiate a halt request.
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 ); // No, really make sure.
+		MCF.WriteReg32( dev, DMCONTROL, 0x80000001 );
+		
+		// After more experimentation, it appaers to work best by not clearing the halt request.
+		MCF.FlushLLCommands( dev );
+	}
+
+	MCF.WriteReg32( dev, DMABSTRACTCS, 0x00000700 ); // Clear out possible abstractcs errors.
+
+	int r = MCF.ReadReg32( dev, DMSTATUS, &ds );
+	printf( "DMStatus After Halt: /%d/%08x\n", r, ds );
+
+	DefaultDetermineChipType( dev );
+	struct InternalState * iss = (struct InternalState*)(((struct ProgrammerStructBase*)dev)->internal);
+	printf( "Chip Type: %d\n", iss->target_chip_type );
+
+	// Override all option bytes and reset to factory settings, unlocking all flash sections.
+	static const uint8_t option_data_003_x03x[] = { 0xa5, 0x5a, 0x97, 0x68, 0x00, 0xff, 0x00, 0xff, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00 };
+	static const uint8_t option_data_20x_30x[]  = { 0xa5, 0x5a, 0x3f, 0xc0, 0x00, 0xff, 0x00, 0xff, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00 };
+
+	InternalUnlockFlash(dev, iss);
+
+	const uint8_t * option_data = 
+		( iss->target_chip_type == CHIP_CH32X03x || iss->target_chip_type == CHIP_CH32V003 ) ?
+		option_data_003_x03x : option_data_20x_30x;
+
+	DefaultWriteBinaryBlob(dev, 0x1ffff800, 16, option_data );
+
+	MCF.DelayUS( dev, 20000 );
+
 	MCF.Erase( dev, 0, 0, 1);
 	MCF.FlushLLCommands( dev );
 	return -5;

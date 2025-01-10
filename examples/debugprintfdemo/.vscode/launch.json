@@ -1,23 +1,17 @@
 {
 	"configurations": [
 		{
-			"name": "GDB Debug Target",
+			"name": "Debug Target",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "debugprintfdemo.elf",
+			"program": "${workspaceFolder}/debugprintfdemo.elf",
 			"args": [],
 			"stopAtEntry": true,
 			"cwd": "${workspaceFolder}",
 			"environment": [],
 			"externalConsole": false,
 			"MIMode": "gdb",
-			"deploySteps": [
-				{
-					"type": "shell",
-					"continueOn": "GDBServer",
-					"command": "make --directory=${workspaceFolder} closechlink flash gdbserver"
-				},
-			],
+			"preLaunchTask": "run_flash_and_gdbserver",
 			"setupCommands": [
 				{
 					"description": "Enable pretty-printing for gdb",
@@ -25,15 +19,30 @@
 					"ignoreFailures": true
 				}
 			],
+			"svdPath": "${workspaceFolder}/../../misc/CH32V003xx.svd", // extension 'Peripheral Viewer' by mcu-debug (cortex-debug)
 			"miDebuggerPath": "gdb-multiarch",
-			"miDebuggerServerAddress": "127.0.0.1:2000"
+			"miDebuggerServerAddress": "127.0.0.1:3333",
 		},
 		{
-			"name": "Run Only (In Terminal)",
+			"name": "Flash and run in terminal",
+			"type": "node-terminal",
+			"request": "launch",
+			"internalConsoleOptions": "neverOpen",
+			"command": "make closechlink clean; make flash monitor",
+		},
+		{
+			"name": "Compile and Flash",
 			"type": "node",
 			"request": "launch",
-			"program": "",
-			"preLaunchTask": "run_flash_and_gdbserver",
-		}	
-		]
+			"internalConsoleOptions": "neverOpen",
+			"preLaunchTask" : "kill_all_tasks",
+			"postDebugTask": "run_flash",
+			"presentation": {
+				"hidden": false,
+				"group": "terminaloutput",
+				"order": 1
+			},
+			"runtimeExecutable": "echo"
+		}
+	]
 }

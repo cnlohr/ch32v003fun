@@ -154,26 +154,25 @@ static int CommitOp( struct B003FunProgrammerStruct * eps )
 	#endif
 
 resend:
-        usleep(1000);
 	r = hid_send_feature_report( eps->hd, eps->commandbuffer, sizeof(eps->commandbuffer) );
 	#ifdef DEBUG_B003
 	printf( "hid_send_feature_report = %d\n", r );
 	#endif
 	if( r < 0 )
 	{
-		fprintf( stderr, "Warning: Issue with hid_send_feature_report. Retrying: %d\n", retries );
+		if( retries ) fprintf( stderr, "Warning: Issue with hid_send_feature_report. Retrying: %d\n", retries );
 		if( retries++ > 10 )
+		{
 			return r;
+		}
 		else
+		{
+			MCF.DelayUS( eps, 5000 );
 			goto resend;
+		}
 	}
         
-        if (eps->no_get_report) return r;
-
-	if( eps->prepping_for_erase )
-	{
-		usleep(4000);
-	}
+	if (eps->no_get_report) return r;
 
 	int timeout = 0;
 
@@ -225,14 +224,14 @@ static int B003FunWaitForDoneOp( void * dev, int ignore )
 	return 0;
 }
 
-static int B003FunDelayUS( void * dev, int microseconds )
-{
-	usleep( microseconds );
-	return 0;
-}
+// static int B003FunDelayUS( void * dev, int microseconds )
+// {
+// 	usleep( microseconds );
+// 	return 0;
+// }
 
 // Does not handle erasing
-static int InternalB003FunWriteBinaryBlob( void * dev, uint32_t address_to_write_to, uint32_t write_size, uint8_t * blob )
+static int InternalB003FunWriteBinaryBlob( void * dev, uint32_t address_to_write_to, uint32_t write_size, const uint8_t * blob )
 {
 	struct B003FunProgrammerStruct * eps = (struct B003FunProgrammerStruct *)dev;
 
@@ -436,7 +435,7 @@ static int B003FunReadWord( void * dev, uint32_t address_to_read, uint32_t * dat
 	return B003FunReadBinaryBlob( dev, address_to_read, 4, (uint8_t*)data );
 }
 
-static int B003FunBlockWrite64( void * dev, uint32_t address_to_write, uint8_t * data )
+static int B003FunBlockWrite64( void * dev, uint32_t address_to_write, const uint8_t * data )
 {
 	struct B003FunProgrammerStruct * eps = (struct B003FunProgrammerStruct*) dev;
 	struct InternalState * iss = eps->internal;
@@ -563,7 +562,7 @@ void * TryInit_B003Fun()
 	MCF.WriteReg32 = 0;
 	MCF.ReadReg32 = 0;
 	MCF.FlushLLCommands = B003FunFlushLLCommands;
-	MCF.DelayUS = B003FunDelayUS;
+	// MCF.DelayUS = B003FunDelayUS;
 	MCF.Control3v3 = 0;
 	MCF.SetupInterface = B003FunSetupInterface;
 	MCF.Exit = B003FunExit;
