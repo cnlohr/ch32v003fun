@@ -100,7 +100,7 @@ uint8_t ssd1306_pkt_send(uint8_t *data, uint8_t sz, uint8_t cmd)
 	}
 	
 	// wait for not busy before exiting
-	while(SPI1->STATR & SPI_STATR_BSY);
+	while(SPI1->STATR & SPI_STATR_BSY) { }
 	
 	funDigitalWrite( SSD1306_CS_PIN, FUN_HIGH );
 	

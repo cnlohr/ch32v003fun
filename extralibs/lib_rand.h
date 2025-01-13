@@ -87,6 +87,27 @@ uint32_t _rand_gen_32b(void)
 }
 
 
+
+/// @brief Generates a Random n-bit number, using the LFSR - by generating
+/// a random bit from LFSR taps, n times.
+/// @param None
+/// @return a (psuedo)random n-bit value
+uint32_t _rand_gen_nb( int bits)
+{
+	uint32_t rand_out = 0;
+
+	while(bits--)
+	{
+		// Shift the current rand value for the new LSB
+		rand_out = rand_out << 1;
+		// Append the LSB
+		rand_out |= _rand_lfsr_update();
+	}
+
+	return rand_out;
+}
+
+
 /*** API Functions ***********************************************************/
 /*****************************************************************************/
 /// @brief seeds the Random LFSR to the value passed
