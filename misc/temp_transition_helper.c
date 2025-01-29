@@ -3,8 +3,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-const char * yes[] = { "CH32V003" };
-const char * no[] = { "CH32V20x", "CH32V30x", "CH32X03x", "CH32V10x" };
+const char * yes[] = { "CH32X03x", };
+const char * no[] = { "CH32V10x", "CH32V30x",  "CH32V20x", "CH32V003" };
 
 char * WhitePull( const char ** sti )
 {
@@ -41,7 +41,7 @@ int EvalSpec( const char * spl )
 	int lastv = 0;
 	int lasto = -1;
 	int ret = 0;
-
+cont:
 	char * wp = WhitePull( &spl );
 	int def = -1;
 	if( strcmp( wp, "defined" ) == 0 ) def = 1;
@@ -49,23 +49,25 @@ int EvalSpec( const char * spl )
 	if( def < 0 ) return 2;
 	char * wpn = WhitePull( &spl );
 	i = NYI( wpn );
-//printf( "SPIN: %s/%s/%d/%d\n", wp, wpn, i, def );
+//printf( "SPIN: %s/%s/%d/%d/%d\n", wp, wpn, i, def, lasto );
 	if( i == 2 ) return 2;
 
 	if( def == 2 ) i = !i;
 
 	if( lasto == 1 )
 		ret = lastv || i;
-	if( lasto == 2 )
+	else if( lasto == 2 )
 		ret = lastv && i;
 	else
 		ret = i;
 
 	char * wpa = WhitePull( &spl );
+//printf( "WPA: \"%s\"\n", wpa );
 	lastv = ret;
 	lasto = -1;
-	if( strcmp( wpa, "||" ) ) { lasto = 1; }
-	else if( strcmp( wpa, "&&" ) ) { lasto = 2; }
+//printf( "RET: %d\n", ret );
+	if( strcmp( wpa, "||" ) == 0 ) { lasto = 1; goto cont; }
+	else if( strcmp( wpa, "&&" ) == 0 ) { lasto = 2; goto cont; }
 	else return ret;
 }
 
@@ -104,7 +106,7 @@ int NoYesInd( const char * preprocc )
 	return ret;
 }
 
-const char * sslineis( const char * line, const char * match )
+char * sslineis( const char * line, const char * match )
 {
 	while( *line == ' ' || *line == '\t' ) line++;
 	const char * linestart = line;
