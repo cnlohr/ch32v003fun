@@ -8257,13 +8257,17 @@ static __I uint8_t ADCPrescTable[4] = {2, 4, 6, 8};
 
 /* ch32v00x_dbgmcu.h ---------------------------------------------------------*/
 
-/* CFGR0 Register */
 #ifdef CH32V003
-#define DBGMCU_IWDG_STOP             ((uint32_t)0x00000001)
-#define DBGMCU_WWDG_STOP             ((uint32_t)0x00000002)
-#define DBGMCU_TIM1_STOP             ((uint32_t)0x00000010)
-#define DBGMCU_TIM2_STOP             ((uint32_t)0x00000020)
+/* DBGMCU_CR Register */
+#define DBGMCU_SLEEP                 ((uint32_t)0x00000001)
+#define DBGMCU_STOP                  ((uint32_t)0x00000002)
+#define DBGMCU_STANDBY               ((uint32_t)0x00000004)
+#define DBGMCU_IWDG_STOP             ((uint32_t)0x00000100)
+#define DBGMCU_WWDG_STOP             ((uint32_t)0x00000200)
+#define DBGMCU_TIM1_STOP             ((uint32_t)0x00001000)
+#define DBGMCU_TIM2_STOP             ((uint32_t)0x00002000)
 #elif defined(CH32V20x) || defined(CH32V30x)
+/* CFGR0 Register */
 #define DBGMCU_SLEEP                 ((uint32_t)0x00000001)
 #define DBGMCU_STOP                  ((uint32_t)0x00000002)
 #define DBGMCU_STANDBY               ((uint32_t)0x00000004)
@@ -8284,6 +8288,7 @@ static __I uint8_t ADCPrescTable[4] = {2, 4, 6, 8};
 #define DBGMCU_TIM9_STOP             ((uint32_t)0x00400000)
 #define DBGMCU_TIM10_STOP            ((uint32_t)0x00800000)
 #elif defined(CH32V10x)
+/* CFGR0 Register */
 #define DBGMCU_IWDG_STOP             ((uint32_t)0x00000001)
 #define DBGMCU_WWDG_STOP             ((uint32_t)0x00000002)
 #define DBGMCU_I2C1_SMBUS_TIMEOUT    ((uint32_t)0x00000004)
@@ -13662,6 +13667,42 @@ static inline uint32_t __get_MHARTID(void)
 	"csrr %0,""mhartid": "=r"(result));
 	return (result);
 }
+
+#if defined(CH32V003) && CH32V003
+
+/*********************************************************************
+ * @fn      __get_DEBUG_CR
+ * @brief   Return DBGMCU_CR Register value
+ * @return  DGBMCU_CR value
+ */
+static inline uint32_t __get_DEBUG_CR(void)
+{
+	uint32_t result;
+
+	__ASM volatile (
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrr %0," "0x7C0" : "=r" (result) );
+	return (result);
+}
+
+/*********************************************************************
+ * @fn      __set_DEBUG_CR
+ * @brief   Set the DBGMCU_CR Register value
+ * @return  none
+ */
+static inline void __set_DEBUG_CR(uint32_t value)
+{
+	__ASM volatile (
+#if __GNUC__ > 10
+	".option arch, +zicsr\n"
+#endif
+	"csrw 0x7C0, %0" : : "r" (value) );
+}
+
+#endif
+
 
 /*********************************************************************
  * @fn      __get_SP
