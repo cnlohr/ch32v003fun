@@ -2,7 +2,8 @@
 
 A free, open mechanism to use the CH-LinkE $4 programming dongle for the CH32V003.
 
-If on Linux, make sure to install the `99-WCH-LinkE.rules` build rule to `/etc/udev/rules.d/`
+If on Linux, make sure to install the provided udev rules rule to `/etc/udev/rules.d/`.
+This can be done by issuing `make install_udev_rules` as root. The makefile target will also tell the udev daemon to reload the new rules and re-evaluate them on already attached devices, essentially saving you a reboot/replug.
 
 On Windows, if you need to you can install the WinUSB driver over the WCH interface 1.
 
