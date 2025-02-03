@@ -1,5 +1,5 @@
 // Could be defined here, or in the processor defines.
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 
 uint32_t count;

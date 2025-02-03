@@ -2,7 +2,7 @@
 #define _USB_CONFIG_H
 
 #include "funconfig.h"
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 
 #define HUSB_CONFIG_EPS       3 // Include EP0 in this count
 #define HUSB_SUPPORTS_SLEEP   0

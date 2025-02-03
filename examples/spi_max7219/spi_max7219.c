@@ -19,7 +19,7 @@
 #define DEMO_INTENSITY_FADE_DIGITS
 #define DEMO_LED_CHASE
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 #include "max7219_spi_driver.h"
 #include "max7219_spi_driver_extended.h"

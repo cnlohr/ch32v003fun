@@ -18,7 +18,7 @@
 		* Lower voltage = longer RC respone, so higher capacitance. 
 */
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 
 #include "ch32v003_touch.h"

@@ -1,4 +1,4 @@
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 
 // use defines to make more meaningful names for our GPIO pins

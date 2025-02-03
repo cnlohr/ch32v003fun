@@ -1,4 +1,4 @@
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 
 
 #define CH32V003_SPI_SPEED_HZ 1000000

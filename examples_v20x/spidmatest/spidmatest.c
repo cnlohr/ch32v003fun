@@ -1,4 +1,4 @@
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -56,7 +56,7 @@ int main()
 
 	funGpioInitAll();
 
-	// Force HCLK to be nodiv. ch32vfun sets it to be a reasonbly high div.
+	// Force HCLK to be nodiv. ch32fun sets it to be a reasonbly high div.
 	RCC->CFGR0 &= ~RCC_PPRE1_DIV16;
 
 // MCO for testing.

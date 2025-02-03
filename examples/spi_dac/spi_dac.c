@@ -3,7 +3,7 @@
  * 04-10-2023 E. Brombaugh
  */
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 
 // this table contains a 512-sample 16-bit sine waveform

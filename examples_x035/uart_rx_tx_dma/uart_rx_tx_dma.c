@@ -16,7 +16,7 @@
  *   - The IDLE line detection interrupt signals the end of a data packet.
  *   - The program then echoes the received data back over the UART using DMA.
  */
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 
 // Set UART baud rate here
 #define UART_BR 115200

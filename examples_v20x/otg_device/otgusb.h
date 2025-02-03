@@ -19,7 +19,7 @@
 
 
 #include <stdint.h>
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include "usb_defines.h"
 #include "usb_config.h"
 

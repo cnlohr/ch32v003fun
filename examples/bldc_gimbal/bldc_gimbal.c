@@ -1,4 +1,4 @@
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 
 // Connect motor to PD5, PD6, and PC7.

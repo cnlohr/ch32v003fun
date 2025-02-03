@@ -7,7 +7,7 @@
 // For it to produce interesting output, you can wire PD2 to PD3, PD3
 // is outputting pulses.
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 
 uint32_t count;

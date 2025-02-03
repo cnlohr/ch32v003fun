@@ -10,7 +10,7 @@
 #include <getopt.h>
 #include "terminalhelp.h"
 #include "minichlink.h"
-#include "../ch32v003fun/ch32v003fun.h"
+#include "../ch32fun/ch32fun.h"
 
 #if defined(WINDOWS) || defined(WIN32) || defined(_WIN32)
 #if !defined(_SYNCHAPI_H_) && !defined(__TINYC__)

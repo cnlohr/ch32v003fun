@@ -86,7 +86,7 @@ void __libc_init_array(void)
 #include <stdarg.h>
 #include <limits.h>
 #include <stdint.h>
-#include <ch32v003fun.h>
+#include <ch32fun.h>
 
 #define WEAK __attribute__((weak))
 

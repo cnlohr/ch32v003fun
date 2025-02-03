@@ -3,10 +3,9 @@
  * 04-26-2023 recallmenot 
  */
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 #include "nrf24l01.h"
-
 
 
 #define TIME_GAP 1000
@@ -66,7 +65,7 @@ uint8_t sendnumber() {
 	return nrf24_transmit(&ascending_number, 1, ACK_MODE);
 }
 
-// function prototype (declaration), definition in "ch32v003fun.c"
+// function prototype (declaration), definition in "ch32fun.c"
 int mini_snprintf(char* buffer, unsigned int buffer_len, const char *fmt, ...);
 
 uint8_t sendstr() {

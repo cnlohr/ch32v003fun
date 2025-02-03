@@ -4,7 +4,7 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/../../ch32v003fun"
+                "${workspaceFolder}/../../ch32fun"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang",
@@ -19,7 +19,7 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/../../ch32v003fun"
+                "${workspaceFolder}/../../ch32fun"
             ],
             "defines": [],
             "compilerPath": "riscv64-unknown-elf-gcc-10.1.0.exe",

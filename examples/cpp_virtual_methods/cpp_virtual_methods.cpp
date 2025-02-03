@@ -3,7 +3,7 @@
  * 05/21/2023 A. Mandera
  */
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include "example.h"
 #include <stdio.h>
 

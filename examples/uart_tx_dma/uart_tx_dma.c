@@ -4,7 +4,7 @@
  * uart for 115200n1 and the messages should appear
  */
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 
 // Set UART baud rate here
 #define UART_BR 115200

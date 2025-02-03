@@ -1,7 +1,7 @@
 // Small example showing how to use the USB HS interface of the CH32V30x
 // A composite HID device + A bulk in and out.
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 #include <string.h>
 #include "hsusb_v30x.h"

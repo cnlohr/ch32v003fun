@@ -29,7 +29,7 @@ Timer 2 pin mappings by AFIO->PCFR1
 		D5		T2CH4_
 */
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 
 //By default this example only enables CH1(PD4) and CH2(PD3)

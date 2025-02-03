@@ -28,7 +28,7 @@
 #define LED_PIN     6				
 
 #include <stdarg.h>
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 #include "ch32v003_GPIO_branchless.h"
 

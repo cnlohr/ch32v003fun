@@ -102,7 +102,7 @@ env.AddPreAction(
         "-DTARGET_MCU=%s" % target_mcu,
         "-DMCU_PACKAGE=%d" % mcu_package,
         "-DTARGET_MCU_LD=%d" % target_mcu_ld,
-        join("ch32v003fun", "ch32v003fun.ld"),
+        join("ch32fun", "ch32fun.ld"),
         ">",
         join("$BUILD_DIR", "ldscript.ld")
     ]), "Building %s" % join("$BUILD_DIR", "ldscript.ld"))

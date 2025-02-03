@@ -1,5 +1,5 @@
 #include "otgusb.h"
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <string.h>
 
 uint32_t USBDEBUG0, USBDEBUG1, USBDEBUG2;

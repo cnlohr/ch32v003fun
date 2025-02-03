@@ -1,13 +1,13 @@
 TOOLS:=minichlink minichlink.so
 
-CFLAGS:=-O0 -g3 -Wall -DCH32V003 -I.
+CFLAGS:=-O0 -g3 -Wall -DCH32V003 -I. -DMINICHLINK
 C_S:=minichlink.c pgm-wch-linke.c pgm-esp32s2-ch32xx.c nhc-link042.c ardulink.c serial_dev.c pgm-b003fun.c minichgdb.c
 
 # General Note: To use with GDB, gdb-multiarch
 # gdb-multilib {file}
 # target remote :2345
 
-CFLAGS_WINDOWS:=-Os -s -Wall -D_WIN32_WINNT=0x0600 -I. -Wall -DCH32V003
+CFLAGS_WINDOWS:=-Os -s -Wall -D_WIN32_WINNT=0x0600 -I. -Wall -DCH32V003 -DMINICHLINK
 LDFLAGS_WINDOWS:=-L. -lpthread -lusb-1.0 -lsetupapi -lws2_32
 ifeq ($(OS),Windows_NT)
 	TOOLS:=minichlink.exe
@@ -18,7 +18,7 @@ else
 	endif
 	ifeq ($(OS_NAME),darwin)
 		LDFLAGS:=-lpthread -lusb-1.0 -framework CoreFoundation -framework IOKit
-		CFLAGS:=-O0 -Wall -Wno-asm-operand-widths -Wno-deprecated-declarations -Wno-deprecated-non-prototype -D__MACOSX__ -DCH32V003 -I.
+		CFLAGS:=-O0 -Wall -Wno-asm-operand-widths -Wno-deprecated-declarations -Wno-deprecated-non-prototype -D__MACOSX__ -DMINICHLINK -DCH32V003 -I.
 		INCLUDES:=$(shell pkg-config --cflags-only-I libusb-1.0)
 		LIBINCLUDES:=$(shell pkg-config --libs-only-L libusb-1.0)
 		INCS:=$(INCLUDES) $(LIBINCLUDES)

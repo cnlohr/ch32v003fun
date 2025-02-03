@@ -9,7 +9,7 @@
 // once at the end.
 //
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 
 volatile uint32_t count;

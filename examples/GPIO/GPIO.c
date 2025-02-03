@@ -12,7 +12,7 @@
 #error "please enable ONE of the demos by setting it to 1 and the others to 0"
 #endif
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 
 #include "ch32v003_GPIO_branchless.h"
 

@@ -1,6 +1,6 @@
 /* Template app on which you can build your own. */
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 
 uint32_t count;

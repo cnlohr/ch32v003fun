@@ -27,7 +27,7 @@
 #ifndef __I2C_SLAVE_H
 #define __I2C_SLAVE_H
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdbool.h>

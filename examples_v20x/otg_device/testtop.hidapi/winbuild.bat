@@ -1,1 +1,1 @@
-tcc testtop.c -I../../ch32v003fun/minichlink -lsetupapi
+tcc testtop.c -I../../ch32fun/minichlink -lsetupapi
