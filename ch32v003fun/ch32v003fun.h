@@ -6073,7 +6073,7 @@ typedef struct
 #define RCC_PLLMULL14                           ((uint32_t)0x00300000) /* PLL input clock*14 */
 #define RCC_PLLMULL15                           ((uint32_t)0x00340000) /* PLL input clock*15 */
 #define RCC_PLLMULL16                           ((uint32_t)0x00380000) /* PLL input clock*16 */
-#if defined(CH32V20x)
+#if defined(CH32V20x) || defined(CH32V30x_D8)
 #define RCC_PLLMULL18                           ((uint32_t)0x003C0000) /* PLL input clock*18 */
 #endif
 
@@ -13972,7 +13972,7 @@ void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) 
 				#define PLL_MULTIPLICATION RCC_PLLMULL15
 			#elif FUNCONF_PLL_MULTIPLIER == 16
 				#define PLL_MULTIPLICATION RCC_PLLMULL16
-			#elif defined(CH32V20x) && FUNCONF_PLL_MULTIPLIER == 18
+			#elif (defined(CH32V20x) || defined(CH32V30x_D8)) && FUNCONF_PLL_MULTIPLIER == 18
 				#define PLL_MULTIPLICATION RCC_PLLMULL18
 			#else
 				#error "Invalid PLL multiplier"
