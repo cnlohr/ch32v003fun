@@ -3,7 +3,7 @@ Import("env", "projenv")
 # Rely on the fact that all examples to build_src_filter = +<EXAMPLE_THEY_WANT>
 # And figure out correct include path from that
 src_filter = str(env.subst("$SRC_FILTER"))
-# A string with e.g. "+<ch32v003fun> +<examples/blink>" 
+# A string with e.g. "+<ch32fun> +<examples/blink>" 
 # rudimentary parsing is fine for CI
 src_filters = src_filter.split("+")
 example_folder = ""
