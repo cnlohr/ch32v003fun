@@ -223,13 +223,15 @@ WEAK size_t strnlen(const char *s, size_t n) { const char *p = memchr(s, 0, n); 
 WEAK void *memset(void *dest, int c, size_t n) { unsigned char *s = dest; for (; n; n--, s++) *s = c; return dest; }
 WEAK char *strcpy(char *d, const char *s)
 {
+	char *d0=d;
 	for (; (*d=*s); s++, d++);
-	return d;
+	return d0;
 }
 WEAK char *strncpy(char *d, const char *s, size_t n)
 {
+	char *d0=d;
 	for (; n && (*d=*s); n--, s++, d++);
-	return d;
+	return d0;
 }
 WEAK int strcmp(const char *l, const char *r)
 {

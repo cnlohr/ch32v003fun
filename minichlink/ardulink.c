@@ -103,15 +103,18 @@ int ArdulinkSetupInterface( void * dev )
 	// Let the bootloader do its thing.
 	MCF.DelayUS(dev, 3UL*1000UL*1000UL);
 
+	serial_dev_write(&((ardulink_ctx_t*)dev)->serial, "?", 1);
+
 	if (serial_dev_read(&((ardulink_ctx_t*)dev)->serial, &first, 1) == -1) {
 		perror("read");
 		return -1;
 	}
 
-	if (first != '!') {
+	if (first != '!' && first != '+') {
 		fprintf(stderr, "Ardulink: not the sync character.\n");
 		return -1;
 	}
+	serial_dev_flush_rx(&((ardulink_ctx_t*)dev)->serial);
 
 	return 0;
 }
