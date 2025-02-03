@@ -1,5 +1,5 @@
 #include "hsusb_v30x.h"
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <string.h>
 
 #define UEP_CTRL_H(n) (((uint16_t*)&USBHSD->UEP0_TX_CTRL)[n*2])

@@ -8,7 +8,7 @@
 //#define SSD1306_128X32
 #define SSD1306_128X64
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 #include "ssd1306_spi.h"
 #include "ssd1306.h"

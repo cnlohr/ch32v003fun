@@ -4,7 +4,7 @@
 //
 // For it to produce interesting output, you can wire PD2 to PD3.
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 
 uint32_t count;

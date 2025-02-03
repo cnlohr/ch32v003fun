@@ -1,6 +1,6 @@
 // NOTE: CONNECT WS2812's to PC6
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 #include <string.h>
 

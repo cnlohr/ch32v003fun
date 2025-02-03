@@ -79,7 +79,7 @@ See [platform-ch32v](https://github.com/Community-PIO-CH32V/platform-ch32v) for 
 
 ## clangd
 
-If the C/C++ language server clangd is unable to find `ch32v003fun.h`, the example will have to be wiped `make clean` and built once with `bear -- make build`, which will generate a `compile_commands.json`, which clangd uses to find the include paths specified in the makefiles.  
+If the C/C++ language server clangd is unable to find `ch32fun.h`, the example will have to be wiped `make clean` and built once with `bear -- make build`, which will generate a `compile_commands.json`, which clangd uses to find the include paths specified in the makefiles.  
 `make clangd` does this in one step.
 `build_all_clangd.sh` does in `build scripts` does this for all examples.
 

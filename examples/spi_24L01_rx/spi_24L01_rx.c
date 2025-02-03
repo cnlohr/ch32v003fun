@@ -3,7 +3,7 @@
  * 04-26-2023 recallmenot 
  */
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 #include "nrf24l01.h"
 
