@@ -18,7 +18,7 @@ else
 	endif
 	ifeq ($(OS_NAME),darwin)
 		LDFLAGS:=-lpthread -lusb-1.0 -framework CoreFoundation -framework IOKit
-		CFLAGS:=-O0 -Wall -Wno-asm-operand-widths -Wno-deprecated-declarations -Wno-deprecated-non-prototype -D__MACOSX__ -DCH32V003 -I.
+		CFLAGS:=-O0 -Wall -Wno-asm-operand-widths -Wno-deprecated-declarations -Wno-deprecated-non-prototype -D__MACOSX__ -DMINICHLINK -DCH32V003 -I.
 		INCLUDES:=$(shell pkg-config --cflags-only-I libusb-1.0)
 		LIBINCLUDES:=$(shell pkg-config --libs-only-L libusb-1.0)
 		INCS:=$(INCLUDES) $(LIBINCLUDES)
