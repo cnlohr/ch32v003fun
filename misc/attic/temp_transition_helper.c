@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-const char * yes[] = { "CH32V003" };
+const char * yes[] = { "CH32X03x" };
 const char * no[] = { "CH32V10x", "CH32V30x",  "CH32V20x", "CH32X03x", "CH32V003" };
 
 char * WhitePull( const char ** sti )
