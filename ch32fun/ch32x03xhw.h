@@ -18,6 +18,46 @@ typedef enum IRQn
     SysTicK_IRQn = 12,       /* 12 System timer Interrupt                            */
     Software_IRQn = 14,      /* 14 software Interrupt                                */
 
+    /******  RISC-V specific Interrupt Numbers *********************************************************/
+    WWDG_IRQn = 16,          /* Window WatchDog Interrupt                            */
+    PVD_IRQn = 17,           /* PVD through EXTI Line detection Interrupt            */
+    FLASH_IRQn = 18,         /* FLASH global Interrupt                               */
+    RCC_IRQn = 19,           /* RCC global Interrupt                                 */
+    EXTI7_0_IRQn = 20,       /* External Line[7:0] Interrupts                        */
+    AWU_IRQn = 21,           /* AWU global Interrupt                                 */
+    DMA1_Channel1_IRQn = 22, /* DMA1 Channel 1 global Interrupt                      */
+    DMA1_Channel2_IRQn = 23, /* DMA1 Channel 2 global Interrupt                      */
+    DMA1_Channel3_IRQn = 24, /* DMA1 Channel 3 global Interrupt                      */
+    DMA1_Channel4_IRQn = 25, /* DMA1 Channel 4 global Interrupt                      */
+    DMA1_Channel5_IRQn = 26, /* DMA1 Channel 5 global Interrupt                      */
+    DMA1_Channel6_IRQn = 27, /* DMA1 Channel 6 global Interrupt                      */
+    DMA1_Channel7_IRQn = 28, /* DMA1 Channel 7 global Interrupt                      */
+    ADC_IRQn = 29,           /* ADC global Interrupt                                 */
+    I2C1_EV_IRQn = 30,       /* I2C1 Event Interrupt                                 */
+    I2C1_ER_IRQn = 31,       /* I2C1 Error Interrupt                                 */
+    USART1_IRQn = 32,        /* USART1 global Interrupt                              */
+    SPI1_IRQn = 33,          /* SPI1 global Interrupt                                */
+    TIM1_BRK_IRQn = 34,      /* TIM1 Break Interrupt                                 */
+    TIM1_UP_IRQn = 35,       /* TIM1 Update Interrupt                                */
+    TIM1_TRG_COM_IRQn = 36,  /* TIM1 Trigger and Commutation Interrupt               */
+    TIM1_CC_IRQn = 37,       /* TIM1 Capture Compare Interrupt                       */
+    TIM2_IRQn = 38,          /* TIM2 global Interrupt                                */
+	USART2_IRQn = 39,          /* UART2 Interrupt                          */
+	EXTI15_8_IRQn = 40,        /* External Line[8:15] Interrupt            */
+	EXTI25_16_IRQn = 41,       /* External Line[25:16] Interrupt           */
+	USART3_IRQn = 42,          /* UART2 Interrupt                          */
+	USART4_IRQn = 43,          /* UART2 Interrupt                          */
+	DMA1_Channel8_IRQn = 44,   /* DMA1 Channel 8 global Interrupt          */
+	USBFS_IRQn = 45,           /* USB Full-Speed Interrupt                 */
+	USBFS_WakeUp_IRQn = 46,    /* USB Full-Speed Wake-Up Interrupt         */
+	PIOC_IRQn = 47,            /* Programmable IO Controller Interrupt     */
+	OPA_IRQn = 48,             /* Op Amp Interrupt                         */
+	USBPD_IRQn = 49,           /* USB Power Delivery Interrupt             */
+	USBPD_WKUP_IRQn = 50,      /* USB Power Delivery Wake-Up Interrupt     */
+	TIM2_CC_IRQn = 51,         /* Timer 2 Compare Global Interrupt         */
+	TIM2_TRG_IRQn = 52,        /* Timer 2 Trigger Global Interrupt         */
+	TIM2_BRK_IRQn = 53,        /* Timer 2 Brk Global Interrupt             */
+	TIM3_IRQn = 54,            /* Timer 3 Global Interrupt                 */
 
 
 } IRQn_Type;
@@ -4648,6 +4688,359 @@ typedef enum
 #define USART_FLAG_PE                        ((uint16_t)0x0001)
 
 // While not truly CH32X035, we can re-use some of the USB register defs.
+/* ch32v10x_usb.h ------------------------------------------------------------*/
+
+#ifndef NULL
+  #define NULL    0
+#endif
+
+#ifndef VOID
+  #define VOID    void
+#endif
+#ifndef CONST
+  #define CONST    const
+#endif
+#ifndef BOOL
+typedef unsigned char BOOL;
+#endif
+#ifndef BOOLEAN
+typedef unsigned char BOOLEAN;
+#endif
+#ifndef CHAR
+typedef char CHAR;
+#endif
+#ifndef INT8
+typedef char INT8;
+#endif
+#ifndef INT16
+typedef short INT16;
+#endif
+#ifndef INT32
+typedef long INT32;
+#endif
+#ifndef UINT8
+typedef unsigned char UINT8;
+#endif
+#ifndef UINT16
+typedef unsigned short UINT16;
+#endif
+#ifndef UINT32
+typedef unsigned long UINT32;
+#endif
+#ifndef UINT8V
+typedef unsigned char volatile UINT8V;
+#endif
+#ifndef UINT16V
+typedef unsigned short volatile UINT16V;
+#endif
+#ifndef UINT32V
+typedef unsigned long volatile UINT32V;
+#endif
+
+#ifndef PVOID
+typedef void *PVOID;
+#endif
+#ifndef PCHAR
+typedef char *PCHAR;
+#endif
+#ifndef PCHAR
+typedef const char *PCCHAR;
+#endif
+#ifndef PINT8
+typedef char *PINT8;
+#endif
+#ifndef PINT16
+typedef short *PINT16;
+#endif
+#ifndef PINT32
+typedef long *PINT32;
+#endif
+#ifndef PUINT8
+typedef unsigned char *PUINT8;
+#endif
+#ifndef PUINT16
+typedef unsigned short *PUINT16;
+#endif
+#ifndef PUINT32
+typedef unsigned long *PUINT32;
+#endif
+#ifndef PUINT8V
+typedef volatile unsigned char *PUINT8V;
+#endif
+#ifndef PUINT16V
+typedef volatile unsigned short *PUINT16V;
+#endif
+#ifndef PUINT32V
+typedef volatile unsigned long *PUINT32V;
+#endif
+
+/******************************************************************************/
+/*                         Peripheral memory map                              */
+/******************************************************************************/
+/*       USB  */
+#define R32_USB_CONTROL      (*((PUINT32V)(0x40023400))) // USB control & interrupt enable & device address
+#define R8_USB_CTRL          (*((PUINT8V)(0x40023400)))  // USB base control
+#define RB_UC_HOST_MODE      0x80                        // enable USB host mode: 0=device mode, 1=host mode
+#define RB_UC_LOW_SPEED      0x40                        // enable USB low speed: 0=12Mbps, 1=1.5Mbps
+#define RB_UC_DEV_PU_EN      0x20                        // USB device enable and internal pullup resistance enable
+#define RB_UC_SYS_CTRL1      0x20                        // USB system control high bit
+#define RB_UC_SYS_CTRL0      0x10                        // USB system control low bit
+#define MASK_UC_SYS_CTRL     0x30                        // bit mask of USB system control
+// bUC_HOST_MODE & bUC_SYS_CTRL1 & bUC_SYS_CTRL0: USB system control
+//   0 00: disable USB device and disable internal pullup resistance
+//   0 01: enable USB device and disable internal pullup resistance, need external pullup resistance
+//   0 1x: enable USB device and enable internal pullup resistance
+//   1 00: enable USB host and normal status
+//   1 01: enable USB host and force UDP/UDM output SE0 state
+//   1 10: enable USB host and force UDP/UDM output J state
+//   1 11: enable USB host and force UDP/UDM output resume or K state
+#define RB_UC_INT_BUSY       0x08           // enable automatic responding busy for device mode or automatic pause for host mode during interrupt flag UIF_TRANSFER valid
+#define RB_UC_RESET_SIE      0x04           // force reset USB SIE, need software clear
+#define RB_UC_CLR_ALL        0x02           // force clear FIFO and count of USB
+#define RB_UC_DMA_EN         0x01           // DMA enable and DMA interrupt enable for USB
+
+#define R8_UDEV_CTRL         (*((PUINT8V)(0x40023401))) // USB device physical prot control
+#define RB_UD_PD_DIS         0x80                       // disable USB UDP/UDM pulldown resistance: 0=enable pulldown, 1=disable
+#define RB_UD_DP_PIN         0x20                       // ReadOnly: indicate current UDP pin level
+#define RB_UD_DM_PIN         0x10                       // ReadOnly: indicate current UDM pin level
+#define RB_UD_LOW_SPEED      0x04                       // enable USB physical port low speed: 0=full speed, 1=low speed
+#define RB_UD_GP_BIT         0x02                       // general purpose bit
+#define RB_UD_PORT_EN        0x01                       // enable USB physical port I/O: 0=disable, 1=enable
+
+#define R8_UHOST_CTRL        R8_UDEV_CTRL   // USB host physical prot control
+#define RB_UH_PD_DIS         0x80           // disable USB UDP/UDM pulldown resistance: 0=enable pulldown, 1=disable
+#define RB_UH_DP_PIN         0x20           // ReadOnly: indicate current UDP pin level
+#define RB_UH_DM_PIN         0x10           // ReadOnly: indicate current UDM pin level
+#define RB_UH_LOW_SPEED      0x04           // enable USB port low speed: 0=full speed, 1=low speed
+#define RB_UH_BUS_RESET      0x02           // control USB bus reset: 0=normal, 1=force bus reset
+#define RB_UH_PORT_EN        0x01           // enable USB port: 0=disable, 1=enable port, automatic disabled if USB device detached
+
+#define R8_USB_INT_EN        (*((PUINT8V)(0x40023402))) // USB interrupt enable
+#define RB_UIE_DEV_SOF       0x80                       // enable interrupt for SOF received for USB device mode
+#define RB_UIE_DEV_NAK       0x40                       // enable interrupt for NAK responded for USB device mode
+#define RB_UIE_FIFO_OV       0x10                       // enable interrupt for FIFO overflow
+#define RB_UIE_HST_SOF       0x08                       // enable interrupt for host SOF timer action for USB host mode
+#define RB_UIE_SUSPEND       0x04                       // enable interrupt for USB suspend or resume event
+#define RB_UIE_TRANSFER      0x02                       // enable interrupt for USB transfer completion
+#define RB_UIE_DETECT        0x01                       // enable interrupt for USB device detected event for USB host mode
+#define RB_UIE_BUS_RST       0x01                       // enable interrupt for USB bus reset event for USB device mode
+
+#define R8_USB_DEV_AD        (*((PUINT8V)(0x40023403))) // USB device address
+#define RB_UDA_GP_BIT        0x80                       // general purpose bit
+#define MASK_USB_ADDR        0x7F                       // bit mask for USB device address
+
+#define R32_USB_STATUS       (*((PUINT32V)(0x40023404))) // USB miscellaneous status & interrupt flag & interrupt status
+#define R8_USB_MIS_ST        (*((PUINT8V)(0x40023405)))  // USB miscellaneous status
+#define RB_UMS_SOF_PRES      0x80                        // RO, indicate host SOF timer presage status
+#define RB_UMS_SOF_ACT       0x40                        // RO, indicate host SOF timer action status for USB host
+#define RB_UMS_SIE_FREE      0x20                        // RO, indicate USB SIE free status
+#define RB_UMS_R_FIFO_RDY    0x10                        // RO, indicate USB receiving FIFO ready status (not empty)
+#define RB_UMS_BUS_RESET     0x08                        // RO, indicate USB bus reset status
+#define RB_UMS_SUSPEND       0x04                        // RO, indicate USB suspend status
+#define RB_UMS_DM_LEVEL      0x02                        // RO, indicate UDM level saved at device attached to USB host
+#define RB_UMS_DEV_ATTACH    0x01                        // RO, indicate device attached status on USB host
+
+#define R8_USB_INT_FG        (*((PUINT8V)(0x40023406))) // USB interrupt flag
+#define RB_U_IS_NAK          0x80                       // RO, indicate current USB transfer is NAK received
+#define RB_U_TOG_OK          0x40                       // RO, indicate current USB transfer toggle is OK
+#define RB_U_SIE_FREE        0x20                       // RO, indicate USB SIE free status
+#define RB_UIF_FIFO_OV       0x10                       // FIFO overflow interrupt flag for USB, direct bit address clear or write 1 to clear
+#define RB_UIF_HST_SOF       0x08                       // host SOF timer interrupt flag for USB host, direct bit address clear or write 1 to clear
+#define RB_UIF_SUSPEND       0x04                       // USB suspend or resume event interrupt flag, direct bit address clear or write 1 to clear
+#define RB_UIF_TRANSFER      0x02                       // USB transfer completion interrupt flag, direct bit address clear or write 1 to clear
+#define RB_UIF_DETECT        0x01                       // device detected event interrupt flag for USB host mode, direct bit address clear or write 1 to clear
+#define RB_UIF_BUS_RST       0x01                       // bus reset event interrupt flag for USB device mode, direct bit address clear or write 1 to clear
+
+#define R8_USB_INT_ST        (*((PUINT8V)(0x40023407))) // USB interrupt status
+#define RB_UIS_IS_NAK        0x80                       // RO, indicate current USB transfer is NAK received for USB device mode
+#define RB_UIS_TOG_OK        0x40                       // RO, indicate current USB transfer toggle is OK
+#define RB_UIS_TOKEN1        0x20                       // RO, current token PID code bit 1 received for USB device mode
+#define RB_UIS_TOKEN0        0x10                       // RO, current token PID code bit 0 received for USB device mode
+#define MASK_UIS_TOKEN       0x30                       // RO, bit mask of current token PID code received for USB device mode
+#define UIS_TOKEN_OUT        0x00
+#define UIS_TOKEN_SOF        0x10
+#define UIS_TOKEN_IN         0x20
+#define UIS_TOKEN_SETUP      0x30
+// bUIS_TOKEN1 & bUIS_TOKEN0: current token PID code received for USB device mode
+//   00: OUT token PID received
+//   01: SOF token PID received
+//   10: IN token PID received
+//   11: SETUP token PID received
+#define MASK_UIS_ENDP        0x0F           // RO, bit mask of current transfer endpoint number for USB device mode
+#define MASK_UIS_H_RES       0x0F           // RO, bit mask of current transfer handshake response for USB host mode: 0000=no response, time out from device, others=handshake response PID received
+
+#define R16_USB_RX_LEN       (*((PUINT16V)(0x40023408))) // USB receiving length
+#define MASK_UIS_RX_LEN      0x3FF                       // RO, bit mask of current receive length(10 bits for ch32v10x)
+#define R32_USB_BUF_MODE     (*((PUINT32V)(0x4002340c))) // USB endpoint buffer mode
+#define R8_UEP4_1_MOD        (*((PUINT8V)(0x4002340c)))  // endpoint 4/1 mode
+#define RB_UEP1_RX_EN        0x80                        // enable USB endpoint 1 receiving (OUT)
+#define RB_UEP1_TX_EN        0x40                        // enable USB endpoint 1 transmittal (IN)
+#define RB_UEP1_BUF_MOD      0x10                        // buffer mode of USB endpoint 1
+// bUEPn_RX_EN & bUEPn_TX_EN & bUEPn_BUF_MOD: USB endpoint 1/2/3 buffer mode, buffer start address is UEPn_DMA
+//   0 0 x:  disable endpoint and disable buffer
+//   1 0 0:  64 bytes buffer for receiving (OUT endpoint)
+//   1 0 1:  dual 64 bytes buffer by toggle bit bUEP_R_TOG selection for receiving (OUT endpoint), total=128bytes
+//   0 1 0:  64 bytes buffer for transmittal (IN endpoint)
+//   0 1 1:  dual 64 bytes buffer by toggle bit bUEP_T_TOG selection for transmittal (IN endpoint), total=128bytes
+//   1 1 0:  64 bytes buffer for receiving (OUT endpoint) + 64 bytes buffer for transmittal (IN endpoint), total=128bytes
+//   1 1 1:  dual 64 bytes buffer by bUEP_R_TOG selection for receiving (OUT endpoint) + dual 64 bytes buffer by bUEP_T_TOG selection for transmittal (IN endpoint), total=256bytes
+#define RB_UEP4_RX_EN        0x08           // enable USB endpoint 4 receiving (OUT)
+#define RB_UEP4_TX_EN        0x04           // enable USB endpoint 4 transmittal (IN)
+// bUEP4_RX_EN & bUEP4_TX_EN: USB endpoint 4 buffer mode, buffer start address is UEP0_DMA
+//   0 0:  single 64 bytes buffer for endpoint 0 receiving & transmittal (OUT & IN endpoint)
+//   1 0:  single 64 bytes buffer for endpoint 0 receiving & transmittal (OUT & IN endpoint) + 64 bytes buffer for endpoint 4 receiving (OUT endpoint), total=128bytes
+//   0 1:  single 64 bytes buffer for endpoint 0 receiving & transmittal (OUT & IN endpoint) + 64 bytes buffer for endpoint 4 transmittal (IN endpoint), total=128bytes
+//   1 1:  single 64 bytes buffer for endpoint 0 receiving & transmittal (OUT & IN endpoint)
+//           + 64 bytes buffer for endpoint 4 receiving (OUT endpoint) + 64 bytes buffer for endpoint 4 transmittal (IN endpoint), total=192bytes
+
+#define R8_UEP2_3_MOD        (*((PUINT8V)(0x4002340d))) // endpoint 2/3 mode
+#define RB_UEP3_RX_EN        0x80                       // enable USB endpoint 3 receiving (OUT)
+#define RB_UEP3_TX_EN        0x40                       // enable USB endpoint 3 transmittal (IN)
+#define RB_UEP3_BUF_MOD      0x10                       // buffer mode of USB endpoint 3
+#define RB_UEP2_RX_EN        0x08                       // enable USB endpoint 2 receiving (OUT)
+#define RB_UEP2_TX_EN        0x04                       // enable USB endpoint 2 transmittal (IN)
+#define RB_UEP2_BUF_MOD      0x01                       // buffer mode of USB endpoint 2
+
+#define R8_UH_EP_MOD         R8_UEP2_3_MOD  //host endpoint mode
+#define RB_UH_EP_TX_EN       0x40           // enable USB host OUT endpoint transmittal
+#define RB_UH_EP_TBUF_MOD    0x10           // buffer mode of USB host OUT endpoint
+// bUH_EP_TX_EN & bUH_EP_TBUF_MOD: USB host OUT endpoint buffer mode, buffer start address is UH_TX_DMA
+//   0 x:  disable endpoint and disable buffer
+//   1 0:  64 bytes buffer for transmittal (OUT endpoint)
+//   1 1:  dual 64 bytes buffer by toggle bit bUH_T_TOG selection for transmittal (OUT endpoint), total=128bytes
+#define RB_UH_EP_RX_EN       0x08           // enable USB host IN endpoint receiving
+#define RB_UH_EP_RBUF_MOD    0x01           // buffer mode of USB host IN endpoint
+// bUH_EP_RX_EN & bUH_EP_RBUF_MOD: USB host IN endpoint buffer mode, buffer start address is UH_RX_DMA
+//   0 x:  disable endpoint and disable buffer
+//   1 0:  64 bytes buffer for receiving (IN endpoint)
+//   1 1:  dual 64 bytes buffer by toggle bit bUH_R_TOG selection for receiving (IN endpoint), total=128bytes
+
+#define R8_UEP5_6_MOD        (*((PUINT8V)(0x4002340e))) // endpoint 5/6 mode
+#define RB_UEP6_RX_EN        0x80                       // enable USB endpoint 6 receiving (OUT)
+#define RB_UEP6_TX_EN        0x40                       // enable USB endpoint 6 transmittal (IN)
+#define RB_UEP6_BUF_MOD      0x10                       // buffer mode of USB endpoint 6
+#define RB_UEP5_RX_EN        0x08                       // enable USB endpoint 5 receiving (OUT)
+#define RB_UEP5_TX_EN        0x04                       // enable USB endpoint 5 transmittal (IN)
+#define RB_UEP5_BUF_MOD      0x01                       // buffer mode of USB endpoint 5
+
+#define R8_UEP7_MOD          (*((PUINT8V)(0x4002340f))) // endpoint 7 mode
+#define RB_UEP7_RX_EN        0x08                       // enable USB endpoint 7 receiving (OUT)
+#define RB_UEP7_TX_EN        0x04                       // enable USB endpoint 7 transmittal (IN)
+#define RB_UEP7_BUF_MOD      0x01                       // buffer mode of USB endpoint 7
+
+#define R16_UEP0_DMA         (*((PUINT16V)(0x40023410))) // endpoint 0 DMA buffer address
+#define R16_UEP1_DMA         (*((PUINT16V)(0x40023414))) // endpoint 1 DMA buffer address
+#define R16_UEP2_DMA         (*((PUINT16V)(0x40023418))) // endpoint 2 DMA buffer address
+#define R16_UH_RX_DMA        R16_UEP2_DMA                // host rx endpoint buffer high address
+#define R16_UEP3_DMA         (*((PUINT16V)(0x4002341c))) // endpoint 3 DMA buffer address
+
+#define R16_UEP4_DMA         (*((PUINT16V)(0x40023420))) // endpoint 4 DMA buffer address
+#define R16_UEP5_DMA         (*((PUINT16V)(0x40023424))) // endpoint 5 DMA buffer address
+#define R16_UEP6_DMA         (*((PUINT16V)(0x40023428))) // endpoint 6 DMA buffer address
+#define R16_UEP7_DMA         (*((PUINT16V)(0x4002342c))) // endpoint 7 DMA buffer address
+
+#define R16_UH_TX_DMA        R16_UEP3_DMA                // host tx endpoint buffer high address
+#define R32_USB_EP0_CTRL     (*((PUINT32V)(0x40023430))) // endpoint 0 control & transmittal length
+#define R8_UEP0_T_LEN        (*((PUINT8V)(0x40023430)))  // endpoint 0 transmittal length
+#define R8_UEP0_CTRL         (*((PUINT8V)(0x40023432)))  // endpoint 0 control
+#define R32_USB_EP1_CTRL     (*((PUINT32V)(0x40023434))) // endpoint 1 control & transmittal length
+#define R16_UEP1_T_LEN       (*((PUINT16V)(0x40023434))) // endpoint 1 transmittal length(16-bits for ch32v10x)
+#define R8_UEP1_CTRL         (*((PUINT8V)(0x40023436)))  // endpoint 1 control
+#define RB_UEP_R_TOG         0x80                        // expected data toggle flag of USB endpoint X receiving (OUT): 0=DATA0, 1=DATA1
+#define RB_UEP_T_TOG         0x40                        // prepared data toggle flag of USB endpoint X transmittal (IN): 0=DATA0, 1=DATA1
+#define RB_UEP_AUTO_TOG      0x10                        // enable automatic toggle after successful transfer completion on endpoint 1/2/3: 0=manual toggle, 1=automatic toggle
+#define RB_UEP_R_RES1        0x08                        // handshake response type high bit for USB endpoint X receiving (OUT)
+#define RB_UEP_R_RES0        0x04                        // handshake response type low bit for USB endpoint X receiving (OUT)
+#define MASK_UEP_R_RES       0x0C                        // bit mask of handshake response type for USB endpoint X receiving (OUT)
+#define UEP_R_RES_ACK        0x00
+#define UEP_R_RES_TOUT       0x04
+#define UEP_R_RES_NAK        0x08
+#define UEP_R_RES_STALL      0x0C
+// RB_UEP_R_RES1 & RB_UEP_R_RES0: handshake response type for USB endpoint X receiving (OUT)
+//   00: ACK (ready)
+//   01: no response, time out to host, for non-zero endpoint isochronous transactions
+//   10: NAK (busy)
+//   11: STALL (error)
+#define RB_UEP_T_RES1        0x02           // handshake response type high bit for USB endpoint X transmittal (IN)
+#define RB_UEP_T_RES0        0x01           // handshake response type low bit for USB endpoint X transmittal (IN)
+#define MASK_UEP_T_RES       0x03           // bit mask of handshake response type for USB endpoint X transmittal (IN)
+#define UEP_T_RES_ACK        0x00
+#define UEP_T_RES_TOUT       0x01
+#define UEP_T_RES_NAK        0x02
+#define UEP_T_RES_STALL      0x03
+// bUEP_T_RES1 & bUEP_T_RES0: handshake response type for USB endpoint X transmittal (IN)
+//   00: DATA0 or DATA1 then expecting ACK (ready)
+//   01: DATA0 or DATA1 then expecting no response, time out from host, for non-zero endpoint isochronous transactions
+//   10: NAK (busy)
+//   11: STALL (error)
+
+#define R8_UH_SETUP          R8_UEP1_CTRL   // host aux setup
+#define RB_UH_PRE_PID_EN     0x80           // USB host PRE PID enable for low speed device via hub
+#define RB_UH_SOF_EN         0x40           // USB host automatic SOF enable
+
+#define R32_USB_EP2_CTRL     (*((PUINT32V)(0x40023438))) // endpoint 2 control & transmittal length
+#define R16_UEP2_T_LEN       (*((PUINT16V)(0x40023438))) // endpoint 2 transmittal length(16-bits for ch32v10x)
+#define R8_UEP2_CTRL         (*((PUINT8V)(0x4002343a)))  // endpoint 2 control
+
+#define R8_UH_EP_PID         (*((PUINT8V)(0x40023438)))  // host endpoint and PID
+#define MASK_UH_TOKEN        0xF0           // bit mask of token PID for USB host transfer
+#define MASK_UH_ENDP         0x0F           // bit mask of endpoint number for USB host transfer
+
+#define R8_UH_RX_CTRL        R8_UEP2_CTRL   // host receiver endpoint control
+#define RB_UH_R_TOG          0x80           // expected data toggle flag of host receiving (IN): 0=DATA0, 1=DATA1
+#define RB_UH_R_AUTO_TOG     0x10           // enable automatic toggle after successful transfer completion: 0=manual toggle, 1=automatic toggle
+#define RB_UH_R_RES          0x04           // prepared handshake response type for host receiving (IN): 0=ACK (ready), 1=no response, time out to device, for isochronous transactions
+
+#define R32_USB_EP3_CTRL     (*((PUINT32V)(0x4002343c))) // endpoint 3 control & transmittal length
+#define R16_UEP3_T_LEN       (*((PUINT16V)(0x4002343c))) // endpoint 3 transmittal length(16-bits for ch32v10x)
+#define R8_UEP3_CTRL         (*((PUINT8V)(0x4002343e)))  // endpoint 3 control
+#define R8_UH_TX_LEN         (*((PUINT16V)(0x4002343c))) //R8_UEP3_T_LEN				// host transmittal endpoint transmittal length
+
+#define R8_UH_TX_CTRL        R8_UEP3_CTRL   // host transmittal endpoint control
+#define RB_UH_T_TOG          0x40           // prepared data toggle flag of host transmittal (SETUP/OUT): 0=DATA0, 1=DATA1
+#define RB_UH_T_AUTO_TOG     0x10           // enable automatic toggle after successful transfer completion: 0=manual toggle, 1=automatic toggle
+#define RB_UH_T_RES          0x01           // expected handshake response type for host transmittal (SETUP/OUT): 0=ACK (ready), 1=no response, time out from device, for isochronous transactions
+
+#define R32_USB_EP4_CTRL     (*((PUINT32V)(0x40023440))) // endpoint 4 control & transmittal length
+#define R16_UEP4_T_LEN       (*((PUINT16V)(0x40023440))) // endpoint 4 transmittal length(16-bits for ch32v10x)
+#define R8_UEP4_CTRL         (*((PUINT8V)(0x40023442)))  // endpoint 4 control
+
+#define R32_USB_EP5_CTRL     (*((PUINT32V)(0x40023444))) // endpoint 5 control & transmittal length
+#define R16_UEP5_T_LEN       (*((PUINT16V)(0x40023444))) // endpoint 5 transmittal length(16-bits for ch32v10x)
+#define R8_UEP5_CTRL         (*((PUINT8V)(0x40023446)))  // endpoint 5 control
+
+#define R32_USB_EP6_CTRL     (*((PUINT32V)(0x40023448))) // endpoint 6 control & transmittal length
+#define R16_UEP6_T_LEN       (*((PUINT16V)(0x40023448))) // endpoint 6 transmittal length(16-bits for ch32v10x)
+#define R8_UEP6_CTRL         (*((PUINT8V)(0x4002344a)))  // endpoint 6 control
+
+#define R32_USB_EP7_CTRL     (*((PUINT32V)(0x4002344c))) // endpoint 7 control & transmittal length
+#define R16_UEP7_T_LEN       (*((PUINT16V)(0x4002344c))) // endpoint 7 transmittal length(16-bits for ch32v10x)
+#define R8_UEP7_CTRL         (*((PUINT8V)(0x4002344e)))  // endpoint 7 control
+
+/* ch32v10x_usb_host.h -----------------------------------------------------------*/
+
+#define ERR_SUCCESS            0x00
+#define ERR_USB_CONNECT        0x15
+#define ERR_USB_DISCON         0x16
+#define ERR_USB_BUF_OVER       0x17
+#define ERR_USB_DISK_ERR       0x1F
+#define ERR_USB_TRANSFER       0x20
+#define ERR_USB_UNSUPPORT      0xFB
+#define ERR_USB_UNKNOWN        0xFE
+#define ERR_AOA_PROTOCOL       0x41
+
+#define ROOT_DEV_DISCONNECT    0
+#define ROOT_DEV_CONNECTED     1
+#define ROOT_DEV_FAILED        2
+#define ROOT_DEV_SUCCESS       3
+#define DEV_TYPE_KEYBOARD      (USB_DEV_CLASS_HID | 0x20)
+#define DEV_TYPE_MOUSE         (USB_DEV_CLASS_HID | 0x30)
+#define DEF_AOA_DEVICE         0xF0
+#define DEV_TYPE_UNKNOW        0xFF
+
+#define HUB_MAX_PORTS          4
+#define WAIT_USB_TOUT_200US    3000
+
 
 /* ch32v30x_usb.h ------------------------------------------------------------*/
 
@@ -4791,4 +5184,40 @@ typedef struct{
 #define PD14 62
 #define PD15 63
 
-#endif // TODO_HARDWARE_H
+/*
+ * This file contains various parts of the official WCH EVT Headers which
+ * were originally under a restrictive license.
+ * 
+ * The collection of this file was generated by 
+ * cnlohr, 2023-02-18 and
+ * AlexanderMandera, 2023-06-23
+ * It was significantly reworked into several files cnlohr, 2025-01-29
+ *
+ * While originally under a restrictive copyright, WCH has approved use
+ * under MIT-licensed use, because of inclusion in Zephyr, as well as other
+ * open-source licensed projects.
+ *
+ * These copies of the headers from WCH are available now under:
+ *
+ * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the “Software”), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * IN THE SOFTWARE.
+ */
+
+#endif // Header guard
