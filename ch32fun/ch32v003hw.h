@@ -4563,10 +4563,11 @@ typedef struct
 
 
 // For debug writing to the debug interface.
+#ifndef MINICHLINK
 	#define DMDATA0 ((volatile uint32_t*)0xe00000f4)
 	#define DMDATA1 ((volatile uint32_t*)0xe00000f8)
 	#define DMSTATUS_SENTINEL ((volatile uint32_t*)0xe00000fc) // Reads as 0x00000000 if debugger is attached.
-
+#endif
 // Determination of PLL multiplication factor for non-V003 chips
 
 
