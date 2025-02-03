@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-const char * yes[] = { "CH32X03x" };
+const char * yes[] = { "CH32V003" };
 const char * no[] = { "CH32V10x", "CH32V30x",  "CH32V20x", "CH32X03x", "CH32V003" };
 
 char * WhitePull( const char ** sti )
@@ -56,7 +56,9 @@ cont:
 	if( def == 2 ) i = !i;
 
 	if( lasto == 1 )
+	{
 		ret = lastv || i;
+	}
 	else if( lasto == 2 )
 		ret = lastv && i;
 	else
@@ -120,7 +122,7 @@ const char * sslineis( const char * line, const char * match )
 
 int main()
 {
-	FILE * f = fopen( "hardware.c", "r" );
+	FILE * f = fopen( "../misc/attic/hardware_header_all_combined.h", "r" );
 	char line[1024];
 	char * l;
 

@@ -23,7 +23,7 @@ typedef enum IRQn
     SysTicK_IRQn = 12,       /* 12 System timer Interrupt                            */
     Software_IRQn = 14,      /* 14 software Interrupt                                */
 
-#if defined( CH32V003 ) || defined(CH32X03x)
+#if defined(CH32V003) || defined(CH32X03x)
     /******  RISC-V specific Interrupt Numbers *********************************************************/
     WWDG_IRQn = 16,          /* Window WatchDog Interrupt                            */
     PVD_IRQn = 17,           /* PVD through EXTI Line detection Interrupt            */
@@ -946,7 +946,7 @@ typedef struct
     uint16_t      RESERVED14;
     __IO uint16_t DMAADR;
     uint16_t      RESERVED15;
-#elif defined( CH32X03x )
+#elif defined(CH32X03x)
     __IO uint32_t CH1CVR;
     __IO uint32_t CH2CVR;
     __IO uint32_t CH3CVR;
@@ -11524,7 +11524,7 @@ typedef struct
 #define USART_FLAG_PE                        ((uint16_t)0x0001)
 
 // While not truly CH32X035, we can re-use some of the USB register defs.
-#if defined(CH32V10x) | defined(CH32X03x)
+#if defined(CH32V10x) || defined(CH32X03x)
 /* ch32v10x_usb.h ------------------------------------------------------------*/
 
 #ifndef NULL
@@ -12824,7 +12824,7 @@ typedef struct{
 #define PD6 54
 #define PD7 55
 
-#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x) || defined( CH32X03x )
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x) || defined(CH32X03x)
 #define PA0 0
 #define PA3 3
 #define PA4 4
@@ -12871,6 +12871,6 @@ typedef struct{
 #define PD13 61
 #define PD14 62
 #define PD15 63
-#endif // defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x) || defined( CH32X03x )
+#endif // defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x) || defined(CH32X03x)
 
 #endif // TODO_HARDWARE_H

@@ -17,7 +17,7 @@
 #ifndef CH32V_HAL_H_
 #define CH32V_HAL_H_
 
-#include "ch32vfun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 #include <stdint.h>
 
