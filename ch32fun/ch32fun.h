@@ -1272,6 +1272,14 @@ void poll_input( void );
 void handle_debug_input( int numbytes, uint8_t * data );
 
 
+// Functions from ch32fun.c
+#include <stdarg.h>
+
+int mini_vsnprintf( char *buffer, unsigned int buffer_len, const char *fmt, va_list va );
+int mini_vpprintf( int (*puts)(char* s, int len, void* buf), void* buf, const char *fmt, va_list va );
+int mini_snprintf(char* buffer, unsigned int buffer_len, const char *fmt, ...);
+int mini_pprintf(int (*puts)(char*s, int len, void* buf), void* buf, const char *fmt, ...);
+
 #endif // __ASSEMBLER__
 
 
