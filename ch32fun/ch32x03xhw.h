@@ -1714,6 +1714,26 @@ typedef struct
 #define EXTI_INTENR_MR7                         ((uint32_t)0x00000080) /* Interrupt Mask on line 7 */
 #define EXTI_INTENR_MR8                         ((uint32_t)0x00000100) /* Interrupt Mask on line 8 */
 #define EXTI_INTENR_MR9                         ((uint32_t)0x00000200) /* Interrupt Mask on line 9 */
+#define EXTI_INTENR_MR10                        ((uint32_t)0x00000400) /* Interrupt Mask on line 10 */
+#define EXTI_INTENR_MR11                        ((uint32_t)0x00000800) /* Interrupt Mask on line 11 */
+#define EXTI_INTENR_MR12                        ((uint32_t)0x00001000) /* Interrupt Mask on line 12 */
+#define EXTI_INTENR_MR13                        ((uint32_t)0x00002000) /* Interrupt Mask on line 13 */
+#define EXTI_INTENR_MR14                        ((uint32_t)0x00004000) /* Interrupt Mask on line 14 */
+#define EXTI_INTENR_MR15                        ((uint32_t)0x00008000) /* Interrupt Mask on line 15 */
+#define EXTI_INTENR_MR16                        ((uint32_t)0x00010000) /* Interrupt Mask on line 16 */
+#define EXTI_INTENR_MR17                        ((uint32_t)0x00020000) /* Interrupt Mask on line 17 */
+#define EXTI_INTENR_MR18                        ((uint32_t)0x00040000) /* Interrupt Mask on line 18 */
+#define EXTI_INTENR_MR19                        ((uint32_t)0x00080000) /* Interrupt Mask on line 19 */
+#define EXTI_INTENR_MR20                        ((uint32_t)0x00100000) /* Interrupt Mask on line 20 */
+#define EXTI_INTENR_MR21                        ((uint32_t)0x00200000) /* Interrupt Mask on line 21 */
+#define EXTI_INTENR_MR22                        ((uint32_t)0x00400000) /* Interrupt Mask on line 22 */
+#define EXTI_INTENR_MR23                        ((uint32_t)0x00800000) /* Interrupt Mask on line 23 */
+#define EXTI_INTENR_MR24                        ((uint32_t)0x01000000) /* Interrupt Mask on line 24 */
+#define EXTI_INTENR_MR25                        ((uint32_t)0x02000000) /* Interrupt Mask on line 25 */
+#define EXTI_INTENR_MR26                        ((uint32_t)0x04000000) /* Interrupt Mask on line 26 */
+#define EXTI_INTENR_MR27                        ((uint32_t)0x08000000) /* Interrupt Mask on line 27 */
+#define EXTI_INTENR_MR28                        ((uint32_t)0x10000000) /* Interrupt Mask on line 28 */
+#define EXTI_INTENR_MR29                        ((uint32_t)0x20000000) /* Interrupt Mask on line 29 */
 
 /*******************  Bit definition for EXTI_EVENR register  *******************/
 #define EXTI_EVENR_MR0                          ((uint32_t)0x00000001) /* Event Mask on line 0 */
@@ -1726,6 +1746,26 @@ typedef struct
 #define EXTI_EVENR_MR7                          ((uint32_t)0x00000080) /* Event Mask on line 7 */
 #define EXTI_EVENR_MR8                          ((uint32_t)0x00000100) /* Event Mask on line 8 */
 #define EXTI_EVENR_MR9                          ((uint32_t)0x00000200) /* Event Mask on line 9 */
+#define EXTI_EVENR_MR10                         ((uint32_t)0x00000400) /* Event Mask on line 10 */
+#define EXTI_EVENR_MR11                         ((uint32_t)0x00000800) /* Event Mask on line 11 */
+#define EXTI_EVENR_MR12                         ((uint32_t)0x00001000) /* Event Mask on line 12 */
+#define EXTI_EVENR_MR13                         ((uint32_t)0x00002000) /* Event Mask on line 13 */
+#define EXTI_EVENR_MR14                         ((uint32_t)0x00004000) /* Event Mask on line 14 */
+#define EXTI_EVENR_MR15                         ((uint32_t)0x00008000) /* Event Mask on line 15 */
+#define EXTI_EVENR_MR16                         ((uint32_t)0x00010000) /* Event Mask on line 16 */
+#define EXTI_EVENR_MR17                         ((uint32_t)0x00020000) /* Event Mask on line 17 */
+#define EXTI_EVENR_MR18                         ((uint32_t)0x00040000) /* Event Mask on line 18 */
+#define EXTI_EVENR_MR19                         ((uint32_t)0x00080000) /* Event Mask on line 19 */
+#define EXTI_EVENR_MR20                         ((uint32_t)0x00100000) /* Event Mask on line 20 */
+#define EXTI_EVENR_MR21                         ((uint32_t)0x00200000) /* Event Mask on line 21 */
+#define EXTI_EVENR_MR22                         ((uint32_t)0x00400000) /* Event Mask on line 22 */
+#define EXTI_EVENR_MR23                         ((uint32_t)0x00800000) /* Event Mask on line 23 */
+#define EXTI_EVENR_MR24                         ((uint32_t)0x01000000) /* Event Mask on line 24 */
+#define EXTI_EVENR_MR25                         ((uint32_t)0x02000000) /* Event Mask on line 25 */
+#define EXTI_EVENR_MR26                         ((uint32_t)0x04000000) /* Event Mask on line 26 */
+#define EXTI_EVENR_MR27                         ((uint32_t)0x08000000) /* Event Mask on line 27 */
+#define EXTI_EVENR_MR28                         ((uint32_t)0x10000000) /* Event Mask on line 28 */
+#define EXTI_EVENR_MR29                         ((uint32_t)0x20000000) /* Event Mask on line 29 */
 
 /******************  Bit definition for EXTI_RTENR register  *******************/
 #define EXTI_RTENR_TR0                          ((uint32_t)0x00000001) /* Rising trigger event configuration bit of line 0 */
@@ -1738,6 +1778,26 @@ typedef struct
 #define EXTI_RTENR_TR7                          ((uint32_t)0x00000080) /* Rising trigger event configuration bit of line 7 */
 #define EXTI_RTENR_TR8                          ((uint32_t)0x00000100) /* Rising trigger event configuration bit of line 8 */
 #define EXTI_RTENR_TR9                          ((uint32_t)0x00000200) /* Rising trigger event configuration bit of line 9 */
+#define EXTI_RTENR_TR10                         ((uint32_t)0x00000400) /* Rising trigger event configuration bit of line 10 */
+#define EXTI_RTENR_TR11                         ((uint32_t)0x00000800) /* Rising trigger event configuration bit of line 11 */
+#define EXTI_RTENR_TR12                         ((uint32_t)0x00001000) /* Rising trigger event configuration bit of line 12 */
+#define EXTI_RTENR_TR13                         ((uint32_t)0x00002000) /* Rising trigger event configuration bit of line 13 */
+#define EXTI_RTENR_TR14                         ((uint32_t)0x00004000) /* Rising trigger event configuration bit of line 14 */
+#define EXTI_RTENR_TR15                         ((uint32_t)0x00008000) /* Rising trigger event configuration bit of line 15 */
+#define EXTI_RTENR_TR16                         ((uint32_t)0x00010000) /* Rising trigger event configuration bit of line 16 */
+#define EXTI_RTENR_TR17                         ((uint32_t)0x00020000) /* Rising trigger event configuration bit of line 17 */
+#define EXTI_RTENR_TR18                         ((uint32_t)0x00040000) /* Rising trigger event configuration bit of line 18 */
+#define EXTI_RTENR_TR19                         ((uint32_t)0x00080000) /* Rising trigger event configuration bit of line 19 */
+#define EXTI_RTENR_TR20                         ((uint32_t)0x00100000) /* Rising trigger event configuration bit of line 20 */
+#define EXTI_RTENR_TR21                         ((uint32_t)0x00200000) /* Rising trigger event configuration bit of line 21 */
+#define EXTI_RTENR_TR22                         ((uint32_t)0x00400000) /* Rising trigger event configuration bit of line 22 */
+#define EXTI_RTENR_TR23                         ((uint32_t)0x00800000) /* Rising trigger event configuration bit of line 23 */
+#define EXTI_RTENR_TR24                         ((uint32_t)0x01000000) /* Rising trigger event configuration bit of line 24 */
+#define EXTI_RTENR_TR25                         ((uint32_t)0x02000000) /* Rising trigger event configuration bit of line 25 */
+#define EXTI_RTENR_TR26                         ((uint32_t)0x04000000) /* Rising trigger event configuration bit of line 26 */
+#define EXTI_RTENR_TR27                         ((uint32_t)0x08000000) /* Rising trigger event configuration bit of line 27 */
+#define EXTI_RTENR_TR28                         ((uint32_t)0x10000000) /* Rising trigger event configuration bit of line 28 */
+#define EXTI_RTENR_TR29                         ((uint32_t)0x20000000) /* Rising trigger event configuration bit of line 29 */
 
 /******************  Bit definition for EXTI_FTENR register  *******************/
 #define EXTI_FTENR_TR0                          ((uint32_t)0x00000001) /* Falling trigger event configuration bit of line 0 */
@@ -1750,6 +1810,26 @@ typedef struct
 #define EXTI_FTENR_TR7                          ((uint32_t)0x00000080) /* Falling trigger event configuration bit of line 7 */
 #define EXTI_FTENR_TR8                          ((uint32_t)0x00000100) /* Falling trigger event configuration bit of line 8 */
 #define EXTI_FTENR_TR9                          ((uint32_t)0x00000200) /* Falling trigger event configuration bit of line 9 */
+#define EXTI_FTENR_TR10                         ((uint32_t)0x00000400) /* Falling trigger event configuration bit of line 10 */
+#define EXTI_FTENR_TR11                         ((uint32_t)0x00000800) /* Falling trigger event configuration bit of line 11 */
+#define EXTI_FTENR_TR12                         ((uint32_t)0x00001000) /* Falling trigger event configuration bit of line 12 */
+#define EXTI_FTENR_TR13                         ((uint32_t)0x00002000) /* Falling trigger event configuration bit of line 13 */
+#define EXTI_FTENR_TR14                         ((uint32_t)0x00004000) /* Falling trigger event configuration bit of line 14 */
+#define EXTI_FTENR_TR15                         ((uint32_t)0x00008000) /* Falling trigger event configuration bit of line 15 */
+#define EXTI_FTENR_TR16                         ((uint32_t)0x00010000) /* Falling trigger event configuration bit of line 16 */
+#define EXTI_FTENR_TR17                         ((uint32_t)0x00020000) /* Falling trigger event configuration bit of line 17 */
+#define EXTI_FTENR_TR18                         ((uint32_t)0x00040000) /* Falling trigger event configuration bit of line 18 */
+#define EXTI_FTENR_TR19                         ((uint32_t)0x00080000) /* Falling trigger event configuration bit of line 19 */
+#define EXTI_FTENR_TR20                         ((uint32_t)0x00100000) /* Falling trigger event configuration bit of line 20 */
+#define EXTI_FTENR_TR21                         ((uint32_t)0x00200000) /* Falling trigger event configuration bit of line 21 */
+#define EXTI_FTENR_TR22                         ((uint32_t)0x00400000) /* Falling trigger event configuration bit of line 22 */
+#define EXTI_FTENR_TR23                         ((uint32_t)0x00800000) /* Falling trigger event configuration bit of line 23 */
+#define EXTI_FTENR_TR24                         ((uint32_t)0x01000000) /* Falling trigger event configuration bit of line 24 */
+#define EXTI_FTENR_TR25                         ((uint32_t)0x02000000) /* Falling trigger event configuration bit of line 25 */
+#define EXTI_FTENR_TR26                         ((uint32_t)0x04000000) /* Falling trigger event configuration bit of line 26 */
+#define EXTI_FTENR_TR27                         ((uint32_t)0x08000000) /* Falling trigger event configuration bit of line 27 */
+#define EXTI_FTENR_TR28                         ((uint32_t)0x10000000) /* Falling trigger event configuration bit of line 28 */
+#define EXTI_FTENR_TR29                         ((uint32_t)0x20000000) /* Falling trigger event configuration bit of line 29 */
 
 /******************  Bit definition for EXTI_SWIEVR register  ******************/
 #define EXTI_SWIEVR_SWIEVR0                     ((uint32_t)0x00000001) /* Software Interrupt on line 0 */
@@ -1762,6 +1842,26 @@ typedef struct
 #define EXTI_SWIEVR_SWIEVR7                     ((uint32_t)0x00000080) /* Software Interrupt on line 7 */
 #define EXTI_SWIEVR_SWIEVR8                     ((uint32_t)0x00000100) /* Software Interrupt on line 8 */
 #define EXTI_SWIEVR_SWIEVR9                     ((uint32_t)0x00000200) /* Software Interrupt on line 9 */
+#define EXTI_SWIEVR_SWIEVR10                    ((uint32_t)0x00000400) /* Software Interrupt on line 10 */
+#define EXTI_SWIEVR_SWIEVR11                    ((uint32_t)0x00000800) /* Software Interrupt on line 11 */
+#define EXTI_SWIEVR_SWIEVR12                    ((uint32_t)0x00001000) /* Software Interrupt on line 12 */
+#define EXTI_SWIEVR_SWIEVR13                    ((uint32_t)0x00002000) /* Software Interrupt on line 13 */
+#define EXTI_SWIEVR_SWIEVR14                    ((uint32_t)0x00004000) /* Software Interrupt on line 14 */
+#define EXTI_SWIEVR_SWIEVR15                    ((uint32_t)0x00008000) /* Software Interrupt on line 15 */
+#define EXTI_SWIEVR_SWIEVR16                    ((uint32_t)0x00010000) /* Software Interrupt on line 16 */
+#define EXTI_SWIEVR_SWIEVR17                    ((uint32_t)0x00020000) /* Software Interrupt on line 17 */
+#define EXTI_SWIEVR_SWIEVR18                    ((uint32_t)0x00040000) /* Software Interrupt on line 18 */
+#define EXTI_SWIEVR_SWIEVR19                    ((uint32_t)0x00080000) /* Software Interrupt on line 19 */
+#define EXTI_SWIEVR_SWIEVR20                    ((uint32_t)0x00100000) /* Software Interrupt on line 20 */
+#define EXTI_SWIEVR_SWIEVR21                    ((uint32_t)0x00200000) /* Software Interrupt on line 21 */
+#define EXTI_SWIEVR_SWIEVR22                    ((uint32_t)0x00400000) /* Software Interrupt on line 22 */
+#define EXTI_SWIEVR_SWIEVR23                    ((uint32_t)0x00800000) /* Software Interrupt on line 23 */
+#define EXTI_SWIEVR_SWIEVR24                    ((uint32_t)0x01000000) /* Software Interrupt on line 24 */
+#define EXTI_SWIEVR_SWIEVR25                    ((uint32_t)0x02000000) /* Software Interrupt on line 25 */
+#define EXTI_SWIEVR_SWIEVR26                    ((uint32_t)0x04000000) /* Software Interrupt on line 26 */
+#define EXTI_SWIEVR_SWIEVR27                    ((uint32_t)0x08000000) /* Software Interrupt on line 27 */
+#define EXTI_SWIEVR_SWIEVR28                    ((uint32_t)0x10000000) /* Software Interrupt on line 28 */
+#define EXTI_SWIEVR_SWIEVR29                    ((uint32_t)0x20000000) /* Software Interrupt on line 29 */
 
 /*******************  Bit definition for EXTI_INTFR register  ********************/
 #define EXTI_INTF_INTF0                         ((uint32_t)0x00000001) /* Pending bit for line 0 */
@@ -1774,6 +1874,26 @@ typedef struct
 #define EXTI_INTF_INTF7                         ((uint32_t)0x00000080) /* Pending bit for line 7 */
 #define EXTI_INTF_INTF8                         ((uint32_t)0x00000100) /* Pending bit for line 8 */
 #define EXTI_INTF_INTF9                         ((uint32_t)0x00000200) /* Pending bit for line 9 */
+#define EXTI_INTF_INTF10                        ((uint32_t)0x00000400) /* Pending bit for line 10 */
+#define EXTI_INTF_INTF11                        ((uint32_t)0x00000800) /* Pending bit for line 11 */
+#define EXTI_INTF_INTF12                        ((uint32_t)0x00001000) /* Pending bit for line 12 */
+#define EXTI_INTF_INTF13                        ((uint32_t)0x00002000) /* Pending bit for line 13 */
+#define EXTI_INTF_INTF14                        ((uint32_t)0x00004000) /* Pending bit for line 14 */
+#define EXTI_INTF_INTF15                        ((uint32_t)0x00008000) /* Pending bit for line 15 */
+#define EXTI_INTF_INTF16                        ((uint32_t)0x00010000) /* Pending bit for line 16 */
+#define EXTI_INTF_INTF17                        ((uint32_t)0x00020000) /* Pending bit for line 17 */
+#define EXTI_INTF_INTF18                        ((uint32_t)0x00040000) /* Pending bit for line 18 */
+#define EXTI_INTF_INTF19                        ((uint32_t)0x00080000) /* Pending bit for line 19 */
+#define EXTI_INTF_INTF20                        ((uint32_t)0x00100000) /* Pending bit for line 20 */
+#define EXTI_INTF_INTF21                        ((uint32_t)0x00200000) /* Pending bit for line 21 */
+#define EXTI_INTF_INTF22                        ((uint32_t)0x00400000) /* Pending bit for line 22 */
+#define EXTI_INTF_INTF23                        ((uint32_t)0x00800000) /* Pending bit for line 23 */
+#define EXTI_INTF_INTF24                        ((uint32_t)0x01000000) /* Pending bit for line 24 */
+#define EXTI_INTF_INTF25                        ((uint32_t)0x02000000) /* Pending bit for line 25 */
+#define EXTI_INTF_INTF26                        ((uint32_t)0x04000000) /* Pending bit for line 26 */
+#define EXTI_INTF_INTF27                        ((uint32_t)0x08000000) /* Pending bit for line 27 */
+#define EXTI_INTF_INTF28                        ((uint32_t)0x10000000) /* Pending bit for line 28 */
+#define EXTI_INTF_INTF29                        ((uint32_t)0x20000000) /* Pending bit for line 29 */
 
 /******************************************************************************/
 /*                      FLASH and Option Bytes Registers                      */
@@ -2172,7 +2292,129 @@ typedef struct
 #define AFIO_PCFR1_SWJ_CFG_DISABLE              ((uint32_t)0x04000000) /* JTAG-DP Disabled and SW-DP Disabled */
 
 
+/*****************  Bit definition for AFIO_EXTICR1 register  *****************/
+#define AFIO_EXTICR1_EXTI0                      ((uint16_t)0x00000003) /* EXTI 0 configuration */
+#define AFIO_EXTICR1_EXTI1                      ((uint16_t)0x0000000C) /* EXTI 1 configuration */
+#define AFIO_EXTICR1_EXTI2                      ((uint16_t)0x00000030) /* EXTI 2 configuration */
+#define AFIO_EXTICR1_EXTI3                      ((uint16_t)0x000000C0) /* EXTI 3 configuration */
+#define AFIO_EXTICR1_EXTI4                      ((uint16_t)0x00000300) /* EXTI 4 configuration */
+#define AFIO_EXTICR1_EXTI5                      ((uint16_t)0x00000C00) /* EXTI 5 configuration */
+#define AFIO_EXTICR1_EXTI6                      ((uint16_t)0x00003000) /* EXTI 6 configuration */
+#define AFIO_EXTICR1_EXTI7                      ((uint16_t)0x0000C000) /* EXTI 7 configuration */
+#define AFIO_EXTICR1_EXTI8                      ((uint16_t)0x00030000) /* EXTI 8 configuration */
+#define AFIO_EXTICR1_EXTI9                      ((uint16_t)0x000C0000) /* EXTI 9 configuration */
+#define AFIO_EXTICR1_EXTI10                     ((uint16_t)0x00300000) /* EXTI 10 configuration */
+#define AFIO_EXTICR1_EXTI11                     ((uint16_t)0x00C00000) /* EXTI 11 configuration */
+#define AFIO_EXTICR1_EXTI12                     ((uint16_t)0x03000000) /* EXTI 12 configuration */
+#define AFIO_EXTICR1_EXTI13                     ((uint16_t)0x0C000000) /* EXTI 13 configuration */
+#define AFIO_EXTICR1_EXTI14                     ((uint16_t)0x30000000) /* EXTI 14 configuration */
+#define AFIO_EXTICR1_EXTI15                     ((uint16_t)0xC0000000) /* EXTI 15 configuration */
 
+#define AFIO_EXTICR1_EXTI0_PA                   ((uint16_t)0x00000000) /* PA[0] pin */
+#define AFIO_EXTICR1_EXTI0_PB                   ((uint16_t)0x00000001) /* PB[0] pin */
+#define AFIO_EXTICR1_EXTI0_PC                   ((uint16_t)0x00000002) /* PC[0] pin */
+
+#define AFIO_EXTICR1_EXTI1_PA                   ((uint16_t)0x00000000) /* PA[1] pin */
+#define AFIO_EXTICR1_EXTI1_PB                   ((uint16_t)0x00000004) /* PB[1] pin */
+#define AFIO_EXTICR1_EXTI1_PC                   ((uint16_t)0x00000008) /* PC[1] pin */
+
+#define AFIO_EXTICR1_EXTI2_PA                   ((uint16_t)0x00000000) /* PA[2] pin */
+#define AFIO_EXTICR1_EXTI2_PB                   ((uint16_t)0x00000010) /* PB[2] pin */
+#define AFIO_EXTICR1_EXTI2_PC                   ((uint16_t)0x00000020) /* PC[2] pin */
+
+#define AFIO_EXTICR1_EXTI3_PA                   ((uint16_t)0x00000000) /* PA[3] pin */
+#define AFIO_EXTICR1_EXTI3_PB                   ((uint16_t)0x00000040) /* PB[3] pin */
+#define AFIO_EXTICR1_EXTI3_PC                   ((uint16_t)0x00000080) /* PC[3] pin */
+
+#define AFIO_EXTICR1_EXTI4_PA                   ((uint16_t)0x00000000) /* PA[4] pin */
+#define AFIO_EXTICR1_EXTI4_PB                   ((uint16_t)0x00000100) /* PB[4] pin */
+#define AFIO_EXTICR1_EXTI4_PC                   ((uint16_t)0x00000200) /* PC[4] pin */
+
+#define AFIO_EXTICR1_EXTI5_PA                   ((uint16_t)0x00000000) /* PA[5] pin */
+#define AFIO_EXTICR1_EXTI5_PB                   ((uint16_t)0x00000400) /* PB[5] pin */
+#define AFIO_EXTICR1_EXTI5_PC                   ((uint16_t)0x00000800) /* PC[5] pin */
+
+#define AFIO_EXTICR1_EXTI6_PA                   ((uint16_t)0x00000000) /* PA[6] pin */
+#define AFIO_EXTICR1_EXTI6_PB                   ((uint16_t)0x00001000) /* PB[6] pin */
+#define AFIO_EXTICR1_EXTI6_PC                   ((uint16_t)0x00002000) /* PC[6] pin */
+
+#define AFIO_EXTICR1_EXTI7_PA                   ((uint16_t)0x00000000) /* PA[7] pin */
+#define AFIO_EXTICR1_EXTI7_PB                   ((uint16_t)0x00004000) /* PB[7] pin */
+#define AFIO_EXTICR1_EXTI7_PC                   ((uint16_t)0x00008000) /* PC[7] pin */
+
+#define AFIO_EXTICR1_EXTI8_PA                   ((uint16_t)0x00000000) /* PA[8] pin */
+#define AFIO_EXTICR1_EXTI8_PB                   ((uint16_t)0x00010000) /* PB[8] pin */
+#define AFIO_EXTICR1_EXTI8_PC                   ((uint16_t)0x00020000) /* PC[8] pin */
+
+#define AFIO_EXTICR1_EXTI9_PA                   ((uint16_t)0x00000000) /* PA[9] pin */
+#define AFIO_EXTICR1_EXTI9_PB                   ((uint16_t)0x00040000) /* PB[9] pin */
+#define AFIO_EXTICR1_EXTI9_PC                   ((uint16_t)0x00080000) /* PC[9] pin */
+
+#define AFIO_EXTICR1_EXTI10_PA                  ((uint16_t)0x00000000) /* PA[10] pin */
+#define AFIO_EXTICR1_EXTI10_PB                  ((uint16_t)0x00100000) /* PB[10] pin */
+#define AFIO_EXTICR1_EXTI10_PC                  ((uint16_t)0x00200000) /* PC[10] pin */
+
+#define AFIO_EXTICR1_EXTI11_PA                  ((uint16_t)0x00000000) /* PA[11] pin */
+#define AFIO_EXTICR1_EXTI11_PB                  ((uint16_t)0x00400000) /* PB[11] pin */
+#define AFIO_EXTICR1_EXTI11_PC                  ((uint16_t)0x00800000) /* PC[11] pin */
+
+#define AFIO_EXTICR1_EXTI12_PA                  ((uint16_t)0x00000000) /* PA[12] pin */
+#define AFIO_EXTICR1_EXTI12_PB                  ((uint16_t)0x01000000) /* PB[12] pin */
+#define AFIO_EXTICR1_EXTI12_PC                  ((uint16_t)0x02000000) /* PC[12] pin */
+
+#define AFIO_EXTICR1_EXTI13_PA                  ((uint16_t)0x00000000) /* PA[13] pin */
+#define AFIO_EXTICR1_EXTI13_PB                  ((uint16_t)0x04000000) /* PB[13] pin */
+#define AFIO_EXTICR1_EXTI13_PC                  ((uint16_t)0x08000000) /* PC[13] pin */
+
+#define AFIO_EXTICR1_EXTI14_PA                  ((uint16_t)0x00000000) /* PA[14] pin */
+#define AFIO_EXTICR1_EXTI14_PB                  ((uint16_t)0x10000000) /* PB[14] pin */
+#define AFIO_EXTICR1_EXTI14_PC                  ((uint16_t)0x20000000) /* PC[14] pin */
+
+#define AFIO_EXTICR1_EXTI15_PA                  ((uint16_t)0x00000000) /* PA[15] pin */
+#define AFIO_EXTICR1_EXTI15_PB                  ((uint16_t)0x40000000) /* PB[15] pin */
+#define AFIO_EXTICR1_EXTI15_PC                  ((uint16_t)0x80000000) /* PC[15] pin */
+
+/*****************  Bit definition for AFIO_EXTICR2 register  *****************/
+#define AFIO_EXTICR2_EXTI16                     ((uint16_t)0x00000003) /* EXTI 16 configuration */
+#define AFIO_EXTICR2_EXTI17                     ((uint16_t)0x0000000C) /* EXTI 17 configuration */
+#define AFIO_EXTICR2_EXTI18                     ((uint16_t)0x00000030) /* EXTI 18 configuration */
+#define AFIO_EXTICR2_EXTI19                     ((uint16_t)0x000000C0) /* EXTI 19 configuration */
+#define AFIO_EXTICR2_EXTI20                     ((uint16_t)0x00000300) /* EXTI 20 configuration */
+#define AFIO_EXTICR2_EXTI21                     ((uint16_t)0x00000C00) /* EXTI 21 configuration */
+#define AFIO_EXTICR2_EXTI22                     ((uint16_t)0x00003000) /* EXTI 22 configuration */
+#define AFIO_EXTICR2_EXTI23                     ((uint16_t)0x0000C000) /* EXTI 23 configuration */
+
+#define AFIO_EXTICR2_EXTI16_PA                  ((uint16_t)0x00000000) /* PA[16] pin */
+#define AFIO_EXTICR2_EXTI16_PB                  ((uint16_t)0x00000001) /* PB[16] pin */
+#define AFIO_EXTICR2_EXTI16_PC                  ((uint16_t)0x00000002) /* PC[16] pin */
+
+#define AFIO_EXTICR2_EXTI17_PA                  ((uint16_t)0x00000000) /* PA[17] pin */
+#define AFIO_EXTICR2_EXTI17_PB                  ((uint16_t)0x00000004) /* PB[17] pin */
+#define AFIO_EXTICR2_EXTI17_PC                  ((uint16_t)0x00000008) /* PC[17] pin */
+
+#define AFIO_EXTICR2_EXTI18_PA                  ((uint16_t)0x00000000) /* PA[18] pin */
+#define AFIO_EXTICR2_EXTI18_PB                  ((uint16_t)0x00000010) /* PB[18] pin */
+#define AFIO_EXTICR2_EXTI18_PC                  ((uint16_t)0x00000020) /* PC[18] pin */
+
+#define AFIO_EXTICR2_EXTI19_PA                  ((uint16_t)0x00000000) /* PA[19] pin */
+#define AFIO_EXTICR2_EXTI19_PB                  ((uint16_t)0x00000040) /* PB[19] pin */
+#define AFIO_EXTICR2_EXTI19_PC                  ((uint16_t)0x00000080) /* PC[19] pin */
+
+#define AFIO_EXTICR2_EXTI20_PA                  ((uint16_t)0x00000000) /* PA[20] pin */
+#define AFIO_EXTICR2_EXTI20_PB                  ((uint16_t)0x00000100) /* PB[20] pin */
+#define AFIO_EXTICR2_EXTI20_PC                  ((uint16_t)0x00000200) /* PC[20] pin */
+
+#define AFIO_EXTICR2_EXTI21_PA                  ((uint16_t)0x00000000) /* PA[21] pin */
+#define AFIO_EXTICR2_EXTI21_PB                  ((uint16_t)0x00000400) /* PB[21] pin */
+#define AFIO_EXTICR2_EXTI21_PC                  ((uint16_t)0x00000800) /* PC[21] pin */
+
+#define AFIO_EXTICR2_EXTI22_PA                  ((uint16_t)0x00000000) /* PA[22] pin */
+#define AFIO_EXTICR2_EXTI22_PB                  ((uint16_t)0x00001000) /* PB[22] pin */
+#define AFIO_EXTICR2_EXTI22_PC                  ((uint16_t)0x00002000) /* PC[22] pin */
+
+#define AFIO_EXTICR2_EXTI23_PA                  ((uint16_t)0x00000000) /* PA[23] pin */
+#define AFIO_EXTICR2_EXTI23_PB                  ((uint16_t)0x00004000) /* PB[23] pin */
+#define AFIO_EXTICR2_EXTI23_PC                  ((uint16_t)0x00008000) /* PC[23] pin */
 
 /******************************************************************************/
 /*                           Independent WATCHDOG                             */
@@ -3664,16 +3906,36 @@ typedef enum
 #endif
 
 /* EXTI_Lines */
-#define EXTI_Line0     ((uint32_t)0x00001) /* External interrupt line 0 */
-#define EXTI_Line1     ((uint32_t)0x00002) /* External interrupt line 1 */
-#define EXTI_Line2     ((uint32_t)0x00004) /* External interrupt line 2 */
-#define EXTI_Line3     ((uint32_t)0x00008) /* External interrupt line 3 */
-#define EXTI_Line4     ((uint32_t)0x00010) /* External interrupt line 4 */
-#define EXTI_Line5     ((uint32_t)0x00020) /* External interrupt line 5 */
-#define EXTI_Line6     ((uint32_t)0x00040) /* External interrupt line 6 */
-#define EXTI_Line7     ((uint32_t)0x00080) /* External interrupt line 7 */
-#define EXTI_Line8     ((uint32_t)0x00100) /* External interrupt line 8 Connected to the PVD Output */
-#define EXTI_Line9     ((uint32_t)0x00200) /* External interrupt line 9 Connected to the PWR Auto Wake-up event*/
+#define EXTI_Line0                         ((uint32_t)0x00000001) /* External interrupt line 0 */
+#define EXTI_Line1                         ((uint32_t)0x00000002) /* External interrupt line 1 */
+#define EXTI_Line2                         ((uint32_t)0x00000004) /* External interrupt line 2 */
+#define EXTI_Line3                         ((uint32_t)0x00000008) /* External interrupt line 3 */
+#define EXTI_Line4                         ((uint32_t)0x00000010) /* External interrupt line 4 */
+#define EXTI_Line5                         ((uint32_t)0x00000020) /* External interrupt line 5 */
+#define EXTI_Line6                         ((uint32_t)0x00000040) /* External interrupt line 6 */
+#define EXTI_Line7                         ((uint32_t)0x00000080) /* External interrupt line 7 */
+#define EXTI_Line8                         ((uint32_t)0x00000100) /* External interrupt line 8 */
+#define EXTI_Line9                         ((uint32_t)0x00000200) /* External interrupt line 9 */
+#define EXTI_Line10                        ((uint32_t)0x00000400) /* External interrupt line 10 */
+#define EXTI_Line11                        ((uint32_t)0x00000800) /* External interrupt line 11 */
+#define EXTI_Line12                        ((uint32_t)0x00001000) /* External interrupt line 12 */
+#define EXTI_Line13                        ((uint32_t)0x00002000) /* External interrupt line 13 */
+#define EXTI_Line14                        ((uint32_t)0x00004000) /* External interrupt line 14 */
+#define EXTI_Line15                        ((uint32_t)0x00008000) /* External interrupt line 15 */
+#define EXTI_Line16                        ((uint32_t)0x00010000) /* External interrupt line 16 */
+#define EXTI_Line17                        ((uint32_t)0x00020000) /* External interrupt line 17 */
+#define EXTI_Line18                        ((uint32_t)0x00040000) /* External interrupt line 18 */
+#define EXTI_Line19                        ((uint32_t)0x00080000) /* External interrupt line 19 */
+#define EXTI_Line20                        ((uint32_t)0x00100000) /* External interrupt line 20 */
+#define EXTI_Line21                        ((uint32_t)0x00200000) /* External interrupt line 21 */
+#define EXTI_Line22                        ((uint32_t)0x00400000) /* External interrupt line 22 */
+#define EXTI_Line23                        ((uint32_t)0x00800000) /* External interrupt line 23 */
+#define EXTI_Line24                        ((uint32_t)0x01000000) /* External interrupt line 24 */
+#define EXTI_Line25                        ((uint32_t)0x02000000) /* External interrupt line 25 */
+#define EXTI_Line26                        ((uint32_t)0x04000000) /* External interrupt line 26 */
+#define EXTI_Line27                        ((uint32_t)0x08000000) /* External interrupt line 27 */
+#define EXTI_Line28                        ((uint32_t)0x10000000) /* External interrupt line 28 */
+#define EXTI_Line29                        ((uint32_t)0x20000000) /* External interrupt line 29 */
 
 /* ch32v00x_flash.h ----------------------------------------------------------*/
 
