@@ -1,12 +1,11 @@
 # Default prefix for Windows
 ifeq ($(OS),Windows_NT)
 	PREFIX?=riscv64-unknown-elf
-# Check if riscv64-linux-gnu-gcc exists
-else ifneq ($(shell which riscv64-linux-gnu-gcc),)
-	PREFIX?=riscv64-linux-gnu
 # Check if riscv64-unknown-elf-gcc exists
 else ifneq ($(shell which riscv64-unknown-elf-gcc),)
 	PREFIX?=riscv64-unknown-elf
+# We used to check if riscv64-linux-gnu-gcc exists, because it would still produce valid output with -ffreestanding.
+# It was different enough that we decided not to automatically fallback to it.
 # Default prefix
 else
 	PREFIX?=riscv64-elf

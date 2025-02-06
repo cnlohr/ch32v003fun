@@ -81,6 +81,10 @@ void __libc_init_array(void)
 
 */
 
+// We pre-define these, because if the user is (for some awful reason) using gcc-riscv64-linux-gnu with newlib, it will fail to compile if it janks up the stdio/string functions.
+#define _SSP_STRING_H_
+#define _SSP_STDIO_H_
+
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
@@ -91,9 +95,6 @@ void __libc_init_array(void)
 #define WEAK __attribute__((weak))
 
 WEAK int errno;
-
-int mini_vsnprintf( char *buffer, unsigned int buffer_len, const char *fmt, va_list va );
-int mini_vpprintf( int (*puts)(char* s, int len, void* buf), void* buf, const char *fmt, va_list va );
 
 static int __puts_uart( char *s, int len, void *buf )
 {
