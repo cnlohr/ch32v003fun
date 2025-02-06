@@ -25,7 +25,7 @@ int main()
 
     // Configure the IO as an interrupt.
     AFIO->EXTICR1 = AFIO_EXTICR1_EXTI7_PC;
-    EXTI->INTENR = EXTI_INTENR_MR7; // Enable EXT3
+    EXTI->INTENR = EXTI_INTENR_MR7; // Enable EXT7
     EXTI->RTENR = EXTI_RTENR_TR7;  // Rising edge trigger
     EXTI->FTENR = EXTI_FTENR_TR7;  // Falling edge trigger
 
