@@ -58,9 +58,69 @@ typedef enum IRQn
 	TIM2_TRG_IRQn = 52,        /* Timer 2 Trigger Global Interrupt         */
 	TIM2_BRK_IRQn = 53,        /* Timer 2 Brk Global Interrupt             */
 	TIM3_IRQn = 54,            /* Timer 3 Global Interrupt                 */
-
-
 } IRQn_Type;
+
+#define DEFAULT_INTERRUPT_VECTOR_CONTENTS "\n\
+	.align  2\n\
+	.option   push;\n\
+	.option   norvc;\n\
+	j handle_reset\n\
+	.word   0\n\
+	.word   NMI_Handler               /* NMI Handler */                    \n\
+	.word   HardFault_Handler         /* Hard Fault Handler */             \n\
+	.word   0\n\
+	.word   Ecall_M_Mode_Handler       /* Ecall M Mode */ \n\
+	.word   0 \n\
+	.word   0 \n\
+	.word   Ecall_U_Mode_Handler       /* Ecall U Mode */ \n\
+	.word   Break_Point_Handler        /* Break Point */ \n\
+	.word   0\n\
+	.word   0\n\
+	.word   SysTick_Handler           /* SysTick Handler */                \n\
+	.word   0\n\
+	.word   SW_Handler                /* SW Handler */                     \n\
+	.word   0\n\
+	/* External Interrupts */                                              \n\
+	.word   WWDG_IRQHandler           /* Window Watchdog */                \n\
+	.word   PVD_IRQHandler            /* PVD through EXTI Line detect */   \n\
+	.word   FLASH_IRQHandler          /* Flash */                          \n\
+	.word   RCC_IRQHandler            /* RCC */                            \n\
+	.word   EXTI7_0_IRQHandler        /* EXTI Line 7..0 */                 \n\
+	.word   AWU_IRQHandler            /* AWU */                            \n\
+	.word   DMA1_Channel1_IRQHandler  /* DMA1 Channel 1 */                 \n\
+	.word   DMA1_Channel2_IRQHandler  /* DMA1 Channel 2 */                 \n\
+	.word   DMA1_Channel3_IRQHandler  /* DMA1 Channel 3 */                 \n\
+	.word   DMA1_Channel4_IRQHandler  /* DMA1 Channel 4 */                 \n\
+	.word   DMA1_Channel5_IRQHandler  /* DMA1 Channel 5 */                 \n\
+	.word   DMA1_Channel6_IRQHandler  /* DMA1 Channel 6 */                 \n\
+	.word   DMA1_Channel7_IRQHandler  /* DMA1 Channel 7 */                 \n\
+	.word   ADC1_IRQHandler           /* ADC1 */                           \n\
+	.word   I2C1_EV_IRQHandler        /* I2C1 Event */                     \n\
+	.word   I2C1_ER_IRQHandler        /* I2C1 Error */                     \n\
+	.word   USART1_IRQHandler         /* USART1 */                         \n\
+	.word   SPI1_IRQHandler           /* SPI1 */                           \n\
+	.word   TIM1_BRK_IRQHandler       /* TIM1 Break */                     \n\
+	.word   TIM1_UP_IRQHandler        /* TIM1 Update */                    \n\
+	.word   TIM1_TRG_COM_IRQHandler   /* TIM1 Trigger and Commutation */   \n\
+	.word   TIM1_CC_IRQHandler        /* TIM1 Capture Compare */           \n\
+	.word   TIM2_IRQHandler           /* TIM2 */                           \n\
+	.word	USART2_IRQHandler         /* UART2 Interrupt                          */ \n\
+	.word	EXTI15_8_IRQHandler       /* External Line[8:15] Interrupt            */ \n\
+	.word	EXTI25_16_IRQHandler      /* External Line[25:16] Interrupt           */ \n\
+	.word	USART3_IRQHandler         /* UART2 Interrupt                          */ \n\
+	.word	USART4_IRQHandler         /* UART2 Interrupt                          */ \n\
+	.word	DMA1_Channel8_IRQHandler  /* DMA1 Channel 8 global Interrupt          */ \n\
+	.word	USBFS_IRQHandler          /* USB Full-Speed Interrupt                 */ \n\
+	.word	USBFS_WakeUp_IRQHandler   /* USB Full-Speed Wake-Up Interrupt         */ \n\
+	.word	PIOC_IRQHandler           /* Programmable IO Controller Interrupt     */ \n\
+	.word	OPA_IRQHandler            /* Op Amp Interrupt                         */ \n\
+	.word	USBPD_IRQHandler          /* USB Power Delivery Interrupt             */ \n\
+	.word	USBPD_WKUP_IRQHandler     /* USB Power Delivery Wake-Up Interrupt     */ \n\
+	.word	TIM2_CC_IRQHandler        /* Timer 2 Compare Global Interrupt         */ \n\
+	.word	TIM2_TRG_IRQHandler       /* Timer 2 Trigger Global Interrupt         */ \n\
+	.word	TIM2_BRK_IRQHandler       /* Timer 2 Brk Global Interrupt             */ \n\
+	.word	TIM3_IRQHandler           /* Timer 3 Global Interrupt                 */ \n\
+	.option   pop;\n"
 
 
 

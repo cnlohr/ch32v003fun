@@ -10,7 +10,9 @@ results :
 $(EXAMPLES) : results
 	echo $(shell basename $(realpath $(lastword $@)))
 	($(MAKE) -C $@ build > results/$(subst .,,$(subst /,_,$@)).txt 2> results/$(subst .,,$(subst /,_,$@)).warning && echo "success" > results/$(subst .,,$(subst /,_,$@)).result) || echo "failure" > results/$(subst .,,$(subst /,_,$@)).result
-	echo $(shell basename $(realpath $(lastword $@))).bin $(firstword $(shell sha1sum $@/$(shell basename $(realpath $(lastword $@))).bin)) $(firstword $(shell wc --bytes $@/$(shell basename $(realpath $(lastword $@))).bin))  > results/$(subst .,,$(subst /,_,$@)).stat
+	echo $(shell basename $(realpath $(lastword $@))).bin > results/$(subst .,,$(subst /,_,$@)).stat
+	sha1sum $@/$(shell basename $(realpath $(lastword $@))).bin | cut -d' ' -f 1 >> results/$(subst .,,$(subst /,_,$@)).stat
+	wc --bytes $@/$(shell basename $(realpath $(lastword $@))).bin | cut -d' ' -f 1 >> results/$(subst .,,$(subst /,_,$@)).stat
 
 tests : $(EXAMPLES)
 

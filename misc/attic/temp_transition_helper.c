@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-const char * yes[] = { "CH32X03x" };
+const char * yes[] = { "SENTINEL_WILL_BE_REPLACED_BY_CMDLINE" }; // "CH32X03x", etc. element 0 is filled in by command-line
 const char * no[] = { "CH32V10x", "CH32V30x",  "CH32V20x", "CH32X03x", "CH32V003" };
 
 char * WhitePull( const char ** sti )
@@ -120,9 +120,27 @@ const char * sslineis( const char * line, const char * match )
 		return 0;
 }
 
-int main()
+int main( int argc, char ** argv )
 {
-	FILE * f = fopen( "../misc/attic/hardware_header_all_combined.h", "r" );
+	if( argc != 3 )
+	{
+		fprintf( stderr, "Syntax: transition [#define to trigger on] [file to convert]\nNo'd architectures:\n" );
+		int i;
+		for( i = 0; i < sizeof(no)/sizeof(no[0]); i++ )
+		{
+			fprintf( stderr, "\t%s\n", no[i] );
+		}
+		return -1;
+	}
+
+	yes[0] = argv[1];
+
+	FILE * f = fopen( argv[2], "r" );
+	if( !f )
+	{
+		fprintf( stderr, "Error: Could not open \"%s\"\n", argv[2] );
+		return -2;
+	}
 	char line[1024];
 	char * l;
 
