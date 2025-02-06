@@ -27,7 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 
 #define SENDBUFF_BYTES 8
 uint8_t sendbuff[] = {0, 1, 2, 3, 4, 5, 6, 7};

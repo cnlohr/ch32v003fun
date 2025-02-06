@@ -6,7 +6,7 @@
  *                    convenient macro function)
  */
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 
 // Number of ticks elapsed per millisecond (48,000 when using 48MHz Clock)

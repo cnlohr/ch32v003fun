@@ -2,7 +2,7 @@
 #define _USB_CONFIG_H
 
 #include "funconfig.h"
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 
 #define HUSB_CONFIG_EPS       6 // Include EP0 in this count
 #define HUSB_SUPPORTS_SLEEP   0
@@ -248,7 +248,7 @@ static const uint8_t config_descriptor[ ] =
 
 
 #define STR_MANUFACTURER u"CNLohr"
-#define STR_PRODUCT      u"ch32v003fun ch32v30x USBHS Test"
+#define STR_PRODUCT      u"ch32fun ch32v30x USBHS Test"
 #define STR_SERIAL       u"CUSTOMDEVICE000"
 
 struct usb_string_descriptor_struct {

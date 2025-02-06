@@ -3,7 +3,7 @@ all : flash
 TARGET:=otg_device
 TARGET_MCU:=CH32V203
 ADDITIONAL_C_FILES:=
-include ../../ch32v003fun/ch32v003fun.mk
+include ../../ch32fun/ch32fun.mk
 
 install_udev_rules : 
 	sudo cp ../../examples_v20x/otg_device/99-v203demo.rules /etc/udev/rules.d/

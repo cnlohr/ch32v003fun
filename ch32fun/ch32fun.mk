@@ -1,12 +1,11 @@
 # Default prefix for Windows
 ifeq ($(OS),Windows_NT)
 	PREFIX?=riscv64-unknown-elf
-# Check if riscv64-linux-gnu-gcc exists
-else ifneq ($(shell which riscv64-linux-gnu-gcc),)
-	PREFIX?=riscv64-linux-gnu
 # Check if riscv64-unknown-elf-gcc exists
 else ifneq ($(shell which riscv64-unknown-elf-gcc),)
 	PREFIX?=riscv64-unknown-elf
+# We used to check if riscv64-linux-gnu-gcc exists, because it would still produce valid output with -ffreestanding.
+# It was different enough that we decided not to automatically fallback to it.
 # Default prefix
 else
 	PREFIX?=riscv64-elf
@@ -19,15 +18,16 @@ else
 	NEWLIB?=/usr/include/newlib
 endif
 
+CH32FUN?=$(shell dirname $(lastword $(MAKEFILE_LIST)))
+#TARGET_MCU?=CH32V003 # Because we are now opening up to more processors, don't assume this.
 
-TARGET_MCU?=CH32V003
 TARGET_EXT?=c
 
-CH32V003FUN?=$(dir $(lastword $(MAKEFILE_LIST)))
-MINICHLINK?=$(CH32V003FUN)/../minichlink
+CH32FUN?=$(dir $(lastword $(MAKEFILE_LIST)))
+MINICHLINK?=$(CH32FUN)/../minichlink
 
 WRITE_SECTION?=flash
-SYSTEM_C?=$(CH32V003FUN)/ch32v003fun.c
+SYSTEM_C?=$(CH32FUN)/ch32fun.c
 
 ifeq ($(DEBUG),1)
 	EXTRA_CFLAGS+=-DFUNCONF_DEBUG=1
@@ -38,10 +38,10 @@ LDFLAGS+=-Wl,--print-memory-usage -Wl,-Map=$(TARGET).map
 
 ifeq ($(TARGET_MCU),CH32V003)
 	CFLAGS_ARCH+=-march=rv32ec -mabi=ilp32e -DCH32V003=1
-	GENERATED_LD_FILE?=$(CH32V003FUN)/generated_ch32v003.ld
+	GENERATED_LD_FILE?=$(CH32FUN)/generated_ch32v003.ld
 	TARGET_MCU_LD:=0
 	LINKER_SCRIPT?=$(GENERATED_LD_FILE)
-	LDFLAGS+=-L$(CH32V003FUN)/../misc -lgcc
+	LDFLAGS+=-L$(CH32FUN)/../misc -lgcc
 else
 	MCU_PACKAGE?=1
 
@@ -169,19 +169,19 @@ else
 
 		TARGET_MCU_LD:=3
 	else
-		$(error Unknown MCU $(TARGET_MCU))
+		ERROR:=$(error Unknown MCU $(TARGET_MCU))
 	endif
 
 	LDFLAGS+=-lgcc
-	GENERATED_LD_FILE:=$(CH32V003FUN)/generated_$(TARGET_MCU_PACKAGE)_$(TARGET_MCU_MEMORY_SPLIT).ld
+	GENERATED_LD_FILE:=$(CH32FUN)/generated_$(TARGET_MCU_PACKAGE)_$(TARGET_MCU_MEMORY_SPLIT).ld
 	LINKER_SCRIPT:=$(GENERATED_LD_FILE)
 endif
 
 CFLAGS+= \
 	$(CFLAGS_ARCH) -static-libgcc \
 	-I$(NEWLIB) \
-	-I$(CH32V003FUN)/../extralibs \
-	-I$(CH32V003FUN) \
+	-I$(CH32FUN)/../extralibs \
+	-I$(CH32FUN) \
 	-nostdlib \
 	-I. -Wall $(EXTRA_CFLAGS)
 
@@ -227,14 +227,14 @@ FLASH_COMMAND?=$(MINICHLINK)/minichlink -w $< $(WRITE_SECTION) -b
 
 .PHONY : $(GENERATED_LD_FILE)
 $(GENERATED_LD_FILE) :
-	$(PREFIX)-gcc -E -P -x c -DTARGET_MCU=$(TARGET_MCU) -DMCU_PACKAGE=$(MCU_PACKAGE) -DTARGET_MCU_LD=$(TARGET_MCU_LD) -DTARGET_MCU_MEMORY_SPLIT=$(TARGET_MCU_MEMORY_SPLIT) $(CH32V003FUN)/ch32v003fun.ld > $(GENERATED_LD_FILE)
+	$(PREFIX)-gcc -E -P -x c -DTARGET_MCU=$(TARGET_MCU) -DMCU_PACKAGE=$(MCU_PACKAGE) -DTARGET_MCU_LD=$(TARGET_MCU_LD) -DTARGET_MCU_MEMORY_SPLIT=$(TARGET_MCU_MEMORY_SPLIT) $(CH32FUN)/ch32fun.ld > $(GENERATED_LD_FILE)
 
 $(TARGET).elf : $(FILES_TO_COMPILE) $(LINKER_SCRIPT) $(EXTRA_ELF_DEPENDENCIES)
 	$(PREFIX)-gcc -o $@ $(FILES_TO_COMPILE) $(CFLAGS) $(LDFLAGS)
 
-# Rule for independently building ch32v003fun.o indirectly, instead of recompiling it from source every time.
+# Rule for independently building ch32fun.o indirectly, instead of recompiling it from source every time.
 # Not used in the default 003fun toolchain, but used in more sophisticated toolchains.
-ch32v003fun.o : $(SYSTEM_C)
+ch32fun.o : $(SYSTEM_C)
 	$(PREFIX)-gcc -c -o $@ $(SYSTEM_C) $(CFLAGS)
 
 cv_flash : $(TARGET).bin

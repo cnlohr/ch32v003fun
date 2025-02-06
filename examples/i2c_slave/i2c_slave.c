@@ -1,4 +1,4 @@
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include "i2c_slave.h"
 #include <stdio.h>
 

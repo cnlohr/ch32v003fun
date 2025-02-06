@@ -26,7 +26,7 @@
 //   * If 5V is applied, pin sinks 20mA.
 //   * If within 0...3.3V, pretend it has 45k Ohms.
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 
 int main()
