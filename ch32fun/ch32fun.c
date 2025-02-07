@@ -1856,7 +1856,7 @@ void SystemInit( void )
 	#endif
 
 	// Values lifted from the EVT.  There is little to no documentation on what this does.
-	while(!(RCC->CTLR&RCC_HSERDY));
+	while(!(RCC->CTLR&RCC_HSERDY)) {};
 
 	#if defined(CH32V003)
 		RCC->CFGR0 = RCC_PLLSRC_HSE_Mul2 | RCC_SW_HSE;
