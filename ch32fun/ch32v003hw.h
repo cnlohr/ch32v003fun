@@ -42,10 +42,52 @@ typedef enum IRQn
     TIM1_TRG_COM_IRQn = 36,  /* TIM1 Trigger and Commutation Interrupt               */
     TIM1_CC_IRQn = 37,       /* TIM1 Capture Compare Interrupt                       */
     TIM2_IRQn = 38,          /* TIM2 global Interrupt                                */
-
-
 } IRQn_Type;
 
+#define DEFAULT_INTERRUPT_VECTOR_CONTENTS "\n\
+	.align  2\n\
+	.option   push;\n\
+	.option   norvc;\n\
+	j handle_reset\n\
+	.word   0\n\
+	.word   NMI_Handler               /* NMI Handler */                    \n\
+	.word   HardFault_Handler         /* Hard Fault Handler */             \n\
+	.word   0\n\
+	.word   0\n\
+	.word   0\n\
+	.word   0\n\
+	.word   0\n\
+	.word   0\n\
+	.word   0\n\
+	.word   0\n\
+	.word   SysTick_Handler           /* SysTick Handler */                \n\
+	.word   0\n\
+	.word   SW_Handler                /* SW Handler */                     \n\
+	.word   0\n\
+	.word   WWDG_IRQHandler           /* Window Watchdog */                \n\
+	.word   PVD_IRQHandler            /* PVD through EXTI Line detect */   \n\
+	.word   FLASH_IRQHandler          /* Flash */                          \n\
+	.word   RCC_IRQHandler            /* RCC */                            \n\
+	.word   EXTI7_0_IRQHandler        /* EXTI Line 7..0 */                 \n\
+	.word   AWU_IRQHandler            /* AWU */                            \n\
+	.word   DMA1_Channel1_IRQHandler  /* DMA1 Channel 1 */                 \n\
+	.word   DMA1_Channel2_IRQHandler  /* DMA1 Channel 2 */                 \n\
+	.word   DMA1_Channel3_IRQHandler  /* DMA1 Channel 3 */                 \n\
+	.word   DMA1_Channel4_IRQHandler  /* DMA1 Channel 4 */                 \n\
+	.word   DMA1_Channel5_IRQHandler  /* DMA1 Channel 5 */                 \n\
+	.word   DMA1_Channel6_IRQHandler  /* DMA1 Channel 6 */                 \n\
+	.word   DMA1_Channel7_IRQHandler  /* DMA1 Channel 7 */                 \n\
+	.word   ADC1_IRQHandler           /* ADC1 */                           \n\
+	.word   I2C1_EV_IRQHandler        /* I2C1 Event */                     \n\
+	.word   I2C1_ER_IRQHandler        /* I2C1 Error */                     \n\
+	.word   USART1_IRQHandler         /* USART1 */                         \n\
+	.word   SPI1_IRQHandler           /* SPI1 */                           \n\
+	.word   TIM1_BRK_IRQHandler       /* TIM1 Break */                     \n\
+	.word   TIM1_UP_IRQHandler        /* TIM1 Update */                    \n\
+	.word   TIM1_TRG_COM_IRQHandler   /* TIM1 Trigger and Commutation */   \n\
+	.word   TIM1_CC_IRQHandler        /* TIM1 Capture Compare */           \n\
+	.word   TIM2_IRQHandler           /* TIM2 */                           \n\
+	.option   pop;\n"
 
 
 /* memory mapped structure for SysTick */
@@ -4702,7 +4744,6 @@ typedef struct{
 #define PD5 53
 #define PD6 54
 #define PD7 55
-
 
 /*
  * This file contains various parts of the official WCH EVT Headers which
