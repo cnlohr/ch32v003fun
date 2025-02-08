@@ -41,7 +41,7 @@ Timer 2 pin mappings by AFIO->PCFR1
 		D5		T2CH4_
 */
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 
 /******************************************************************************************

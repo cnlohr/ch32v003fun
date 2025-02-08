@@ -2,7 +2,7 @@
    This example is primarily for use with hidapi on the host.
 */
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 #include <string.h>
 #include "fsusb.h"

@@ -27,6 +27,9 @@
 #endif
 
 // Additional definitions, not part of ch32v003fun.h
+#ifndef CH32V307GIGABIT_PHY_RSTB
+#define CH32V307GIGABIT_PHY_RSTB PA10
+#endif
 
 // ETH DMA structure definition (From ch32v30x_eth.c
 typedef struct

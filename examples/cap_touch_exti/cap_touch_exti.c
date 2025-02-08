@@ -13,7 +13,7 @@
 	So, this method is really limited to boolean "down" functions.
 */
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 
 uint32_t count;

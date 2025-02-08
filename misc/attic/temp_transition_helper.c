@@ -3,8 +3,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-const char * yes[] = { "CH32X03x", };
-const char * no[] = { "CH32V10x", "CH32V30x",  "CH32V20x", "CH32V003" };
+const char * yes[] = { "SENTINEL_WILL_BE_REPLACED_BY_CMDLINE" }; // "CH32X03x", etc. element 0 is filled in by command-line
+const char * no[] = { "CH32V10x", "CH32V30x",  "CH32V20x", "CH32X03x", "CH32V003" };
 
 char * WhitePull( const char ** sti )
 {
@@ -28,8 +28,9 @@ int NYI( const char * s )
 	int i;
 	for( i = 0; i < sizeof(yes)/sizeof(yes[0]); i++ )
 		if( strcmp( yes[i], wp ) == 0 ) ret = 1;
-	for( i = 0; i < sizeof(no)/sizeof(no[0]); i++ )
-		if( strcmp( no[i], wp ) == 0 ) ret = 0;
+	if( ret != 1 )
+		for( i = 0; i < sizeof(no)/sizeof(no[0]); i++ )
+			if( strcmp( no[i], wp ) == 0 ) ret = 0;
 	free( wp );
 	return ret;
 }
@@ -55,7 +56,9 @@ cont:
 	if( def == 2 ) i = !i;
 
 	if( lasto == 1 )
+	{
 		ret = lastv || i;
+	}
 	else if( lasto == 2 )
 		ret = lastv && i;
 	else
@@ -87,14 +90,14 @@ int NoYesInd( const char * preprocc )
 	}
 	else if( strncmp( preprocc, "#ifdef ", 7 ) == 0 )
 	{
-		char * ep = preprocc + 6;
+		const char * ep = preprocc + 6;
 		char * wp = WhitePull( &ep );
 		ret = NYI( wp );
 		free( wp );
 	}
 	else if( strncmp( preprocc, "#ifndef ", 8 ) == 0 )
 	{
-		char * ep = preprocc + 6;
+		const char * ep = preprocc + 6;
 		char * wp = WhitePull( &ep );
 		ret = NYI( wp );
 		if( ret < 2 ) ret = !ret;
@@ -106,7 +109,7 @@ int NoYesInd( const char * preprocc )
 	return ret;
 }
 
-char * sslineis( const char * line, const char * match )
+const char * sslineis( const char * line, const char * match )
 {
 	while( *line == ' ' || *line == '\t' ) line++;
 	const char * linestart = line;
@@ -117,9 +120,27 @@ char * sslineis( const char * line, const char * match )
 		return 0;
 }
 
-int main()
+int main( int argc, char ** argv )
 {
-	FILE * f = fopen( "hardware.c", "r" );
+	if( argc != 3 )
+	{
+		fprintf( stderr, "Syntax: transition [#define to trigger on] [file to convert]\nNo'd architectures:\n" );
+		int i;
+		for( i = 0; i < sizeof(no)/sizeof(no[0]); i++ )
+		{
+			fprintf( stderr, "\t%s\n", no[i] );
+		}
+		return -1;
+	}
+
+	yes[0] = argv[1];
+
+	FILE * f = fopen( argv[2], "r" );
+	if( !f )
+	{
+		fprintf( stderr, "Error: Could not open \"%s\"\n", argv[2] );
+		return -2;
+	}
 	char line[1024];
 	char * l;
 
@@ -135,7 +156,7 @@ int main()
 
 	while( l = fgets( line, sizeof(line)-1, f ) )
 	{
-		char * ss = 0;
+		const char * ss = 0;
 		int nyi = yesnoind[depth];
 		int waspre = 0;
 
@@ -149,31 +170,41 @@ int main()
 		}
 		else if( (ss = sslineis( line, "#elif " ) ) )
 		{
-			waspre = 1;
-			if( nyi == 1 )
+			if( nyi != 2 )
 			{
-				nyi = 3;
+				waspre = 1;
+				if( nyi == 1 )
+				{
+					nyi = 3;
+				}
+				else
+				{
+					nyi = NoYesInd( ss );
+				}
+				//printf( "ELIF check: %s %d\n", ss, nyi );
+				yesnoind[depth] = nyi;
 			}
-			else
-			{
-				nyi = NoYesInd( ss );
-			}
-			//printf( "ELIF check: %s %d\n", ss, nyi );
-			yesnoind[depth] = nyi;
 		}
 		else if( (ss = sslineis( line, "#else" ) ) )
 		{
-			waspre = 1;
-			if( yesnoind[depth] == 1 )
-				nyi = 3;
-			else
-				nyi = !yesnoind[depth];
-			yesnoind[depth] = nyi;
+			if( nyi != 2 )
+			{
+				waspre = 1;
+				if( yesnoind[depth] == 1 )
+					nyi = 3;
+				else
+					nyi = !yesnoind[depth];
+				yesnoind[depth] = nyi;
+			}
 		}
 		else if( (ss = sslineis( line, "#endif" ) ) )
 		{
 			waspre = 1;
 			depth--;
+			if( depth < 0 )
+			{
+				fprintf( stderr, "UNTERMD IF\n" );
+			}
 		}
 
 		int thisv = nyi;

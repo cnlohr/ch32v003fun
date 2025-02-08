@@ -4,7 +4,7 @@
  * 1 December 2024 Ned Konz
  */
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 
 /*

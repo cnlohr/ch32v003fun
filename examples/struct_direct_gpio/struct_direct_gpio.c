@@ -1,5 +1,5 @@
 // This tries to generates exacly the same assambly as direct_gpio but using structs as much as possible
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 
 uint32_t count;

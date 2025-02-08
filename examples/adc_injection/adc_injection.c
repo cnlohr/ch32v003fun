@@ -6,7 +6,7 @@
 //
 // This demo should alternate between 0 and 1023 for the first 3 channels, and the 4th channel will go a little bit up/down but only because of latent capacitance.
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 
 int main()

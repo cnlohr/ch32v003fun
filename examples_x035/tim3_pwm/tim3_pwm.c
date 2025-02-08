@@ -11,7 +11,7 @@
  *    11: Mapping (CH1/PA3, CH2/PA4)
  */
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 
 // mask for the CCxP bits

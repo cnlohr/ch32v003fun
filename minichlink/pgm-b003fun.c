@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "../ch32v003fun/ch32v003fun.h"
+#include "../ch32fun/ch32fun.h"
 
 //#define DEBUG_B003
 

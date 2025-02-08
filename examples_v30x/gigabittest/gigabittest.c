@@ -1,4 +1,4 @@
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 
 // If EVT R2 or cnlohr's Rev G or later... otherwise uncomment.

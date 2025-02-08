@@ -8,7 +8,7 @@
 // June 13, 2023 Mats Engstrom (github.com/mengstr)
 //
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 void FlashOptionData(uint8_t data0, uint8_t data1) {
 	volatile uint16_t hold[6]; 		// array to hold current values while erasing

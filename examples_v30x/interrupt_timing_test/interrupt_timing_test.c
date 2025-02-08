@@ -27,7 +27,7 @@
 //   Running from RAM adds about 1 cycle. 
 //   Overall, you can reply to interrupts in about 10-11 cycles, depending on when the interrupt falls.
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 
 volatile int ok = 0;
