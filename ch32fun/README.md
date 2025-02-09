@@ -1,8 +1,8 @@
 ## Update Status Overview
 |PERIPHERAL    |V003|V00x|V10x|V20x|V30x|X035|L103|M030|
 |:-------------|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
-|DPAL Header\* |2.0 | x  | x  | x  | x  | x  | ×  | ×  |
-|ADC           |1.9 | x  | √  | x  | x  | √  | ×  | ×  |
+|DPAL Header\* |2.0 | x  | x  | x  | x  | √  | ×  | ×  |
+|ADC           |1.9 | x  | √  | x  | x  |1.3 | ×  | ×  |
 |AWU           |N/A |N/A |N/A |N/A |N/A | √  |N/A |N/A |
 |BKP           |N/A |N/A | √  | x  | x  |N/A | ×  |N/A |
 |CAN           |N/A |N/A |N/A | x  | x  |N/A | ×  |N/A |
@@ -13,22 +13,22 @@
 |DVP           |N/A |N/A |N/A |N/A | x  |N/A |N/A |N/A |
 |ETH           |N/A |N/A |N/A |N/A | x  |N/A |N/A |N/A |
 |EXIT          | √  | x  | √  | x  | x  | √  | ×  | ×  |
-|FLASH         | √  | x  | √  | x  | x  | √  | ×  | ×  |
+|FLASH         | √  | x  | √  | x  | x  |1.4 | ×  | ×  |
 |FSMC          |N/A |N/A |N/A |N/A | x  |N/A |N/A |N/A |
-|GPIO          |2.0 | x  | √  | x  | x  | √  | ×  | ×  |
-|I2C           | √  | x  | √  | x  | x  | √  | ×  | ×  |
+|GPIO          |2.0 | x  | √  | x  | x  |1.6 | ×  | ×  |
+|I2C           | √  | x  | √  | x  | x  |1.7 | ×  | ×  |
 |IWDG          | √  | x  | √  | x  | x  | √  | ×  |N/A |
 |LPTIM         |N/A |N/A |N/A |N/A |N/A |N/A | ×  |N/A |
-|MISC          | √  | x  | √  | x  | x  | √  | ×  |N/A |
-|OPA           | √  | x  |N/A | x  | x  | √  | ×  | ×  |
-|PWR           |1.9 | x  | √  | x  | x  | √  | ×  | ×  |
+|MISC          | √  | x  | √  | x  | x  |1.6 | ×  |N/A |
+|OPA           | √  | x  |N/A | x  | x  |1.3 | ×  | ×  |
+|PWR           |1.9 | x  | √  | x  | x  |1.7 | ×  | ×  |
 |RCC           |1.8 | x  | √  | x  | x  | √  | ×  | ×  |
 |RNG           |N/A |N/A |N/A |N/A | x  |N/A |N/A |N/A |
 |RTC           |N/A |N/A | √  | x  | x  |N/A | ×  |N/A |
-|SPI           |1.9 | x  | √  | x  | x  | √  | ×  | ×  |
+|SPI           |1.9 | x  | √  | x  | x  |1.7 | ×  | ×  |
 |TIM           |1.6 | x  | √  | x  | x  | √  | ×  | ×  |
 |USART         | √  | x  | √  | x  | x  | √  | ×  | ×  |
-|USB           |N/A |N/A | √  | x  | x  | √  | ×  | ×  |
+|USB           |N/A |N/A | √  | x  | x  |1.8 | ×  | ×  |
 |USB_HOST      |N/A |N/A | √  |N/A |N/A |N/A |N/A |N/A |
 |USBPD         |N/A |N/A |N/A |N/A |N/A | x  | ×  | ×  |
 |WWWDG         | √  | x  | √  | x  | x  | √  | ×  | ×  |
