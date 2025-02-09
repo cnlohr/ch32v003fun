@@ -798,7 +798,6 @@ static void PrintN( uint32_t n )
 	int shift;
 	for( shift = 28; shift >= 0; shift -= 4 )
 	{
-		while( (*DMDATA0) ) & 0x80 );
 		int s = (n>>shift) & 0xf;
 		s += ( s < 10 ) ? '0' : ('a' - 10);
 		putchar( s );
