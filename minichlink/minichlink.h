@@ -119,6 +119,12 @@ enum RiscVChip {
 	CHIP_CH58x = 0x07,
 	CHIP_CH32V003 = 0x09,
 	CHIP_CH32X03x = 0x0d,
+
+
+	CHIP_CH32V002 = 0x22,
+	CHIP_CH32V004 = 0x24,
+	CHIP_CH32V005 = 0x25,
+	CHIP_CH32V006 = 0x26,
 };
 
 enum RAMSplit {

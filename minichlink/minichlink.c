@@ -389,7 +389,7 @@ keep_going:
 							// Other end ack'd without printf.
 							appendword = 0;
 						}
-						else if( r < 0 )
+						else if( r < -5 )
 						{
 							fprintf( stderr, "Terminal dead.  code %d\n", r );
 							return -32;
@@ -399,6 +399,11 @@ keep_going:
 							fwrite( buffer, r, 1, stdout );
 							fflush( stdout );
 							// Otherwise it's basically just an ack for appendword.
+							appendword = 0;
+						}
+						else if( r != 0 )
+						{
+							// Some other situation.
 							appendword = 0;
 						}
 					}
@@ -951,8 +956,18 @@ int DefaultDetermineChipType( void * dev )
 		if( data0offset == 0xe00000f4 )
 		{
 			// Only known processor with this signature is a CH32V003.
-			iss->target_chip_type = CHIP_CH32V003;
-			fprintf( stderr, "Autodetected a ch32x003\n" );
+			switch( vendorid >> 20 )
+			{
+			case 0x002: iss->target_chip_type = CHIP_CH32V002; break;
+			case 0x004: iss->target_chip_type = CHIP_CH32V004; break;
+			case 0x005: iss->target_chip_type = CHIP_CH32V005; break;
+			case 0x006: iss->target_chip_type = CHIP_CH32V006; break;
+			default:    iss->target_chip_type = CHIP_CH32V003; break; // not usually 003
+			}
+			// Examples:
+			// 00000012 = CHIP_CH32V003
+			// 00620620 = CHIP_CH32V006
+			fprintf( stderr, "Autodetected a SWDIO chip; VID: %08x => %02x\n", vendorid, iss->target_chip_type );
 		}
 		else if( data0offset == 0xe0000380 )
 		{
@@ -1230,7 +1245,7 @@ static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t dat
 			// fc75 c.bnez x8, -4
 			// c.ebreak
 			MCF.WriteReg32( dev, DMPROGBUF3, 
-				(iss->target_chip_type == CHIP_CH32X03x || iss->target_chip_type == CHIP_CH32V003) ? 
+				(iss->target_chip_type == CHIP_CH32X03x || iss->target_chip_type == CHIP_CH32V003 || (iss->target_chip_type >= CHIP_CH32V002 && iss->target_chip_type <= CHIP_CH32V006 ) ) ? 
 				0x4200c254 : 0x42000001  );
 
 			MCF.WriteReg32( dev, DMPROGBUF4,
@@ -2031,6 +2046,13 @@ void PostSetupConfigureInterface( void * dev )
 		iss->sector_size = 64;
 		iss->nr_registers_for_debug = 16;
 		break;
+	case CHIP_CH32V002:
+	case CHIP_CH32V004:
+	case CHIP_CH32V005:
+	case CHIP_CH32V006:
+		iss->sector_size = 256;
+		iss->nr_registers_for_debug = 16;
+		break;
 	}
 }
 
@@ -2370,7 +2392,7 @@ int DefaultUnbrick( void * dev )
 	InternalUnlockFlash(dev, iss);
 
 	const uint8_t * option_data = 
-		( iss->target_chip_type == CHIP_CH32X03x || iss->target_chip_type == CHIP_CH32V003 ) ?
+		( iss->target_chip_type == CHIP_CH32X03x || iss->target_chip_type == CHIP_CH32V003 || (iss->target_chip_type >= CHIP_CH32V002 && iss->target_chip_type <= CHIP_CH32V006 ) ) ?
 		option_data_003_x03x : option_data_20x_30x;
 
 	DefaultWriteBinaryBlob(dev, 0x1ffff800, 16, option_data );
