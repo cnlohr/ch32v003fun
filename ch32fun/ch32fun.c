@@ -1540,7 +1540,6 @@ void SystemInit( void )
 		FLASH->ACTLR = FLASH_ACTLR_LATENCY_0;               // +0 Cycle Latency
 	#endif
 #endif
-#endif
 
 #if defined(FUNCONF_USE_HSI) && FUNCONF_USE_HSI
 	#if defined(CH32V30x) || defined(CH32V20x) || defined(CH32V10x)

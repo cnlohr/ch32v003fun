@@ -955,7 +955,7 @@ int DefaultDetermineChipType( void * dev )
 
 		if( data0offset == 0xe00000f4 )
 		{
-			// Only known processor with this signature is a CH32V003.
+			// Only known processor with this signature = 0 is a CH32V003.
 			switch( vendorid >> 20 )
 			{
 			case 0x002: iss->target_chip_type = CHIP_CH32V002; break;
@@ -967,7 +967,7 @@ int DefaultDetermineChipType( void * dev )
 			// Examples:
 			// 00000012 = CHIP_CH32V003
 			// 00620620 = CHIP_CH32V006
-			fprintf( stderr, "Autodetected a SWDIO chip; VID: %08x => %02x\n", vendorid, iss->target_chip_type );
+			fprintf( stderr, "Autodetected a SWDIO chip (Enum: %02x from %08x)\n", iss->target_chip_type, vendorid );
 		}
 		else if( data0offset == 0xe0000380 )
 		{
