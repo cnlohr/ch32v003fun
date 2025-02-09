@@ -5176,7 +5176,7 @@ typedef struct
 #define RCC_PLLMULL14                           ((uint32_t)0x00300000) /* PLL input clock*14 */
 #define RCC_PLLMULL15                           ((uint32_t)0x00340000) /* PLL input clock*15 */
 #define RCC_PLLMULL16                           ((uint32_t)0x00380000) /* PLL input clock*16 */
-
+#define RCC_PLLMULL18                           ((uint32_t)0x003C0000) /* PLL input clock*18 */
 
 /* for CH32V307 */
 #define  RCC_PLLMULL18_EXTEN             		((uint32_t)0x00000000) /* PLL input clock*18 */
