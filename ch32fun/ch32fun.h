@@ -358,6 +358,8 @@ typedef enum {RESET = 0, SET = !RESET} FlagStatus, ITStatus;
 	#define ADD_ARCH_ZICSR 
 #endif
 
+#ifndef __ASSEMBLER__
+
 // Enable Global Interrupt
 RV_STATIC_INLINE void __enable_irq()
 {
@@ -744,6 +746,7 @@ static inline uint32_t __get_SP(void)
 	__ASM volatile( "mv %0,""sp": "=r"(result):);
 	return (result);
 }
+#endif // CH32V003
 
 #endif // !assembler
 

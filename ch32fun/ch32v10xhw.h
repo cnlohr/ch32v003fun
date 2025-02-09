@@ -712,9 +712,32 @@ typedef struct
 } EXTEND_TypeDef;
 
 
-
-
-
+/* memory mapped structure for Program Fast Interrupt Controller (PFIC) */
+typedef struct{
+    __I  uint32_t ISR[8];
+    __I  uint32_t IPR[8];
+    __IO uint32_t ITHRESDR;
+    __IO uint32_t RESERVED;
+    __IO uint32_t CFGR;
+    __I  uint32_t GISR;
+    __IO uint8_t VTFIDR[4];
+    uint8_t RESERVED0[12];
+    __IO uint32_t VTFADDR[4];
+    uint8_t RESERVED1[0x90];
+    __O  uint32_t IENR[8];
+    uint8_t RESERVED2[0x60];
+    __O  uint32_t IRER[8];
+    uint8_t RESERVED3[0x60];
+    __O  uint32_t IPSR[8];
+    uint8_t RESERVED4[0x60];
+    __O  uint32_t IPRR[8];
+    uint8_t RESERVED5[0x60];
+    __IO uint32_t IACTR[8];
+    uint8_t RESERVED6[0xE0];
+    __IO uint8_t IPRIOR[256];
+    uint8_t RESERVED7[0x810];
+    __IO uint32_t SCTLR;
+}PFIC_Type;
 
 #endif
 
@@ -6016,34 +6039,6 @@ typedef volatile unsigned long *PUINT32V;
 
 
 // Applies to all processors
-
-
-/* memory mapped structure for Program Fast Interrupt Controller (PFIC) */
-typedef struct{
-    __I  uint32_t ISR[8];
-    __I  uint32_t IPR[8];
-    __IO uint32_t ITHRESDR;
-    __IO uint32_t RESERVED;
-    __IO uint32_t CFGR;
-    __I  uint32_t GISR;
-    __IO uint8_t VTFIDR[4];
-    uint8_t RESERVED0[12];
-    __IO uint32_t VTFADDR[4];
-    uint8_t RESERVED1[0x90];
-    __O  uint32_t IENR[8];
-    uint8_t RESERVED2[0x60];
-    __O  uint32_t IRER[8];
-    uint8_t RESERVED3[0x60];
-    __O  uint32_t IPSR[8];
-    uint8_t RESERVED4[0x60];
-    __O  uint32_t IPRR[8];
-    uint8_t RESERVED5[0x60];
-    __IO uint32_t IACTR[8];
-    uint8_t RESERVED6[0xE0];
-    __IO uint8_t IPRIOR[256];
-    uint8_t RESERVED7[0x810];
-    __IO uint32_t SCTLR;
-}PFIC_Type;
 
 
 /* some bit definitions for systick regs */
