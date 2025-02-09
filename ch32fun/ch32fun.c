@@ -802,6 +802,7 @@ static void PrintN( uint32_t n )
 		s += ( s < 10 ) ? '0' : ('a' - 10);
 		putchar( s );
 	}
+}
 #endif
 #endif
 
