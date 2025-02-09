@@ -774,7 +774,7 @@ extern uint32_t * _data_vma;
 extern uint32_t * _edata;
 
 #if FUNCONF_DEBUG_HARDFAULT
-#ifdef FUNCONF_USE_DEBUGPRINTF
+#if FUNCONF_USE_DEBUGPRINTF
 static void PrintN( uint32_t n )
 {
 	while( (*DMDATA0) & 0x80 );
@@ -816,7 +816,7 @@ void DefaultIRQHandler( void )
 	PrintN( __get_MSTATUS() );
 	PrintN( __get_MTVAL() );
 	PrintN( __get_MCAUSE() );
-#ifdef FUNCONF_USE_DEBUGPRINTF
+#if FUNCONF_USE_DEBUGPRINTF
 	while( (*DMDATA0) & 0x80 );
 	*DMDATA0 = 0x0a85;
 	while( (*DMDATA0) & 0x80 );
