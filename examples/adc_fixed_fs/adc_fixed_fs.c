@@ -3,7 +3,7 @@
  * by eeucalyptus
  */
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -103,6 +103,7 @@ void ADC1_IRQHandler() {
     if(ADC1->STATR & ADC_FLAG_EOC) {
         ADC1->STATR = ~ADC_FLAG_EOC;
         int adcraw = ADC1->RDATAR;
+		adcraw = adcraw; // Fix unused warning
         //printf("ADC ISR! in=%d\r\n", adcraw);
     }
 }

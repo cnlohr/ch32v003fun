@@ -37,6 +37,24 @@
 // any pre-use calibration.
 #define TOUCH_FLAT      0
 
+// Macro used for force-alingining ADC timing
+#define FORCEALIGNADC \
+	asm volatile( \
+		"\n\
+		.balign 4\n\
+		andi a2, %[cyccnt], 3\n\
+		c.slli a2, 1\n\
+		c.addi a2, 12\n\
+		auipc a1, 0\n\
+		c.add  a2, a1\n\
+		jalr a2, 1\n\
+		.long 0x00010001\n\
+		.long 0x00010001\n\
+		"\
+		:: [cyccnt]"r"(SysTick->CNT) : "a1", "a2"\
+	);
+
+
 static void InitTouchADC( );
 void InitTouchADC( )
 {
@@ -66,8 +84,11 @@ uint32_t ReadTouchPin( GPIO_TypeDef * io, int portpin, int adcno, int iterations
 {
 	uint32_t ret = 0;
 
+	__disable_irq();
+	FORCEALIGNADC
 	ADC1->RSQR3 = adcno;
 	ADC1->SAMPTR2 = TOUCH_ADC_SAMPLE_TIME<<(3*adcno);
+	__enable_irq();
 
 	uint32_t CFGBASE = io->CFGLR & (~(0xf<<(4*portpin)));
 	uint32_t CFGFLOAT = ((GPIO_CFGLR_IN_PUPD)<<(4*portpin)) | CFGBASE;
@@ -87,6 +108,7 @@ uint32_t ReadTouchPin( GPIO_TypeDef * io, int portpin, int adcno, int iterations
 	{ \
 		/* Only lock IRQ for a very narrow window. */                           \
 		__disable_irq();                                                        \
+		FORCEALIGNADC                                                           \
                                                                                 \
 		/* Tricky - we start the ADC BEFORE we transition the pin.  By doing    \
 			this We are catching it onthe slope much more effectively.  */      \
@@ -137,6 +159,7 @@ uint32_t ReadTouchPinSafe( GPIO_TypeDef * io, int portpin, int adcno, int iterat
 		/* Only lock IRQ for a very narrow window. */                           \
 		__disable_irq();                                                        \
 		                                                                        \
+		FORCEALIGNADC                                                           \
                                                                                 \
 		/* Tricky - we start the ADC BEFORE we transition the pin.  By doing    \
 			this We are catching it onthe slope much more effectively.  */      \

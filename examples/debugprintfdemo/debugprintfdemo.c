@@ -1,7 +1,7 @@
 /* Small example showing how to use the SWIO programming pin to 
    do printf through the debug interface */
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 
 uint32_t count;
@@ -16,6 +16,8 @@ void handle_debug_input( int numbytes, uint8_t * data )
 int main()
 {
 	SystemInit();
+
+	while( !DebugPrintfBufferFree() );
 
 	// Enable GPIOs
 	RCC->APB2PCENR |= RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOC;

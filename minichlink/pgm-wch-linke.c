@@ -19,6 +19,9 @@ struct LinkEProgrammerStruct
 
 static void printChipInfo(enum RiscVChip chip) {
 	switch(chip) {
+		case CHIP_UNKNOWN:
+			fprintf(stderr, "No detected chip.\n" );
+			break;
 		case CHIP_CH32V10x:
 			fprintf(stderr, "Detected: CH32V10x\n");
 			break;
@@ -66,7 +69,7 @@ static int checkChip(enum RiscVChip chip) {
 // For non-ch32v003 chips.
 //static int LEReadBinaryBlob( void * d, uint32_t offset, uint32_t amount, uint8_t * readbuff );
 static int InternalLinkEHaltMode( void * d, int mode );
-static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len, uint8_t * blob );
+static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len, const uint8_t * blob );
 
 #define WCHTIMEOUT 5000
 #define WCHCHECK(x) if( (status = x) ) { fprintf( stderr, "Bad USB Operation on " __FILE__ ":%d (%d)\n", __LINE__, status ); exit( status ); }
@@ -235,14 +238,26 @@ int LEWriteReg32( void * dev, uint8_t reg_7_bit, uint32_t command )
 	wch_link_command( devh, req, sizeof(req), &resplen, resp, sizeof(resp) );
 	if( resplen != 9 || resp[8] == 0x02 || resp[8] == 0x03 ) //|| resp[3] != reg_7_bit )
 	{
-		fprintf( stderr, "Error setting write reg. Tell cnlohr. Maybe we should allow retries here?\n" );
-		fprintf( stderr, "RR: %d :", resplen );
-		int i;
-		for( i = 0; i < resplen; i++ )
+		struct InternalState *iss = (struct InternalState *)( ( (struct ProgrammerStructBase *)dev )->internal );
+		if ( !iss->target_chip_id && !iss->statetag )
 		{
-			fprintf( stderr, "%02x ", resp[i] );
+			fprintf( stderr, "Programmer wasn't initialized? Fixing\n" );
+			wch_link_command( devh, "\x81\x0d\x01\x02", 4, &resplen, resp, sizeof( resp ) );
+			iss->statetag = STTAG( "INIT" );
+		}
+		else
+		{
+			fprintf( stderr, "Error setting write reg. Tell cnlohr. Maybe we should allow retries here?\n" );
+			fprintf( stderr, "RR: %d :", resplen );
+			int i;
+			for ( i = 0; i < resplen; i++ )
+			{
+				fprintf( stderr, "%02x ", resp[i] );
+			}
+			fprintf( stderr, "\n" );
 		}
 		fprintf( stderr, "\n" );
+		return -1;
 	}
 	return 0;
 }
@@ -261,14 +276,24 @@ int LEReadReg32( void * dev, uint8_t reg_7_bit, uint32_t * commandresp )
 	*commandresp = ( rbuff[4]<<24 ) | (rbuff[5]<<16) | (rbuff[6]<<8) | (rbuff[7]<<0);
 	if( transferred != 9 || rbuff[8] == 0x02 || rbuff[8] == 0x03 ) //|| rbuff[3] != reg_7_bit )
 	{
-		fprintf( stderr, "Error setting write reg. Tell cnlohr. Maybe we should allow retries here?\n" );
-		fprintf( stderr, "RR: %d :", transferred );
-		int i;
-		for( i = 0; i < transferred; i++ )
+		struct InternalState *iss = (struct InternalState *)( ( (struct ProgrammerStructBase *)dev )->internal );
+		if ( !iss->target_chip_id && !iss->statetag )
 		{
-			fprintf( stderr, "%02x ", rbuff[i] );
+			fprintf( stderr, "Programmer wasn't initialized? Fixing\n" );
+			wch_link_command( devh, "\x81\x0d\x01\x02", 4, (int *)&transferred, rbuff, sizeof( rbuff ) );
+			iss->statetag = STTAG( "INIT" );
 		}
-		fprintf( stderr, "\n" );
+		else
+		{
+			fprintf( stderr, "Error setting read reg. Tell cnlohr. Maybe we should allow retries here?\n" );
+			fprintf( stderr, "RR: %d :", transferred );
+			int i;
+			for ( i = 0; i < transferred; i++ )
+			{
+				fprintf( stderr, "%02x ", rbuff[i] );
+			}
+			fprintf( stderr, "\n" );
+		}
 	}
 	/*
 	printf( "RR: %d :", transferred );
@@ -515,6 +540,8 @@ static int LEControl5v( void * d, int bOn )
 	return 0;
 }
 
+// Official unbrick unreliable on x-series devices.
+/*
 static int LEUnbrick( void * d )
 {
 	printf( "Sending unbrick\n" );
@@ -523,7 +550,7 @@ static int LEUnbrick( void * d )
 	printf( "Done unbrick\n" );
 	return 0;
 }
-
+*/
 
 static int LEConfigureNRSTAsGPIO( void * d, int one_if_yes_gpio )
 {
@@ -581,7 +608,7 @@ void * TryInit_WCHLinkE()
 	MCF.SetupInterface = LESetupInterface;
 	MCF.Control3v3 = LEControl3v3;
 	MCF.Control5v = LEControl5v;
-	MCF.Unbrick = LEUnbrick;
+	//MCF.Unbrick = LEUnbrick; // 
 	MCF.ConfigureNRSTAsGPIO = LEConfigureNRSTAsGPIO;
 	MCF.ConfigureReadProtection = LEConfigureReadProtection;
 
@@ -762,7 +789,7 @@ static int LEReadBinaryBlob( void * d, uint32_t offset, uint32_t amount, uint8_t
 }
 #endif
 
-static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len, uint8_t * blob )
+static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len, const uint8_t * blob )
 {
 	libusb_device_handle * dev = ((struct LinkEProgrammerStruct*)d)->devh;
 	struct InternalState * iss = (struct InternalState*)(((struct LinkEProgrammerStruct*)d)->internal);
@@ -830,7 +857,7 @@ static int LEWriteBinaryBlob( void * d, uint32_t address_to_write, uint32_t len,
 		}
 		else
 		{
-			WCHCHECK( libusb_bulk_transfer( (libusb_device_handle *)dev, 0x02, blob+pplace, iss->sector_size, &transferred, WCHTIMEOUT ) );
+			WCHCHECK( libusb_bulk_transfer( (libusb_device_handle *)dev, 0x02, ((uint8_t*)blob)+pplace, iss->sector_size, &transferred, WCHTIMEOUT ) );
 		}
 	}
 

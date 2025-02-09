@@ -1,6 +1,6 @@
 /* Small example showing how to capture timer values on gpio edges */
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 
 #define queuelen 16

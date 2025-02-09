@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "../ch32v003fun/ch32v003fun.h"
+#include "../ch32fun/ch32fun.h"
 
 //#define DEBUG_B003
 
@@ -26,6 +26,7 @@ struct B003FunProgrammerStruct
 	uint8_t respbuffer[128];
 	int commandplace;
 	int prepping_for_erase;
+	int no_get_report;
 };
 
 static const unsigned char byte_wise_read_blob[] = { // No alignment restrictions.
@@ -159,18 +160,19 @@ resend:
 	#endif
 	if( r < 0 )
 	{
-		fprintf( stderr, "Warning: Issue with hid_send_feature_report. Retrying\n" );
+		if( retries ) fprintf( stderr, "Warning: Issue with hid_send_feature_report. Retrying: %d\n", retries );
 		if( retries++ > 10 )
+		{
 			return r;
+		}
 		else
+		{
+			MCF.DelayUS( eps, 5000 );
 			goto resend;
+		}
 	}
-
-
-	if( eps->prepping_for_erase )
-	{
-		usleep(4000);
-	}
+        
+	if (eps->no_get_report) return r;
 
 	int timeout = 0;
 
@@ -222,11 +224,11 @@ static int B003FunWaitForDoneOp( void * dev, int ignore )
 	return 0;
 }
 
-static int B003FunDelayUS( void * dev, int microseconds )
-{
-	usleep( microseconds );
-	return 0;
-}
+// static int B003FunDelayUS( void * dev, int microseconds )
+// {
+// 	usleep( microseconds );
+// 	return 0;
+// }
 
 // Does not handle erasing
 static int InternalB003FunWriteBinaryBlob( void * dev, uint32_t address_to_write_to, uint32_t write_size, const uint8_t * blob )
@@ -244,7 +246,7 @@ static int InternalB003FunWriteBinaryBlob( void * dev, uint32_t address_to_write
 		WriteOp4( eps, 1 ); // write 1 bytes.
 		memcpy( &eps->commandbuffer[60], blob, 1 );
 		if( CommitOp( eps ) ) return -5;
-		if( is_flash && memcmp( &eps->commandbuffer[60], blob, 1 ) ) goto verifyfail;
+		if( is_flash && memcmp( &eps->respbuffer[60], blob, 1 ) ) goto verifyfail;
 		blob++;
 		write_size --;
 		address_to_write_to++;
@@ -258,7 +260,7 @@ static int InternalB003FunWriteBinaryBlob( void * dev, uint32_t address_to_write
 		WriteOp4( eps, 2 ); // write 2 bytes.
 		memcpy( &eps->commandbuffer[60], blob, 2 );
 		if( CommitOp( eps ) ) return -5;
-		if( is_flash && memcmp( &eps->commandbuffer[60], blob, 2 ) ) goto verifyfail;
+		if( is_flash && memcmp( &eps->respbuffer[60], blob, 2 ) ) goto verifyfail;
 		blob += 2;
 		write_size -= 2;
 		address_to_write_to+=2;
@@ -275,7 +277,7 @@ static int InternalB003FunWriteBinaryBlob( void * dev, uint32_t address_to_write
 		WriteOp4( eps, to_write_this_time ); // write 4 bytes.
 		memcpy( &eps->commandbuffer[60], blob, to_write_this_time );
 		if( CommitOp( eps ) ) return -5;
-		if( is_flash && memcmp( &eps->commandbuffer[60], blob, to_write_this_time ) ) goto verifyfail;
+		if( is_flash && memcmp( &eps->respbuffer[60], blob, to_write_this_time ) ) goto verifyfail;
 		blob += to_write_this_time;
 		write_size -= to_write_this_time;
 		address_to_write_to += to_write_this_time;
@@ -289,7 +291,7 @@ static int InternalB003FunWriteBinaryBlob( void * dev, uint32_t address_to_write
 		WriteOp4( eps, 2 ); // write 2 bytes.
 		memcpy( &eps->commandbuffer[60], blob, 2 );
 		if( CommitOp( eps ) ) return -5;
-		if( is_flash && memcmp( &eps->commandbuffer[60], blob, 2 ) ) goto verifyfail;
+		if( is_flash && memcmp( &eps->respbuffer[60], blob, 2 ) ) goto verifyfail;
 		blob += 2;
 		write_size -= 2;
 		address_to_write_to += 2;
@@ -303,12 +305,13 @@ static int InternalB003FunWriteBinaryBlob( void * dev, uint32_t address_to_write
 		WriteOp4( eps, 1 ); // write 1 byte.
 		memcpy( &eps->commandbuffer[60], blob, 1 );
 		if( CommitOp( eps ) ) return -5;
-		if( is_flash && memcmp( &eps->commandbuffer[60], blob, 1 ) ) goto verifyfail;
+		if( is_flash && memcmp( &eps->respbuffer[60], blob, 1 ) ) goto verifyfail;
 		blob += 1;
 		write_size -= 1;
 		address_to_write_to+=1;
 	}
 	eps->prepping_for_erase = 0;
+	fprintf(stderr, ".");
 	return 0;
 verifyfail:
 	fprintf( stderr, "Error: Write Binary Blob: %d bytes to %08x\n", write_size, address_to_write_to );
@@ -401,6 +404,7 @@ static int InternalB003FunBoot( void * dev )
 	printf( "Booting\n" );
 	ResetOp( eps );
 	WriteOpArb( eps, run_app_blob, sizeof(run_app_blob) );
+	eps->no_get_report = 1;
 	if( CommitOp( eps ) ) return -5;
 	return 0;
 }
@@ -431,7 +435,7 @@ static int B003FunReadWord( void * dev, uint32_t address_to_read, uint32_t * dat
 	return B003FunReadBinaryBlob( dev, address_to_read, 4, (uint8_t*)data );
 }
 
-static int B003FunBlockWrite64( void * dev, uint32_t address_to_write, uint8_t * data )
+static int B003FunBlockWrite64( void * dev, uint32_t address_to_write, const uint8_t * data )
 {
 	struct B003FunProgrammerStruct * eps = (struct B003FunProgrammerStruct*) dev;
 	struct InternalState * iss = eps->internal;
@@ -558,7 +562,7 @@ void * TryInit_B003Fun()
 	MCF.WriteReg32 = 0;
 	MCF.ReadReg32 = 0;
 	MCF.FlushLLCommands = B003FunFlushLLCommands;
-	MCF.DelayUS = B003FunDelayUS;
+	// MCF.DelayUS = B003FunDelayUS;
 	MCF.Control3v3 = 0;
 	MCF.SetupInterface = B003FunSetupInterface;
 	MCF.Exit = B003FunExit;
@@ -566,7 +570,8 @@ void * TryInit_B003Fun()
 	MCF.VoidHighLevelState = 0;
 	MCF.PollTerminal = 0;
 
-	// These are optional. Disabling these is a good mechanismto make sure the core functions still work.
+	// These are optional. Disabling these is a good mechanism to make sure the core functions still work.
+	
 	MCF.WriteWord = B003FunWriteWord;
 	MCF.ReadWord = B003FunReadWord;
 

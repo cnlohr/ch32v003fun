@@ -1,7 +1,8 @@
-/* Small example showing how to use the SWIO programming pin to 
-   do printf through the debug interface */
+/* Example showing the USB Device port on the CH32x03x (ch32v035 / ch32v033)
+   This example is primarily for use with hidapi on the host.
+*/
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 #include <string.h>
 #include "fsusb.h"

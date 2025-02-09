@@ -1,7 +1,7 @@
 {
 	"configurations": [
 		{
-			"name": "cppdbg GDB Debug Target",
+			"name": "Debug Target",
 			"type": "cppdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/template.elf",
@@ -11,37 +11,38 @@
 			"environment": [],
 			"externalConsole": false,
 			"MIMode": "gdb",
-			"deploySteps": [ // 'make ...gdbserver' doesn't seem to work here. The Makefile calls 'minichlink -baG'... Needs -aG. Easier to add minichlink as a seperate step below
-				{
-					"type": "shell", //isn't there some way to call a task from tasks.json?
-					"command": "make --directory=${workspaceFolder} -j 1 closechlink flash",
-				},
-				{
-					"type": "shell",
-					"command": "${workspaceFolder}/../../minichlink/minichlink -aG",
-					"continueOn": "gdbserver running"
-				},
-			],
+			"preLaunchTask": "run_flash_and_gdbserver",
 			"setupCommands": [
 				{
 					"description": "Enable pretty-printing for gdb",
 					"text": "-enable-pretty-printing",
-					"ignoreFailures": true,
-				},
+					"ignoreFailures": true
+				}
 			],
 			"svdPath": "${workspaceFolder}/../../misc/CH32V003xx.svd", // extension 'Peripheral Viewer' by mcu-debug (cortex-debug)
 			"miDebuggerPath": "gdb-multiarch",
-			"miDebuggerServerAddress": "localhost:2000",
-			"logging": {
-				"engineLogging": false
-			},
+			"miDebuggerServerAddress": "127.0.0.1:3333",
 		},
 		{
-			"name": "Run Only (In Terminal)",
+			"name": "Flash and run in terminal",
+			"type": "node-terminal",
+			"request": "launch",
+			"internalConsoleOptions": "neverOpen",
+			"command": "make closechlink clean; make flash monitor",
+		},
+		{
+			"name": "Compile and Flash",
 			"type": "node",
 			"request": "launch",
-			"program": "",
-			"preLaunchTask": "run_flash_and_gdbserver",
+			"internalConsoleOptions": "neverOpen",
+			"preLaunchTask" : "kill_all_tasks",
+			"postDebugTask": "run_flash",
+			"presentation": {
+				"hidden": false,
+				"group": "terminaloutput",
+				"order": 1
+			},
+			"runtimeExecutable": "echo"
 		}
 	]
 }

@@ -21,6 +21,8 @@ struct MiniChlinkFunctions
 	int (*Control5v)( void * dev, int bOn );
 	int (*Unbrick)( void * dev ); // Turns on chip, erases everything, powers off.
 
+	int (*DetermineChipType)( void * dev ); // Determine chip type (may need to pause chip, so only do if you really need to know)
+
 	int (*Exit)( void * dev );
 
 	int (*HaltMode)( void * dev, int mode ); //0 for halt, 1 for reset, 2 for resume
@@ -29,7 +31,7 @@ struct MiniChlinkFunctions
 	int (*SetSplit)( void * dev, enum RAMSplit split );
 
 	// No boundary or limit rules.  Must support any combination of alignment and size.
-	int (*WriteBinaryBlob)( void * dev, uint32_t address_to_write, uint32_t blob_size, uint8_t * blob );
+	int (*WriteBinaryBlob)( void * dev, uint32_t address_to_write, uint32_t blob_size, const uint8_t * blob );
 	int (*ReadBinaryBlob)( void * dev, uint32_t address_to_read_from, uint32_t read_size, uint8_t * blob );
 
 	int (*Erase)( void * dev, uint32_t address, uint32_t length, int type ); //type = 0 for fast, 1 for whole-chip
@@ -60,7 +62,7 @@ struct MiniChlinkFunctions
 	int (*PrintChipInfo)( void * dev );
 
 	// Geared for flash, but could be anything.  Note: If in flash, must also erase.
-	int (*BlockWrite64)( void * dev, uint32_t address_to_write, uint8_t * data );
+	int (*BlockWrite64)( void * dev, uint32_t address_to_write, const uint8_t * data );
 
 	// Returns positive if received text.
 	// Returns negative if error.
@@ -108,6 +110,7 @@ struct ProgrammerStructBase
 #define MAX_FLASH_SECTORS 262144
 
 enum RiscVChip {
+	CHIP_UNKNOWN = 0x00,
 	CHIP_CH32V10x = 0x01,
 	CHIP_CH57x = 0x02,
 	CHIP_CH56x = 0x03,
@@ -168,6 +171,7 @@ struct InternalState
 #define DMPROGBUF5     0x25
 #define DMPROGBUF6     0x26
 #define DMPROGBUF7     0x27
+#define DMHALTSUM0     0x40
 
 #define DMCPBR       0x7C
 #define DMCFGR       0x7D

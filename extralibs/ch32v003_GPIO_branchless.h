@@ -8,7 +8,7 @@
 
 // includes
 #include <stdint.h>								//uintN_t support
-#include "../ch32v003fun/ch32v003fun.h"
+#include "../ch32fun/ch32fun.h"
 
 
 
@@ -173,7 +173,7 @@ enum GPIO_tim2_output_sets {
 
 // setup
 #define GPIO_port_enable(GPIO_port_n)
-#define GPIO_pinMode(GPIO_port_n, pin, pinMode, GPIO_Speed)
+#define GPIO_pinMode(GPIOv, pinMode, GPIO_Speed)
 
 // digital
 #define GPIO_digitalWrite_hi(GPIOv)

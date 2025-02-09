@@ -1,5 +1,12 @@
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
+
+// If EVT R2 or cnlohr's Rev G or later... otherwise uncomment.
+// It isn't really needed anyway.
+//#define CH32V307GIGABIT_PHY_RSTB PC6
+// PA10 for Rev F or earlier of cnlohr's board
+#define CH32V307GIGABIT_PHY_RSTB PA10
+
 #include "ch32v307gigabit.h"
 
 int ch32v307ethInitHandlePacket( uint8_t * data, int frame_length, ETH_DMADESCTypeDef * dmadesc )
@@ -29,8 +36,8 @@ int main()
 	SystemInit();
 	funGpioInitAll();
 
-
 	Delay_Ms(50);
+	printf( "Startup\n" );
 	int r = ch32v307ethInit();
 	printf( "R: %d\n",r );
 	printf( "%02x:%02x:%02x:%02x:%02x:%02x\n", ch32v307eth_mac[0], ch32v307eth_mac[1], ch32v307eth_mac[2], ch32v307eth_mac[3], ch32v307eth_mac[4], ch32v307eth_mac[5] );

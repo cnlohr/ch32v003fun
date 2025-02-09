@@ -1,4 +1,4 @@
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 
 static void iwdg_setup(uint16_t reload_val, uint8_t prescaler) {

@@ -26,12 +26,10 @@
 #define CH32V307GIGABIT_PHY_TIMEOUT 0x10000
 #endif
 
+// Additional definitions, not part of ch32v003fun.h
 #ifndef CH32V307GIGABIT_PHY_RSTB
 #define CH32V307GIGABIT_PHY_RSTB PA10
 #endif
-
-
-// Additional definitions, not part of ch32v003fun.h
 
 // ETH DMA structure definition (From ch32v30x_eth.c
 typedef struct
@@ -103,6 +101,8 @@ static int ch32v307ethTickPhy(void)
 	int miidr;
 	if( ch32v307ethPHYRegAsyncRead( reg, &miidr ) ) return -1;
 
+	printf( "REG: %02x / %04x / %04x\n", reg, miidr, ch32v307eth_phyid );
+
 	if( reg == 0x1a )
 	{
 		speed  = ((miidr>>4)&3);
@@ -116,6 +116,7 @@ static int ch32v307ethTickPhy(void)
 		duplex = ((miidr>>13)&1);
 	}
 
+	printf( "LINK INFO: %d %d %d\n", speed, linked, duplex );
 	if( linked )
 	{
 		uint32_t oldmaccr = ETH->MACCR;
@@ -176,8 +177,10 @@ static int ch32v307ethInit( void )
 {
 	int i;
 
+#ifdef CH32V307GIGABIT_PHY_RSTB
 	funPinMode( CH32V307GIGABIT_PHY_RSTB, GPIO_CFGLR_OUT_50Mhz_PP ); //PHY_RSTB (For reset)
 	funDigitalWrite( CH32V307GIGABIT_PHY_RSTB, FUN_LOW );
+#endif
 
 	// Configure strapping.
 	funPinMode( PA1, GPIO_CFGLR_IN_PUPD ); // GMII_RXD3
@@ -273,7 +276,11 @@ static int ch32v307ethInit( void )
 	funPinMode( PA8, GPIO_CFGLR_OUT_50Mhz_AF_PP ); // PHY_CKTAL
 
 	// Release PHY from reset.
+#ifdef CH32V307GIGABIT_PHY_RSTB
 	funDigitalWrite( CH32V307GIGABIT_PHY_RSTB, FUN_HIGH );
+#endif
+
+	Delay_Ms(25); 	// Waiting for PHY to exit sleep.  This is inconsistent at 23ms (But only on the RTL8211FS) None is needed on the RTL8211E
 
 	funPinMode( PB0, GPIO_CFGLR_OUT_50Mhz_AF_PP ); // GMII_TXD3
 	funPinMode( PC5, GPIO_CFGLR_OUT_50Mhz_AF_PP ); // GMII_TXD2

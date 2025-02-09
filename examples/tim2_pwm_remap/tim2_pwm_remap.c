@@ -42,7 +42,7 @@ Timer 2 pin mappings by AFIO->PCFR1
 		D5		T2CH4_
 */
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdio.h>
 
 /******************************************************************************************
@@ -127,7 +127,7 @@ void t2pwm_setpw(uint8_t chl, uint16_t width)
  *****************************************************************************************/
 void ToggleRemap(void) {
 	if(AFIO->PCFR1 & AFIO_PCFR1_TIM2_REMAP_FULLREMAP) {
-		AFIO->PCFR1 &= AFIO_PCFR1_TIM2_REMAP_NOREMAP;   //clear remapping bits
+		AFIO->PCFR1 &= ~AFIO_PCFR1_TIM2_REMAP_FULLREMAP;   //clear remapping bits
 		printf("Standard Mapping!\r\n");
 	}
 	else {
