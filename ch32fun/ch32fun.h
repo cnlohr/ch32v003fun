@@ -352,180 +352,89 @@ typedef enum {RESET = 0, SET = !RESET} FlagStatus, ITStatus;
 
 #if defined(__riscv) || defined(__riscv__) || defined( CH32V003FUN_BASE )
 
-/*********************************************************************
- * @fn      __enable_irq
- *
- * @brief   Enable Global Interrupt
- *
- * @return  none
- */
+#if __GNUC__ > 10
+	#define ADD_ARCH_ZICSR ".option arch, +zicsr\n"
+#else
+	#define ADD_ARCH_ZICSR 
+#endif
+
+// Enable Global Interrupt
 RV_STATIC_INLINE void __enable_irq()
 {
-	uint32_t result;
-
-	__ASM volatile(
-#if __GNUC__ > 10
-		".option arch, +zicsr\n"
-#endif
-		"csrr %0," "mstatus": "=r"(result));
-	result |= 0x88;
-	__ASM volatile ("csrw mstatus, %0" : : "r" (result) );
+	uint32_t result; __ASM volatile( ADD_ARCH_ZICSR "csrr %0," "mstatus": "=r"(result) );
+	result |= 0x88;  __ASM volatile( ADD_ARCH_ZICSR "csrw mstatus, %0" : : "r" (result) );
 }
 
-/*********************************************************************
- * @fn      __disable_irq
- * @brief   Disable Global Interrupt
- * @return  none
- */
+// Disable Global Interrupt
 RV_STATIC_INLINE void __disable_irq()
 {
-	uint32_t result;
-
-    __ASM volatile(
-#if __GNUC__ > 10
-		".option arch, +zicsr\n"
-#endif
-		"csrr %0," "mstatus": "=r"(result));
-	result &= ~0x88;
-	__ASM volatile ("csrw mstatus, %0" : : "r" (result) );
+	uint32_t result; __ASM volatile( ADD_ARCH_ZICSR "csrr %0," "mstatus": "=r"(result) );
+	result &= ~0x88; __ASM volatile( ADD_ARCH_ZICSR "csrw mstatus, %0" : : "r" (result) );
 }
 
-/*********************************************************************
- * @fn      __isenabled_irq
- * @brief   Is Global Interrupt enabled
- * @return  1: yes, 0: no
- */
+// Is Global Interrupt enabled (1 = yes, 0 = no)
 RV_STATIC_INLINE uint8_t __isenabled_irq(void)
 {
-    uint32_t result;
-
-    __ASM volatile(
-#if __GNUC__ > 10
-    ".option arch, +zicsr\n"
-#endif
-    "csrr %0," "mstatus": "=r"(result));
+    uint32_t result; __ASM volatile( ADD_ARCH_ZICSR "csrr %0," "mstatus": "=r"(result) );
     return (result & 0x08) != 0u;
 }
 
-/*********************************************************************
- * @fn      __get_cpu_sp
- * @brief   Get stack pointer
- * @return  stack pointer
- */
-RV_STATIC_INLINE uint32_t __get_cpu_sp(void);
+// Get stack pointer (returns the stack pointer)
 RV_STATIC_INLINE uint32_t __get_cpu_sp(void)
 {
-	uint32_t result;
-
-	__ASM volatile(
-#if __GNUC__ > 10
-    ".option arch, +zicsr\n"
-#endif
-	"mv %0, sp" : "=r"(result));
+	uint32_t result; __ASM volatile( ADD_ARCH_ZICSR "mv %0, sp" : "=r"(result));
 	return result;
 }
 
-/*********************************************************************
- * @fn      __NOP
- * @brief   nop
- * @return  none
- */
+// nop
 RV_STATIC_INLINE void __NOP()
 {
-	__ASM volatile ("nop");
+	__ASM volatile( "nop" );
 }
 
-/*********************************************************************
- * @fn       NVIC_EnableIRQ
- * @brief   Disable Interrupt
- * @param   IRQn - Interrupt Numbers
- * @return  none
- */
+// Enable Interrupt (by interrupt number)
 RV_STATIC_INLINE void NVIC_EnableIRQ(IRQn_Type IRQn)
 {
 	NVIC->IENR[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F));
 }
 
-/*********************************************************************
- * @fn       NVIC_DisableIRQ
- * @brief   Disable Interrupt
- * @param   IRQn - Interrupt Numbers
- * @return  none
- */
+// Disable Interrupt (by interrupt number)
 RV_STATIC_INLINE void NVIC_DisableIRQ(IRQn_Type IRQn)
 {
 	NVIC->IRER[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F));
 }
 
-/*********************************************************************
- * @fn       NVIC_GetStatusIRQ
- * @brief   Get Interrupt Enable State
- * @param   IRQn - Interrupt Numbers
- * @return  1 - 1: Interrupt Pending Enable
- *                0 - Interrupt Pending Disable
- */
+// Get Interrupt Enable State, (by number), 1 = Triggered 0 = Not triggered
 RV_STATIC_INLINE uint32_t NVIC_GetStatusIRQ(IRQn_Type IRQn)
 {
 	return((uint32_t) ((NVIC->ISR[(uint32_t)(IRQn) >> 5] & (1 << ((uint32_t)(IRQn) & 0x1F)))?1:0));
 }
 
-/*********************************************************************
- * @fn      NVIC_GetPendingIRQ
- * @brief   Get Interrupt Pending State
- * @param   IRQn - Interrupt Numbers
- * @return  1 - 1: Interrupt Pending Enable
- *                0 - Interrupt Pending Disable
- */
+// Get Interrupt Pending State, (by number), 1 = Pending 0 = Not pending
 RV_STATIC_INLINE uint32_t NVIC_GetPendingIRQ(IRQn_Type IRQn)
 {
 	return((uint32_t) ((NVIC->IPR[(uint32_t)(IRQn) >> 5] & (1 << ((uint32_t)(IRQn) & 0x1F)))?1:0));
 }
 
-/*********************************************************************
- * @fn      NVIC_SetPendingIRQ
- * @brief   Set Interrupt Pending
- * @param   IRQn - Interrupt Numbers
- * @return  none
- */
+// "current number break hang"
 RV_STATIC_INLINE void NVIC_SetPendingIRQ(IRQn_Type IRQn)
 {
 	NVIC->IPSR[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F));
 }
 
-/*********************************************************************
- * @fn      NVIC_ClearPendingIRQ
- * @brief   Clear Interrupt Pending
- * @param   IRQn - Interrupt Numbers
- * @return  none
- */
+// Clear Interrupt Pending
 RV_STATIC_INLINE void NVIC_ClearPendingIRQ(IRQn_Type IRQn)
 {
 	NVIC->IPRR[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F));
 }
 
-/*********************************************************************
- * @fn      NVIC_GetActive
- * @brief   Get Interrupt Active State
- * @param   IRQn - Interrupt Numbers
- * @return  1 - Interrupt Active
- */
+// Get Interrupt Active State (returns 1 if active)
 RV_STATIC_INLINE uint32_t NVIC_GetActive(IRQn_Type IRQn)
 {
 	return((uint32_t)((NVIC->IACTR[(uint32_t)(IRQn) >> 5] & (1 << ((uint32_t)(IRQn) & 0x1F)))?1:0));
 }
 
-/*********************************************************************
- * @fn      NVIC_SetPriority
- *
- * @brief   Set Interrupt Priority
- *
- * @param   IRQn - Interrupt Numbers
- *          priority: bit7 - pre-emption priority
- *                    bit6 - subpriority
- *                    bit[5-0] - reserved
- *
- * @return  none
- */
+// Set Interrupt Priority (priority: bit7: pre-emption priority, bit6: subpriority, bit[5-0]: reserved
 RV_STATIC_INLINE void NVIC_SetPriority(IRQn_Type IRQn, uint8_t priority)
 {
 	NVIC->IPRIOR[(uint32_t)(IRQn)] = priority;
@@ -572,22 +481,14 @@ RV_STATIC_INLINE void NVIC_restore_IRQs(uint32_t old_state)
 	NVIC->IENR[1] = old_state >> 23;
 }
 
-/*********************************************************************
- * @fn       __WFI
- * @brief   Wait for Interrupt
- * @return  none
- */
+// WFI - wait for interrupt (like a light sleep)
 __attribute__( ( always_inline ) ) RV_STATIC_INLINE void __WFI(void)
 {
 	NVIC->SCTLR &= ~(1<<3);   // wfi
 	__ASM volatile ("wfi");
 }
 
-/*********************************************************************
- * @fn       __WFE
- * @brief   Wait for Events
- * @return  none
- */
+// WFE - wait for events (more like a deeper sleep)
 __attribute__( ( always_inline ) ) RV_STATIC_INLINE void __WFE(void)
 {
   uint32_t t;
@@ -623,460 +524,224 @@ RV_STATIC_INLINE void SetVTFIRQ(uint32_t addr, IRQn_Type IRQn, uint8_t num, Func
 	}
 }
 
-/*********************************************************************
- * @fn       NVIC_SystemReset
- * @brief   Initiate a system reset request
- * @return  none
- */
+// Initiate a system reset request
 RV_STATIC_INLINE void NVIC_SystemReset(void)
 {
 	NVIC->CFGR = NVIC_KEY3|(1<<7);
 }
 
-// For configuring INTSYSCR, for interrupt nesting + hardware stack enable.
+// For reading INTSYSCR, for interrupt nesting + hardware stack enable.
 static inline uint32_t __get_INTSYSCR(void)
 {
 	uint32_t result;
-	__ASM volatile(	
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrr %0, 0x804": "=r"(result));
-	return (result);
+	__ASM volatile(	ADD_ARCH_ZICSR "csrr %0, 0x804": "=r"(result));
+	return result;
 }
 
+// For setting INTSYSCR, for interrupt nesting + hardware stack enable.
 static inline void __set_INTSYSCR( uint32_t value )
 {
-	__ASM volatile(
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrw 0x804, %0" : : "r"(value));
+	__ASM volatile( ADD_ARCH_ZICSR "csrw 0x804, %0" : : "r"(value));
 }
 
 #if defined(CH32V30x)
-/*********************************************************************
- * @fn      __get_FFLAGS
- *
- * @brief   Return the Floating-Point Accrued Exceptions
- *
- * @return  fflags value
- */
+
+// Return the Floating-Point Accrued Exceptions
 static inline uint32_t __get_FFLAGS(void)
 {
 	uint32_t result;
-	__ASM volatile ( 
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrr %0," "fflags" : "=r" (result) );
+	__ASM volatile( ADD_ARCH_ZICSR "csrr %0," "fflags" : "=r" (result) );
 	return (result);
 }
 
-/*********************************************************************
- * @fn      __set_FFLAGS
- * @brief   Set the Floating-Point Accrued Exceptions
- * @param   value  - set FFLAGS value
- * @return  none
- */
+// Set the Floating-Point Accrued Exceptions
 static inline void __set_FFLAGS(uint32_t value)
 {
-	__ASM volatile (
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrw fflags, %0" : : "r" (value) );
+	__ASM volatile( ADD_ARCH_ZICSR "csrw fflags, %0" : : "r" (value) );
 }
 
-/*********************************************************************
- * @fn      __get_FRM
- * @brief   Return the Floating-Point Dynamic Rounding Mode
- * @return  frm value
- */
+// Return the Floating-Point Dynamic Rounding Mode
 static inline uint32_t __get_FRM(void)
 {
 	uint32_t result;
-	__ASM volatile ( 
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrr %0," "frm" : "=r" (result) );
+	__ASM volatile( ADD_ARCH_ZICSR "csrr %0," "frm" : "=r" (result) );
 	return (result);
 }
 
-/*********************************************************************
- * @fn      __set_FRM
- * @brief   Set the Floating-Point Dynamic Rounding Mode
- * @param   value  - set frm value
- * @return  none
- */
+// Set the Floating-Point Dynamic Rounding Mode
 static inline void __set_FRM(uint32_t value)
 {
-	__ASM volatile (
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrw frm, %0" : : "r" (value) );
+	__ASM volatile( ADD_ARCH_ZICSR "csrw frm, %0" : : "r" (value) );
 }
 
-/*********************************************************************
- * @fn      __get_FCSR
- * @brief   Return the Floating-Point Control and Status Register
- * @return  fcsr value
- */
+// Return the Floating-Point Control and Status Register
 static inline uint32_t __get_FCSR(void)
 {
 	uint32_t result;
-	__ASM volatile (
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrr %0," "fcsr" : "=r" (result) );
+	__ASM volatile( ADD_ARCH_ZICSR "csrr %0," "fcsr" : "=r" (result) );
 	return (result);
 }
 
-/*********************************************************************
- * @fn      __set_FCSR
- * @brief   Set the Floating-Point Dynamic Rounding Mode
- * @param   value  - set fcsr value
- * @return  none
- */
+// Set the Floating-Point Dynamic Rounding Mode
 static inline void __set_FCSR(uint32_t value)
 {
-	__ASM volatile (	
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrw fcsr, %0" : : "r" (value) );
+	__ASM volatile( ADD_ARCH_ZICSR "csrw fcsr, %0" : : "r" (value) );
 }
 
 #endif // CH32V30x
 
-/*********************************************************************
- * @fn      __get_MSTATUS
- * @brief   Return the Machine Status Register
- * @return  mstatus value
- */
+// Return the Machine Status Register (MSTATUS)
 static inline uint32_t __get_MSTATUS(void)
 {
 	uint32_t result;
-	__ASM volatile(
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrr %0," "mstatus": "=r"(result));
+	__ASM volatile( ADD_ARCH_ZICSR "csrr %0, mstatus": "=r"(result) );
 	return (result);
 }
 
-/*********************************************************************
- * @fn      __set_MSTATUS
- * @brief   Set the Machine Status Register
- * @param   value  - set mstatus value
- * @return  none
- */
+// Set the Machine Status Register (MSTATUS)
 static inline void __set_MSTATUS(uint32_t value)
 {
-	__ASM volatile(
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrw mstatus, %0" : : "r"(value));
+	__ASM volatile( ADD_ARCH_ZICSR "csrw mstatus, %0" : : "r"(value) );
 }
 
-/*********************************************************************
- * @fn      __get_MISA
- * @brief   Return the Machine ISA Register
- * @return  misa value
- */
+// Return the Machine ISA Register (MISA)
 static inline uint32_t __get_MISA(void)
 {
 	uint32_t result;
-	__ASM volatile(
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrr %0,""misa" : "=r"(result));
+	__ASM volatile( ADD_ARCH_ZICSR "csrr %0, misa" : "=r"(result));
 	return (result);
 }
 
-/*********************************************************************
- * @fn      __set_MISA
- * @brief   Set the Machine ISA Register
- * @param   value  - set misa value
- * @return  none
- */
+// Set the Machine ISA Register (MISA)
 static inline void __set_MISA(uint32_t value)
 {
-	__ASM volatile(
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrw misa, %0" : : "r"(value));
+	__ASM volatile( ADD_ARCH_ZICSR "csrw misa, %0" : : "r"(value));
 }
 
-/*********************************************************************
- * @fn      __get_MTVEC
- *
- * @brief   Return the Machine Trap-Vector Base-Address Register
- *
- * @return  mtvec value
- */
+// Return the Machine Trap-Vector Base-Address Register (MTVEC)
 static inline uint32_t __get_MTVEC(void)
 {
 	uint32_t result;
-	__ASM volatile(
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrr %0," "mtvec": "=r"(result));
+	__ASM volatile( ADD_ARCH_ZICSR "csrr %0," "mtvec": "=r"(result));
 	return (result);
 }
 
-/*********************************************************************
- * @fn      __set_MTVEC
- * @brief   Set the Machine Trap-Vector Base-Address Register
- * @param   value  - set mtvec value
- * @return  none
- */
+//  * @brief   Set the Machine Trap-Vector Base-Address Register (MTVEC)
 static inline void __set_MTVEC(uint32_t value)
 {
-	__ASM volatile(
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrw mtvec, %0":: "r"(value));
+	__ASM volatile( ADD_ARCH_ZICSR "csrw mtvec, %0":: "r"(value));
 }
 
-/*********************************************************************
- * @fn      __get_MSCRATCH
- * @brief   Return the Machine Seratch Register
- * @return  mscratch value
- */
+// Return the Machine Seratch Register (MSCRATCH)
 static inline uint32_t __get_MSCRATCH(void)
 {
 	uint32_t result;
-	__ASM volatile(
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrr %0," "mscratch" : "=r"(result));
+	__ASM volatile( ADD_ARCH_ZICSR "csrr %0," "mscratch" : "=r"(result));
 	return (result);
 }
 
-/*********************************************************************
- * @fn      __set_MSCRATCH
- * @brief   Set the Machine Seratch Register
- * @param   value  - set mscratch value
- * @return  none
- */
+// Set the Machine Seratch Register (MSRATCH)
 static inline void __set_MSCRATCH(uint32_t value)
 {
-	__ASM volatile(
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrw mscratch, %0" : : "r"(value));
+	__ASM volatile( ADD_ARCH_ZICSR "csrw mscratch, %0" : : "r"(value));
 }
 
-/*********************************************************************
- * @fn      __get_MEPC
- * @brief   Return the Machine Exception Program Register
- * @return  mepc value
- */
+// Return the Machine Exception Program Register (MEPC)
 static inline uint32_t __get_MEPC(void)
 {
 	uint32_t result;
-	__ASM volatile(
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrr %0," "mepc" : "=r"(result));
+	__ASM volatile( ADD_ARCH_ZICSR "csrr %0," "mepc" : "=r"(result));
 	return (result);
 }
 
-/*********************************************************************
- * @fn      __set_MEPC
- * @brief   Set the Machine Exception Program Register
- * @return  mepc value
- */
+// Set the Machine Exception Program Register (MEPC)
 static inline void __set_MEPC(uint32_t value)
 {
-	__ASM volatile(
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrw mepc, %0" : : "r"(value));
+	__ASM volatile( ADD_ARCH_ZICSR "csrw mepc, %0" : : "r"(value));
 }
 
-/*********************************************************************
- * @fn      __get_MCAUSE
- * @brief   Return the Machine Cause Register
- * @return  mcause value
- */
+// Return the Machine Cause Register (MCAUSE)
 static inline uint32_t __get_MCAUSE(void)
 {
 	uint32_t result;
-	__ASM volatile(
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrr %0," "mcause": "=r"(result));
+	__ASM volatile( ADD_ARCH_ZICSR "csrr %0," "mcause": "=r"(result));
 	return (result);
 }
 
-/*********************************************************************
- * @fn      __set_MCAUSE
- * @brief   Set the Machine Cause Register
- * @return  mcause value
- */
+// Set the Machine Cause Register (MCAUSE)
 static inline void __set_MCAUSE(uint32_t value)
 {
-	__ASM volatile(
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrw mcause, %0":: "r"(value));
+	__ASM volatile( ADD_ARCH_ZICSR "csrw mcause, %0":: "r"(value));
 }
 
-/*********************************************************************
- * @fn      __get_MTVAL
- * @brief   Return the Machine Trap Value Register
- * @return  mtval value
- */
+// Return the Machine Trap Value Register (MTVAL)
 static inline uint32_t __get_MTVAL(void)
 {
 	uint32_t result;
-
-	__ASM volatile (
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrr %0," "mtval" : "=r" (result) );
+	__ASM volatile( ADD_ARCH_ZICSR "csrr %0," "mtval" : "=r" (result) );
 	return (result);
 }
 
-/*********************************************************************
- * @fn      __set_MTVAL
- * @brief   Set the Machine Trap Value Register
- * @return  mtval value
- */
+// Set the Machine Trap Value Register (MTVAL)
 static inline void __set_MTVAL(uint32_t value)
 {
-	__ASM volatile (
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrw mtval, %0" : : "r" (value) );
+	__ASM volatile ( ADD_ARCH_ZICSR "csrw mtval, %0" : : "r" (value) );
 }
 
-/*********************************************************************
- * @fn      __get_MVENDORID
- * @brief   Return Vendor ID Register
- * @return  mvendorid value
- */
+// Return Vendor ID Register (MVENDORID)
 static inline uint32_t __get_MVENDORID(void)
 {
 	uint32_t result;
-	__ASM volatile(
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrr %0,""mvendorid": "=r"(result));
+	__ASM volatile( ADD_ARCH_ZICSR "csrr %0, mvendorid": "=r"(result));
 	return (result);
 }
 
-/*********************************************************************
- * @fn      __get_MARCHID
- * @brief   Return Machine Architecture ID Register
- * @return  marchid value
- */
+// Return Machine Architecture ID Register (MARCHID)
 static inline uint32_t __get_MARCHID(void)
 {
 	uint32_t result;
-
-	__ASM volatile(
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrr %0,""marchid": "=r"(result));
+	__ASM volatile( ADD_ARCH_ZICSR "csrr %0, marchid": "=r"(result));
 	return (result);
 }
 
-/*********************************************************************
- * @fn      __get_MIMPID
- * @brief   Return Machine Implementation ID Register
- * @return  mimpid value
- */
+// Return Machine Implementation ID Register (MIPID)
 static inline uint32_t __get_MIMPID(void)
 {
 	uint32_t result;
-	__ASM volatile(
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrr %0,""mimpid": "=r"(result));
+	__ASM volatile( ADD_ARCH_ZICSR "csrr %0, mimpid": "=r"(result));
 	return (result);
 }
 
-/*********************************************************************
- * @fn      __get_MHARTID
- * @brief   Return Hart ID Register
- * @return  mhartid value
- */
+// Return Hart ID Register MHARTID
 static inline uint32_t __get_MHARTID(void)
 {
 	uint32_t result;
-	__ASM volatile(
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrr %0,""mhartid": "=r"(result));
+	__ASM volatile( ADD_ARCH_ZICSR "csrr %0, mhartid": "=r"(result));
 	return (result);
 }
 
 #if defined(CH32V003) && CH32V003
 
-/*********************************************************************
- * @fn      __get_DEBUG_CR
- * @brief   Return DBGMCU_CR Register value
- * @return  DGBMCU_CR value
- */
+// Return DBGMCU_CR Register value
 static inline uint32_t __get_DEBUG_CR(void)
 {
 	uint32_t result;
-
-	__ASM volatile (
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrr %0," "0x7C0" : "=r" (result) );
+	__ASM volatile( ADD_ARCH_ZICSR "csrr %0, 0x7C0" : "=r" (result) );
 	return (result);
 }
 
-/*********************************************************************
- * @fn      __set_DEBUG_CR
- * @brief   Set the DBGMCU_CR Register value
- * @return  none
- */
+
+// Set the DBGMCU_CR Register value
 static inline void __set_DEBUG_CR(uint32_t value)
 {
-	__ASM volatile (
-#if __GNUC__ > 10
-	".option arch, +zicsr\n"
-#endif
-	"csrw 0x7C0, %0" : : "r" (value) );
+	__ASM volatile( ADD_ARCH_ZICSR "csrw 0x7C0, %0" : : "r" (value) );
 }
 
-/*********************************************************************
- * @fn      __get_SP
- * @brief   Return SP Register
- * @return  SP value
- */
+// Return stack pointer register (SP)
 static inline uint32_t __get_SP(void)
 {
 	uint32_t result;
-	__ASM volatile(
-	"mv %0,""sp": "=r"(result):);
+	__ASM volatile( "mv %0,""sp": "=r"(result):);
 	return (result);
 }
 
@@ -1094,7 +759,6 @@ static inline uint32_t __get_SP(void)
 #else
 #define _JBLEN ((14*sizeof(long))/sizeof(long))
 #endif
-
 
 #ifndef __ASSEMBLER__
 #ifdef _JBLEN
