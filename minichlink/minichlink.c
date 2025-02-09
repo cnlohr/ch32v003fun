@@ -936,7 +936,16 @@ int DefaultDetermineChipType( void * dev )
 		MCF.ReadReg32( dev, DMDATA0, &marchid );
 
 		MCF.WriteReg32( dev, DMPROGBUF0, 0x90024000 );		// c.ebreak <<== c.lw x8, 0(x8)
-		MCF.WriteReg32( dev, DMDATA0, 0x1ffff704 );			// Special chip ID location.
+		if( data0offset == 0xe00000f4 )
+		{
+			// Only known processor with this signature is qingke-v2a.
+			MCF.WriteReg32( dev, DMDATA0, 0x1ffff7c4 );	// Special chip ID location.
+		}
+		else // if( data0offset == 0xe0000380 )
+		{
+			// All other known chips.
+			MCF.WriteReg32( dev, DMDATA0, 0x1ffff704 );	// Special chip ID location.
+		}
 		MCF.WriteReg32( dev, DMCOMMAND, 0x00271008 );		// Copy data to x8, and execute.
 		MCF.WaitForDoneOp( dev, 0 );
 
@@ -948,42 +957,40 @@ int DefaultDetermineChipType( void * dev )
 		MCF.WriteReg32( dev, DMCOMMAND, 0x00231008 );		// Copy data to x8
 		MCF.WriteReg32( dev, DMDATA0, old_data0 );
 
-		if( data0offset == 0xe00000f4 )
+		uint32_t chip_type = (vendorid & 0xfff00000)>>20;
+		printf( "Chip Type: %03x\n", chip_type );
+		switch( chip_type )
 		{
-			// Only known processor with this signature is a CH32V003.
-			iss->target_chip_type = CHIP_CH32V003;
-			fprintf( stderr, "Autodetected a ch32x003\n" );
-		}
-		else if( data0offset == 0xe0000380 )
-		{
-			// All other known chips.
-			uint32_t chip_type = (vendorid & 0xfff00000)>>20;
-			printf( "Chip Type: %03x\n", chip_type );
-			switch( chip_type )
-			{
-				case 0x103:
-					fprintf( stderr, "Autodetected a ch32v10x\n" );
-					iss->target_chip_type = CHIP_CH32V10x;
-					break;
-				case 0x035: case 0x033:
-					fprintf( stderr, "Autodetected a ch32x03x\n" );
-					iss->target_chip_type = CHIP_CH32X03x;
-					break;
-				case 0x203: case 0x205: case 0x208:
-					fprintf( stderr, "Autodetected a ch32v20x\n" );
-					iss->target_chip_type = CHIP_CH32V20x;
-					break;
-				case 0x303: case 0x305: case 0x307:
-					fprintf( stderr, "Autodetected a ch32v30x\n" );
-					iss->target_chip_type = CHIP_CH32V30x;
-					break;
-			}
+			case 0x003:
+				fprintf( stderr, "Autodetected a ch32v003\n" );
+				iss->target_chip_type = CHIP_CH32V003;
+				break;
+			case 0x103:
+				fprintf( stderr, "Autodetected a ch32v10x\n" );
+				iss->target_chip_type = CHIP_CH32V10x;
+				break;
+			case 0x035: case 0x033:
+				fprintf( stderr, "Autodetected a ch32x03x\n" );
+				iss->target_chip_type = CHIP_CH32X03x;
+				break;
+			case 0x203: case 0x205: case 0x208:
+				fprintf( stderr, "Autodetected a ch32v20x\n" );
+				iss->target_chip_type = CHIP_CH32V20x;
+				break;
+			case 0x303: case 0x305: case 0x307:
+				fprintf( stderr, "Autodetected a ch32v30x\n" );
+				iss->target_chip_type = CHIP_CH32V30x;
+				break;
+			case 0x641:
+				fprintf( stderr, "Autodetected a ch641\n" );
+				iss->target_chip_type = CHIP_CH641;
+				break;
 		}
 
 		if( iss->target_chip_type == CHIP_UNKNOWN )
 		{
 			fprintf( stderr, "Unknown chip type.  Report as bug with picture of chip.\n" );
-			fprintf( stderr, "Vendored: %08x\n", vendorid );
+			fprintf( stderr, "Vendorid: %08x\n", vendorid );
 			fprintf( stderr, "marchid : %08x\n", marchid );
 			fprintf( stderr, "HARTINFO: %08x\n", rr );
 			return -2;
@@ -1230,7 +1237,7 @@ static int DefaultWriteWord( void * dev, uint32_t address_to_write, uint32_t dat
 			// fc75 c.bnez x8, -4
 			// c.ebreak
 			MCF.WriteReg32( dev, DMPROGBUF3, 
-				(iss->target_chip_type == CHIP_CH32X03x || iss->target_chip_type == CHIP_CH32V003) ? 
+				(iss->target_chip_type == CHIP_CH32X03x || iss->target_chip_type == CHIP_CH32V003 || iss->target_chip_type == CHIP_CH641) ? 
 				0x4200c254 : 0x42000001  );
 
 			MCF.WriteReg32( dev, DMPROGBUF4,
@@ -2028,6 +2035,7 @@ void PostSetupConfigureInterface( void * dev )
 		break;
 	default:
 	case CHIP_CH32V003:
+	case CHIP_CH641:
 		iss->sector_size = 64;
 		iss->nr_registers_for_debug = 16;
 		break;
@@ -2370,7 +2378,7 @@ int DefaultUnbrick( void * dev )
 	InternalUnlockFlash(dev, iss);
 
 	const uint8_t * option_data = 
-		( iss->target_chip_type == CHIP_CH32X03x || iss->target_chip_type == CHIP_CH32V003 ) ?
+		( iss->target_chip_type == CHIP_CH32X03x || iss->target_chip_type == CHIP_CH32V003 || iss->target_chip_type == CHIP_CH641 ) ?
 		option_data_003_x03x : option_data_20x_30x;
 
 	DefaultWriteBinaryBlob(dev, 0x1ffff800, 16, option_data );
