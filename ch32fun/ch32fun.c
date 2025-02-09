@@ -773,18 +773,59 @@ extern uint32_t * _data_lma;
 extern uint32_t * _data_vma;
 extern uint32_t * _edata;
 
+#if FUNCONF_DEBUG_HARDFAULT
+#ifdef FUNCONF_USE_DEBUGPRINTF
+static void PrintN( uint32_t n )
+{
+	while( (*DMDATA0) & 0x80 );
+	// Write out character.
+	*DMDATA0 = 0x78302088; //" 0x"
+	int shift;
+	for( shift = 28; shift >= 0; shift -= 4 )
+	{
+		while( (*DMDATA0) & 0x80 );
+		int s = (n>>shift) & 0xf;
+		s += ( s < 10 ) ? '0' : ('a' - 10);
+		*DMDATA0 = 0x85 | (s<<8); //" 0x"
+	}
+}
+#elif FUNCONF_USE_UARTPRINTF
+static void PrintN( uint32_t n )
+{
+	putchar( ' ' );
+	putchar( '0' );
+	putchar( 'x' );
+	int shift;
+	for( shift = 28; shift >= 0; shift -= 4 )
+	{
+		while( (*DMDATA0) ) & 0x80 );
+		int s = (n>>shift) & 0xf;
+		s += ( s < 10 ) ? '0' : ('a' - 10);
+		putchar( s );
+	}
+#endif
+#endif
 
 // If you don't override a specific handler, it will just spin forever.
 void DefaultIRQHandler( void )
 {
 #if FUNCONF_DEBUG_HARDFAULT && ( FUNCONF_USE_DEBUGPRINTF || FUNCONF_USE_UARTPRINTF )
-#if FUNCONF_USE_DEBUGPRINTF
-	// Wait indefinitely for a printf to become clear.
-	while( !DebugPrintfBufferFree() );
-
+	//This is kind of like a crash handler.
+	//printf( "DEAD MSTATUS:%08x MTVAL:%08x MCAUSE:%08x MEPC:%08x\n", (int)__get_MSTATUS(), (int)__get_MTVAL(), (int)__get_MCAUSE(), (int)__get_MEPC() );
+	PrintN( __get_MEPC() ); // "addr2line -e debugprintfdemo.elf 0x000007e6" ---> debugprintfdemo.c:45
+	PrintN( __get_MSTATUS() );
+	PrintN( __get_MTVAL() );
+	PrintN( __get_MCAUSE() );
+#ifdef FUNCONF_USE_DEBUGPRINTF
+	while( (*DMDATA0) & 0x80 );
+	*DMDATA0 = 0x0a85;
+	while( (*DMDATA0) & 0x80 );
+	*DMDATA0 = 0xaaaaaa83;
+#elif FUNCONF_USE_UARTPRINTF
+	putchar( '\n' );
 #endif
-	printf( "DEAD MSTATUS:%08x MTVAL:%08x MCAUSE:%08x MEPC:%08x\n", (int)__get_MSTATUS(), (int)__get_MTVAL(), (int)__get_MCAUSE(), (int)__get_MEPC() );
 #endif
+	//printf( "DEAD MSTATUS:%08x MTVAL:%08x MCAUSE:%08x MEPC:%08x\n", (int)__get_MSTATUS(), (int)__get_MTVAL(), (int)__get_MCAUSE(), (int)__get_MEPC() );
 	// Infinite Loop
 	asm volatile( "1: j 1b" );
 }
@@ -1276,8 +1317,7 @@ void poll_input( void )
  	if( ((*dmdata0) & 0x80) == 0 )
 	{
 		internal_handle_input( dmdata0 );
-		// Should be 0x80 or so, but for some reason there's a bug that retriggers.
-		*dmdata0 = 0x00;
+		*dmdata0 = 0x80;
 	}
 }
 

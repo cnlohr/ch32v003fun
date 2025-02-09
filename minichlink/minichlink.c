@@ -2290,8 +2290,7 @@ int DefaultPollTerminal( void * dev, uint8_t * buffer, int maxlen, uint32_t leav
 		}
 		if( leaveflagA ) MCF.WriteReg32( dev, DMDATA1, leaveflagB );
 		MCF.WriteReg32( dev, DMDATA0, leaveflagA ); // Write that we acknowledge the data.
-		if( num_printf_chars == 0 ) return -1;      // was acked?
-		if( num_printf_chars < 0 ) num_printf_chars = 0;
+		if( num_printf_chars <= 0 ) return num_printf_chars-1;      // was acked (or other error code)
 		return num_printf_chars;
 	}
 	else
