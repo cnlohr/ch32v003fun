@@ -137,12 +137,12 @@ int main( int argc, char ** argv )
 			for( i = 0; i < gl; i++ )
 			{
 				struct group * gr = getgrgid( groups[i] );
-				if( strcmp( gr->gr_name, "plugdev" ) == 0 )
+				if( strcmp( gr->gr_name, "plugdev" ) == 0 || strcmp( gr->gr_name, "dialout" ) == 0 )
 					break;
 			}
 			if( i == gl )
 			{
-				printf( "WARNING: You are not in the plugdev group, the canned udev rules will not work on your system.\n" );
+				printf( "WARNING: You are not in the plugdev/dialout group, the canned udev rules will not work on your system.\n" );
 			}
 		}
 	}
