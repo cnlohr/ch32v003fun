@@ -37,7 +37,7 @@ CFLAGS?=-g -Os -flto -ffunction-sections -fdata-sections -fmessage-length=0 -msm
 LDFLAGS+=-Wl,--print-memory-usage -Wl,-Map=$(TARGET).map
 
 ifeq ($(TARGET_MCU),CH32V003)
-	CFLAGS_ARCH+=-march=rv32ec -mabi=ilp32e -DCH32V003=1
+	CFLAGS_ARCH+=-march=rv32eczmmul - -mabi=ilp32e -DCH32V003=1
 	GENERATED_LD_FILE?=$(CH32FUN)/generated_ch32v003.ld
 	TARGET_MCU_LD:=0
 	LINKER_SCRIPT?=$(GENERATED_LD_FILE)
