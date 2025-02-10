@@ -389,16 +389,16 @@ keep_going:
 							fprintf( stderr, "Terminal dead.  code %d\n", r );
 							return -32;
 						}
+						else if( r < 0 )
+						{
+							// Some other situation.
+							appendword = 0;
+						}
 						else if( r > 0 )
 						{
 							fwrite( buffer, r, 1, stdout );
 							fflush( stdout );
 							// Otherwise it's basically just an ack for appendword.
-							appendword = 0;
-						}
-						else if( r != 0 )
-						{
-							// Some other situation.
 							appendword = 0;
 						}
 					}
