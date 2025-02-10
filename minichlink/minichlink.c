@@ -389,11 +389,6 @@ keep_going:
 							fprintf( stderr, "Terminal dead.  code %d\n", r );
 							return -32;
 						}
-						else if( r < -5 )
-						{
-							// Other end ack'd without printf.
-							appendword = 0;
-						}
 						else if( r > 0 )
 						{
 							fwrite( buffer, r, 1, stdout );
