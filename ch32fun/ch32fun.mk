@@ -37,7 +37,7 @@ CFLAGS?=-g -Os -flto -ffunction-sections -fdata-sections -fmessage-length=0 -msm
 LDFLAGS+=-Wl,--print-memory-usage -Wl,-Map=$(TARGET).map
 
 ifeq ($(TARGET_MCU),CH32V003)
-	CFLAGS_ARCH+=-march=rv32eczmmul - -mabi=ilp32e -DCH32V003=1
+	CFLAGS_ARCH+=-march=rv32ec -mabi=ilp32e -DCH32V003=1
 	GENERATED_LD_FILE?=$(CH32FUN)/generated_ch32v003.ld
 	TARGET_MCU_LD:=0
 	LINKER_SCRIPT?=$(GENERATED_LD_FILE)
@@ -46,7 +46,7 @@ else
 	MCU_PACKAGE?=1
 	ifeq ($(findstring CH32V00,$(TARGET_MCU)),CH32V00) # CH32V002, 4, 5, 6, 7
 		# Note: The CH32V003 is not a CH32V00x.
-		CFLAGS_ARCH+=-march=rv32ec -mabi=ilp32e -DCH32V00x=1
+		CFLAGS_ARCH+=-march=rv32eczmmul -mabi=ilp32e -DCH32V00x=1
 		ifeq ($(findstring CH32V002, $(TARGET_MCU)), CH32V002)
 			TARGET_MCU_LD:=5
 		else ifeq ($(findstring CH32V004, $(TARGET_MCU)), CH32V004)
