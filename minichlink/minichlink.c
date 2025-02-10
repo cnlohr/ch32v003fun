@@ -391,7 +391,7 @@ keep_going:
 						}
 						else if( r < 0 )
 						{
-							// Some other situation.
+							// Other end ack'd without printf. (Or there is another situation)
 							appendword = 0;
 						}
 						else if( r > 0 )
