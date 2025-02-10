@@ -2,7 +2,7 @@ all : flash
 
 TARGET:=debugprintfdemo
 
-TARGET_MCU?=CH32V006
+TARGET_MCU?=CH32V003
 include ../../ch32fun/ch32fun.mk
 
 flash : cv_flash
