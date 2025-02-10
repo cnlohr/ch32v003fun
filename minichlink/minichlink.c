@@ -384,15 +384,15 @@ keep_going:
 							appendword |= i+4; // Will go into DATA0.
 						}
 						int r = MCF.PollTerminal( dev, buffer, sizeof( buffer ), appendword, 0 );
-						if( r == -1 )
-						{
-							// Other end ack'd without printf.
-							appendword = 0;
-						}
-						else if( r < 0 )
+						if( r < -5 )
 						{
 							fprintf( stderr, "Terminal dead.  code %d\n", r );
 							return -32;
+						}
+						else if( r < 0 )
+						{
+							// Other end ack'd without printf.
+							appendword = 0;
 						}
 						else if( r > 0 )
 						{
