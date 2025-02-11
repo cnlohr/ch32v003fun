@@ -13,6 +13,9 @@
 // comfortable packet size for this OLED
 #define SSD1306_PSZ 32
 
+#if defined (SSD1306_CUSTOM)
+// Let the caller configure the OLED.
+#else
 // characteristics of each type
 #if !defined (SSD1306_64X32) && !defined (SSD1306_128X32) && !defined (SSD1306_128X64) && !defined (SH1107_128x128) && !(defined(SSD1306_W) && defined(SSD1306_H) && defined(SSD1306_OFFSET) )
 	#error "Please define the SSD1306_WXH resolution used in your application"
@@ -45,6 +48,8 @@
 #define SSD1306_H 128
 #define SSD1306_FULLUSE
 #define SSD1306_OFFSET 0
+#endif
+
 #endif
 
 /*
@@ -151,7 +156,9 @@ const uint8_t ssd1306_init_array[] =
     SSD1306_SETVCOMDETECT,                 // 0xDB
     0x40,
     SSD1306_DISPLAYALLON_RESUME,           // 0xA4
+#ifndef SSD1327
     SSD1306_NORMALDISPLAY,                 // 0xA6
+#endif
 	SSD1306_DISPLAYON,	                   // 0xAF --turn on oled panel
 #endif
 	SSD1306_TERMINATE_CMDS                 // 0xFF --fake command to mark end
