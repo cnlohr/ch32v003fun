@@ -44,8 +44,23 @@ ifeq ($(TARGET_MCU),CH32V003)
 	LDFLAGS+=-L$(CH32FUN)/../misc -lgcc
 else
 	MCU_PACKAGE?=1
-
-	ifeq ($(findstring CH32V10,$(TARGET_MCU)),CH32V10) # CH32V103
+	ifeq ($(findstring CH32V00,$(TARGET_MCU)),CH32V00) # CH32V002, 4, 5, 6, 7
+		# Note: The CH32V003 is not a CH32V00x.
+		CFLAGS_ARCH+=-march=rv32eczmmul -mabi=ilp32e -DCH32V00x=1
+		ifeq ($(findstring CH32V002, $(TARGET_MCU)), CH32V002)
+			TARGET_MCU_LD:=5
+		else ifeq ($(findstring CH32V004, $(TARGET_MCU)), CH32V004)
+			TARGET_MCU_LD:=6
+		else ifeq ($(findstring CH32V005, $(TARGET_MCU)), CH32V005)
+			TARGET_MCU_LD:=7
+		else ifeq ($(findstring CH32V006, $(TARGET_MCU)), CH32V006)
+			TARGET_MCU_LD:=7
+		else ifeq ($(findstring CH32V007, $(TARGET_MCU)), CH32V007)
+			TARGET_MCU_LD:=7
+		else
+			ERROR:=$(error Unknown MCU $(TARGET_MCU))
+		endif
+	else ifeq ($(findstring CH32V10,$(TARGET_MCU)),CH32V10) # CH32V103
 		TARGET_MCU_PACKAGE?=CH32V103R8T6
 		CFLAGS_ARCH+=	-march=rv32imac \
 			-mabi=ilp32 \
