@@ -99,7 +99,7 @@ unsigned char ssd1306_i2c_sendbyte( unsigned char data )
 	return !!i;
 }
 
-uint8_t ssd1306_pkt_send(uint8_t *data, int sz, uint8_t cmd)
+uint8_t ssd1306_pkt_send(const uint8_t *data, int sz, uint8_t cmd)
 {
 	ssd1306_i2c_sendstart();
 	int r = ssd1306_i2c_sendbyte( SSD1306_I2C_ADDR<<1 );
