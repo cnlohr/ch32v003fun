@@ -475,13 +475,13 @@ void ssd1306_drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_
 /*
  *  draws a circle
  */
-void ssd1306_drawCircle(int16_t x, int16_t y, int16_t radius, int8_t color)
+void ssd1306_drawCircle(int x, int y, int radius, int color)
 {
     /* Bresenham algorithm */
-    int16_t x_pos = -radius;
-    int16_t y_pos = 0;
-    int16_t err = 2 - 2 * radius;
-    int16_t e2;
+    int x_pos = -radius;
+    int y_pos = 0;
+    int err = 2 - 2 * radius;
+    int e2;
 
     do {
         ssd1306_drawPixel(x - x_pos, y + y_pos, color);
