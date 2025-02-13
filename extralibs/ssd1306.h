@@ -714,9 +714,7 @@ uint8_t ssd1306_init(void)
 	}
 	
 	// clear display
-	ssd1306_setbuf(0);
-	ssd1306_refresh();
-	
+	ssd1306_refresh();	
 #endif
 
 	return 0;
