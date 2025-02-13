@@ -300,7 +300,7 @@ uint8_t ssd1306_i2c_send(uint8_t addr, uint8_t *data, uint8_t sz)
 /*
  * high-level packet send for I2C
  */
-uint8_t ssd1306_pkt_send(uint8_t *data, uint8_t sz, uint8_t cmd)
+uint8_t ssd1306_pkt_send(uint8_t *data, int sz, uint8_t cmd)
 {
 	uint8_t pkt[33];
 	

@@ -63,7 +63,7 @@ uint8_t ssd1306_cmd(uint8_t cmd)
 /*
  * send OLED data packet (up to 32 bytes)
  */
-uint8_t ssd1306_data(uint8_t *data, uint8_t sz)
+uint8_t ssd1306_data(uint8_t *data, int sz)
 {
 	return ssd1306_pkt_send(data, sz, 0);
 }
