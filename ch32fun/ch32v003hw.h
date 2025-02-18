@@ -591,7 +591,7 @@ typedef struct
 #define ESIG_BASE                               ((uint32_t)0x1FFFF7E0)
 #define INFO_BASE                               ((uint32_t)0x1FFFF704)
 
-#define EXTEN_BASE                              ((uint32_t)0x40023800)
+#define EXTEN_BASE                              (AHBPERIPH_BASE + 0x3800)
 
 #define VENDOR_CFG0_BASE                        ((uint32_t)0x1FFFF7D4)
 #define CFG0_PLL_TRIM                           (VENDOR_CFG0_BASE)

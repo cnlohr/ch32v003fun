@@ -2266,11 +2266,7 @@ typedef struct
 #define ESIG_BASE                               ((uint32_t)0x1FFFF7E0)
 #define INFO_BASE                               ((uint32_t)0x1FFFF704)
 
-#if defined(CH32V003) || defined(CH32V10x)
-#define EXTEN_BASE                              ((uint32_t)0x40023800)
-#elif defined(CH32V20x) || defined(CH32V30x)
 #define EXTEN_BASE                              (AHBPERIPH_BASE + 0x3800)
-#endif
 
 #define PFIC_BASE    (CORE_PERIPH_BASE + 0xE000)
 #define SysTick_BASE    (CORE_PERIPH_BASE + 0xF000)
