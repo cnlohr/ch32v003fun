@@ -30,7 +30,7 @@
 |USART         | √  | x  |2.4 | x  | x  | √  | ×  | ×  |
 |USB           |N/A |N/A | √  | x  | x  |1.8 | ×  | ×  |
 |USB_HOST      |N/A |N/A | √  |N/A |N/A |N/A |N/A |N/A |
-|USBPD         |N/A |N/A |N/A |N/A |N/A | x  | ×  | ×  |
+|USBPD         |N/A |N/A |N/A |N/A |N/A |1.4 | ×  | ×  |
 |WWWDG         | √  | x  | √  | x  | x  | √  | ×  | ×  |
 |**chxxxhw.h** | √  | x  | √  | √  | √  | √  | x  | x  |
 |**minichlink**| √  | x  | √  | √  | √  | √  | x  | x  |
