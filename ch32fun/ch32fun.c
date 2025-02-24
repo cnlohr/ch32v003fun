@@ -966,6 +966,24 @@ void USBPD_WKUP_IRQHandler( void )		__attribute__((section(".text.vector_handler
 void TIM2_CC_IRQHandler( void )			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void TIM2_TRG_IRQHandler( void )		__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void TIM2_BRK_IRQHandler( void )		__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+// CH59x
+void TMR0_IRQHandler( void )			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void GPIOA_IRQHandler( void )			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void GPIOB_IRQHandler( void )			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void SPI0_IRQHandler( void )			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void USB_IRQHandler( void )				__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void TMR1_IRQHandler( void )			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void TMR2_IRQHandler( void )			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void UART0_IRQHandler( void )			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void UART1_IRQHandler( void )			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void ADC_IRQHandler( void )				__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void I2C_IRQHandler( void )				__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void PWMX_IRQHandler( void )			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void TMR3_IRQHandler( void )			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void UART2_IRQHandler( void )			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void UART3_IRQHandler( void )			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void WDOG_BAT_IRQHandler( void )		__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+
 
 
 void InterruptVector()         __attribute__((naked)) __attribute((section(".init"))) __attribute((weak,alias("InterruptVectorDefault"))) __attribute((naked));
@@ -1060,7 +1078,7 @@ asm volatile(
 "	mret\n" : : [main]"r"(main) );
 }
 
-#elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
+#elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x) || defined(CH59x)
 
 void handle_reset( void )
 {
@@ -1472,7 +1490,7 @@ void DelaySysTick( uint32_t n )
 #ifdef CH32V003
 	uint32_t targend = SysTick->CNT + n;
 	while( ((int32_t)( SysTick->CNT - targend )) < 0 );
-#elif defined(CH32V20x) || defined(CH32V30x)
+#elif defined(CH32V20x) || defined(CH32V30x) || defined(CH59x)
 	uint64_t targend = SysTick->CNT + n;
 	while( ((int64_t)( SysTick->CNT - targend )) < 0 );
 #elif defined(CH32V10x) || defined(CH32X03x)
@@ -1482,6 +1500,144 @@ void DelaySysTick( uint32_t n )
 	#error DelaySysTick not defined.
 #endif
 }
+
+#if defined(CH59x)
+/**
+ * @brief Enter safe access mode.
+ * 
+ * @NOTE: After enter safe access mode, about 16 system frequency cycles 
+ * are in safe mode, and one or more secure registers can be rewritten 
+ * within the valid period. The safe mode will be automatically 
+ * terminated after the above validity period is exceeded.
+ */
+vu32 IRQ_STA = 0;
+__attribute__( ( always_inline ) ) RV_STATIC_INLINE void sys_safe_access_enable(void)
+{
+  if(read_csr(0x800) & 0x08)
+  {
+    IRQ_STA = read_csr(0x800);
+    write_csr(0x800, (IRQ_STA&(~0x08)));
+  }
+  ADD_N_NOPS(2);
+  R8_SAFE_ACCESS_SIG = SAFE_ACCESS_SIG1;
+  R8_SAFE_ACCESS_SIG = SAFE_ACCESS_SIG2;
+  ADD_N_NOPS(2);
+}
+
+__attribute__( ( always_inline ) ) RV_STATIC_INLINE void sys_safe_access_disable(void)
+{
+  R8_SAFE_ACCESS_SIG = 0;
+  write_csr(0x800, read_csr(0x800) | (IRQ_STA & 0x08));
+  IRQ_STA = 0;
+  ADD_N_NOPS(2);
+}
+
+void SetSysClock(SYS_CLKTypeDef sc)
+{
+  sys_safe_access_enable();
+  R8_PLL_CONFIG &= ~(1 << 5); //
+  sys_safe_access_disable();
+  if(sc & 0x20)  // HSE div
+  {
+    sys_safe_access_enable();
+    R32_CLK_SYS_CFG = (0 << 6) | (sc & 0x1f) | RB_TX_32M_PWR_EN | RB_PLL_PWR_EN;
+    ADD_N_NOPS(4);
+    sys_safe_access_disable();
+    sys_safe_access_enable();
+    ADD_N_NOPS(2);
+    R8_FLASH_CFG = 0X51;
+    sys_safe_access_disable();
+  }
+
+  else if(sc & 0x40) // PLL div
+  {
+    sys_safe_access_enable();
+    R32_CLK_SYS_CFG = (1 << 6) | (sc & 0x1f) | RB_TX_32M_PWR_EN | RB_PLL_PWR_EN;
+    ADD_N_NOPS(4);
+    sys_safe_access_disable();
+    sys_safe_access_enable();
+    R8_FLASH_CFG = 0X52;
+    sys_safe_access_disable();
+  }
+  else
+  {
+    sys_safe_access_enable();
+    R32_CLK_SYS_CFG |= RB_CLK_SYS_MOD;
+    sys_safe_access_disable();
+  }
+  sys_safe_access_enable();
+  R8_PLL_CONFIG |= 1 << 7;
+  sys_safe_access_disable();
+}
+void GPIOA_ModeCfg(uint32_t pin, GPIOModeTypeDef mode)
+{
+    switch(mode)
+    {
+        case GPIO_ModeIN_Floating:
+            R32_PA_PD_DRV &= ~pin;
+            R32_PA_PU &= ~pin;
+            R32_PA_DIR &= ~pin;
+            break;
+        case GPIO_ModeIN_PU:
+            R32_PA_PD_DRV &= ~pin;
+            R32_PA_PU |= pin;
+            R32_PA_DIR &= ~pin;
+            break;
+        case GPIO_ModeIN_PD:
+            R32_PA_PD_DRV |= pin;
+            R32_PA_PU &= ~pin;
+            R32_PA_DIR &= ~pin;
+            break;
+        case GPIO_ModeOut_PP_5mA:
+            R32_PA_PD_DRV &= ~pin;
+            R32_PA_DIR |= pin;
+            break;
+        case GPIO_ModeOut_PP_20mA:
+            R32_PA_PD_DRV |= pin;
+            R32_PA_DIR |= pin;
+            break;
+        default:
+            break;
+    }
+}
+
+void GPIOB_ModeCfg(uint32_t pin, GPIOModeTypeDef mode)
+{
+    switch(mode)
+    {
+        case GPIO_ModeIN_Floating:
+            R32_PB_PD_DRV &= ~pin;
+            R32_PB_PU &= ~pin;
+            R32_PB_DIR &= ~pin;
+            break;
+
+        case GPIO_ModeIN_PU:
+            R32_PB_PD_DRV &= ~pin;
+            R32_PB_PU |= pin;
+            R32_PB_DIR &= ~pin;
+            break;
+
+        case GPIO_ModeIN_PD:
+            R32_PB_PD_DRV |= pin;
+            R32_PB_PU &= ~pin;
+            R32_PB_DIR &= ~pin;
+            break;
+
+        case GPIO_ModeOut_PP_5mA:
+            R32_PB_PD_DRV &= ~pin;
+            R32_PB_DIR |= pin;
+            break;
+
+        case GPIO_ModeOut_PP_20mA:
+            R32_PB_PD_DRV |= pin;
+            R32_PB_DIR |= pin;
+            break;
+
+        default:
+            break;
+    }
+}
+#endif
 
 void SystemInit( void )
 {
@@ -1541,7 +1697,9 @@ void SystemInit( void )
 	#endif
 #endif
 
-#if defined(FUNCONF_USE_HSI) && FUNCONF_USE_HSI
+#if defined(CH59x)
+	SetSysClock(CLK_SOURCE_PLL_60MHz);
+#elif defined(FUNCONF_USE_HSI) && FUNCONF_USE_HSI
 	#if defined(CH32V30x) || defined(CH32V20x) || defined(CH32V10x)
 		EXTEN->EXTEN_CTR |= EXTEN_PLL_HSI_PRE;
 	#endif
@@ -1600,9 +1758,11 @@ void SystemInit( void )
 	#endif
 #endif
 
+#if !defined(CH59x)
 	RCC->INTR  = 0x009F0000;                               // Clear PLL, CSSC, HSE, HSI and LSI ready flags.
+#endif
 
-#if defined(FUNCONF_USE_PLL) && FUNCONF_USE_PLL
+#if defined(FUNCONF_USE_PLL) && FUNCONF_USE_PLL && !defined(CH59x)
 	while((RCC->CTLR & RCC_PLLRDY) == 0);                       	// Wait till PLL is ready
 	uint32_t tmp32 = RCC->CFGR0 & ~(0x03);							// clr the SW
 	RCC->CFGR0 = tmp32 | RCC_SW_PLL;                       			// Select PLL as system clock source
@@ -1617,6 +1777,7 @@ void SystemInit( void )
 #endif
 }
 
+#if defined(FUNCONF_INIT_ANALOG) && FUNCONF_INIT_ANALOG
 void funAnalogInit( void )
 {
 	//RCC->CFGR0 &= ~(0x1F<<11); // Assume ADCPRE = 0
@@ -1655,6 +1816,7 @@ int funAnalogRead( int nAnalogNumber )
 	// get result
 	return ADC1->RDATAR;
 }
+#endif
 
 // C++ Support
 
