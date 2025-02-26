@@ -185,7 +185,7 @@ typedef enum
 #define SAFE_ACCESS_SIG1    0x57                      // WO: safe accessing sign value step 1
 #define SAFE_ACCESS_SIG2    0xA8                      // WO: safe accessing sign value step 2
 #define SAFE_ACCESS_SIG0    0x00                      // WO: safe accessing sign value for disable
-#define R8_CHIP_ID          (*((vu8*)0x40001041))  // RF, chip ID register, always is ID_CH58*
+#define R8_CHIP_ID          (*((vu8*)0x40001041))  // RF, chip ID register, always is ID_CH59*
 
 /*System: Miscellaneous Control register */
 #define R32_MISC_CTRL       (*((vu32*)0x40001048)) // RWA, miscellaneous control register
@@ -198,13 +198,6 @@ typedef enum
 #define R8_FLASH_DATA       (*((vu8*)0x40001804))  // RO/WO, flash ROM data buffer
 #define R8_FLASH_CTRL       (*((vu8*)0x40001806))  // RW, flash ROM access control
 #define R8_FLASH_CFG        (*((vu8*)0x40001807))  // RW, flash ROM access config, SAM
-
-#define read_csr(reg)		({unsigned long __tmp; __asm__ volatile ("csrr %0, " #reg : "=r"(__tmp)); __tmp; })
-#define write_csr(reg, val) ({	if (__builtin_constant_p(val) && (unsigned long)(val) < 32) \
-									__asm__ volatile ("csrw  " #reg ", %0" :: "i"(val));    \
-								else                                                        \
-									__asm__ volatile ("csrw  " #reg ", %0" :: "r"(val));    \
-							})
 
 
 /* GPIO PA register */
@@ -270,48 +263,32 @@ typedef enum
 #define PA14     (0x00004000) /*!< Pin 14 selected */
 #define PA15     (0x00008000) /*!< Pin 15 selected */
 
-#define PB0      (0x00000001) /*!< Pin 0 selected */
-#define PB1      (0x00000002) /*!< Pin 1 selected */
-#define PB2      (0x00000004) /*!< Pin 2 selected */
-#define PB3      (0x00000008) /*!< Pin 3 selected */
-#define PB4      (0x00000010) /*!< Pin 4 selected */
-#define PB5      (0x00000020) /*!< Pin 5 selected */
-#define PB6      (0x00000040) /*!< Pin 6 selected */
-#define PB7      (0x00000080) /*!< Pin 7 selected */
-#define PB8      (0x00000100) /*!< Pin 8 selected */
-#define PB9      (0x00000200) /*!< Pin 9 selected */
-#define PB10     (0x00000400) /*!< Pin 10 selected */
-#define PB11     (0x00000800) /*!< Pin 11 selected */
-#define PB12     (0x00001000) /*!< Pin 12 selected */
-#define PB13     (0x00002000) /*!< Pin 13 selected */
-#define PB14     (0x00004000) /*!< Pin 14 selected */
-#define PB15     (0x00008000) /*!< Pin 15 selected */
-#define PB16     (0x00010000) /*!< Pin 16 selected */
-#define PB17     (0x00020000) /*!< Pin 17 selected */
-#define PB18     (0x00040000) /*!< Pin 18 selected */
-#define PB19     (0x00080000) /*!< Pin 19 selected */
-#define PB20     (0x00100000) /*!< Pin 20 selected */
-#define PB21     (0x00200000) /*!< Pin 21 selected */
-#define PB22     (0x00400000) /*!< Pin 22 selected */
-#define PB23     (0x00800000) /*!< Pin 23 selected */
-#define PA_All   (0xFFFFFFFF) /*!< All pins selected */
-
-typedef enum
-{
-    GPIO_ModeIN_Floating,
-    GPIO_ModeIN_PU,
-    GPIO_ModeIN_PD,
-    GPIO_ModeOut_PP_5mA,
-    GPIO_ModeOut_PP_20mA,
-
-} GPIOModeTypeDef;
-
-#define GPIOA_ResetBits(pin)      (R32_PA_CLR |= pin)
-#define GPIOA_SetBits(pin)        (R32_PA_OUT |= pin)
-#define GPIOA_InverseBits(pin)    (R32_PA_OUT ^= pin)
-#define GPIOB_ResetBits(pin)      (R32_PB_CLR |= pin)
-#define GPIOB_SetBits(pin)        (R32_PB_OUT |= pin)
-#define GPIOB_InverseBits(pin)    (R32_PB_OUT ^= pin)
+#define PB       (0x10000000) /*!< Pin 0 selected */
+#define PB0      (0x10000001) /*!< Pin 0 selected */
+#define PB1      (0x10000002) /*!< Pin 1 selected */
+#define PB2      (0x10000004) /*!< Pin 2 selected */
+#define PB3      (0x10000008) /*!< Pin 3 selected */
+#define PB4      (0x10000010) /*!< Pin 4 selected */
+#define PB5      (0x10000020) /*!< Pin 5 selected */
+#define PB6      (0x10000040) /*!< Pin 6 selected */
+#define PB7      (0x10000080) /*!< Pin 7 selected */
+#define PB8      (0x10000100) /*!< Pin 8 selected */
+#define PB9      (0x10000200) /*!< Pin 9 selected */
+#define PB10     (0x10000400) /*!< Pin 10 selected */
+#define PB11     (0x10000800) /*!< Pin 11 selected */
+#define PB12     (0x10001000) /*!< Pin 12 selected */
+#define PB13     (0x10002000) /*!< Pin 13 selected */
+#define PB14     (0x10004000) /*!< Pin 14 selected */
+#define PB15     (0x10008000) /*!< Pin 15 selected */
+#define PB16     (0x10010000) /*!< Pin 16 selected */
+#define PB17     (0x10020000) /*!< Pin 17 selected */
+#define PB18     (0x10040000) /*!< Pin 18 selected */
+#define PB19     (0x10080000) /*!< Pin 19 selected */
+#define PB20     (0x10100000) /*!< Pin 20 selected */
+#define PB21     (0x10200000) /*!< Pin 21 selected */
+#define PB22     (0x10400000) /*!< Pin 22 selected */
+#define PB23     (0x10800000) /*!< Pin 23 selected */
+#define P_All    (0xFFFFFFFF) /*!< All pins selected */
 
 
 #define HardFault_IRQn        EXC_IRQn

@@ -1501,144 +1501,6 @@ void DelaySysTick( uint32_t n )
 #endif
 }
 
-#if defined(CH59x)
-/**
- * @brief Enter safe access mode.
- * 
- * @NOTE: After enter safe access mode, about 16 system frequency cycles 
- * are in safe mode, and one or more secure registers can be rewritten 
- * within the valid period. The safe mode will be automatically 
- * terminated after the above validity period is exceeded.
- */
-vu32 IRQ_STA = 0;
-__attribute__( ( always_inline ) ) RV_STATIC_INLINE void sys_safe_access_enable(void)
-{
-  if(read_csr(0x800) & 0x08)
-  {
-    IRQ_STA = read_csr(0x800);
-    write_csr(0x800, (IRQ_STA&(~0x08)));
-  }
-  ADD_N_NOPS(2);
-  R8_SAFE_ACCESS_SIG = SAFE_ACCESS_SIG1;
-  R8_SAFE_ACCESS_SIG = SAFE_ACCESS_SIG2;
-  ADD_N_NOPS(2);
-}
-
-__attribute__( ( always_inline ) ) RV_STATIC_INLINE void sys_safe_access_disable(void)
-{
-  R8_SAFE_ACCESS_SIG = 0;
-  write_csr(0x800, read_csr(0x800) | (IRQ_STA & 0x08));
-  IRQ_STA = 0;
-  ADD_N_NOPS(2);
-}
-
-void SetSysClock(SYS_CLKTypeDef sc)
-{
-  sys_safe_access_enable();
-  R8_PLL_CONFIG &= ~(1 << 5); //
-  sys_safe_access_disable();
-  if(sc & 0x20)  // HSE div
-  {
-    sys_safe_access_enable();
-    R32_CLK_SYS_CFG = (0 << 6) | (sc & 0x1f) | RB_TX_32M_PWR_EN | RB_PLL_PWR_EN;
-    ADD_N_NOPS(4);
-    sys_safe_access_disable();
-    sys_safe_access_enable();
-    ADD_N_NOPS(2);
-    R8_FLASH_CFG = 0X51;
-    sys_safe_access_disable();
-  }
-
-  else if(sc & 0x40) // PLL div
-  {
-    sys_safe_access_enable();
-    R32_CLK_SYS_CFG = (1 << 6) | (sc & 0x1f) | RB_TX_32M_PWR_EN | RB_PLL_PWR_EN;
-    ADD_N_NOPS(4);
-    sys_safe_access_disable();
-    sys_safe_access_enable();
-    R8_FLASH_CFG = 0X52;
-    sys_safe_access_disable();
-  }
-  else
-  {
-    sys_safe_access_enable();
-    R32_CLK_SYS_CFG |= RB_CLK_SYS_MOD;
-    sys_safe_access_disable();
-  }
-  sys_safe_access_enable();
-  R8_PLL_CONFIG |= 1 << 7;
-  sys_safe_access_disable();
-}
-void GPIOA_ModeCfg(uint32_t pin, GPIOModeTypeDef mode)
-{
-    switch(mode)
-    {
-        case GPIO_ModeIN_Floating:
-            R32_PA_PD_DRV &= ~pin;
-            R32_PA_PU &= ~pin;
-            R32_PA_DIR &= ~pin;
-            break;
-        case GPIO_ModeIN_PU:
-            R32_PA_PD_DRV &= ~pin;
-            R32_PA_PU |= pin;
-            R32_PA_DIR &= ~pin;
-            break;
-        case GPIO_ModeIN_PD:
-            R32_PA_PD_DRV |= pin;
-            R32_PA_PU &= ~pin;
-            R32_PA_DIR &= ~pin;
-            break;
-        case GPIO_ModeOut_PP_5mA:
-            R32_PA_PD_DRV &= ~pin;
-            R32_PA_DIR |= pin;
-            break;
-        case GPIO_ModeOut_PP_20mA:
-            R32_PA_PD_DRV |= pin;
-            R32_PA_DIR |= pin;
-            break;
-        default:
-            break;
-    }
-}
-
-void GPIOB_ModeCfg(uint32_t pin, GPIOModeTypeDef mode)
-{
-    switch(mode)
-    {
-        case GPIO_ModeIN_Floating:
-            R32_PB_PD_DRV &= ~pin;
-            R32_PB_PU &= ~pin;
-            R32_PB_DIR &= ~pin;
-            break;
-
-        case GPIO_ModeIN_PU:
-            R32_PB_PD_DRV &= ~pin;
-            R32_PB_PU |= pin;
-            R32_PB_DIR &= ~pin;
-            break;
-
-        case GPIO_ModeIN_PD:
-            R32_PB_PD_DRV |= pin;
-            R32_PB_PU &= ~pin;
-            R32_PB_DIR &= ~pin;
-            break;
-
-        case GPIO_ModeOut_PP_5mA:
-            R32_PB_PD_DRV &= ~pin;
-            R32_PB_DIR |= pin;
-            break;
-
-        case GPIO_ModeOut_PP_20mA:
-            R32_PB_PD_DRV |= pin;
-            R32_PB_DIR |= pin;
-            break;
-
-        default:
-            break;
-    }
-}
-#endif
-
 void SystemInit( void )
 {
 #if defined(CH32V30x) && defined(TARGET_MCU_MEMORY_SPLIT)
@@ -1697,8 +1559,35 @@ void SystemInit( void )
 	#endif
 #endif
 
-#if defined(CH59x)
-	SetSysClock(CLK_SOURCE_PLL_60MHz);
+#if defined(CH59x) // has no HSI
+	// SYS_SAFE_ACCESS for writing RWA and WA registers
+	#define SYS_SAFE_ACCESS_ENABLE  { R8_SAFE_ACCESS_SIG = SAFE_ACCESS_SIG1; R8_SAFE_ACCESS_SIG = SAFE_ACCESS_SIG2; ADD_N_NOPS(2); }
+	#define SYS_SAFE_ACCESS_DISABLE { R8_SAFE_ACCESS_SIG = SAFE_ACCESS_SIG0; ADD_N_NOPS(2); }
+#ifndef CLK_SOURCE_CH59X
+	#define CLK_SOURCE_CH59X CLK_SOURCE_PLL_60MHz
+#endif
+	SYS_SAFE_ACCESS_ENABLE
+	R8_PLL_CONFIG &= ~(1 << 5);
+	SYS_CLKTypeDef sc = CLK_SOURCE_CH59X;
+	if(sc & 0x20)  // HSE div
+	{
+		R32_CLK_SYS_CFG = (0 << 6) | (sc & 0x1f) | RB_TX_32M_PWR_EN | RB_PLL_PWR_EN;
+		ADD_N_NOPS(4);
+		R8_FLASH_CFG = 0X51;
+	}
+
+	else if(sc & 0x40) // PLL div
+	{
+		R32_CLK_SYS_CFG = (1 << 6) | (sc & 0x1f) | RB_TX_32M_PWR_EN | RB_PLL_PWR_EN;
+		ADD_N_NOPS(4);
+		R8_FLASH_CFG = 0X52;
+	}
+	else
+	{
+		R32_CLK_SYS_CFG |= RB_CLK_SYS_MOD;
+	}
+	R8_PLL_CONFIG |= 1 << 7;
+	SYS_SAFE_ACCESS_DISABLE
 #elif defined(FUNCONF_USE_HSI) && FUNCONF_USE_HSI
 	#if defined(CH32V30x) || defined(CH32V20x) || defined(CH32V10x)
 		EXTEN->EXTEN_CTR |= EXTEN_PLL_HSI_PRE;
